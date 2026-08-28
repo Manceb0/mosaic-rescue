@@ -1,0 +1,106 @@
+# ==========================================================
+# PATIENT DATA — NEVER COMMIT
+# The hackathon dataset is gated and contains identifiable
+# pediatric genomic data. Nothing under data/ leaves this machine.
+# ==========================================================
+data/*
+!data/README.md
+data_raw/
+data_gated/
+raw/
+private/
+*.local/
+
+# Genomic formats (blocked anywhere in the tree, not just data/)
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*.bcf
+*.bam
+*.bai
+*.cram
+*.crai
+*.sam
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bed
+*.bedGraph
+*.bigWig
+*.bw
+*.gtf
+*.gff
+*.gff3
+*.fa
+*.fasta
+*.fa.gz
+*.fasta.gz
+*.2bit
+
+# Single-cell / expression matrices
+*.h5
+*.h5ad
+*.loom
+*.mtx
+*.mtx.gz
+barcodes.tsv*
+features.tsv*
+genes.tsv*
+*.rds
+*.RData
+
+# Arrays / methylation / karyotype
+*.idat
+*.CEL
+*.cel
+
+# Clinical / phenotype
+clinical/
+phenotypes/
+*_clinical.*
+*_phenotype.*
+*_hpo.*
+*_pedigree.*
+*.ped
+*.fam
+
+# ==========================================================
+# NOTEBOOK OUTPUTS
+# An executed .ipynb embeds its outputs. A cell that prints
+# patient variants leaks them even when the data file is ignored.
+# Strip outputs before committing (see CONTRIBUTING_RESEARCH.md).
+# ==========================================================
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# Generated figures/tables built from patient data
+outputs/
+results/
+figures/private/
+
+# ==========================================================
+# Environment / tooling
+# ==========================================================
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+token.json
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+.DS_Store
+Thumbs.db
+desktop.ini
