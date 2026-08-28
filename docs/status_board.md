@@ -6,21 +6,24 @@ This is the coordination page for parallel work. Update it when an issue produce
 
 ```mermaid
 flowchart LR
-    A[Issue 1\nDataset inventory] --> B[Issue 5\nTrack 1 + mechanism]
-    B --> C{Data branch}
-    C -- Cell-resolved --> D[Issues 2 + 3\nPatient-as-Screen + Ghosts]
-    C -- WGS reads --> E[Mosaic fingerprint]
-    C -- VCF only --> F[External functional route]
-    D --> G[Issue 4\nSynthetic rescue]
-    E --> G
+    A["Issue 1<br/>Dataset inventory"] --> B["Issue 5<br/>Track 1 + mechanism"]
+    B --> C{"Cell-resolved expression<br/>modality present?"}
+    C -- Yes --> D["Issues 3 + 10 jointly<br/>depletion vs cell competition"]
+    C -- Yes --> S["Issue 10<br/>compensation saturation"]
+    C -- No --> F["External functional route<br/>core not executable"]
+    D --> G["Issue 4<br/>Synthetic rescue"]
+    S --> G
     F --> G
-    G --> H[Issue 6\nStructure if relevant]
-    G --> I[Issue 7\nForecast / replay if justified]
-    G --> J[Issue 8\nIntervention + safety]
+    G --> H["Issue 6<br/>Structure if relevant"]
+    G --> I["Issue 7<br/>Forecast / ALFA-K if justified"]
+    G --> J["Issue 8<br/>Intervention + safety"]
     H --> J
     I --> J
-    J --> K[Issue 9\nNotebook + visual package]
+    J --> K["Issue 9<br/>Notebook + visual package"]
 ```
+
+> **#2 is not on the critical path.** The Patient-as-Screen audit rejected its strong form; its
+> surviving contribution is the cross-tissue design constraint now folded into #3 + #10.
 
 ## Open streams
 
@@ -35,6 +38,12 @@ flowchart LR
 | [#7](https://github.com/Manceb0/mosaic-rescue/issues/7) | Forecast / counterfactual / next experiment | P2 | Conditional | Validated forecast or scenario framework |
 | [#8](https://github.com/Manceb0/mosaic-rescue/issues/8) | Intervention mimicry + Safe Rescue Corridor | P2 | Yes before final dossier | Candidate gate + safety rules |
 | [#9](https://github.com/Manceb0/mosaic-rescue/issues/9) | Notebook scaffold + scientific visuals | P1/P2 | No | Reproducible notebooks + figures |
+| [#10](https://github.com/Manceb0/mosaic-rescue/issues/10) | Aneuploid stress transfer — mPOS / proteostasis / cell competition | **P0** | Coupled to #3 | Saturation-threshold spec + competing-explanation test |
+
+### Scope decisions (2026-08-28)
+
+- **ALFA-K belongs to #7**, not #3. Both claimed it; #3 now consumes #7's verdict. ALFA-K is a forecasting method needing ≥4 longitudinal timepoints, not a null model for negative space.
+- **#10 and #3 are assessed jointly.** Cell competition is a competing explanation for the entire depletion signal, not a parallel topic.
 
 ## Evidence promotion board
 
@@ -55,26 +64,43 @@ A hypothesis can also move to:
 
 ## Current hypothesis status
 
-| Hypothesis | Current status | Why |
+Updated 2026-08-28 after three independent agent audits (`research/agent_findings/`).
+
+| Hypothesis | Status | Why |
 |---|---|---|
-| Patient-as-Screen | L0/L1 concept | Strong rationale; direct patient evidence depends on dataset modality |
-| Ghost Karyotypes | L0 | Needs explicit generation/null model and patient state data |
-| Fitness Landscape | L0 | Needs sufficient state/transition evidence and calibration |
-| Synthetic Rescue | Framework | External functional evidence route must be populated after lead mechanism |
-| Mosaic Forecast | Conditional | Direct version requires suitable longitudinal/cell-resolved data |
-| Rescue Replay | Conditional | Requires validated compensatory state/mechanism first |
-| Safe Rescue Corridor | Framework | Metrics become concrete only after candidate mechanism/intervention |
+| **Compensation saturation** *(new — candidate core)* | **PURSUE** | Does compensatory capacity saturate as per-cell chromosome burden rises? Needs no T0 control and no generation null model, so it survives the objections that killed the two below. Anchored on Amponsah 2025 (PMID 40527892): HSF1/HSP27/HSP90α rescue trisomy 13 and 3 but **not** tetrasomy 5 |
+| Patient-as-Screen | **REJECT** strong form · **CONDITIONAL** reformulated | MVA is a pooled screen sequenced only at endpoint — no T0/input-library control, so "depleted" and "never generated" are indistinguishable. Survives only as a generation-normalized isogenic selection test |
+| Ghost Karyotypes | **REJECT** literal form · **CONDITIONAL** as chromosome × tissue | Underdetermined: 44 observations, ~176 unknowns. Depletions below ~5× unidentifiable at any N. Defensible only as a cross-tissue difference-in-differences |
+| Fitness Landscape | **PARK** on patient data | Requires state/transition evidence the dataset is unlikely to contain |
+| Synthetic Rescue | **CONDITIONAL** | Gated on an expression/proteomic modality existing, plus axis-level (never pair-level) cross-species transfer. See `docs/rescue_evidence_rubric.md` |
+| Mosaic Forecast / ALFA-K | **PARK** on patient data · **CONDITIONAL** as external demo | Needs ≥4 longitudinal timepoints. Authors state fitness estimates for deleterious CNAs are biased upwards — structurally blind in the ghost region |
+| Rescue Replay | Conditional | Requires a validated compensatory mechanism first |
+| Safe Rescue Corridor | **Promoted from framework to prediction** | The honest output of the reformulated method points at clonal selection in the tumour-risk direction. Safety is now something the method predicts, not a disclaimer appended to it |
 | Structural rescue | Conditional | Activates only for structurally informative causal variants |
+
+### Candidates already rejected under the rescue rubric
+
+**TRIP13 ↔ p31^comet** and **bubR1 ↔ polo** — real, documented, correct pathway, and both suppress by weakening the spindle checkpoint *further* in a tumour-predisposition disease. Failed veto criteria 6 and 7 on first pass.
 
 ## Next team checkpoint
 
 Do not debate the final drug yet.
 
-The next checkpoint occurs when we have:
+Item 4 below is **done** — the three audits are in `research/agent_findings/`. Remaining:
 
-1. confirmed dataset modalities,
+1. confirmed dataset modalities *(#1 — now the single question that decides whether the core is executable)*,
 2. a reproducible Track 1 candidate shortlist,
 3. a mechanism-router classification,
-4. independent-agent reports for Patient-as-Screen, Ghost Karyotypes, and Synthetic Rescue.
+4. ~~independent-agent reports for Patient-as-Screen, Ghost Karyotypes, and Synthetic Rescue~~ ✅ 2026-08-28.
 
-At that point we choose the **single strongest discovery path** and park the rest as secondary branches.
+### What the audits changed
+
+All three agents rejected their own hypothesis in its strong form and converged independently on the same three findings:
+
+- **p53 is the axis, and it poisons cancer-derived evidence.** DepMap's reference panel is p53-crippled by Cas9 selection, so it has already solved aneuploidy tolerance — the phenotype we want to study.
+- **The variable that matters is tissue × chromosome**, not chromosome alone.
+- **Nothing runs without a cell-resolved modality.** This is open question #4, unresolved, gated behind #1.
+
+### Track 2 gap
+
+"Track 2" appears nowhere else in this repository. The whole Rescue Replay / drug mimicry apparatus is not yet anchored to the Track 2 requirement that the final intervention be an **approved drug**. A mechanistic discovery that is not an approved drug may remain a biological mechanism or validation axis — it must not silently become the Track 2 submission.
