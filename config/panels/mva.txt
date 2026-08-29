@@ -1,0 +1,40 @@
+# Panel MVA ampliado — MOSAIC RESCUE
+# Fuente: docs/01_MASTER_BRIEF.md §3.1 · docs/02_ANALYSIS_PLAN.md Fase 2.1
+# NO hardcodear BUB1B. Un panel de tres genes tiene probabilidad no trivial de fallar.
+#
+# Modelos a probar: bialelico (hom / comp-het), hemicigoto X,
+# de novo (no confirmable sin padres — marcar como tal), y
+# UN SOLO alelo patogenico -> bandera roja que dispara la Fase 6.
+
+# Clasicos
+BUB1B
+CEP57
+TRIP13
+
+# Ampliacion documentada (Clin Cancer Res 30:5009, 2024)
+CENATAC
+CCDC84
+SLF2
+SMC5
+MAD2L1BP
+
+# Fuentes clinicas adicionales
+BUB1
+BUB3
+MAD1L1
+MAD2L1
+CEP192
+
+# Checkpoint / cinetocoro — contexto mecanistico
+PLK4
+CENPE
+KNL1
+CASC5
+CENPF
+NDC80
+ZW10
+ZWILCH
+RZZ
+TUBB
+CDC20
+ANAPC1

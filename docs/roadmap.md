@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Execution Roadmap
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 This roadmap separates **scientific discovery** from **presentation polish**. We do not build a flashy demo before we know what the data can support.
 
 ## Phase 0 — Data reality (blocking)

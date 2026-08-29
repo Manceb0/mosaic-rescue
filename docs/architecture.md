@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Scientific Architecture
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 ## Goal
 
 Build a reproducible research pipeline that converts patient-specific MVA data into a small number of mechanistically coherent, independently supported, safety-aware, falsifiable therapeutic hypotheses.

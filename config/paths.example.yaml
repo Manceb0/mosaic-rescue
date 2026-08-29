@@ -1,0 +1,51 @@
+# Plantilla de rutas — MOSAIC RESCUE
+#
+# Copiar a config/paths.yaml y rellenar con las rutas reales.
+# config/paths.yaml esta en .gitignore y NUNCA se commitea.
+#
+# El codigo no contiene rutas absolutas hardcodeadas. Todo pasa por aqui.
+# Ver CLAUDE.md, Regla Dura 2.
+
+# --- Datos del paciente (fuera del repositorio, siempre) ---
+patient:
+  # VCF de WGS + indice
+  vcf:            /ruta/ficticia/WGS_XXXXXXXX_YYYYYYYY.vcf.gz
+  vcf_index:      /ruta/ficticia/WGS_XXXXXXXX_YYYYYYYY.vcf.gz.tbi
+
+  # FASTQ por carril. NovaSeq S4, 4 carriles, ~86 GB en total.
+  # No alinear hasta la Fase 6: hay tres atajos documentados en el plan.
+  fastq_dir:      /ruta/ficticia/fastq/
+  lanes:          [L001, L002, L003, L004]
+
+  # Documento de fenotipo. Bloqueado por .gitignore incluso dentro de docs/.
+  phenotype_docx: /ruta/ficticia/Challenge_Clinical_Phenotype_1.docx
+
+  # Sexo del probando: condiciona el modelo hemicigoto en X (MAGED2, Fase 1.2)
+  sex:            desconocido        # XY | XX | desconocido
+
+# --- Referencia ---
+reference:
+  # Confirmar el build en la cabecera del VCF antes de asumirlo (Fase 0.2)
+  build:          GRCh38
+  fasta:          /ruta/ficticia/GRCh38.fa
+  fasta_index:    /ruta/ficticia/GRCh38.fa.fai
+
+# --- Controles procesados con pipeline identico ---
+# A 45-60x el factor limitante deja de ser el ruido binomial y pasa a ser
+# el sesgo sistematico (GC, mapabilidad, sesgo de alelo de referencia).
+# Eso convierte estos controles de deseables en OBLIGATORIOS. Ver brief §1.
+controls:
+  wgs_dir:        /ruta/ficticia/controles/
+  n_minimo:       10
+  pediatricos:    false             # ¿mismo rango de edad? Ver brief §7.4
+
+# --- Salidas ---
+output:
+  work_dir:       ./work            # gitignored
+  results_dir:    ./results         # gitignored
+
+# --- Recursos ---
+compute:
+  threads:        8
+  memoria_gb:     32
+  seed:           42                # semilla fija para todo proceso estocastico

@@ -1,5 +1,11 @@
 # Crazy Ideas — High-risk, high-upside research transfers
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 This file is intentionally permissive at the idea stage, but every entry must eventually become testable.
 
 ## CI-01 — Ghost Karyotypes as Negative-Space Biology

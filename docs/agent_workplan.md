@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Multi-Agent Workplan
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 This file is the operating plan for all research agents. Agents should work in parallel but write findings in a common format so evidence can converge instead of fragmenting.
 
 ## Shared output format
