@@ -8,7 +8,7 @@ Antes de escribir código, lee en este orden:
 2. `docs/02_ANALYSIS_PLAN.md` — plan ejecutable por fases, con tablas de decisión preregistradas.
 3. `docs/04_ARQUITECTURA_MAESTRA.md` — jerarquía científica vigente y regla de hipótesis competidoras. **Manda sobre cualquier módulo o idea previa.**
 
-No empieces a programar sin haber leído ambos. El plan tiene un orden deliberado por coste-beneficio; ejecutarlo desordenado desperdicia días de cómputo.
+No empieces a programar sin haber leído los tres. El plan tiene un orden deliberado por coste-beneficio; ejecutarlo desordenado desperdicia días de cómputo.
 
 ---
 
@@ -100,6 +100,9 @@ docs/
   00_KICKOFF.md           # prompt inicial para arrancar
   01_MASTER_BRIEF.md      # contexto científico completo
   02_ANALYSIS_PLAN.md     # plan ejecutable + decisiones preregistradas
+  03_ALPHAGENOME_ASSESSMENT.md  # encaje, limites y decision de uso
+  04_ARQUITECTURA_MAESTRA.md    # jerarquia vigente; manda sobre lo demas
+  00_ESTADO_Y_OBSOLESCENCIA.md  # que sigue vigente y que quedo superado
   EVIDENCE.md             # tabla de evidencia viva; se actualiza al leer papers
   DECISIONS.md            # bitácora: qué se decidió, cuándo, por qué
 src/
