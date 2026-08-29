@@ -44,3 +44,21 @@ SLC9A3R1
 KCNJ16
 SLC12A3
 HNF1B
+
+# ---------------------------------------------------------------
+# PRIORIDAD DENTRO DEL PANEL - corregido 2026-08-29
+#
+# MAGED2 causa Bartter antenatal TRANSITORIO: remite por completo
+# en los primeros meses de vida (NEJM 2016;374:1853-63, PMID 27120771).
+#
+# Consecuencia contraintuitiva: si la nefrocalcinosis del paciente
+# es PERSISTENTE hoy, MAGED2 se vuelve MENOS probable, no mas, por
+# bien que explique el polihidramnios y la prematuridad.
+#
+# Si persiste -> priorizar las que NO remiten:
+#   SLC12A1, KCNJ1, CLCNKB, BSND
+# MAGED2 se conserva por el eje perinatal, pero no como primer
+# candidato mientras la afectacion renal continue.
+#
+# Ver docs/04_ARQUITECTURA_MAESTRA.md seccion 4.
+# ---------------------------------------------------------------

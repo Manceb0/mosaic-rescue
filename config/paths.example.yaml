@@ -44,6 +44,17 @@ output:
   work_dir:       ./work            # gitignored
   results_dir:    ./results         # gitignored
 
+# --- APIs externas ---
+# Las claves NO van aqui. Van en .env (gitignored), y se leen por variable
+# de entorno. Este bloque solo documenta cuales hacen falta.
+apis:
+  alphagenome:
+    env_var:      ALPHAGENOME_API_KEY   # ver .env
+    fase:         6.2                   # unica fase donde se usa
+    # La API esta orientada a lotes pequenos/medianos (miles de predicciones),
+    # no a barridos de millones de variantes. Enviar solo la shortlist.
+    max_variantes: 500
+
 # --- Recursos ---
 compute:
   threads:        8

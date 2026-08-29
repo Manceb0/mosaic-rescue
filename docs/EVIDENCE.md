@@ -36,6 +36,7 @@ en que se usaron.
 | 29576454 | Profound Tissue Specificity in Proliferation Control Underlies Cancer Drivers and Aneuploidy Patterns. *Cell* | 2018 |
 | 26192197 | A cytosolic network suppressing mitochondria-mediated proteostatic stress and cell death. *Nature* | 2015 |
 | 40527892 | Aneuploidy-induced proteostasis disruption impairs mitochondrial functions and mediates aggregation of mitochondrial precursor proteins. *Nat Commun* | 2025 |
+| 27120771 | Polyhydramnios, Transient Antenatal Bartter's Syndrome, and MAGED2 Mutations. *N Engl J Med* 374(19):1853-63 | 2016 |
 
 ## Pendiente de verificar antes de uso público
 

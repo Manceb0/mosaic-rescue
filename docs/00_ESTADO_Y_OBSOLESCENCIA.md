@@ -40,6 +40,7 @@ separado. Que coincidan es la razón para actuar sobre ellos.
 | `docs/01_MASTER_BRIEF.md` | **Autoridad científica.** Datos, fenotipo, genética, cancelación de BAF, MitoRead, Bartter |
 | `docs/02_ANALYSIS_PLAN.md` | **Autoridad de ejecución.** Fases 0-8 con decisiones preregistradas |
 | `docs/00_KICKOFF.md` | Prompt de arranque |
+| `docs/04_ARQUITECTURA_MAESTRA.md` | **Jerarquía vigente.** Manda sobre cualquier módulo previo |
 | `docs/03_ALPHAGENOME_ASSESSMENT.md` | Evaluación de las seis propuestas con AlphaGenome |
 | `docs/claims_we_cannot_make.md` | Vigente. Compatible con CLAUDE.md Regla 3 |
 | `docs/research_protocol.md` | Vigente en lo metodológico (§§1-5, 12-16) |
@@ -98,6 +99,10 @@ de profundidad.
 
 No prometer reconstrucción de células individuales. No prometer cariotipos fantasma.
 
+**Nombre obligatorio:** *bulk genomic mosaic fingerprint*. Y el índice de dispersión no se
+presenta como superior al método estándar hasta ganar la simulación preregistrada en
+`docs/04_ARQUITECTURA_MAESTRA.md` §2.
+
 ---
 
 ## Lo que vale más que cualquier análisis pendiente
@@ -105,5 +110,5 @@ No prometer reconstrucción de células individuales. No prometer cariotipos fan
 Tres preguntas al equipo clínico, todas un email (`docs/00_KICKOFF.md`):
 
 1. **¿Polihidramnios u oligohidramnios?** Bartter y MVA van en direcciones opuestas. Una línea de la historia obstétrica decide entre §8 y la línea principal.
-2. **¿La librería es PCR-free?** Si hay amplificación, el ruido de cobertura sube y las ramas §6 y §7 se tambalean. Condiciona si merece la pena ejecutarlas.
+2. **¿La librería es PCR-free?** Si hay amplificación, sube el sesgo de cobertura y la duplicación. Lo que pierde fuerza es usar cambios pequeños de profundidad como evidencia de mosaicismo — **no el proyecto**. Track 1, SV, AlphaGenome y la rama renal sobreviven intactos. Cambia cuánto peso soporta §6, no si se ejecuta.
 3. **Hemograma contemporáneo a la extracción.** Sin fórmula ni plaquetas, MitoRead arrastra un confusor fatal: las plaquetas tienen mitocondrias y carecen de núcleo, así que distorsionan directamente el cociente mtDNA/nuclear.

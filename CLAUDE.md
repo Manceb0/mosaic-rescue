@@ -6,6 +6,7 @@ Análisis genómico de un paciente pediátrico real con sospecha de Mosaic Varie
 Antes de escribir código, lee en este orden:
 1. `docs/01_MASTER_BRIEF.md` — contexto científico completo, hallazgos, evidencia y contraevidencia.
 2. `docs/02_ANALYSIS_PLAN.md` — plan ejecutable por fases, con tablas de decisión preregistradas.
+3. `docs/04_ARQUITECTURA_MAESTRA.md` — jerarquía científica vigente y regla de hipótesis competidoras. **Manda sobre cualquier módulo o idea previa.**
 
 No empieces a programar sin haber leído ambos. El plan tiene un orden deliberado por coste-beneficio; ejecutarlo desordenado desperdicia días de cómputo.
 
@@ -121,3 +122,7 @@ results/                  # IGNORADO por defecto
 - No trates el enriquecimiento de vías como mecanismo.
 - No asumas *a priori* que el gen causal es `BUB1B`.
 - No presentes una conexión generada por un LLM como evidencia. Toda cadena mecanística necesita una referencia primaria.
+- No diseñes el proyecto hacia atrás desde un gen o un fármaco favorito. `BUB1B`, Bartter, estrés mitocondrial, señal de mosaicismo y cualquier candidato farmacológico siguen siendo hipótesis hasta que los datos del paciente los sostengan (`docs/04_ARQUITECTURA_MAESTRA.md`).
+- No digas "reconstrucción de cariotipos" ni "cariotipos fantasma". El entregable de mosaicismo es un *bulk genomic mosaic fingerprint*.
+- No llames "ensayo funcional" a MitoRead. Es un *orthogonal WGS-derived mitochondrial readout*.
+- No mandes variantes estructurales a AlphaGenome. Las SV van a Manta / DELLY / GRIDSS.
