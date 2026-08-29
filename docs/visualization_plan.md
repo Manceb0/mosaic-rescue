@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Scientific Visualization Plan
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 The goal is not to make generic dashboards. Each figure should expose a biological pattern, a model assumption, or a decision boundary that a geneticist, cell biologist, or computational biologist can inspect.
 
 ## Figure 1 — Patient data map

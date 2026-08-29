@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Visual Diagrams
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 GitHub renders these Mermaid diagrams directly.
 
 ## 1. End-to-end architecture

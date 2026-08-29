@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Ready-to-Run Agent Prompts
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 These prompts are designed for independent research agents. Each agent should read `README.md`, `AGENTS.md`, `docs/research_protocol.md`, and `research/agent_findings/README.md` before working.
 
 ## Universal instruction block

@@ -1,5 +1,11 @@
 # MOSAIC RESCUE — Notebook Guide
 
+> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
+> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
+> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+
+---
+
 The notebooks are the reproducible scientific record of the project. They are **not** a sequence that must all run. Each later notebook is activated only if the data and mechanism justify it.
 
 ## Required notebook structure

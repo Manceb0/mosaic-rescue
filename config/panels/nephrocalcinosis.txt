@@ -1,0 +1,64 @@
+# Panel nefrocalcinosis / tubulopatias — HPO Residual (Fase 1.2)
+# Fuente: docs/01_MASTER_BRIEF.md §8 · docs/02_ANALYSIS_PLAN.md Fase 1.2
+#
+# Filtrado: bialelico (hom o comp-het) y hemicigoto en X, gnomAD AF < 0.005
+#
+# ATENCION MAGED2 (Xp11.2, X-ligado recesivo): si el probando es varon,
+# basta UNA variante hemicigota. Un pipeline que filtre por "bialelico"
+# la perdera. Buscar explicitamente hemicigotos en X.
+
+# Bartter antenatal
+SLC12A1
+KCNJ1
+BSND
+CLCNKA
+CLCNKB
+MAGED2
+CASR
+
+# Acidosis tubular renal distal
+SLC4A1
+ATP6V0A4
+ATP6V1B1
+FOXI1
+WDR72
+
+# Hipercalciuria / nefrolitiasis / Dent
+CLDN16
+CLDN19
+CYP24A1
+SLC34A1
+SLC34A3
+CLCN5
+OCRL
+VDR
+
+# Hiperoxaluria primaria
+AGXT
+GRHPR
+HOGA1
+
+# Otros
+ALPL
+SLC9A3R1
+KCNJ16
+SLC12A3
+HNF1B
+
+# ---------------------------------------------------------------
+# PRIORIDAD DENTRO DEL PANEL - corregido 2026-08-29
+#
+# MAGED2 causa Bartter antenatal TRANSITORIO: remite por completo
+# en los primeros meses de vida (NEJM 2016;374:1853-63, PMID 27120771).
+#
+# Consecuencia contraintuitiva: si la nefrocalcinosis del paciente
+# es PERSISTENTE hoy, MAGED2 se vuelve MENOS probable, no mas, por
+# bien que explique el polihidramnios y la prematuridad.
+#
+# Si persiste -> priorizar las que NO remiten:
+#   SLC12A1, KCNJ1, CLCNKB, BSND
+# MAGED2 se conserva por el eje perinatal, pero no como primer
+# candidato mientras la afectacion renal continue.
+#
+# Ver docs/04_ARQUITECTURA_MAESTRA.md seccion 4.
+# ---------------------------------------------------------------

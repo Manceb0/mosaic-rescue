@@ -1,106 +1,118 @@
-# ==========================================================
-# PATIENT DATA — NEVER COMMIT
-# The hackathon dataset is gated and contains identifiable
-# pediatric genomic data. Nothing under data/ leaves this machine.
-# ==========================================================
+# ============================================================
+# DATOS DEL PACIENTE — NUNCA EN EL REPOSITORIO
+# Recordatorio: .gitignore NO es un control de seguridad.
+# Si algo se commiteó una vez, sigue en el historial.
+# Verifica antes de cada commit (ver CLAUDE.md, Regla Dura 1).
+# ============================================================
+
+# Directorio de datos: ignorado en bloque
 data/*
-!data/README.md
 data_raw/
-data_gated/
 raw/
 private/
-*.local/
 
-# Genomic formats (blocked anywhere in the tree, not just data/)
-*.vcf
-*.vcf.gz
-*.vcf.gz.tbi
-*.bcf
+# Secuenciación cruda y alineamientos
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
 *.bam
 *.bai
 *.cram
 *.crai
 *.sam
-*.fastq
-*.fastq.gz
-*.fq
-*.fq.gz
-*.bed
-*.bedGraph
-*.bigWig
-*.bw
-*.gtf
-*.gff
-*.gff3
-*.fa
-*.fasta
-*.fa.gz
-*.fasta.gz
-*.2bit
 
-# Single-cell / expression matrices
-*.h5
-*.h5ad
-*.loom
-*.mtx
-*.mtx.gz
-barcodes.tsv*
-features.tsv*
-genes.tsv*
-*.rds
-*.RData
-
-# Arrays / methylation / karyotype
-*.idat
-*.CEL
-*.cel
-
-# Clinical / phenotype
-clinical/
-phenotypes/
-*_clinical.*
-*_phenotype.*
-*_hpo.*
-*_pedigree.*
+# Variantes y derivados con genotipos
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*.vcf.gz.csi
+*.bcf
+*.gvcf*
 *.ped
 *.fam
+*.bim
+*.plink*
 
-# ==========================================================
-# NOTEBOOK OUTPUTS
-# An executed .ipynb embeds its outputs. A cell that prints
-# patient variants leaks them even when the data file is ignored.
-# Strip outputs before committing (see CONTRIBUTING_RESEARCH.md).
-# ==========================================================
+# Configuración con rutas reales
+config/paths.yaml
+config/*.local.*
+.env
+*.secret
+*.key
+*.pem
+
+# Directorios de trabajo y resultados
+work/
+results/
+outputs/
+tmp/
+scratch/
+*.log
+
+# Índices y referencias (grandes, no versionar)
+reference/
+*.fa
+*.fa.gz
+*.fasta
+*.fasta.gz
+*.fai
+*.dict
+*.amb
+*.ann
+*.bwt*
+*.pac
+*.sa
+*.0123
+
+# Notebooks: los outputs ejecutados embeben datos del paciente
+# aunque el fichero fuente esté ignorado. Ver CONTRIBUTING_RESEARCH.md
 .ipynb_checkpoints/
 *-checkpoint.ipynb
 
-# Generated figures/tables built from patient data
-outputs/
-results/
-figures/private/
-
-# ==========================================================
-# Environment / tooling
-# ==========================================================
-.env
-.env.*
-!.env.example
-*.key
-*.pem
-credentials.json
-token.json
-
+# Entornos y caché
 __pycache__/
 *.py[cod]
 .venv/
 venv/
 env/
-.Python
-*.egg-info/
+.snakemake/
+.nextflow*
+work-nf/
+.Rhistory
+.RData
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
 
+# Sistema
 .DS_Store
 Thumbs.db
 desktop.ini
+*.swp
+.idea/
+.vscode/
+
+# ============================================================
+# EXCEPCIONES — se versionan pese a las reglas de arriba
+# ============================================================
+!data/README.md
+!config/paths.example.yaml
+!config/panels/*.txt
+!src/**
+!docs/*.md
+!research/**/*.md
+!hypotheses/**/*.md
+
+# ============================================================
+# PROHIBICIONES FINALES — máxima prioridad, van las últimas
+# a propósito: en git gana la ÚLTIMA regla que coincide, así
+# que ninguna excepción de arriba puede reintroducir esto.
+# ============================================================
+*.docx
+*.doc
+*.xls
+*.xlsx
+**/Challenge_Clinical*
+**/phenotype_raw*
+**/*_identifiable*
