@@ -227,3 +227,158 @@ alelo muere, esta es la figura que queda, y sigue mereciendo estar en la present
    legible. Etiquetas de gen y de mecanismo, sí; secuencia, no (Regla Dura 1).
 5. **Si una figura necesita que el jurado adivine qué significa, está incompleta.** La
    estructura del §1 es el mínimo, no un extra.
+
+---
+
+## §5. Los tres niveles visuales
+
+No todas las figuras hacen el mismo trabajo. Confundirlos produce presentaciones que
+impresionan y no convencen, o que convencen y aburren.
+
+| Nivel | Función | Qué debe provocar |
+|---|---|---|
+| **Hero / wow** | Abren y cierran. Cuentan la historia completa de un vistazo | *«espera… ¿qué estoy viendo?»* |
+| **Científico** | Justifican el mecanismo. Soportan escrutinio técnico | *«vale, no es humo; aquí hay mecanismo»* |
+| **De decisión** | Muestran cómo se descartó lo demás | *«no forzaron la respuesta; la encontraron»* |
+
+El tercero es el que más se descuida y el que más pesa en un jurado.
+
+---
+
+## §6. Catálogo de figuras — el blueprint
+
+**Condicional.** «Depende de» dice qué tiene que existir para que la figura se pueda
+construir. Si eso no aparece, la figura no se hace y la rama pasa al cementerio.
+
+| # | Figura | Nivel | Qué la alimenta | Mensaje | Depende de |
+|---|---|---|---|---|---|
+| 1 | **From one genome to one mechanism** | Hero | El propio pipeline | La historia completa: genoma → mecanismo → hipótesis → filtro de seguridad | Nada. **Se puede construir ya** |
+| 2 | **AlphaGenome REF vs ALT + DELTA** | Hero + científico | Variante candidata no codificante | Esta base cambia este comportamiento molecular | Que exista candidato no codificante |
+| 3 | Mechanism Fingerprint Card | Científico | Salidas de AlphaGenome | Resumen legible del mecanismo predicho | Ídem #2 |
+| 4 | Hidden Second Allele | Hero + científico | Alelo A + candidato B | Cómo se buscó lo que el pipeline estándar no ve | Que aparezca alelo huérfano |
+| 5 | Mapa de fenotipo mixto | Científico + decisión | HPO + paneles | El caso no es lineal | Nada. Se puede construir ya |
+| 6 | MitoRead | Científico | mtDNA-CN vs controles | Si hay señal mitocondrial anómala | Controles compatibles |
+| 7 | Mosaic fingerprint | Científico | BAF/LRR por cromosoma | Si el bulk conserva firma de mosaicismo | Alineamiento |
+| 8 | Curva de sensibilidad | Científico | Simulación 1/2/5/10/20 % | Si nuestro estadístico gana al baseline | Simulación hecha |
+| 9 | Grafo mecanismo → fármaco | Científico | Mecanismo causal | Por qué **ese** fármaco | Mecanismo establecido |
+| 10 | Plano rescate vs peligro | Decisión | Rúbrica de rescate | Si mejora sin favorecer CIN | Candidato terapéutico |
+| 11 | **Hypothesis Graveyard** | Decisión | `docs/DECISIONS.md` | Qué murió y por qué | Nada. **Crece solo** |
+
+Las tres que no dependen de nada —#1, #5 y #11— son las que se pueden empezar hoy. Las
+demás esperan a los datos.
+
+### 6.1 La adición del panel DELTA
+
+Añadir un tercer panel **DELTA (ALT − REF)** a la figura #2 es una mejora real, y no solo
+por legibilidad: **un delta se parece mucho menos a una captura de genome browser** que dos
+pistas de cobertura apiladas. Reduce el riesgo de §3.1 en lugar de agravarlo.
+
+El delta es además donde vive la información: dos pistas casi idénticas con una diferencia
+local se leen mal a ojo, y la resta la hace evidente.
+
+---
+
+## §7. Corrección — la figura 4 vuelve a afirmar `trans`
+
+El cierre propuesto era:
+
+```
+Convergent disruption of the same gene
+(phase unresolved, functional convergence supported)
+```
+
+**Sigue siendo la afirmación que la fase no permite**, y el paréntesis no la rescata: si
+las dos variantes están en *cis*, el otro alelo queda intacto, el gen funciona, y **no hay
+convergencia de ninguna clase**. «Convergencia funcional apoyada» describe justo lo que no
+se puede apoyar sin resolver fase.
+
+Cierre correcto:
+
+```
+                    PHASE UNRESOLVED
+              ══════════════════════════
+
+    dos candidatos funcionales independientes en el mismo gen
+      cada uno con evidencia de disrupción por separado
+        configuración en trans NO demostrada
+```
+
+Es igual de impactante y no se cae con la primera pregunta del jurado. Un evaluador que
+conozca genética clínica va a preguntar por la fase; que la figura se le adelante juega a
+favor.
+
+---
+
+## §8. El tríptico y el orden del pitch
+
+Corazón visual: **#1 Hero pipeline · #2 AlphaGenome REF/ALT/DELTA · #11 Graveyard.**
+Historia completa, mecanismo-wow, y honestidad narrativa.
+
+| Slide | Contenido | Si la rama murió |
+|---|---|---|
+| 1 | El problema | — |
+| 2 | Nuestra apuesta: por qué no es un pipeline variante→fármaco estándar | — |
+| 3 | **Hero architecture** | — |
+| 4 | Candidatos causales y por qué sobrevivieron | — |
+| 5 | **AlphaGenome hidden allele** | **→ figura §3.4: el candidato que AlphaGenome tumba** |
+| 6 | Fenotipo mixto / diagnóstico residual | → matriz con la rama renal descartada, y por qué |
+| 7 | MitoRead / mosaic — evidencia ortogonal | → el resultado negativo, con su falsificador |
+| 8 | Mecanismo → fármaco (no ranking de fármacos) | → «no llegamos aquí, y este es el motivo» |
+| 9 | Try to kill it | — |
+| 10 | **Graveyard + hipótesis final** | — |
+
+**La columna de la derecha es obligatoria.** El slide 5 es el wow, y depende de encontrar
+un segundo alelo — cosa que puede no pasar. Un pitch cuyo momento culminante desaparece si
+un análisis sale negativo está mal construido. La figura §3.4 cubre ese hueco y, dicho
+honestamente, casi lo cubre mejor: *«miramos, y esto es lo que descartamos»*.
+
+---
+
+## §9. Los cuatro roles de AlphaGenome
+
+Explícitos, para que no quede como «usamos AlphaGenome»:
+
+| Rol | Qué hace |
+|---|---|
+| **1. Hidden second allele** | Buscar efecto funcional en intrónicas, reguladoras y VUS |
+| **2. Mechanism fingerprinting** | Traducir una variante a huella molecular visual |
+| **3. Variant downranking** | Bajar candidatos que parecían fuertes y no muestran efecto coherente |
+| **4. Hypothesis refinement** | Ayudar a elegir qué mecanismo tiene sentido atacar después |
+
+**La frase permitida**, y la única que se usa en la presentación:
+
+> *AlphaGenome provides functional predictions that help prioritize and mechanistically
+> interpret candidate noncoding or splice-disrupting variants.*
+
+**Prohibido decir**, en figura, pie o narración: que demostró causalidad · que prueba
+patogenicidad · que confirma la segunda variante · que resolvió fase · que encontró la cura.
+
+El rol 3 merece énfasis: es el que demuestra que la herramienta filtra en vez de confirmar
+lo que ya queríamos creer, y es el único que produce figura **aunque todo lo demás falle**.
+
+---
+
+## §10. Regla de integridad del cementerio
+
+El Graveyard es una figura de credibilidad, y por eso es la más fácil de arruinar.
+
+> **Solo entra una hipótesis que realmente consideramos y matamos con evidencia registrada
+> en `docs/DECISIONS.md` o en el brief.**
+
+Nada de lápidas plausibles añadidas para parecer rigurosos. Un jurado que pregunte *«¿y por
+qué descartasteis esa?»* y reciba una reconstrucción a posteriori convierte la mejor figura
+del proyecto en la peor.
+
+Verificado a fecha de hoy: las cinco entradas propuestas tienen acta de defunción real.
+
+| Hipótesis | Estado | Dónde está la evidencia |
+|---|---|---|
+| MVA codificante clásico | viva | Track 1, `02_ANALYSIS_PLAN.md` |
+| Diagnóstico dual / Bartter | condicional | brief §8; `04_ARQUITECTURA_MAESTRA.md` §4 |
+| Rescate mitocondrial / arimoclomol | posible, con colisión oncológica declarada | brief §10.3; plan §306 |
+| Estabilización del huso tipo taxano | **rechazada** | brief §455: el paclitaxel breve a dosis baja **induce** husos multipolares y aneuploidía; más neurotoxicidad y mielosupresión en un niño con atrofia muscular y antecedente de rabdomiosarcoma |
+| Reconstrucción de cariotipos desde bulk WGS | **rechazada por sobreafirmación** | `00_ESTADO_Y_OBSOLESCENCIA.md`; tres auditorías independientes |
+
+La cuarta es la mejor lápida del conjunto: una idea que era *elegante* —rescatar el modo de
+fallo de `CEP57` anclando extremos menos— y que murió por el mecanismo mismo que proponía.
+Eso es exactamente lo que el jurado tiene que ver.
