@@ -169,7 +169,77 @@ Se puede demostrar, y produce además una figura útil:
 > las `B`/`LB`/`VUS`, y el candidato marcado. Si el dominio C-terminal concentra
 > efectivamente la enfermedad, `PM1` pasa a ser defendible **con el dato delante**.
 
-**Veredicto:** `PM1` **PENDIENTE**. Requiere el VCF completo de ClinVar.
+### Resultado — `PM1` **NO SE APLICA**, y el dato va en contra
+
+ClinVar completo (versión 2026-08-22), 2 470 variantes de la región anotadas sobre el
+transcrito MANE. Distribución por ventanas de 100 residuos:
+
+| Ventana | P/LP | B/LB | VUS | ratio P/LP:B/LB |
+|---|---:|---:|---:|---:|
+| 700–799 | 11 | 43 | 115 | 0,26 ← la mejor del gen |
+| 900–999 | 6 | 51 | 126 | 0,12 |
+| **1000–1099** | **0** | **35** | 79 | **0,00** ← aquí está el candidato |
+
+**La ventana que contiene el residuo candidato tiene cero variantes P/LP y 35 benignas.**
+No es que falte evidencia para `PM1`: **el dato apunta en dirección contraria.**
+
+**Veredicto:** `PM1` **NO SE APLICA.**
+
+---
+
+## `PS1` y `PM5` — evaluados, ninguno aplica
+
+En el residuo candidato, ClinVar tiene **dos** entradas, ninguna de ellas nuestra variante:
+
+| Cambio nucleotídico | Efecto | Clasificación |
+|---|---|---|
+| Otro cambio, **mismo aminoácido** que el nuestro | missense | **VUS** |
+| Un tercero | sinónimo | Likely benign |
+
+- **`PS1`: no aplica.** Exige que el mismo cambio aminoacídico esté ya establecido como
+  `P`/`LP`. Está, pero como **VUS**.
+- **`PM5`: no aplica.** No hay ninguna `P`/`LP` en el residuo.
+
+> **Dato relevante aunque no dé criterio:** un *submitter* independiente, con criterios,
+> evaluó **el mismo cambio de aminoácido** llegando por otra ruta nucleotídica y lo dejó en
+> **VUS**. Coincide con nuestra propia conclusión, por un camino distinto.
+
+### Corrección — nuestra variante y ClinVar
+
+La pasada 2 dijo que la missense estaba «ausente de ClinVar». **Con matiz:** nuestra
+variante exacta sigue sin estar, pero eso se afirmó contra el caché de VEP 116, que lleva
+**ClinVar de 2025-09**. El ClinVar descargado hoy es de **2026-08-22**, once meses más
+nuevo, e incluye dos entradas en ese residuo que el caché no tenía.
+
+**Lección:** el ClinVar del caché de VEP tiene fecha. Para una decisión de curación hay que
+consultar la versión vigente.
+
+---
+
+## El contexto que más pesa: qué es patogénico en `BUB1B`
+
+De las **84** variantes `P`/`LP` del gen en ClinVar:
+
+| Consecuencia | n | % |
+|---|---:|---:|
+| Frameshift | 38 | 45 |
+| Stop gained | 34 | 40 |
+| Splice acceptor | 6 | 7 |
+| Splice donor | 4 | 5 |
+| Splice region | 1 | 1 |
+| **Missense** | **1** | **1** |
+
+**El 97 % de lo clasificado como patogénico en `BUB1B` es pérdida de función.** Una sola
+missense en todo el gen ha alcanzado `P`/`LP`.
+
+> **Cuidado con sobreleer esto.** La composición de ClinVar refleja también **sesgo de
+> constatación**: las missense en genes recesivos se quedan en VUS precisamente por falta de
+> fase y de datos funcionales — el mismo problema que tenemos nosotros. La literatura de
+> investigación **sí** describe missense patogénicas en MVA por `BUB1B`.
+>
+> Lo que sí queda establecido: **no hay base empírica para `PM1` en este gen**, y la
+> probabilidad previa de que una missense sea el segundo alelo es más baja de lo que sugería
+> el patrón «truncante + missense» leído sin este contexto.
 
 ---
 
@@ -262,9 +332,11 @@ Eso cambiaba la prioridad de las descargas.
 > El rango VUS llega hasta 5 puntos. **Ni siquiera el mejor caso de ClinVar saca la missense
 > de VUS.**
 >
-> Conclusión, y es la que ordena el trabajo restante: **solo la fase (`PM3`) o un ensayo
-> funcional variante-específico (`PS3`) pueden mover esta variante.** Todo lo demás refina
-> un VUS que seguirá siendo VUS.
+> Conclusión provisional: la fase (`PM3`) y un ensayo funcional variante-específico (`PS3`)
+> son **las dos vías más decisivas**, pero **no las únicas posibles** — también podrían
+> aparecer `PS1` (si el mismo cambio aminoacídico llegara a `P`/`LP`), segregación (`PP1`) o
+> casos independientes (`PS4`). ClinVar y la literatura son la forma de comprobarlo, y es lo
+> que se hizo a continuación.
 
 Pero con una condición dura: **`PM1` no se gana por «está en el stability domain»**. Hay
 que demostrar que es una región funcional crítica bien establecida y que no estamos viendo
@@ -294,7 +366,12 @@ Orden de prioridad, decidido:
 |---|---|---|---|
 | **1** | **REVEL** | `PP3` — Supporting, Moderate, Strong o nada | Sí, en combinación |
 | **2** | **VCF de ClinVar** | `PM1` por distribución, `PM5` por residuo, mapa proteico | Sí, en combinación |
-| **3** | Cobertura y calidad de gnomAD | Auditar `PM2_Supporting` del truncante | No, pero lo asegura |
+| **3** | Cobertura y calidad de gnomAD | Auditar `PM2_Supporting` del truncante | **No** |
 
-El tercero cierra el truncante: su frecuencia concentrada en una sola población merece
-comprobar cobertura antes de dar `PM2` por bueno.
+**Corrección a una afirmación previa.** Se dijo que gnomAD era «lo único pendiente que
+todavía puede mover una clasificación». **Es un error de aritmética:** `PVS1` sola son
+**8 puntos**, que ya cae en Likely Pathogenic (6–9). Añadir `PM2_Supporting` lleva a 9 —
+**mismo rango**. Y quitarlo deja 8 — **mismo rango**.
+
+Auditar gnomAD es **higiene de la evidencia**, necesaria para no apoyarse en un dato con
+posible problema de calidad. No cambia la categoría del truncante hoy.
