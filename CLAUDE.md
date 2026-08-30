@@ -102,6 +102,7 @@ docs/
   02_ANALYSIS_PLAN.md     # plan ejecutable + decisiones preregistradas
   03_ALPHAGENOME_ASSESSMENT.md  # encaje, limites y decision de uso
   04_ARQUITECTURA_MAESTRA.md    # jerarquia vigente; manda sobre lo demas
+  05_CONTRATO_VISUAL.md         # que figura debe cada hipotesis
   00_ESTADO_Y_OBSOLESCENCIA.md  # que sigue vigente y que quedo superado
   EVIDENCE.md             # tabla de evidencia viva; se actualiza al leer papers
   DECISIONS.md            # bitácora: qué se decidió, cuándo, por qué
@@ -129,3 +130,5 @@ results/                  # IGNORADO por defecto
 - No digas "reconstrucción de cariotipos" ni "cariotipos fantasma". El entregable de mosaicismo es un *bulk genomic mosaic fingerprint*.
 - No llames "ensayo funcional" a MitoRead. Es un *orthogonal WGS-derived mitochondrial readout*.
 - No mandes variantes estructurales a AlphaGenome. Las SV van a Manta / DELLY / GRIDSS.
+- No termines un analisis importante solo en CSV o Markdown. Cada hipotesis acaba en una figura interpretable, una conclusion, una incertidumbre y un falsificador (`docs/05_CONTRATO_VISUAL.md`).
+- No dibujes las predicciones de AlphaGenome como si fueran pistas medidas de un genome browser. La palabra PREDICHO va en el panel, no en el pie.

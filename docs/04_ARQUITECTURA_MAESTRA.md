@@ -2,7 +2,8 @@
 
 > **Autoridad.** Este documento manda sobre cualquier módulo, notebook o idea previa.
 > Si algo en el repositorio lo contradice, gana este documento. Ver
-> `docs/00_ESTADO_Y_OBSOLESCENCIA.md` para el mapa de lo retirado.
+> `docs/00_ESTADO_Y_OBSOLESCENCIA.md` para el mapa de lo retirado y
+> `docs/05_CONTRATO_VISUAL.md` para qué figura debe cada hipótesis.
 
 Existe por una razón concreta: ahora mismo hay varias hipótesis atractivas a la vez, y
 ese es exactamente el momento de mayor riesgo. El peligro no es quedarse sin ideas — es
@@ -26,8 +27,8 @@ enamorarse de una antes de correr el VCF.
       Coding hit     Hidden hit     Phenotype
      SNV / indel     noncoding/SV    residual
           │              │              │
-          │         AlphaGenome        Bartter?
-          │         + SV calling        other?
+          │       ★ ALPHAGENOME ★      Bartter?
+          │        + SV calling          other?
           │              │              │
           └──────────────┼──────────────┘
                          ▼
@@ -264,3 +265,15 @@ presentación: no la idea que sobrevivió, sino todas las que matamos y por qué
 Cada muerte se registra en `docs/DECISIONS.md` con la evidencia que la causó. Un jurado
 distingue perfectamente entre un equipo que encontró una respuesta y un equipo que además
 supo descartar las alternativas — y solo el segundo es defendible.
+
+---
+
+## Regla de entrega
+
+Ningún análisis importante termina solo en CSV o Markdown. Cada hipótesis acaba en **una
+figura interpretable, una conclusión, una incertidumbre y un falsificador**.
+
+El contrato figura por figura, la estructura narrativa obligatoria y las reglas de diseño
+están en `docs/05_CONTRATO_VISUAL.md`. Es condicional: la mayoría de estas ramas va a
+morir, y nadie construye una figura para una rama muerta — la muerte alimenta el
+cementerio de hipótesis.
