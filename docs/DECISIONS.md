@@ -12,6 +12,8 @@ Ver `CLAUDE.md`, Regla Dura 6 y Flujo de trabajo.
 | 2026-08-29 | Arquitectura | Que el ranking de AlphaGenome aguantara revisión | Que el umbral del ~50 % resultara ser BubR1-específico y no universal | **Lo era.** Dosis residual pasa a condicional; segundo alelo oculto sube a prioridad general | `docs/04_ARQUITECTURA_MAESTRA.md` |
 | 2026-08-29 | Fase 1 — QC de L001 | Reads de 150 bp, R1/R2 balanceados, profundidad en rango 45-60x | Longitud variable (indicaria recorte previo), desbalance R1/R2, calidad baja | **149 bp**, varianza cero en 136 586 642 reads; R1==R2 exacto; 52,5x bruta / ~43x efectiva; 92,9 % ≥ Q30 | Datos aptos para Fase 1. Ver `docs/QC_L001.md` |
 | 2026-08-29 | Fase 1 — PCR-free | Que el QC resolviera si la librería es PCR-free | Que el adaptador no discriminara entre kits | **No discrimina.** Tagmentación confirmada, pero `Illumina DNA Prep` y `Illumina DNA PCR-Free` comparten adaptador | Pregunta reformulada para el email: *¿cuál de los dos kits?* |
+| 2026-08-29 | Fase 0.2 — cabecera VCF | Ver preregistro de 6 predicciones | Cabecera sin build ni caller declarados | **5 de 6 acertadas.** GRCh38, 1 muestra, sin anotar, `AD` presente, no gVCF. Sentieon Haplotyper; 5 012 204 variantes | Las tres rutas de búsqueda quedan desbloqueadas. Ver `docs/VCF_HEADER.md` |
+| 2026-08-29 | Fase 0.2 — fase física | **Predije que NO habría `PS`/`PGT`/`PID`** | Que los campos existieran y con alcance útil | **Fallé en la letra: `PGT`/`PID` existen.** Pero al medir: bloque máximo 288 pb, mediana 7 pb, cero bloques ≥ 300 pb | **El techo `unphased ≠ trans` sigue en pie.** Solo sirve para corregir MNV. No se reescribe §4.2 |
 | 2026-08-29 | Panel renal | Que MAGED2 fuera el primer candidato por el eje perinatal | Que el fenotipo MAGED2 fuera transitorio y la nefrocalcinosis persistente | **Es transitorio** (PMID 27120771). Si persiste hoy, MAGED2 baja y suben SLC12A1/KCNJ1/CLCNKB/BSND | `config/panels/nephrocalcinosis.txt` |
 
 ## Pendiente de preregistro
@@ -43,3 +45,24 @@ hay fase. Si el caller dejó bloques de fase física, parte de ese techo se leva
 
 **Falsificador de la fase entera:** si la cabecera no declara build ni caller, no se puede
 confiar en nada aguas abajo y hay que pedirlo al laboratorio antes de seguir.
+
+### Resultado — la sorpresa, documentada sin reescribir la predicción
+
+La predicción #5 **falló en la letra y acertó en el fondo**, y merece quedar registrada así
+en lugar de apuntarse como acierto.
+
+Escribí que no habría campos de fase física. Los hay: `PGT` y `PID`. Al verlos, la lectura
+inmediata fue que el techo del `unphased ≠ trans` se levantaba en parte. **Se midió el
+alcance real antes de escribirlo como hallazgo, y no se levanta:** el bloque de fase más
+largo de todo el genoma mide **288 pb** y la mediana son **7 pb**; no hay ni un solo bloque
+de 300 pb o más.
+
+Para heterocigosis compuesta eso es inservible — el bloque máximo cubre el 0,44 % de
+`BUB1B`. Sirve para una cosa concreta y estrecha: corregir variantes multinucleotídicas,
+donde dos SNV en el mismo codón dan un aminoácido distinto según la fase.
+
+**No se reescribe `docs/03_ALPHAGENOME_ASSESSMENT.md` §4.2.** El techo se mantiene.
+
+Nota de validación cruzada: un alcance máximo de 288 pb con reads de 149 pb encaja con
+fragmentos de ~300 pb, coherente con la distribución de insertos estimada en el QC de L001
+(`docs/QC_L001.md`). Dos medidas independientes que concuerdan.
