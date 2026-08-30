@@ -16,7 +16,30 @@ Ver `CLAUDE.md`, Regla Dura 6 y Flujo de trabajo.
 
 ## Pendiente de preregistro
 
-- **Fase 0.2** — qué esperamos encontrar en la cabecera del VCF y por qué importa cada campo. Preregistrar **antes** de mirar. *Siguiente paso inmediato.*
+~~- **Fase 0.2**~~ — **preregistrada 2026-08-29, antes de abrir el fichero.** Ver abajo.
 - **Fase 1** — auditoría HPO Residual. Tabla de decisión ya preregistrada en el plan §1.3.
 - **Fase 3** — predicción de la huella de mosaicismo. Ya preregistrada en el brief §6.4.
 - **Fase 7** — simulación del índice de dispersión contra método estándar de mCA, a fracciones celulares de 1/2/5/10/20 %. Preregistrada en `docs/04_ARQUITECTURA_MAESTRA.md` §2: si pierde, se reporta que perdió y se usa el método estándar.
+
+---
+
+## Preregistro — Fase 0.2, auditoría de la cabecera del VCF
+
+Escrito **antes** de abrir el fichero (301 MB en `Downloads`). Solo cabecera: ninguna
+variante del paciente se mira en este paso.
+
+| # | Qué espero | Por qué importa | Qué cambia si me equivoco |
+|---|---|---|---|
+| 1 | Build **GRCh38** | El brief lo asume y los paneles están en esas coordenadas | Si es GRCh37, hay que remapear los dos paneles y toda coordenada del proyecto |
+| 2 | **Una sola muestra** | Sin padres, la fase no se resuelve por trío | Si hubiera más de una, cambia todo el planteamiento del §9.1 |
+| 3 | **Sin anotación previa** (VCF crudo del caller) | Determina si la Fase 2.2 empieza de cero | Si trae `CSQ`/`ANN`/`dbNSFP`/gnomAD, la Fase 2.2 se acorta mucho |
+| 4 | `FORMAT` con `GT`, `AD`, `DP`, `GQ`, `PL` | `AD` es imprescindible para balance alélico: sostiene heterocigosis compuesta y la rama de mosaicismo | **Sin `AD` se cae la confianza en compound-het y en §6** |
+| 5 | **Sin `PS`/`PGT`/`PID`** | Son los campos de fase física | **Si están, la pregunta cis/trans deja de ser irresoluble y pasa a parcialmente resoluble.** Sería el hallazgo de mayor valor de esta fase |
+| 6 | No es un gVCF | Un gVCF con `<NON_REF>` necesita parseo distinto | Cambia el pipeline de lectura entero |
+
+**La predicción que más quiero ver fallada es la #5.** Todo el techo que le pusimos al
+segundo alelo (`unphased ≠ trans`, `docs/03_ALPHAGENOME_ASSESSMENT.md` §4.2) asume que no
+hay fase. Si el caller dejó bloques de fase física, parte de ese techo se levanta.
+
+**Falsificador de la fase entera:** si la cabecera no declara build ni caller, no se puede
+confiar en nada aguas abajo y hay que pedirlo al laboratorio antes de seguir.
