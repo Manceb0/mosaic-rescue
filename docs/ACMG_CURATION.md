@@ -31,7 +31,9 @@ El criterio no se aplica por ser `stop_gained`. Hay que pasar el árbol de decis
 **última unión exón-exón**, no respecto al número de exón.
 
 Se reconstruyó la estructura del transcrito MANE sondeando la región con variantes
-sintéticas sobre la secuencia de referencia del propio caché (offline, resolución 20 pb):
+sintéticas sobre la secuencia de referencia del propio caché — **a resolución de una base**,
+y usando el mismo *release* de VEP que se empleará en todo el análisis, así que las
+coordenadas salen de los metadatos del propio transcrito y no de una fuente paralela:
 
 ```
 exón 17  ← aquí está el codón de parada prematuro
@@ -46,9 +48,12 @@ exón 23  ← aquí está la missense
 
 | | |
 |---|---|
-| Distancia del PTC a la última unión exón-exón | **≈ 750 nt aguas arriba** |
+| Última base del exón 22 | CDS **2957** |
+| Primera base del exón 23 | CDS **2958** |
+| Posición del PTC | CDS **2210** |
+| **Distancia del PTC a la última unión exón-exón** | **748 nt aguas arriba** |
 | Umbral de la regla | 50–55 nt |
-| Margen | **~14×** |
+| Margen | **13,6×** |
 
 **NMD predicho con holgura.** Ahora es un número, no un «exón interno, seguro que sí».
 
@@ -100,6 +105,27 @@ direccional**, no un `PP3` asignable.
 
 **Veredicto:** `PP3` **PENDIENTE**. Requiere REVEL, BayesDel, MutPred2 o VEST4 — ninguno
 disponible offline en el caché actual.
+
+### Umbrales de REVEL — **preregistrados antes de ver el score**
+
+Congelados aquí para que la asignación de fuerza no se elija después de conocer el
+resultado. Umbrales calibrados de ClinGen:
+
+| Rango de REVEL | Criterio | Puntos |
+|---|---|---|
+| **≥ 0,932** | `PP3_Strong` | **4** |
+| 0,773 – 0,931 | `PP3_Moderate` | 2 |
+| 0,644 – 0,772 | `PP3_Supporting` | 1 |
+| < 0,644 | **Ningún `PP3`** | 0 |
+
+`BP4` tiene sus propios umbrales calibrados en el extremo bajo, en la misma publicación.
+
+**Reglas de uso, también congeladas:**
+
+1. **Una sola aplicación.** REVEL sustituye a SIFT y PolyPhen; **no se suman**.
+2. La fuerza sale del umbral, no de que «tres herramientas coincidan».
+3. Si REVEL cae por debajo de 0,644, `PP3` **no se aplica** — y se registra como tal en
+   lugar de buscar otro predictor que dé el resultado deseado.
 
 ---
 
@@ -180,18 +206,51 @@ aporta es integridad conformacional (`docs/CANDIDATES_PASS2.md`).
 
 ## Qué añade más valor ahora
 
-La tabla lo señala sin ambigüedad. Los dos criterios que moverían la missense de VUS son:
+### Corrección — «ninguno de los tres cambia la categoría» era falso
+
+Una versión anterior afirmó que los criterios pendientes refinan pero **no** cambian la
+categoría de la missense. **Es incorrecto**: individualmente probablemente no, pero
+**combinados sí**.
+
+| Escenario | Puntos | Categoría |
+|---|---|---|
+| `PM2_Supporting` sola | 1 | VUS |
+| `+ PP3_Moderate` | 3 | VUS |
+| `+ PP3_Strong` | 5 | VUS |
+| **`PM2_Supporting` + `PP3_Strong` + `PM1_Moderate`** | **7** | **Likely Pathogenic** |
+
+Es decir: **la evidencia pendiente sí puede sacar la missense de VUS sin resolver la fase.**
+Eso cambia la prioridad de las descargas — dejan de ser refinamiento cosmético.
+
+Pero con una condición dura: **`PM1` no se gana por «está en el stability domain»**. Hay
+que demostrar que es una región funcional crítica bien establecida y que no estamos viendo
+simplemente una zona con mezcla de benignas y patogénicas. Si el mapa de ClinVar muestra esa
+mezcla, `PM1` no se aplica y el escenario de 7 puntos no ocurre.
+
+### `PM5` — posibilidad que el mapa de ClinVar puede revelar
+
+Si existe **otra variante `P`/`LP` en el mismo residuo** con una sustitución distinta,
+aplica `PM5` (Moderado, 2 puntos). Es un criterio que no habíamos considerado y que sale
+del mismo VCF de ClinVar que hace falta para `PM1`.
+
+### Lo que sigue siendo insustituible
 
 1. **Resolver `trans`** → desbloquea `PM3`. Genotipos parentales o lectura larga dirigida.
 2. **Demostrar efecto variante-específico sobre abundancia o estabilidad de BUBR1** →
    habilita `PS3`.
 
-Todo lo demás —`PP3` calibrado, `PM1` por distribución— refina, pero no cambia la categoría.
+Estos dos no los sustituye ninguna descarga, y son los que llevarían el conjunto de
+«candidato fuerte» a «mecanismo establecido».
 
 ### Bloqueos que requieren descarga
 
-| Necesidad | Para qué | Estado |
-|---|---|---|
-| REVEL / BayesDel / MutPred2 / VEST4 | `PP3` calibrado | No disponible offline |
-| VCF completo de ClinVar | `PM1` por distribución + figura del mapa proteico | No descargado |
-| Cobertura y calidad de gnomAD en la posición | Auditar `PM2` del truncante | No disponible offline |
+Orden de prioridad, decidido:
+
+| # | Necesidad | Para qué | Puede cambiar categoría |
+|---|---|---|---|
+| **1** | **REVEL** | `PP3` — Supporting, Moderate, Strong o nada | Sí, en combinación |
+| **2** | **VCF de ClinVar** | `PM1` por distribución, `PM5` por residuo, mapa proteico | Sí, en combinación |
+| **3** | Cobertura y calidad de gnomAD | Auditar `PM2_Supporting` del truncante | No, pero lo asegura |
+
+El tercero cierra el truncante: su frecuencia concentrada en una sola población merece
+comprobar cobertura antes de dar `PM2` por bueno.
