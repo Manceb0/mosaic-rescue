@@ -103,8 +103,7 @@ mayoría de herramientas.
 Lo que tenemos hoy (`deleterious` 0,01 y `probably_damaging` 0,997) es **una señal
 direccional**, no un `PP3` asignable.
 
-**Veredicto:** `PP3` **PENDIENTE**. Requiere REVEL, BayesDel, MutPred2 o VEST4 — ninguno
-disponible offline en el caché actual.
+**Veredicto:** `PP3` **NO SE APLICA.** Ver el resultado abajo.
 
 ### Umbrales de REVEL — **preregistrados antes de ver el score**
 
@@ -126,6 +125,35 @@ resultado. Umbrales calibrados de ClinGen:
 2. La fuerza sale del umbral, no de que «tres herramientas coincidan».
 3. Si REVEL cae por debajo de 0,644, `PP3` **no se aplica** — y se registra como tal en
    lugar de buscar otro predictor que dé el resultado deseado.
+
+### Resultado — `REVEL = 0,472`
+
+REVEL v1.3 completo, descargado y consultado **en local**. La variante está presente en la
+tabla, sobre el transcrito MANE.
+
+| | |
+|---|---|
+| REVEL | **0,472** |
+| Umbral mínimo para `PP3_Supporting` | 0,644 |
+| **Veredicto** | **`PP3` NO SE APLICA** |
+
+**Tampoco alcanza `BP4`:** los umbrales de evidencia benigna están en el extremo bajo
+(≈ ≤0,29 para Supporting), y 0,472 queda por encima. **REVEL es, sencillamente, no
+informativo para esta variante.**
+
+### Por qué esto valida la regla de ClinGen
+
+SIFT dio `deleterious` (0,01) y PolyPhen-2 `probably_damaging` (0,997). Las dos apuntaban
+con fuerza a patogenicidad. **El predictor calibrado dice que no hay evidencia asignable en
+ninguna dirección.**
+
+Si hubiéramos sumado SIFT y PolyPhen como dos evidencias, habríamos asignado un `PP3`
+—probablemente fuerte— que **no está justificado**. Es exactamente el error que la
+recomendación de ClinGen previene, y aquí se ve el tamaño del error evitado.
+
+El preregistro también hizo su trabajo: los umbrales estaban congelados y firmados antes de
+ver el número, así que no hubo margen para reinterpretarlos ni para salir a buscar otro
+predictor más complaciente.
 
 ---
 
@@ -217,10 +245,26 @@ categoría de la missense. **Es incorrecto**: individualmente probablemente no, 
 | `PM2_Supporting` sola | 1 | VUS |
 | `+ PP3_Moderate` | 3 | VUS |
 | `+ PP3_Strong` | 5 | VUS |
-| **`PM2_Supporting` + `PP3_Strong` + `PM1_Moderate`** | **7** | **Likely Pathogenic** |
+| **`PM2` + `PP3_Strong` + `PM1_Moderate`** | **7** | **Likely Pathogenic** |
 
-Es decir: **la evidencia pendiente sí puede sacar la missense de VUS sin resolver la fase.**
-Eso cambia la prioridad de las descargas — dejan de ser refinamiento cosmético.
+Es decir: la evidencia pendiente **sí podía** sacar la missense de VUS sin resolver la fase.
+Eso cambiaba la prioridad de las descargas.
+
+> ### ⚠ Ese escenario está muerto: `REVEL = 0,472`, `PP3` no aplica
+>
+> Con `PP3` fuera, el techo alcanzable sin fase ni función es:
+>
+> | Escenario máximo restante | Puntos | Categoría |
+> |---|---|---|
+> | `PM2_Supporting` (1) + `PM1_Moderate` (2) | 3 | **VUS** |
+> | + `PM5_Moderate` (2), si existiera otra P/LP en el residuo | **5** | **VUS** |
+>
+> El rango VUS llega hasta 5 puntos. **Ni siquiera el mejor caso de ClinVar saca la missense
+> de VUS.**
+>
+> Conclusión, y es la que ordena el trabajo restante: **solo la fase (`PM3`) o un ensayo
+> funcional variante-específico (`PS3`) pueden mover esta variante.** Todo lo demás refina
+> un VUS que seguirá siendo VUS.
 
 Pero con una condición dura: **`PM1` no se gana por «está en el stability domain»**. Hay
 que demostrar que es una región funcional crítica bien establecida y que no estamos viendo
