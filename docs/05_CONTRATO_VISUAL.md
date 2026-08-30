@@ -96,6 +96,9 @@ Lo que queremos poder enseñar no es *«usamos AlphaGenome»*, sino:
 
 ### 3.1 Figura A — Pistas REF vs ALT
 
+> **Sustituida por la versión de tres capas del §12.** Se conserva aquí el análisis de
+> riesgo, que sigue aplicando íntegro.
+
 ```
 POSICIÓN GENÓMICA ─────────────────────────────────────────>
 Gen         ─────[exón]──────[exón]────────[exón]──────
@@ -177,19 +180,30 @@ NMD / pérdida de proteína                     AlphaGenome
      │                                              │
      └──────────────────────┬───────────────────────┘
                             ▼
-        dos candidatos independientes en el mismo gen
-              — configuración en trans NO demostrada —
+      dos variantes candidatas en el mismo gen
+        configuración en trans NO establecida
+   no se puede afirmar mecanismo recesivo bialélico
 ```
 
 > **Corrección sobre el texto de cierre.** La versión original terminaba en *«convergent
-> gene disruption»*. Esa frase **afirma trans sin querer**: si las dos variantes están en
-> cis, un alelo queda intacto y no hay disrupción bialélica en absoluto — el gen funciona.
-> «Convergen en romper el gen» es precisamente la conclusión que la fase no resuelta no
-> permite.
+> gene disruption»*. Esa frase **afirma trans sin querer**: en cis no queda demostrada la
+> disrupción bialélica, que es la base del mecanismo recesivo que la figura insinúa.
 >
-> El cierre correcto describe lo que se observa, no lo que implicaría: *dos candidatos
-> independientes en el mismo gen, fase no resuelta*. Poner `PHASE UNRESOLVED` arriba y
-> «convergent disruption» abajo se contradice, y un jurado atento lo ve.
+> Formulación correcta, en inglés para la presentación:
+>
+> > *Two candidate variants in the same gene; phase unresolved. A recessive biallelic
+> > mechanism cannot be claimed unless trans configuration is established or independently
+> > supported.*
+>
+> **Dos precisiones sobre la redacción, ambas importantes:**
+>
+> 1. **No decir «el gen funciona» si están en cis.** Eso presupone haplosuficiencia, que
+>    depende del gen, de la dosis y del mecanismo. En genes de MVA hay portadores
+>    heterocigotos con fenotipos celulares sutiles descritos — precisamente el gradiente
+>    de BubR1 del brief §3.2 muestra PCS por encima del umbral de aneuploidía. Lo único
+>    afirmable en cis es que **no hemos demostrado disrupción bialélica**.
+> 2. **«dos variantes candidatas», no «dos candidatos independientes».** «Independiente»
+>    se lee como independencia alélica o haplotípica, que es justo lo desconocido.
 >
 > Esto no debilita la figura. La hace defendible.
 
@@ -216,6 +230,8 @@ alelo muere, esta es la figura que queda, y sigue mereciendo estar en la present
 
 ## §4. Reglas de diseño transversales
 
+0. **Toda figura declara su procedencia** — `MEASURED` / `DERIVED` / `PREDICTED` /
+   `EXTERNAL`, en una esquina del panel. Ver §11. Es la regla más importante de esta lista.
 1. **Nada de radares.** Seis ejes en escalas no comparables codifican magnitud como área y
    exageran diferencias. Barras divergentes o heatmap por modalidad
    (`docs/03_ALPHAGENOME_ASSESSMENT.md` §4.4).
@@ -252,20 +268,22 @@ construir. Si eso no aparece, la figura no se hace y la rama pasa al cementerio.
 
 | # | Figura | Nivel | Qué la alimenta | Mensaje | Depende de |
 |---|---|---|---|---|---|
-| 1 | **From one genome to one mechanism** | Hero | El propio pipeline | La historia completa: genoma → mecanismo → hipótesis → filtro de seguridad | Nada. **Se puede construir ya** |
+| 1 | **From one genome to one mechanism** | Hero | El propio pipeline | La historia completa: genoma → mecanismo → hipótesis → filtro de seguridad | **Nada. Única figura sin dependencia de datos** |
 | 2 | **AlphaGenome REF vs ALT + DELTA** | Hero + científico | Variante candidata no codificante | Esta base cambia este comportamiento molecular | Que exista candidato no codificante |
 | 3 | Mechanism Fingerprint Card | Científico | Salidas de AlphaGenome | Resumen legible del mecanismo predicho | Ídem #2 |
 | 4 | Hidden Second Allele | Hero + científico | Alelo A + candidato B | Cómo se buscó lo que el pipeline estándar no ve | Que aparezca alelo huérfano |
-| 5 | Mapa de fenotipo mixto | Científico + decisión | HPO + paneles | El caso no es lineal | Nada. Se puede construir ya |
+| 5 | Mapa de fenotipo mixto | Científico + decisión | HPO + paneles | El caso no es lineal | Fenotipo clínico real + literatura |
 | 6 | MitoRead | Científico | mtDNA-CN vs controles | Si hay señal mitocondrial anómala | Controles compatibles |
 | 7 | Mosaic fingerprint | Científico | BAF/LRR por cromosoma | Si el bulk conserva firma de mosaicismo | Alineamiento |
 | 8 | Curva de sensibilidad | Científico | Simulación 1/2/5/10/20 % | Si nuestro estadístico gana al baseline | Simulación hecha |
 | 9 | Grafo mecanismo → fármaco | Científico | Mecanismo causal | Por qué **ese** fármaco | Mecanismo establecido |
 | 10 | Plano rescate vs peligro | Decisión | Rúbrica de rescate | Si mejora sin favorecer CIN | Candidato terapéutico |
-| 11 | **Hypothesis Graveyard** | Decisión | `docs/DECISIONS.md` | Qué murió y por qué | Nada. **Crece solo** |
+| 11 | **Hypothesis Graveyard** | Decisión | `docs/DECISIONS.md` | Qué murió y por qué | Decisiones y evidencia ya registradas |
 
-Las tres que no dependen de nada —#1, #5 y #11— son las que se pueden empezar hoy. Las
-demás esperan a los datos.
+**Construibles antes del análisis del VCF: #1, #5 y #11.** Es la etiqueta exacta, y no
+«no dependen de datos» — solo la #1 es realmente independiente de todo. La #5 necesita el
+fenotipo clínico real y la literatura; la #11 necesita las decisiones y la evidencia que
+ya están registradas. Las otras ocho esperan a los datos del paciente.
 
 ### 6.1 La adición del panel DELTA
 
@@ -287,10 +305,9 @@ Convergent disruption of the same gene
 (phase unresolved, functional convergence supported)
 ```
 
-**Sigue siendo la afirmación que la fase no permite**, y el paréntesis no la rescata: si
-las dos variantes están en *cis*, el otro alelo queda intacto, el gen funciona, y **no hay
-convergencia de ninguna clase**. «Convergencia funcional apoyada» describe justo lo que no
-se puede apoyar sin resolver fase.
+**Sigue siendo la afirmación que la fase no permite**, y el paréntesis no la rescata:
+en *cis* no queda establecida la disrupción bialélica, y «convergencia funcional apoyada»
+describe exactamente lo que no se puede apoyar sin resolver fase.
 
 Cierre correcto:
 
@@ -298,10 +315,14 @@ Cierre correcto:
                     PHASE UNRESOLVED
               ══════════════════════════
 
-    dos candidatos funcionales independientes en el mismo gen
-      cada uno con evidencia de disrupción por separado
-        configuración en trans NO demostrada
+      dos variantes candidatas en el mismo gen
+   cada una con evidencia de disrupción por separado
+        configuración en trans NO establecida
 ```
+
+> *Two candidate variants in the same gene; phase unresolved. A recessive biallelic
+> mechanism cannot be claimed unless trans configuration is established or independently
+> supported.*
 
 Es igual de impactante y no se cae con la primera pregunta del jurado. Un evaluador que
 conozca genética clínica va a preguntar por la fase; que la figura se le adelante juega a
@@ -382,3 +403,92 @@ Verificado a fecha de hoy: las cinco entradas propuestas tienen acta de defunci�
 La cuarta es la mejor lápida del conjunto: una idea que era *elegante* —rescatar el modo de
 fallo de `CEP57` anclando extremos menos— y que murió por el mecanismo mismo que proponía.
 Eso es exactamente lo que el jurado tiene que ver.
+
+---
+
+## §11. Etiqueta de procedencia — obligatoria en toda figura
+
+Regla universal, en una esquina de cada panel. Es ortogonal al nivel `L0`–`L5`: el nivel
+dice **cuán fuerte** es la evidencia, la etiqueta dice **de dónde sale**.
+
+| Etiqueta | Qué es | Ejemplos en este proyecto |
+|---|---|---|
+| `MEASURED` | Sale directamente del instrumento | Calidades Phred, profundidad, longitud de read, GC |
+| `DERIVED` | Calculado por nosotros a partir de lo medido | mtDNA-CN, BAF, LRR, ranking de candidatos, índice de dispersión |
+| `PREDICTED` | Salida de un modelo. No se midió | AlphaGenome (expresión, splicing, cromatina), SpliceAI, CADD |
+| `EXTERNAL` | Viene de literatura o bases de datos | Rescate funcional publicado, gradiente de BubR1, frecuencias de gnomAD |
+
+Parece un detalle menor y no lo es: es lo que separa un proyecto que sabe qué está
+enseñando de uno que mezcla medición y predicción en el mismo panel sin darse cuenta.
+Y resuelve de raíz el riesgo de §3.1 — una figura de AlphaGenome marcada `PREDICTED` en
+la esquina ya no se puede confundir con un browser de RNA-seq.
+
+**Una figura con dos procedencias lleva las dos etiquetas, por panel.** Si un panel mezcla
+`MEASURED` y `PREDICTED` en la misma pista, la figura está mal construida: se separan.
+
+---
+
+## §12. La figura de AlphaGenome, versión definitiva — tres capas
+
+Sustituye a la de §3.1. El resultado que interesa no es la pista REF ni la ALT: es
+**qué cambió al introducir la variante**.
+
+```
+┌─────────────────────────────────────────────── PREDICTED ──┐
+│  ALPHAGENOME                                               │
+│  Gene:     X                                               │
+│  Variant:  candidate B                                     │
+│  Context:  kidney-relevant / blood / fibroblast-like       │
+│  Window:   1 Mb                                            │
+├────────────────────────────────────────────────────────────┤
+│  RNA                                                       │
+│   REF  ──────────────────████████████──                    │
+│   ALT  ─────────────██████──────────────                   │
+│   Δ                        ↓                               │
+│                                                            │
+│  Splicing                                                  │
+│   REF  exon 2 ─────────────── exon 3                       │
+│   ALT  exon 2 ───┐                                         │
+│                  └── cryptic junction ↑                    │
+│   Δ                        ↑ cryptic / ↓ canonical         │
+│                                                            │
+│  Accessibility                                             │
+│   REF  ███████████████                                     │
+│   ALT  █████████░░░░░░                                     │
+│   Δ                    ↓                                   │
+├────────────────────────────────────────────────────────────┤
+│  Interpretation:  predicted splice/regulatory disruption    │
+│  Status:          candidate mechanism —                     │
+│                   not experimentally demonstrated           │
+└────────────────────────────────────────────────────────────┘
+```
+
+**Dos elementos que no son opcionales:**
+
+1. **La capa Δ.** Es donde vive el resultado. Dos pistas casi idénticas con una diferencia
+   local se comparan mal a ojo; la resta la hace evidente. Y un delta se parece mucho menos
+   a una captura de browser que dos pistas apiladas, así que reduce el riesgo de §3.1 en
+   vez de agravarlo.
+2. **El contexto declarado.** Tejido, tipo celular y ventana. Una predicción de expresión
+   sin decir en qué contexto se predijo no es interpretable — y en este caso importa
+   especialmente, porque el fenotipo tiene eje renal y eje hematopoyético, y el modelo no
+   predice lo mismo en cada uno.
+
+---
+
+## §13. Plan B para cada slide, no solo para el 5
+
+Generalización de la columna de respaldo del §8. **Un resultado negativo no elimina un
+slide: le cambia el título.**
+
+| Rama | Si sale positiva | Si sale negativa |
+|---|---|---|
+| Segundo alelo / AlphaGenome | *This single base rewires this molecular output* | *The strongest-looking noncoding candidate failed functional prediction* |
+| MitoRead | *An orthogonal mitochondrial signal supports the branch* | *A mechanism we expected — and the patient's genome did not support* |
+| Bartter / fenotipo residual | *Congenital nephrocalcinosis opened a second diagnosis* | *Congenital nephrocalcinosis triggered a second-diagnosis search. The genome did not support it* |
+| Mosaic fingerprint | *The bulk genome retains a mosaic signature* | *We looked for a mosaic signature in bulk WGS and report what we could not resolve* |
+| Índice de dispersión | *Our statistic beats the standard method* | *Our statistic lost to the standard method, and here is the simulation that showed it* |
+
+Esto es lo que hace que el pitch **deje de depender de tener suerte**. Cada rama produce
+material presentable en los dos desenlaces, y el conjunto de los negativos es el
+cementerio — que es, él solo, una de las tres figuras hero.
