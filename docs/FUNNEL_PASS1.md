@@ -78,8 +78,13 @@ De 25 genes del panel, con variantes anotadas en 22.
 
 ### `BUB1B` — dos candidatos, y el patrón coincide con el publicado
 
-En `BUB1B` aparecen **dos variantes, ambas `PASS`, ambas en heterocigosis, ambas con
-balance alélico limpio y ninguna presente en dbSNP**:
+> **⚠ CORREGIDO EN PASADA 2.** Esta sección afirmaba que ninguna de las dos estaba en
+> dbSNP. **Es falso.** Se dedujo de que la columna `ID` del VCF venía vacía, que solo
+> indica que el caller no anotó contra dbSNP. El alelo truncante **sí** está en dbSNP y
+> además está clasificado como patogénico en ClinVar. Ver `docs/CANDIDATES_PASS2.md`.
+
+En `BUB1B` aparecen **dos variantes, ambas `PASS`, ambas en heterocigosis y ambas con
+balance alélico limpio**:
 
 - una **truncante** sobre el transcrito MANE;
 - una **missense** en la región C-terminal, la que contiene el dominio quinasa.
@@ -108,8 +113,7 @@ recambio proteico del mutante missense**.
 
 Falta además, y es pasada 2:
 
-1. **Frecuencia poblacional (gnomAD).** La ausencia de rsID sugiere rareza, pero no la
-   demuestra: depende de la versión de dbSNP con que anotó el caller.
+1. ~~**Frecuencia poblacional (gnomAD).**~~ **Resuelto en pasada 2.**
 2. **ClinVar** para ambas.
 3. **Predicción de patogenicidad** para la missense (CADD, REVEL).
 4. **Predicción de NMD** para la truncante: determina si el alelo produce proteína
@@ -130,10 +134,19 @@ proteína residual (brief §3.2) pasa de ser una nota a ser la pregunta operativ
 
 ## Carril renal
 
-Dos HIGH, y las dos ilustran por qué el filtro de frecuencia es imprescindible: ambas son
-`start_lost` **con rsID conocido**, en `ATP6V1B1` y `VDR`. Un `start_lost` en un
-polimorfismo frecuente es exactamente el falso positivo que `IMPACT=HIGH` produce cuando se
-lee sin frecuencia poblacional.
+Dos HIGH, ambas `start_lost`, en `ATP6V1B1` y `VDR`.
+
+> **Corrección a la primera versión de este documento**, que las llamó basura por tener
+> rsID. **Eso es un error de razonamiento.** Un rsID significa únicamente que la variante
+> está **catalogada**: puede ser común y benigna, rara, patogénica o de interpretación
+> conflictiva. Estar en dbSNP no descarta nada.
+>
+> Lo que decide son **frecuencia poblacional + ClinVar + consecuencia**, y las tres son
+> pasada 2. Hasta entonces estas dos quedan **sin evaluar**, no descartadas.
+
+Simétricamente, la ausencia de rsID en las dos de `BUB1B` **sugiere** rareza pero no la
+demuestra: depende de la versión de dbSNP con que anotó el caller. Las dos direcciones del
+argumento son igual de débiles sin gnomAD.
 
 `CLCNKB` (5 MODERATE) y `CLCNKA` (3) son los que merecen mirada en pasada 2. **`MAGED2`:
 17 variantes, ninguna HIGH ni MODERATE** — consistente con la corrección de prioridad de
