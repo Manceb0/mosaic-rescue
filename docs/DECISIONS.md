@@ -23,7 +23,7 @@ Ver `CLAUDE.md`, Regla Dura 6 y Flujo de trabajo.
 ~~- **Fase 0.2**~~ — **preregistrada 2026-08-29, antes de abrir el fichero.** Ver abajo.
 - **Fase 1** — auditoría HPO Residual. Tabla de decisión ya preregistrada en el plan §1.3.
 - **Fase 3** — predicción de la huella de mosaicismo. Ya preregistrada en el brief §6.4.
-- **Anotación** — cuello de botella único de los tres carriles. Debe ser local y offline. Preregistrar qué fracción de las 5 M esperamos que sobreviva a «rara + consecuencia funcional» **antes** de ejecutarla.
+~~- **Anotación**~~ — **preregistrada 2026-08-29.** Ver abajo.
 - **ROH** — análisis de tramos de homocigosis. El ratio het/hom de 1,61 no muestra consanguinidad grosera, pero es un proxy pobre y MVA es recesiva.
 - **Fase 7** — simulación del índice de dispersión contra método estándar de mCA, a fracciones celulares de 1/2/5/10/20 %. Preregistrada en `docs/04_ARQUITECTURA_MAESTRA.md` §2: si pierde, se reporta que perdió y se usa el método estándar.
 
@@ -70,3 +70,64 @@ donde dos SNV en el mismo codón dan un aminoácido distinto según la fase.
 Nota de validación cruzada: un alcance máximo de 288 pb con reads de 149 pb encaja con
 fragmentos de ~300 pb, coherente con la distribución de insertos estimada en el QC de L001
 (`docs/QC_L001.md`). Dos medidas independientes que concuerdan.
+
+---
+
+## Preregistro — Fase 2.1, anotación de consecuencia con VEP
+
+Escrito **antes** de ejecutar VEP. Decisión de herramienta: **VEP offline con caché local**,
+vía Docker. Modo `--offline --cache`, nunca `--database`: ninguna variante del paciente sale
+de la máquina.
+
+### Regla de las dos pasadas
+
+**Pasada 1 — mínima, para construir el funnel.** Solo lo necesario para responder *qué
+variante afecta a qué gen y de qué forma*: gen, transcrito, consecuencia, canónico, MANE,
+biotipo, exón/intrón, consecuencia codificante, posición proteica, región de splicing,
+clase de variante. Se conservan `FILTER`, `GT`, `AD`, `DP`, `GQ`, `PGT`, `PID`.
+
+**Prohibido `--everything` sobre las 5 012 204.** Anotación máxima sobre el genoma completo
+produce un fichero inmanejable y ninguna decisión mejor.
+
+**Pasada 2 — solo sobre la shortlist.** gnomAD, ClinVar, CADD, SpliceAI, literatura, y
+AlphaGenome únicamente sobre candidatos no codificantes, intrónicos profundos o de splicing
+que lo justifiquen.
+
+El orden importa y no es negociable:
+`5 M → VEP → shortlist → AlphaGenome`, nunca `5 M → AlphaGenome`.
+
+### Qué espero encontrar
+
+| # | Predicción | Qué la falsaría | Qué cambia si falla |
+|---|---|---|---|
+| 1 | **~1–2 %** de las 5 M con consecuencia codificante (~50–100 k) | Menos de 20 k o más de 200 k | Un número muy distinto sugiere anotación mal configurada, no biología |
+| 2 | La inmensa mayoría intergénicas e intrónicas | — | — |
+| 3 | **~10–15 k** variantes codificantes raras tras filtrar por frecuencia | — | Requiere gnomAD, que es pasada 2 |
+| 4 | **0 o 1** variantes de alto impacto en el panel MVA | ≥2 de alto impacto en un gen MVA | **Sería el mejor desenlace posible**: heterocigosis compuesta candidata |
+| 5 | **0** variantes de alto impacto en el panel renal | ≥1 | Elevaría la rama del fenotipo mixto de condicional a activa |
+| 6 | El carril genome-wide producirá **más ruido que señal** sin filtro de frecuencia | — | Confirma que gnomAD es imprescindible en pasada 2 |
+
+**La predicción que más quiero ver fallada es la #4.** Si aparecen dos alelos de alto
+impacto en un gen de MVA, el proyecto entero cambia de fase en un día.
+
+**Y la que más me preocupa acertar es la #5 combinada con la #4 en cero:** ningún candidato
+claro en ninguno de los dos paneles dejaría el carril genome-wide como única vía, que es el
+escenario más lento y donde el sesgo de confirmación es más peligroso.
+
+### Trazabilidad — obligatoria
+
+El VCF original **no se modifica**. VEP produce un derivado nuevo en `work/` (ignorado por
+Git) acompañado de un fichero de procedencia con:
+
+```
+hash del VCF de entrada
+version de VEP
+version del cache
+ensamblado (GRCh38)
+comando exacto
+fecha
+hash de la salida
+```
+
+Sin eso no se puede afirmar delante de un jurado cómo se pasó de 5 012 204 variantes crudas
+a las candidatas finales — que es justamente la ventaja de haber recibido un VCF sin anotar.
