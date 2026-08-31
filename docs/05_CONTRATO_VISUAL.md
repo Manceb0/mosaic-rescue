@@ -492,3 +492,52 @@ slide: le cambia el título.**
 Esto es lo que hace que el pitch **deje de depender de tener suerte**. Cada rama produce
 material presentable en los dos desenlaces, y el conjunto de los negativos es el
 cementerio — que es, él solo, una de las tres figuras hero.
+
+---
+
+## §14. Regla dura — una figura no se acepta por ser bonita
+
+Regla añadida tras revisar las primeras figuras y encontrar que eran **envoltorios de
+presentación**, no evidencia: tarjetas, barras resumen, tiras de densidad y pistas
+decorativas que se podían haber dibujado **antes** de mirar los datos.
+
+> **Ninguna figura se acepta solo por ser visualmente atractiva. Cada figura debe contener
+> al menos una cantidad, relación espacial, estructura molecular, señal genómica u objeto
+> derivado de medición o predicción que NO se hubiera podido dibujar antes de ver los
+> datos.**
+
+### El test
+
+Tapa el pie de figura. **¿Puede un científico entender qué se midió, dónde ocurre
+biológicamente, qué cambió y qué sigue incierto?** Si no, se rediseña.
+
+### Sustituciones obligatorias
+
+Siempre que sea posible, la barra resumen se sustituye por **el objeto científico
+subyacente**:
+
+| En vez de | Dibujar |
+|---|---|
+| Barras por gen | Coordenadas de proteína con *lollipops* de variantes |
+| «exón 17/23 → NMD probable» | Arquitectura de exones con el PTC, la última unión y los 55 nt sombreados |
+| «los reads no alcanzan» | Coordenadas genómicas con los huecos y fragmentos a escala |
+| «dominio afectado» | Estructura molecular con contactos atómicos |
+| «RNA 3,4 %, ATAC 1,2 %» | Pistas genómicas REF / ALT / Δ |
+| «residuo conservado» | Logo de conservación del alineamiento |
+| «sin CNV» | Pistas de profundidad y BAF |
+| Diagrama de cajas | Grafo causal con la evidencia que mató cada rama |
+
+### Ejemplo del fallo, para no repetirlo
+
+En la primera versión de la Figura 2, la barra del **dominio pseudoquinasa** se podía
+dibujar antes de analizar al paciente. Era decoración con aspecto de dato.
+
+En cambio **sí** superan el test: el residuo con sus vecinos reales a 5 Å, sus tres puentes
+de hidrógeno con distancias medidas, la RSA del 16,2 %, los 748 nt del PTC a la última
+unión, los 4 142 pb que impiden la fase, los REF/ALT/Δ de AlphaGenome, y cada variante de
+ClinVar en su posición. **Todo eso existe solo porque se analizaron los datos.**
+
+### Formato
+
+El Markdown puede ir cuidado, pero **el gráfico se genera desde los datos medidos**. La
+evidencia central no se construye con rectángulos de HTML y CSS.
