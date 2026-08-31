@@ -82,6 +82,16 @@ class Variant:
     gq: int = 0
     ad: str = ""
     filt: str = ""
+    pgt: str = ""      # orientacion dentro del bloque de fase, p.ej. 0|1
+    pid: str = ""      # identificador del bloque de fase read-backed
+
+    @property
+    def pos(self) -> int:
+        return int(self.loc.split(":")[1].split("-")[0])
+
+    @property
+    def chrom(self) -> str:
+        return self.loc.split(":")[0]
 
     @property
     def allele_balance(self) -> float | None:
@@ -105,11 +115,42 @@ class Variant:
         return True
 
     @property
-    def is_damaging(self) -> bool:
-        """HIGH siempre; MODERATE solo si al menos un predictor lo marca."""
+    def enters_ranking(self) -> bool:
+        """Quien ENTRA al ranking. HIGH y MODERATE, ambos.
+
+        CORRECCION v3. Antes esto se llamaba `is_damaging` y actuaba como filtro
+        DURO: una MODERATE sin prediccion de dano desaparecia. Eso eliminaba 53
+        de 135 missense raras, seis de ellas SIN NINGUN predictor disponible, en
+        silencio.
+
+        Es insostenible despues de haber demostrado en este mismo proyecto que
+        SIFT y PolyPhen pueden discrepar fuertemente de un predictor calibrado.
+        La prediccion MODULA la evidencia; no decide qué candidato existe.
+        """
+        return self.impact in ("HIGH", "MODERATE")
+
+    @property
+    def predictor_support(self) -> float:
+        """Aporte de los predictores a la puntuacion. Nunca elimina.
+
+         +1.0  ambos predictores señalan daño
+         +0.5  uno de los dos
+          0.0  sin prediccion disponible — NO penaliza la ausencia de dato
+         -0.5  ambos lo consideran tolerado
+        """
         if self.impact == "HIGH":
-            return True
-        return "deleterious" in self.sift or "damaging" in self.polyphen
+            return 1.0
+        s_bad = "deleterious" in (self.sift or "")
+        p_bad = "damaging" in (self.polyphen or "")
+        s_ok = "tolerated" in (self.sift or "")
+        p_ok = "benign" in (self.polyphen or "")
+        if s_bad and p_bad:
+            return 1.0
+        if s_bad or p_bad:
+            return 0.5
+        if s_ok and p_ok:
+            return -0.5
+        return 0.0        # sin dato: no es evidencia en contra
 
 
 def _f(x):
@@ -156,12 +197,52 @@ def load(ann_tsv: str, vcf_gz: str) -> list[Variant]:
             geno[k] = (d.get("GT", "").replace("|", "/"),
                        int(d["DP"]) if d.get("DP", "").isdigit() else 0,
                        int(d["GQ"]) if d.get("GQ", "").isdigit() else 0,
-                       d.get("AD", ""), p[6])
+                       d.get("AD", ""), p[6],
+                       d.get("PGT", ""), d.get("PID", ""))
     for r in rows:
         k = r.loc.split(":")[0] + ":" + r.loc.split(":")[1].split("-")[0]
         if k in geno:
-            r.gt, r.dp, r.gq, r.ad, r.filt = geno[k]
+            r.gt, r.dp, r.gq, r.ad, r.filt, r.pgt, r.pid = geno[k]
     return rows
+
+
+def haplotypic_events(variants: list) -> tuple[list, dict]:
+    """Colapsa variantes probadas en CIS en un solo evento haplotipico.
+
+    MOTIVO. Varias variantes distintas y cercanas NO son automaticamente varios
+    alelos de enfermedad. Un caso real de este proyecto: 33 variantes en 170 pb,
+    todas `0|1` y compartiendo bloque `PID`, se contaban como un recesivo
+    compuesto. Son UN haplotipo divergente, no dos alelos.
+
+    Reglas, en orden:
+      - Mismo `PID` y mismo `PGT`  -> mismo haplotipo. UN evento.
+      - Mismo `PID` y `PGT` opuesto -> haplotipos distintos. Apoya trans LOCAL.
+      - Sin `PID`                   -> fase desconocida. Evento independiente,
+                                       pero NUNCA cuenta como trans demostrado.
+    """
+    groups, singles, trans_evidence = {}, [], False
+    for v in variants:
+        if v.pid and v.pgt:
+            groups.setdefault((v.chrom, v.pid, v.pgt), []).append(v)
+        else:
+            singles.append(v)
+
+    # dos orientaciones distintas en el mismo bloque = trans demostrado localmente
+    blocks = {}
+    for (c, pid, pgt), vs in groups.items():
+        blocks.setdefault((c, pid), set()).add(pgt)
+    for k, orients in blocks.items():
+        if len(orients) > 1:
+            trans_evidence = True
+
+    events = [vs for vs in groups.values()] + [[v] for v in singles]
+    info = {
+        "n_variants": len(variants),
+        "n_events": len(events),
+        "collapsed": len(variants) - len(events),
+        "local_trans_proven": trans_evidence,
+    }
+    return events, info
 
 
 @dataclass
@@ -182,35 +263,52 @@ def rank(rows: list[Variant], male: bool = True) -> list[GeneCall]:
     """
     by_gene = collections.defaultdict(list)
     for r in rows:
-        if r.is_rare and r.passes_quality and r.is_damaging:
+        if r.is_rare and r.passes_quality and r.enters_ranking:
             by_gene[r.gene].append(r)
 
     calls = []
     for g, vs in by_gene.items():
+        # colapsar cis probado ANTES de contar alelos
+        events, hap = haplotypic_events(vs)
         hom = [v for v in vs if v.gt == "1/1"]
-        het = [v for v in vs if v.gt == "0/1"]
         high = [v for v in vs if v.impact == "HIGH"]
+        # un evento heterocigoto = un candidato a alelo, no cada variante suelta
+        het_events = [e for e in events if any(v.gt == "0/1" for v in e)]
 
         hemi = [v for v in hom if is_hemizygous(v.loc, male)]
         true_hom = [v for v in hom if v not in hemi]
 
-        if hemi and not true_hom:
-            # un solo alelo: NO es un recesivo resuelto
-            model, base = "hemicigoto ligado a X · un solo alelo", 5.0
-        elif true_hom:
-            model, base = "homocigoto recesivo", 10.0
-        elif len(het) >= 2:
-            model, base = "recesivo compuesto CANDIDATO · fase no resuelta", 8.0
+        # CORRECCION v3. Antes se penalizaba la hemicigosis con base 5.0 por
+        # "tener un solo alelo". Eso confunde dos cosas distintas:
+        #   - cuantos alelos hay      -> uno, porque el varon tiene una sola X
+        #   - si el modelo esta COMPLETO -> SI, para recesivo ligado a X
+        # Un alelo hemicigoto en un varon es un modelo causal COMPLETO para
+        # enfermedad recesiva ligada a X. No es media evidencia. Importa
+        # directamente para MAGED2, que ya estaba anotado en el panel renal.
+        if true_hom:
+            model, base = "homocigoto recesivo · modelo completo", 10.0
+        elif hemi:
+            model, base = "hemicigoto ligado a X · modelo recesivo COMPLETO en varon", 10.0
+        elif len(het_events) >= 2:
+            if hap["local_trans_proven"]:
+                model, base = "recesivo compuesto · trans LOCAL demostrado por reads", 9.0
+            else:
+                model, base = "recesivo compuesto CANDIDATO · fase no resuelta", 8.0
+        elif len(het_events) == 1 and hap["collapsed"]:
+            model, base = f"un haplotipo ({hap['n_variants']} variantes en cis)", 2.0
         elif high:
             model, base = "LoF heterocigoto · dominante/de novo no distinguible", 4.0
         else:
             model, base = "heterocigoto unico", 1.0
 
-        score = base + 2.0 * len(high) + 0.5 * len(vs)
+        score = (base
+                 + 2.0 * len(high)
+                 + 0.5 * len(vs)
+                 + sum(v.predictor_support for v in vs))   # modula, no elimina
         # bonificacion solo por evidencia clinica externa, nunca por identidad del gen
         if any("pathogenic" in (v.clinsig or "").lower() and "conflicting" not in (v.clinsig or "").lower()
                for v in vs):
             score += 5.0
-        calls.append(GeneCall(g, model, len(hom), len(het), len(high), score, vs))
+        calls.append(GeneCall(g, model, len(hom), len(het_events), len(high), score, vs))
 
     return sorted(calls, key=lambda c: (-c.score, c.gene))
