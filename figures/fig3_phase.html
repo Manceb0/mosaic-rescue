@@ -1,0 +1,140 @@
+<title>Two Alleles, No Phase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--ground:#FAFAF8;--panel:#FFF;--ink:#14191E;--ink-soft:#5A646D;--rule:#DCE0E3;
+ --exon:#8C99A4;--exon-last:#5A6B78;--target:#C07A2E;--measured:#1F4E5F;--warn:#B4453A;--frag:#2E7D6B;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#0E1216;--panel:#161C22;
+ --ink:#E8EBED;--ink-soft:#94A0A9;--rule:#2A333B;--exon:#6B7883;--exon-last:#8B98A4;
+ --target:#E0A458;--measured:#6FB3C6;--warn:#E0776A;--frag:#63BFA6;}}
+:root[data-theme="dark"]{--ground:#0E1216;--panel:#161C22;--ink:#E8EBED;--ink-soft:#94A0A9;
+ --rule:#2A333B;--exon:#6B7883;--exon-last:#8B98A4;--target:#E0A458;--measured:#6FB3C6;
+ --warn:#E0776A;--frag:#63BFA6;}
+body{background:var(--ground);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;
+ margin:0;padding:clamp(20px,4vw,52px) clamp(16px,4vw,52px) 60px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+ text-transform:uppercase;color:var(--ink-soft);margin:0}
+h1{font-size:clamp(25px,3.8vw,38px);font-weight:700;letter-spacing:-.022em;line-height:1.1;margin:10px 0 0}
+.sub{margin:12px 0 0;font-size:clamp(14px,1.6vw,17px);line-height:1.45;color:var(--ink-soft);
+ border-left:2px solid var(--target);padding-left:16px;max-width:62ch}
+.figframe{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px;overflow-x:auto}
+svg{display:block;width:100%;height:auto;min-width:1000px}
+.cap{display:grid;gap:8px;font-size:13px;line-height:1.55;color:var(--ink-soft);max-width:80ch}
+.cap strong{color:var(--ink);font-weight:600}
+.foot{display:flex;flex-wrap:wrap;gap:10px 26px;border-top:1px solid var(--rule);padding-top:16px;
+ font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft)}
+</style>
+<div class="wrap">
+<header>
+ <p class="eyebrow">Mosaic Rescue · Figura 3</p>
+ <h1>Two alleles, one gene, no phase</h1>
+ <p class="sub">Por qué el alelo truncante es fuerte — y por qué ningún análisis sobre
+ lecturas cortas puede demostrar que los dos están en <em>trans</em>.</p>
+</header>
+
+<div class="figframe">
+<svg viewBox="0 0 1440 840" role="img" aria-label="Arquitectura del transcrito con el codón de parada prematuro, y distancia genómica entre los dos candidatos.">
+<style>
+ .lbl{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:13px;fill:var(--ink)}
+ .lbl-sm{font-family:"IBM Plex Sans",sans-serif;font-weight:500;font-size:11.5px;fill:var(--ink-soft)}
+ .mono{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;font-weight:500;fill:var(--ink-soft)}
+ .sect{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+        text-transform:uppercase;fill:var(--ink-soft);font-weight:500}
+</style>
+
+<text x="96" y="34" class="sect">A · Transcrito maduro MANE · escala de CDS · exones sondeados a 2 pb</text>
+<text x="1336" y="34" class="mono" text-anchor="end">MEASURED</text>
+<line x1="96" y1="46" x2="1336" y2="46" stroke="var(--rule)"/>
+<text x="96" y="72" class="lbl-sm">La regla de los 50–55 nt se mide en el mRNA maduro, no en coordenadas genómicas. Por eso se dibuja el transcrito, no el gen.</text>
+
+<rect x="96.0" y="130" width="169.9" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="181.0" y="191" class="mono" text-anchor="middle">Ex17</text><text x="181.0" y="204" class="mono" text-anchor="middle" opacity=".6">139</text><line x1="265.9" y1="124" x2="265.9" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="268.4" y="130" width="123.1" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="330.0" y="191" class="mono" text-anchor="middle">Ex18</text><text x="330.0" y="204" class="mono" text-anchor="middle" opacity=".6">101</text><line x1="391.5" y1="124" x2="391.5" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="394.0" y="130" width="182.2" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="485.1" y="191" class="mono" text-anchor="middle">Ex19</text><text x="485.1" y="204" class="mono" text-anchor="middle" opacity=".6">149</text><line x1="576.2" y1="124" x2="576.2" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="577.5" y="130" width="174.9" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="664.9" y="191" class="mono" text-anchor="middle">Ex20</text><text x="664.9" y="204" class="mono" text-anchor="middle" opacity=".6">143</text><line x1="752.3" y1="124" x2="752.3" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="753.6" y="130" width="209.3" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="858.2" y="191" class="mono" text-anchor="middle">Ex21</text><text x="858.2" y="204" class="mono" text-anchor="middle" opacity=".6">171</text><line x1="962.9" y1="124" x2="962.9" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="965.4" y="130" width="130.5" height="46" fill="var(--exon)" stroke="var(--rule)" stroke-width="1"/><text x="1030.6" y="191" class="mono" text-anchor="middle">Ex22</text><text x="1030.6" y="204" class="mono" text-anchor="middle" opacity=".6">107</text><line x1="1095.9" y1="124" x2="1095.9" y2="182" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2 2" opacity=".5"/><rect x="1097.1" y="130" width="238.9" height="46" fill="var(--exon-last)" stroke="var(--rule)" stroke-width="1"/><text x="1216.6" y="191" class="mono" text-anchor="middle">Ex23</text><text x="1216.6" y="204" class="mono" text-anchor="middle" opacity=".6">195</text>
+
+<!-- zona de escape a NMD -->
+<rect x="1029.4" y="116" width="67.7" height="74"
+      fill="var(--warn)" opacity=".16"/>
+<line x1="1029.4" y1="116" x2="1029.4" y2="190" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 3"/>
+<text x="1023.4" y="110" class="mono" fill="var(--warn)" text-anchor="end">55 nt · frontera de escape a NMD</text>
+
+<!-- ultima union exon-exon -->
+<line x1="1097.1" y1="98" x2="1097.1" y2="184" stroke="var(--ink)" stroke-width="2"/>
+<text x="1105.1" y="94" class="lbl">última unión exón–exón</text>
+<text x="1105.1" y="108" class="mono">CDS 2958</text>
+
+<!-- PTC -->
+<line x1="176.0" y1="98" x2="176.0" y2="184" stroke="var(--target)" stroke-width="2.5"/>
+<circle cx="176.0" cy="153.0" r="6" fill="var(--target)"/>
+<text x="176.0" y="94" class="lbl" fill="var(--target)" text-anchor="middle">PTC</text>
+<text x="176.0" y="108" class="mono" fill="var(--target)" text-anchor="middle">CDS 2210 · exón 17</text>
+
+<!-- missense -->
+<line x1="1156.2" y1="130" x2="1156.2" y2="176" stroke="var(--measured)" stroke-width="2"/>
+<circle cx="1156.2" cy="153.0" r="5" fill="var(--measured)"/>
+<text x="1156.2" y="222" class="mono" fill="var(--measured)" text-anchor="middle">missense · CDS 3006</text>
+
+<!-- medida de los 748 nt -->
+<line x1="176.0" y1="252" x2="1097.1" y2="252" stroke="var(--target)" stroke-width="1.5"/>
+<line x1="176.0" y1="246" x2="176.0" y2="258" stroke="var(--target)" stroke-width="1.5"/>
+<line x1="1097.1" y1="246" x2="1097.1" y2="258" stroke="var(--target)" stroke-width="1.5"/>
+<rect x="590.6" y="240" width="92" height="19" rx="2" fill="var(--panel)"/>
+<text x="636.6" y="254" class="lbl" fill="var(--target)" text-anchor="middle">748 nt</text>
+
+<text x="96" y="292" class="lbl">El PTC está 748 nt por encima de la última unión, frente a un umbral de 55.</text>
+<text x="96" y="310" class="lbl-sm">Margen de 13.6× → NMD predicho con holgura → <tspan class="lbl" fill="var(--target)">PVS1 con la ruta del árbol favorable</tspan></text>
+
+
+<text x="96" y="434" class="sect">B · Los 10 911 pb entre los dos candidatos · escala genómica real</text>
+<text x="1336" y="434" class="mono" text-anchor="end">MEASURED</text>
+<line x1="96" y1="446" x2="1336" y2="446" stroke="var(--rule)"/>
+
+<line x1="96" y1="510" x2="1336" y2="510" stroke="var(--ink-soft)" stroke-width="2"/>
+<circle cx="96.0" cy="510" r="9" fill="var(--target)"/>
+<circle cx="865.3" cy="510" r="6" fill="var(--ink-soft)"/>
+<circle cx="1336.0" cy="510" r="9" fill="var(--measured)"/>
+
+<text x="96.0" y="488" class="lbl" fill="var(--target)" text-anchor="start">Candidato A · truncante</text>
+<text x="96.0" y="474" class="mono" fill="var(--target)">Likely Pathogenic</text>
+<text x="865.3" y="488" class="lbl-sm" text-anchor="middle">único heterocigoto informativo</text>
+<text x="1336.0" y="488" class="lbl" fill="var(--measured)" text-anchor="end">Candidato B · missense</text>
+<text x="1336.0" y="474" class="mono" fill="var(--measured)" text-anchor="end">VUS</text>
+
+<line x1="96.0" y1="554" x2="865.3" y2="554" stroke="var(--ink-soft)" stroke-width="1.5"/><line x1="96.0" y1="548" x2="96.0" y2="560" stroke="var(--ink-soft)" stroke-width="1.5"/><line x1="865.3" y1="548" x2="865.3" y2="560" stroke="var(--ink-soft)" stroke-width="1.5"/><rect x="428.6" y="542" width="104" height="19" rx="2" fill="var(--panel)"/><text x="480.6" y="556" class="lbl" fill="var(--ink-soft)" text-anchor="middle">6,769 pb</text>
+<line x1="865.3" y1="554" x2="1336.0" y2="554" stroke="var(--warn)" stroke-width="1.5"/><line x1="865.3" y1="548" x2="865.3" y2="560" stroke="var(--warn)" stroke-width="1.5"/><line x1="1336.0" y1="548" x2="1336.0" y2="560" stroke="var(--warn)" stroke-width="1.5"/><rect x="1048.6" y="542" width="104" height="19" rx="2" fill="var(--panel)"/><text x="1100.6" y="556" class="lbl" fill="var(--warn)" text-anchor="middle">4,142 pb</text>
+
+<text x="96" y="612" class="lbl-sm">Fragmentos de librería (~300 pb) a la misma escala — obsérvese lo poco que abarca cada uno:</text>
+<rect x="126.0" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="254.9" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="383.8" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="512.7" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="641.6" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="770.4" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="899.3" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="1028.2" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/><rect x="1157.1" y="622" width="34.09" height="10" rx="1.5" fill="var(--frag)" opacity=".9"/>
+
+<rect x="96" y="648" width="1240" height="106" rx="3" fill="var(--warn)" opacity=".09"/>
+<text x="112" y="670" class="mono">1 FRAGMENTO</text><rect x="232" y="660" width="34.1" height="12" rx="1.5" fill="var(--frag)"/><text x="274.1" y="670" class="mono" fill="var(--frag)">300 pb</text><text x="112" y="696" class="mono" fill="var(--warn)">HUECO MÁS CORTO</text><rect x="232" y="686" width="356.8" height="12" rx="1.5" fill="var(--warn)" opacity=".8"/><text x="596.8" y="696" class="mono" fill="var(--warn)">4,142 pb</text>
+<text x="112" y="728" class="lbl" fill="var(--warn)">13.8× más largo que cualquier fragmento</text>
+<text x="112" y="748" class="lbl-sm">Ni el <tspan class="mono">PID</tspan> del caller (máx. 288 pb medidos en todo el genoma) ni un refaseado con WhatsHap o HapCUT2 pueden conectar estos dos puntos.</text>
+
+<line x1="96" y1="792" x2="1336" y2="792" stroke="var(--rule)"/>
+<text x="96" y="816" class="lbl-sm">Límites de exón sondeados a 2 pb sobre el mismo <tspan class="mono">release</tspan> de VEP usado en todo el análisis. Distancias genómicas leídas del VCF.</text>
+</svg>
+</div>
+
+<div class="cap">
+<p><strong>Panel A — por qué <code>PVS1</code> tiene fuerza.</strong> «Exón 17 de 23» no
+basta: la regla se define contra la <strong>última unión exón-exón</strong>. Dibujado en
+coordenadas de mRNA maduro, el PTC queda <strong>748 nt</strong> por encima de esa
+unión, frente a un umbral de 55. La franja sombreada es la zona donde un PTC
+<em>escaparía</em> a NMD — y el nuestro está muy lejos de ella.</p>
+
+<p><strong>Panel B — por qué la fase es irresoluble aquí.</strong> Entre los dos candidatos
+hay <strong>un solo heterocigoto informativo</strong>. Los fragmentos verdes son librería
+real (~300 pb) al mismo tamaño: se ve de un vistazo que ninguno tiende un puente. El
+hueco más corto es <strong>13.8× más largo</strong> que un fragmento.</p>
+
+<p><strong>Esto no se arregla con más análisis.</strong> Se arregla con genotipos parentales
+o con lectura larga dirigida. Es el experimento de mayor valor del proyecto.</p>
+</div>
+
+<div class="foot">
+ <span>ALELO A · LIKELY PATHOGENIC</span>
+ <span>ALELO B · VUS</span>
+ <span>PM3 BLOQUEADO</span>
+ <span>FASE NO RESUELTA</span>
+</div>
+</div>
