@@ -152,3 +152,46 @@ hash de la salida
 
 Sin eso no se puede afirmar delante de un jurado cómo se pasó de 5 012 204 variantes crudas
 a las candidatas finales — que es justamente la ventaja de haber recibido un VCF sin anotar.
+
+---
+
+## Preregistro — Hidden Second Allele, locus ampliado de `BUB1B`
+
+Escrito **antes** de extraer nada. Busca SNV/indel en el **locus ampliado**, no solo dentro
+de los límites del gen: existe precedente humano de un segundo alelo regulador decenas de kb
+aguas arriba, así que restringirse al cuerpo del gen sería conceptualmente incorrecto.
+
+**Ventana:** cuerpo del gen ± ~100 kb. Cubre con margen la distancia del precedente.
+
+**Orden de matanza, del filtro barato al caro:**
+`frecuencia → calidad → posición funcional → conservación y regulación → AlphaGenome`
+
+### Predicciones
+
+| # | Predicción | Qué la falsaría | Qué significaría |
+|---|---|---|---|
+| 1 | ~800–2 000 variantes en el locus ampliado | Menos de 200 | Ventana mal construida |
+| 2 | **< 5 %** raras o ausentes de gnomAD tras filtrar | > 20 % | Filtro de frecuencia mal configurado |
+| 3 | **0–3 candidatos** llegan a AlphaGenome | > 15 | Los filtros previos no están discriminando |
+| 4 | **AlphaGenome dará Δ plano** en todos | Un Δ marcado en splicing o expresión | **Sería el hallazgo del proyecto** |
+| 5 | Nada en promotor ni región de splicing canónica | Una rara en promotor o splice-region | Escalada inmediata |
+
+**La predicción que quiero ver fallada es la #4.** Predigo que no encontraremos el segundo
+alelo por esta vía, y lo escribo antes para que un negativo sea reportable en lugar de
+decepcionante.
+
+**Si la #4 se cumple** (todo plano), el resultado se reporta tal cual —*«se rastreó el
+paisaje regulador de `BUB1B` y AlphaGenome no apoya un segundo alelo funcional de tipo
+SNV/indel»*— y la rama pasa a SV/CNV.
+
+### Regla sobre el nivel de rescate
+
+`PASS` y filtradas se cuentan **por separado** desde el principio. Una filtrada no vuelve a
+ser candidata por estar en el locus: hay que examinar por qué falló.
+
+### Regla sobre SV/CNV, adelantada
+
+Cuando toque: **L001 sirve como piloto para demostrar que el pipeline funciona y encontrar
+señal grande, pero no para cerrar un negativo.** El VCF se generó con el dataset completo;
+afirmar «no hay segundo alelo estructural» exige profundidad equivalente. Un negativo sobre
+un carril no es un negativo.
