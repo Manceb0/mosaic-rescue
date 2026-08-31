@@ -226,7 +226,7 @@ depende de ese promedio es el splicing, cuyo delta local es cero.
 Fue la **única transmisión de dato del paciente fuera de la máquina** en todo el proyecto,
 prevista en `docs/03_ALPHAGENOME_ASSESSMENT.md` §7.
 
-## CNV grande en `BUB1B`: **descartada** desde el VCF, sin alinear
+## CNV grande en `BUB1B`: **sin evidencia**, desde el VCF y sin alinear
 
 | Métrica | Región de `BUB1B` | Genómico |
 |---|---|---|
@@ -236,9 +236,17 @@ prevista en `docs/03_ALPHAGENOME_ASSESSMENT.md` §7.
 Una deleción en heterocigosis daría pérdida de heterocigosidad y DP a la mitad. Se observa
 lo contrario: profundidad normal y **más** heterocigosis que la media.
 
-**Lo que esto NO descarta:** deleciones pequeñas que quepan entre variantes (el cuerpo del
-gen es pobre en variantes), eventos equilibrados —inversiones, translocaciones— que no
-cambian número de copia, e inserciones.
+> **Corrección de formulación.** Escribí «CNV grande descartada». Es demasiado fuerte: la
+> profundidad del VCF **no está normalizada para llamar número de copia** y varía por
+> mapeo local y contenido GC. Lo defendible es:
+>
+> > *No evidence for a large heterozygous deletion spanning `BUB1B` from VCF depth and
+> > heterozygosity. Smaller CNVs, balanced SVs, insertions and breakpoint-local events
+> > remain unresolved.*
+
+**Sigue sin resolverse:** CNV pequeñas que quepan entre variantes (el cuerpo del gen es
+pobre en variantes), eventos equilibrados —inversiones, translocaciones— que no cambian
+número de copia, inserciones, y todo lo local a un punto de rotura.
 
 ## Bloqueo de datos descubierto
 
@@ -248,3 +256,35 @@ generó con el dataset completo, pero los FASTQ de `L002`–`L004` no están aqu
 Consecuencia directa sobre la regla preregistrada: **con un solo carril (~13×) no se puede
 cerrar un negativo de SV.** La rama estructural queda **bloqueada por disponibilidad de
 datos, no por cómputo**.
+
+---
+
+## Resultado — análisis estructural del candidato missense
+
+| Métrica | Valor | Lectura |
+|---|---|---|
+| pLDDT local del modelo | **91,1** (media global 63,6) | Región fiable, muy por encima de la media |
+| RSA relativa | **16,2 %** | **Enterrado** |
+| Vecinos a 5 Å | 10, de los cuales **8 hidrofóbicos**, 4 aromáticos | Núcleo compacto |
+| Puentes de H de la cadena lateral | **3, todos al esqueleto** (2,83–2,95 Å) | Grapa la conformación local |
+
+**Predicción: desestabilizante.** El cambio mete una carga positiva y una cadena mucho más
+larga en un bolsillo hidrofóbico, y destruye tres puentes con el esqueleto que la geometría
+del residuo entrante no puede reproducir.
+
+**No se ejecutó AlphaFold:** el modelo ya existe en AlphaFold DB. Las dos estructuras
+experimentales que VEP mapeaba **no cubren el residuo** — solo resuelven hasta ~345.
+
+### Tensión con REVEL, declarada y no resuelta a conveniencia
+
+REVEL dio 0,472 (indeterminado); la estructura apunta a desestabilización. **`PP3` no se
+reabre.** Los umbrales estaban preregistrados y REVEL quedó por debajo. Usar el resultado
+estructural para reabrirlo sería buscar el predictor que da la respuesta deseada.
+
+**La clasificación no cambia: sigue VUS.** Lo que cambia es que ahora hay una hipótesis
+mecanística **medible**: abundancia de BUBR1 reducida. Ese ensayo habilitaría `PS3` y es,
+junto con la fase, uno de los dos únicos caminos que mueven esta variante.
+
+**Pendiente:** conservación (falta el alineamiento múltiple, y es el dato que reconciliaría
+o no la discrepancia con REVEL) y un ΔΔG cuantitativo. Se ha preferido no dar un número que
+no se puede sostener.
