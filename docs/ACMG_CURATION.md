@@ -27,6 +27,12 @@ El criterio no se aplica por ser `stop_gained`. Hay que pasar el árbol de decis
 
 ### La medición que exige el árbol
 
+![Figura 3 — Arquitectura del transcrito y distancia de fase](../figures/fig3_phase.svg)
+
+*Panel A: el PTC medido contra la última unión exón-exón, en escala de mRNA maduro.
+Panel B: los 10 911 pb entre candidatos con fragmentos de librería a la misma escala.*
+
+
 «Exón 17 de 23» **no es suficiente**: la regla de los 50–55 nt se define respecto a la
 **última unión exón-exón**, no respecto al número de exón.
 
@@ -170,6 +176,12 @@ Se puede demostrar, y produce además una figura útil:
 > efectivamente la enfermedad, `PM1` pasa a ser defendible **con el dato delante**.
 
 ### Resultado — `PM1` **NO SE APLICA**, pero no por lo que parecía
+
+![Figura 2 — BUBR1 missense landscape](../figures/fig2_landscape.svg)
+
+*Cada una de las 1 497 variantes missense de ClinVar en su residuo. Las 35 benignas se ven
+dónde caen, no como un número.*
+
 
 ClinVar completo (2026-08-22), 2 470 variantes de la región anotadas sobre el transcrito
 MANE.

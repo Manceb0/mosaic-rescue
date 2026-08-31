@@ -13,6 +13,9 @@ enamorarse de una antes de correr el VCF.
 
 ## El flujo
 
+![Figura 1 — From one genome to one mechanism](../figures/hero_pipeline.svg)
+
+
 ```
                        PATIENT
                   WGS + CLINICAL HPO

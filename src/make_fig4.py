@@ -79,7 +79,7 @@ for k, h in enumerate(sorted(HB, key=lambda x: x["don"], reverse=True)):
     col = "var(--hb-don)" if h["don"] else "var(--hb-acc)"
     rol = "DONA" if h["don"] else "ACEPTA"
     verdict = "un amonio tambien dona" if h["don"] else "un amonio NO puede aceptar"
-    mark = "" if h["don"] else "  <-- IRRECUPERABLE"
+    mark = "" if h["don"] else "  ← IRRECUPERABLE"
     ehb += (f'<text x="{EX0}" y="{yy}" class="lbl" fill="{col}">cadena lateral {rol}</text>'
             f'<text x="{EX0+170}" y="{yy}" class="mono" fill="{col}">{h["d"]:.2f} A</text>'
             f'<text x="{EX0+240}" y="{yy}" class="lbl-sm">{h["lbl"]}</text>'

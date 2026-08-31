@@ -44,6 +44,12 @@ contactos no significaría nada.
 
 ## Resultado
 
+![Figura 4 — Interrogatorio estructural](../figures/fig4_structural.svg)
+
+*Coordenadas atómicas reales proyectadas por PCA, con los tres puentes de hidrógeno y sus
+distancias medidas. Perfil de pLDDT de los 1050 residuos.*
+
+
 ### El residuo está enterrado
 
 | | |
