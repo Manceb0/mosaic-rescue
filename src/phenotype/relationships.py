@@ -22,7 +22,11 @@ INH = {"HP:0000006": "AD", "HP:0000007": "AR", "HP:0001417": "XL",
 
 
 def causal_pairs(path="work/hpo/genes_to_disease.txt", keep=("MENDELIAN",)):
-    """Solo relaciones causales establecidas. Modificadores y susceptibilidad fuera."""
+    """Solo relaciones causales establecidas. Modificadores y susceptibilidad fuera.
+
+    Un par puede declarar VARIOS tipos (hay uno MENDELIAN+POLYGENIC). Se acepta
+    si ALGUNO de sus tipos es causal, en vez de exigir coincidencia exacta.
+    """
     ok, dropped = set(), collections.Counter()
     with io.open(path, encoding="utf-8", errors="replace") as f:
         h = f.readline().rstrip("\n").split("\t")
@@ -52,27 +56,38 @@ def disease_inheritance(path="work/hpo/phenotype.hpoa"):
     return dict(out)
 
 
+# Estados explicitos. "compatible" a secas convertia dos variantes candidatas
+# en un caso recesivo resuelto, que es justo lo que no tenemos.
+COMPATIBLE_CONFIRMED = "COMPATIBLE_CONFIRMED"   # fase demostrada y ambos alelos sostenidos
+CANDIDATE_COMPATIBLE = "CANDIDATE_COMPATIBLE"   # encaja, pero causalidad bialelica NO establecida
+INCOMPATIBLE         = "INCOMPATIBLE"
+UNRESOLVED           = "UNRESOLVED"             # el modelo no declara herencia
+
+
 def genotype_compatible(patient_model: str, inheritance: set):
     """Encaja el genotipo del paciente con la herencia del modelo?
 
-    Devuelve (compatible, motivo). Sin anotacion de herencia -> DESCONOCIDO,
-    que no es lo mismo que incompatible: no se excluye, se marca.
+    Devuelve (estado, motivo). Ningun estado afirma causalidad: el mas alto que
+    se puede alcanzar sin fase demostrada es CANDIDATE_COMPATIBLE.
     """
     if not inheritance:
-        return None, "el modelo no declara herencia"
+        return UNRESOLVED, "el modelo no declara herencia"
     m = patient_model.lower()
     two_alleles = ("homocigoto" in m) or ("compuesto" in m)
     hemi = "hemicigoto" in m
     single_het = ("heterocigoto" in m) and not two_alleles
 
     if two_alleles and "AR" in inheritance:
-        return True, "dos alelos candidatos vs modelo recesivo"
+        # CANDIDATE, no CONFIRMED: sin fase no sabemos si estan en trans, y el
+        # segundo alelo puede seguir siendo VUS. Dos variantes candidatas NO son
+        # un caso recesivo resuelto.
+        return CANDIDATE_COMPATIBLE, "dos alelos candidatos vs modelo recesivo · causalidad bialelica NO establecida"
     if hemi and ({"XLR", "XL"} & inheritance):
-        return True, "hemicigoto en varon vs modelo recesivo ligado a X"
+        return CANDIDATE_COMPATIBLE, "hemicigoto en varon vs recesivo ligado a X · un alelo basta, patogenicidad no establecida"
     if single_het and ({"AD", "XLD"} & inheritance):
-        return True, "un alelo vs modelo dominante"
+        return CANDIDATE_COMPATIBLE, "un alelo vs modelo dominante · patogenicidad no establecida"
     if single_het and inheritance == {"AR"}:
-        return False, "UN alelo frente a modelo SOLO recesivo: falta el segundo"
+        return INCOMPATIBLE, "UN alelo frente a modelo SOLO recesivo: falta el segundo"
     if two_alleles and inheritance == {"AD"}:
-        return None, "dos alelos frente a modelo solo dominante: posible, no esperado"
-    return None, f"herencia {'/'.join(sorted(inheritance))} sin regla clara"
+        return UNRESOLVED, "dos alelos frente a modelo solo dominante: posible, no esperado"
+    return UNRESOLVED, f"herencia {'/'.join(sorted(inheritance))} sin regla clara"

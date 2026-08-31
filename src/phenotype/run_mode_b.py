@@ -44,8 +44,19 @@ CAUSAL, DROPPED = causal_pairs()
 INHERIT = disease_inheritance()
 _all = PREP["models"]
 models = [m for m in _all if (m.gene, m.disease_id) in CAUSAL]
-print(f"  modelos: {len(_all):,} totales -> {len(models):,} causales "
-      f"(fuera {dict(DROPPED)})")
+
+# Tabla de contingencia SOBRE EL UNIVERSO QUE USA EL MODO B, con asercion.
+# Antes se imprimian los conteos de genes_to_disease.txt como si fueran la resta
+# de estos modelos: dos tablas distintas presentadas como una sola operacion.
+import collections as _c
+_types = _c.Counter()
+for m in _all:
+    _types["MENDELIAN" if (m.gene, m.disease_id) in CAUSAL else "no causal"] += 1
+assert sum(_types.values()) == len(_all), "los tipos no suman el total"
+print(f"  modelos con anotacion HPO : {len(_all):,}")
+for k, v in _types.most_common():
+    print(f"    {k:<22} {v:>7,}")
+print(f"  -> se conservan {len(models):,} causales; se eliminan {len(_all)-len(models):,}")
 
 rows = load("work/gw/highmod_ann.tsv",
             "C:/Users/USUARIO/Downloads/[REDACTED]_[REDACTED].vcf.gz")
@@ -88,7 +99,7 @@ for name, terms, clinvar, fhw in ANALYSES:
         dis = p.get("disease")
         compat, why = genotype_compatible(model, INHERIT.get(dis, set())) if dis else (None, "sin modelo")
         # un modelo INCOMPATIBLE no aporta soporte fenotipico
-        ph_score = 0.0 if compat is False else p.get("score", 0.0)
+        ph_score = 0.0 if compat == "INCOMPATIBLE" else p.get("score", 0.0)
         total = gs + 1.0 * ph_score + fhw * f.get("score", 0.0)
         scored.append((g, total, model, dis, p.get("n_models_tested", 0),
                        round(ph_score, 3), compat, why))
