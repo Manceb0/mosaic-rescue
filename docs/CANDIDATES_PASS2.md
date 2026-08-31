@@ -317,3 +317,38 @@ más credibilidad que enseñar el logo.
 6. **Abrir el sprint de Track 2**: abundancia de BUBR1, plegamiento, dependencia de
    chaperonas y proteostasis — seguido **obligatoriamente** de `Try to Kill It` por
    predisposición tumoral.
+
+---
+
+## Interrogatorio funcional del candidato no codificante — negativo
+
+![Figura 5 — AlphaGenome REF / ALT / Δ](../figures/fig5_alphagenome.svg)
+
+Nueve pistas **preseleccionadas y congeladas antes de la llamada**
+(`docs/DECISIONS.md`). REF y ALT comparten escala Y dentro de cada pista; el Δ va en carril
+propio, con el cero y los límites de escala impresos.
+
+| Modalidad | Contexto | máx \|Δ\| | Línea base | Δ relativo |
+|---|---|---:|---:|---:|
+| Sitios de splicing | donor | 0,0063 | 0,996 | **0,64 %** |
+| Uso de sitio | neurona | 0,0039 | 0,938 | **0,42 %** |
+| Junciones | testículo (GTEx) | 0,0000 | 0,0012 | **0,34 %** |
+| ChIP-seq CTCF | **célula epitelial renal** | 96 | 7 872 | **1,22 %** |
+| ChIP-seq RAD21 | célula neural | 80 | 3 760 | **2,13 %** |
+| RNA-seq | GM12878 | 0,25 | 7,81 | **3,20 %** |
+| RNA-seq | K562 | 0,22 | 7,97 | **2,75 %** |
+| ATAC-seq | linfocito B | 0,19 | 14,8 | **1,27 %** |
+| DNase-seq | progenitor mieloide | 0,75 | 52,0 | **1,44 %** |
+
+**Ningún Δ relativo supera el 3,2 %**, y las tres modalidades de splicing —el mecanismo por
+el que un intrónico profundo podría importar— quedan por debajo del 0,7 %.
+
+Las líneas base ahora sí son reales: entre 0,94 y 7 872, gracias al umbral de 0,01 que el
+preregistro exigió. En la primera pasada los Δ relativos del 5 % resultaban de dividir entre
+líneas base de ~0,0001.
+
+> *The only rare noncoding candidate surviving locus-level filtering was not supported by
+> global or track-level AlphaGenome predictions.*
+
+**No** «AlphaGenome demostró que no existe un segundo alelo». La rama **SNV/indel** del
+locus queda cerrada; SV y CNV siguen abiertas.
