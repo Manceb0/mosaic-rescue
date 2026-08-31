@@ -195,3 +195,56 @@ Cuando toque: **L001 sirve como piloto para demostrar que el pipeline funciona y
 señal grande, pero no para cerrar un negativo.** El VCF se generó con el dataset completo;
 afirmar «no hay segundo alelo estructural» exige profundidad equivalente. Un negativo sobre
 un carril no es un negativo.
+
+---
+
+## Resultado — Hidden Second Allele, rama SNV/indel: **NEGATIVA**
+
+| # | Predicción | Resultado | |
+|---|---|---|---|
+| 1 | 800–2 000 variantes en el locus | **321** | ❌ fallé por lo alto |
+| 2 | < 5 % raras tras filtrar | **1,2 %** | ✅ |
+| 3 | 0–3 candidatos llegan a AlphaGenome | **1** | ✅ |
+| 4 | **AlphaGenome dará Δ plano** | **Δ plano** | ✅ *(quería fallarla)* |
+| 5 | Nada en promotor ni splicing canónico | nada | ✅ |
+
+**Un único candidato nuevo** en 270 kb: intrónico profundo en el intrón 20, ausente de
+gnomAD, sin rsID, `PASS`, heterocigoto. A >1 kb del borde de exón más cercano.
+
+**AlphaGenome:** ningún delta relativo supera el 3,4 %; las tres modalidades de splicing
+por debajo del 1,2 %, con el delta local de junciones en **0,0000**. Control de sanidad
+pasado: las medias REF y ALT son no triviales, así que el delta plano es resultado y no
+llamada fallida.
+
+> *Se rastreó el paisaje regulador de `BUB1B` en 270 kb y AlphaGenome no apoya un segundo
+> alelo funcional de tipo SNV/indel.*
+
+**Límite declarado del análisis:** el resumen agrega 1 617 pistas de ChIP-TF y 667 de RNA
+con estadísticos; un efecto fuerte en un solo tejido podría diluirse. El argumento que no
+depende de ese promedio es el splicing, cuyo delta local es cero.
+
+Fue la **única transmisión de dato del paciente fuera de la máquina** en todo el proyecto,
+prevista en `docs/03_ALPHAGENOME_ASSESSMENT.md` §7.
+
+## CNV grande en `BUB1B`: **descartada** desde el VCF, sin alinear
+
+| Métrica | Región de `BUB1B` | Genómico |
+|---|---|---|
+| DP mediana | **44×** | ~40× |
+| HET/HOM | **2,89** | 1,61 |
+
+Una deleción en heterocigosis daría pérdida de heterocigosidad y DP a la mitad. Se observa
+lo contrario: profundidad normal y **más** heterocigosis que la media.
+
+**Lo que esto NO descarta:** deleciones pequeñas que quepan entre variantes (el cuerpo del
+gen es pobre en variantes), eventos equilibrados —inversiones, translocaciones— que no
+cambian número de copia, e inserciones.
+
+## Bloqueo de datos descubierto
+
+**Solo `L001` está en disco: 21 GB, no los 86 GB de los cuatro carriles.** El VCF sí se
+generó con el dataset completo, pero los FASTQ de `L002`–`L004` no están aquí.
+
+Consecuencia directa sobre la regla preregistrada: **con un solo carril (~13×) no se puede
+cerrar un negativo de SV.** La rama estructural queda **bloqueada por disponibilidad de
+datos, no por cómputo**.
