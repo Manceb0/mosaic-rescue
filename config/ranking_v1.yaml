@@ -1,0 +1,167 @@
+# =====================================================================
+# EXP-006 · FORMULA DE RANKING — CONGELADA
+#
+# Este fichero es la unica fuente de verdad de la puntuacion. Se commitea
+# ANTES de mirar el resultado. Si se cambia, se crea ranking_v2.yaml y se
+# reportan AMBOS: no se edita este in situ.
+#
+# Motivo: la primera ejecucion de EXP-006 tuvo los pesos escritos en codigo
+# y committeados DESPUES de ver el resultado. Eso no es preregistro.
+# =====================================================================
+version: 1
+frozen_before_looking: true
+supersedes: "pesos en codigo de la ejecucion v1, invalidada por el bug de indels"
+
+# ---------------------------------------------------------------------
+# ALCANCE — lo que este experimento SI y NO cubre
+# ---------------------------------------------------------------------
+scope:
+  name: "Genome-wide coding/splice-impact pass"
+  # NO se llama "genome-wide causal search": seria sobreafirmar.
+  covers:
+    - variantes con consecuencia HIGH o MODERATE asignada a un gen
+  excludes:
+    - intronicas profundas
+    - reguladoras, promotor, UTR
+    - variantes sin gen asignable
+    - variantes de splicing que VEP no eleve a HIGH/MODERATE
+    - SV, CNV, inserciones y reordenamientos
+  claim_allowed: >
+    BUB1B (o el gen que gane) sobrevivio a una competicion imparcial de
+    variantes que alteran proteina en todo el genoma.
+  claim_forbidden: >
+    El gen ganador supero a todo mecanismo genomico posible.
+
+# ---------------------------------------------------------------------
+# FILTROS — aplicados en este orden
+# ---------------------------------------------------------------------
+filters:
+  rarity:
+    field: MAX_AF
+    max: 0.001
+    absent_counts_as_rare: true      # ausente de gnomAD = raro
+  quality:
+    require_filter: PASS
+    min_dp: 10
+    min_gq: 20
+    het_allele_balance: [0.20, 0.80] # fuera de rango = artefacto probable
+  damaging:
+    high_impact_always: true
+    moderate_requires_predictor: true   # SIFT deleterious O PolyPhen damaging
+
+# ---------------------------------------------------------------------
+# DEDUPLICACION — el bug que fabrica compound-het falsos
+# ---------------------------------------------------------------------
+deduplication:
+  unit: "alelo genomico unico por gen"
+  rule: >
+    Una variante puede contar en varios GENES (correcto). Dentro de un mismo
+    gen, un alelo cuenta UNA vez aunque tenga varias filas de transcrito.
+  assertion: "0 genes con posicion duplicada"   # se comprueba en cada ejecucion
+
+# ---------------------------------------------------------------------
+# AGREGACION POR HERENCIA — probando VARON (verificado desde el VCF)
+# ---------------------------------------------------------------------
+inheritance:
+  proband_sex: male
+  sex_evidence: "het en X sin PAR 2,5 % vs 62,4 % autosomico; 13 840 variantes en Y"
+  par_grch38: [[10001, 2781479], [155701383, 156030895]]
+  models:
+    homozygous_recessive:   {base: 10.0, note: "1/1 autosomico. Dos alelos."}
+    compound_het_candidate: {base:  8.0, note: "≥2 het en el gen. FASE NO RESUELTA."}
+    x_hemizygous:           {base:  5.0, note: "1/1 en X sin PAR en varon = UN alelo."}
+    het_lof:                {base:  4.0, note: "LoF het. Dominante o de novo, indistinguibles sin padres."}
+    single_het:             {base:  1.0}
+
+# ---------------------------------------------------------------------
+# PUNTUACION
+# ---------------------------------------------------------------------
+scoring:
+  formula: "base(modelo) + per_high * n_HIGH + per_variant * n_variantes + clinvar_bonus"
+  per_high: 2.0
+  per_variant: 0.5
+  clinvar_bonus:
+    value: 5.0
+    condition: "alguna variante P/LP en ClinVar, excluyendo conflicting"
+    note: "Evidencia clinica EXTERNA. Nunca se puntua por identidad del gen."
+  tie_breaker: "orden alfabetico del simbolo — nunca preferencia por gen"
+
+# ---------------------------------------------------------------------
+# LOS TRES MODOS — independientes, se reportan los tres
+# ---------------------------------------------------------------------
+modes:
+  A_genetics_only:
+    description: "Sin HPO, sin paneles, sin nombres de genes. Solo genotipo."
+    inputs: [rareza, calidad, consecuencia, modelo de herencia, ClinVar]
+    question: "¿El genotipo por si solo hace destacar a algun gen?"
+    status: ejecutable_ya
+  B_phenotype_aware_panel_free:
+    description: "Anade terminos HPO del paciente. NINGUN panel de genes."
+    hpo_terms:
+      - rabdomiosarcoma
+      - nefrocalcinosis desde el nacimiento
+      - talla baja
+      - fallo de medro
+      - atrofia muscular
+      - prematuridad
+      - CIR / pequeno para edad gestacional
+      - abortos de repeticion en la madre
+    question: "¿Genotipo + fenotipo encuentra el gen sin darle la respuesta?"
+    requires: "mapa HPO->gen publico, versionado"
+    status: requiere_descarga
+  C_disease_prior:
+    description: "Paneles MVA y renal, para comparar lo dirigido contra lo abierto."
+    question: "¿Cuanto ayuda saber la hipotesis de antemano?"
+    status: ejecutable_ya
+
+# ---------------------------------------------------------------------
+# PLAN DE SENSIBILIDAD — decidido antes, no despues
+# ---------------------------------------------------------------------
+sensitivity_plan:
+  - id: S1
+    name: "sin bonificacion de ClinVar"
+    change: {clinvar_bonus: 0}
+  - id: S2
+    name: "pesos de herencia iguales"
+    change: {all_model_bases: 5.0}
+  - id: S3
+    name: "solo cuenta de HIGH"
+    change: {all_model_bases: 0.0, clinvar_bonus: 0, per_variant: 0.0}
+  - id: S4
+    name: "rareza mas estricta"
+    change: {max_af: 0.0001}
+  - id: S5
+    name: "rareza mas laxa"
+    change: {max_af: 0.01}
+  - id: S6
+    name: "sin rabdomiosarcoma"          # solo modo B
+    change: {drop_hpo: [rabdomiosarcoma]}
+  - id: S7
+    name: "sin rasgos renales"           # solo modo B
+    change: {drop_hpo: [nefrocalcinosis desde el nacimiento]}
+  interpretation: >
+    Si el gen ganador cae del top al retirarle ayudas, gana por el prior y no
+    por el genotipo. Ambos desenlaces se reportan.
+
+# ---------------------------------------------------------------------
+# BASELINE INDEPENDIENTE
+# ---------------------------------------------------------------------
+external_baseline:
+  required: true
+  reason: >
+    Un score propio que corona al gen que ya sospechabamos no convence. Hace
+    falta que una herramienta que no escribimos nosotros lo ordene igual.
+  candidates: [Exomiser, LIRICAL]
+  status: pendiente
+
+# ---------------------------------------------------------------------
+# PROCEDENCIA DE RECURSOS
+# ---------------------------------------------------------------------
+resources:
+  vep: {version: "116.1", cache: "116_GRCh38", mode: "--offline --cache"}
+  gnomad: "v4.1, del cache de VEP 116"
+  clinvar_in_cache: "2025-09"
+  clinvar_downloaded: "2026-08-22"
+  note: >
+    El ClinVar del cache de VEP tiene fecha y va once meses por detras del
+    vigente. Para curacion se usa el descargado.
