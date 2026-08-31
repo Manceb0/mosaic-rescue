@@ -90,6 +90,16 @@ Este proyecto tiene tablas de decisión **preregistradas** en `docs/02_ANALYSIS_
 ## ESTRUCTURA
 
 ```
+notebooks/                # LA INVESTIGACION: pregunta -> preregistro -> metodo ->
+                          #   ejecucion -> falsacion -> decision -> siguiente experimento
+src/                      # METODO REPRODUCIBLE, importable desde los notebooks
+  qc/  annotation/  prioritization/  phase/  structure/  regulatory/  sv/  mosaic/
+research/
+  EXPERIMENT_REGISTRY.md  # donde esta la investigacion, en una pagina
+work/                     # IGNORADO: datos sensibles y salidas completas
+docs/                     # conclusiones saneadas
+figures/                  # evidencia visual DERIVADA de los notebooks
+
 CLAUDE.md
 .gitignore
 config/
@@ -130,5 +140,8 @@ results/                  # IGNORADO por defecto
 - No digas "reconstrucción de cariotipos" ni "cariotipos fantasma". El entregable de mosaicismo es un *bulk genomic mosaic fingerprint*.
 - No llames "ensayo funcional" a MitoRead. Es un *orthogonal WGS-derived mitochondrial readout*.
 - No mandes variantes estructurales a AlphaGenome. Las SV van a Manta / DELLY / GRIDSS.
+- **Ninguna figura final sin un notebook o pipeline reproducible que haya generado el resultado.** Una figura no es evidencia hasta que tenga origen ejecutable. Ver `research/EXPERIMENT_REGISTRY.md`.
+- No trates «documentado y visualizado» como equivalente a «investigación reproducible». No lo es.
+- No abras Track 2 mientras EXP-006 (ranking genome-wide sin panel) siga en curso. Saltar de un panel a mecanismo es sesgo de confirmación.
 - No termines un analisis importante solo en CSV o Markdown. Cada hipotesis acaba en una figura interpretable, una conclusion, una incertidumbre y un falsificador (`docs/05_CONTRATO_VISUAL.md`).
 - No dibujes las predicciones de AlphaGenome como si fueran pistas medidas de un genome browser. La palabra PREDICHO va en el panel, no en el pie.

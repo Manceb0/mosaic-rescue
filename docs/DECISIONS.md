@@ -380,3 +380,52 @@ Y en el Markdown se embebe la imagen, no un enlace:
 
 **Motivo:** abrir el repositorio en GitHub tiene que enseñar la ciencia directamente, no
 una tarjeta bonita ni un enlace a un artifact.
+
+---
+
+## Preregistro — EXP-006, ranking genome-wide sin panel
+
+Escrito **antes** de ejecutar el ranking. Es el experimento que faltaba: hasta ahora
+`BUB1B` apareció fuerte **dentro de un panel que elegimos nosotros**, y eso no es lo mismo
+que sobrevivir a una búsqueda sin panel.
+
+**Garantía de diseño:** el script de extracción **no menciona ningún gen**. El único filtro
+es consecuencia funcional. 13 109 variantes en **6 322 genes** compiten.
+
+### Modelos de herencia que se evalúan
+
+Sin genotipos parentales, *de novo* no es evaluable y no se finge.
+
+| Modelo | Criterio | Nota |
+|---|---|---|
+| Recesivo homocigoto | `1/1` raro y dañino | El más limpio |
+| Recesivo compuesto **candidato** | ≥2 heterocigotos raros y dañinos en el mismo gen | **Fase no resuelta** — se etiqueta siempre |
+| Dominante / *de novo* candidato | LoF heterocigoto raro | No distinguible de heredado sin padres |
+| Hemicigoto en X | Depende del sexo del probando | Confirmar en la cabecera |
+
+### Predicciones
+
+| # | Predicción | Qué la falsaría |
+|---|---|---|
+| 1 | Tras rareza (`MAX_AF < 1e-3`) sobrevive **< 5 %** de las 13 109 | > 20 % |
+| 2 | **< 40** genes con ≥2 heterocigotos raros y dañinos | > 200 |
+| 3 | **Muy pocos** homocigotos raros dañinos, quizá ninguno | Decenas |
+| 4 | **`BUB1B` queda entre los 20 primeros** del ranking sin panel | Que no aparezca |
+| 5 | Aparecerán genes **sin relación conocida con el fenotipo** en cabeza | — |
+
+**La #4 es la que importa, y hay que decir por adelantado qué significa cada desenlace:**
+
+- **Si `BUB1B` queda arriba** → *no lo encontramos porque lo buscábamos; sobrevivió a una
+  búsqueda en la que 6 322 genes podían ganarle.* La historia se refuerza mucho.
+- **Si NO queda arriba** → **acabamos de evitar un error**, y eso vale más que confirmarnos.
+  Se reporta igual, y `BUB1B` baja de estatus hasta reevaluar.
+
+**Prohibido** ajustar el ranking después de mirarlo para que `BUB1B` suba. Los criterios
+quedan aquí escritos.
+
+### Lo que este experimento NO puede hacer
+
+- No resuelve fase: los pares heterocigotos son **candidatos**, no heterocigosis compuesta.
+- No evalúa *de novo* sin padres.
+- No cubre variantes estructurales — eso es EXP-012, bloqueado.
+- No cubre reguladoras ni intrónicas profundas fuera del filtro de consecuencia.
