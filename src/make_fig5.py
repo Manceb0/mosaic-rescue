@@ -91,14 +91,31 @@ for t in TR:
 
     # --- datos crudos a la derecha ---
     rx = X0 + XW + 16
+    if "CTCF" in t["meta"] and "kidney" in t["meta"].lower():
+        rows += (f'<rect x="{rx-4}" y="{y-2}" width="196" height="{ROW_H+4}" rx="2" '
+                 f'fill="var(--predicted)" opacity=".10"/>'
+                 f'<text x="{rx}" y="{y+56}" class="mono" fill="var(--predicted)">contexto relevante</text>'
+                 f'<text x="{rx}" y="{y+68}" class="mono" fill="var(--predicted)">para el fenotipo —</text>'
+                 f'<text x="{rx}" y="{y+80}" class="mono" fill="var(--predicted)">el efecto sigue siendo pequeño</text>')
     rows += (f'<text x="{rx}" y="{y+14}" class="mono">máx |Δ| <tspan class="num">{md:.4g}</tspan></text>'
              f'<text x="{rx}" y="{y+28}" class="mono">base <tspan class="num">{base:.4g}</tspan></text>'
              f'<text x="{rx}" y="{y+42}" class="mono">Δ rel <tspan class="num" '
              f'fill="{"var(--warn)" if rel>10 else "var(--ok)"}">{rel:.2f} %</tspan></text>')
     y += ROW_H + DELTA_H + GAP
 
-# marca de la variante, centrada en la ventana
+# --- eje genomico con coordenadas reales y barra de escala ---
 vx = X0 + XW / 2
+axis = f'<line x1="{X0}" y1="{y+2}" x2="{X0+XW}" y2="{y+2}" stroke="var(--ink-soft)" stroke-width="1"/>'
+for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+    gx_ = X0 + frac * XW
+    coord = POS - FL + frac * 2 * FL
+    axis += (f'<line x1="{gx_:.1f}" y1="{y+2}" x2="{gx_:.1f}" y2="{y+8}" stroke="var(--ink-soft)" stroke-width="1"/>'
+             f'<text x="{gx_:.1f}" y="{y+20}" class="mono" text-anchor="middle">{int(coord):,}</text>')
+axis += (f'<text x="{X0}" y="{y+36}" class="mono" opacity=".8">chr15 · GRCh38</text>')
+# barra de escala de 2 kb
+sb = 2000 / (2 * FL) * XW
+axis += (f'<line x1="{X0+XW-sb:.1f}" y1="{y+32}" x2="{X0+XW:.1f}" y2="{y+32}" stroke="var(--ink)" stroke-width="2.5"/>'
+         f'<text x="{X0+XW-sb/2:.1f}" y="{y+28}" class="mono" text-anchor="middle" fill="var(--ink)">2 kb</text>')
 H = y + 130
 
 HTML = f"""<title>AlphaGenome REF ALT Delta</title>
@@ -133,7 +150,7 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <div class="wrap">
 <header>
  <p class="eyebrow">Mosaic Rescue · Figura 5</p>
- <h1>No coherent molecular effect predicted</h1>
+ <h1>No coherent molecular effect predicted across the preregistered tracks</h1>
  <p class="sub">Selección de pistas y reglas de escala <strong>congeladas antes</strong> de
  la llamada. REF y ALT comparten escala Y dentro de cada pista; el Δ va en carril propio con
  el cero visible.</p>
@@ -158,8 +175,7 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <line x1="{vx:.1f}" y1="78" x2="{vx:.1f}" y2="{y-10}" stroke="var(--predicted)" stroke-width="1.6" stroke-dasharray="5 4" opacity=".65"/>
 <circle cx="{vx:.1f}" cy="86" r="5" fill="var(--predicted)"/>
 <text x="{vx:.1f}" y="106" class="lbl" fill="var(--predicted)" text-anchor="middle">variante candidata</text>
-<text x="{X0}" y="{y+6}" class="mono">−{FL//1000} kb</text>
-<text x="{X0+XW}" y="{y+6}" class="mono" text-anchor="end">+{FL//1000} kb</text>
+{axis}
 
 <g transform="translate({X0+XW+16},96)">
   <line x1="0" y1="-4" x2="26" y2="-4" stroke="var(--ref)" stroke-width="2.2"/>
@@ -192,8 +208,11 @@ numérico en una montaña — por eso los límites van impresos en cada carril.<
 un mínimo de 0,01: aquí las bases van de 0,94 a 7 872, y los cambios relativos caen entre
 el 0,34 % y el 3,2 %.</p>
 
-<p><strong>Una pista merece mención explícita:</strong> CTCF en célula epitelial renal, que
-es tejido relevante para el fenotipo. Δ relativo del 1,22 %.</p>
+<p><strong>La pista que más podría tentarnos tampoco sobrevive.</strong> CTCF en célula
+epitelial renal es <em>contexto relevante para el fenotipo</em> — y precisamente por eso se
+marca en la figura. Su Δ relativo es del <strong>1,22 %</strong>: no sobrevive
+cuantitativamente. Que el sesgo se resista incluso donde la biología invita es parte del
+resultado.</p>
 </div>
 
 <div class="foot">

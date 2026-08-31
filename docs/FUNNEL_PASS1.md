@@ -11,6 +11,9 @@
 
 ## El funnel, con números reales
 
+![Figura 6 — The genomic funnel](../figures/fig6_funnel.svg)
+
+
 ```
 5 012 204   variantes en el VCF
       │

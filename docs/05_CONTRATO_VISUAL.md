@@ -541,3 +541,27 @@ ClinVar en su posición. **Todo eso existe solo porque se analizaron los datos.*
 
 El Markdown puede ir cuidado, pero **el gráfico se genera desde los datos medidos**. La
 evidencia central no se construye con rectángulos de HTML y CSS.
+
+---
+
+## §15. Estado del bloque visual
+
+Seis figuras, todas generadas desde datos medidos y exportadas a SVG embebido en el
+Markdown. **El bloque se congela aquí** hasta que entre evidencia nueva.
+
+| # | Figura | Qué contiene que no se podía dibujar antes |
+|---|---|---|
+| 1 | *From one genome to one mechanism* | Arquitectura del sistema — la única que no depende de datos |
+| 2 | *BUBR1 missense landscape* | 1 497 variantes de ClinVar, cada una en su residuo |
+| 3 | *Two alleles, one gene, no phase* | Exones sondeados a 2 pb · 748 nt medidos · 10 911 pb a escala con fragmentos reales |
+| 4 | *Structural interrogation* | 140 átomos con coordenadas 3D · 3 puentes de H medidos · pLDDT de 1 050 residuos |
+| 5 | *No coherent molecular effect* | 9 pistas REF/ALT/Δ con escalas compartidas y selección preregistrada |
+| 6 | *The genomic funnel* | Cada recuento real y la evidencia que mató cada rama |
+
+### Regla de congelación
+
+**No se fabrican más figuras hasta que entre evidencia nueva:** BAM/CRAM de profundidad
+completa, fase parental, conservación ortóloga o llamada de variante estructural.
+
+Seguir puliendo las existentes sería gastar en presentación un tiempo que debe ir a
+evidencia. Las seis ya cumplen el test del §14.

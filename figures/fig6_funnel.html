@@ -1,0 +1,93 @@
+<title>The Genomic Funnel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--ground:#FAFAF8;--panel:#FFF;--ink:#14191E;--ink-soft:#5A646D;--rule:#DCE0E3;
+ --flow:#8C99A4;--alive:#2E7D6B;--dead:#B4453A;--open:#C07A2E;--vus:#7A8590;--gate:#B4453A;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#0E1216;--panel:#161C22;
+ --ink:#E8EBED;--ink-soft:#94A0A9;--rule:#2A333B;--flow:#4A555F;--alive:#63BFA6;--dead:#E0776A;
+ --open:#E0A458;--vus:#8B96A0;--gate:#E0776A;}}
+:root[data-theme="dark"]{--ground:#0E1216;--panel:#161C22;--ink:#E8EBED;--ink-soft:#94A0A9;
+ --rule:#2A333B;--flow:#4A555F;--alive:#63BFA6;--dead:#E0776A;--open:#E0A458;--vus:#8B96A0;--gate:#E0776A;}
+body{background:var(--ground);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;
+ margin:0;padding:clamp(20px,4vw,52px) clamp(16px,4vw,52px) 60px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+ text-transform:uppercase;color:var(--ink-soft);margin:0}
+h1{font-size:clamp(25px,3.8vw,38px);font-weight:700;letter-spacing:-.022em;line-height:1.1;margin:10px 0 0}
+.sub{margin:12px 0 0;font-size:clamp(15px,1.7vw,19px);line-height:1.45;color:var(--ink);
+ border-left:2px solid var(--open);padding-left:16px;max-width:56ch}
+.figframe{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:8px;overflow-x:auto}
+svg{display:block;width:100%;height:auto;min-width:1040px}
+.cap{display:grid;gap:8px;font-size:13px;line-height:1.55;color:var(--ink-soft);max-width:80ch}
+.cap strong{color:var(--ink);font-weight:600}
+.foot{display:flex;flex-wrap:wrap;gap:10px 26px;border-top:1px solid var(--rule);padding-top:16px;
+ font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft)}
+</style>
+<div class="wrap">
+<header>
+ <p class="eyebrow">Mosaic Rescue · Figura 6</p>
+ <h1>The genomic funnel</h1>
+ <p class="sub">Cinco millones de variantes. Un mecanismo sobrevive — pero sigue faltando
+ un alelo.</p>
+</header>
+
+<div class="figframe">
+<svg viewBox="0 0 1440 1470" role="img" aria-label="Camino de filtrado y falsificación desde cinco millones de variantes hasta el cuello de botella actual.">
+<style>
+ .big{font-family:"IBM Plex Sans",sans-serif;font-weight:700;font-size:19px;fill:var(--ink)}
+ .lbl{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:12.5px;fill:var(--ink)}
+ .mono{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.04em;fill:var(--ink-soft)}
+ .sect{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+        text-transform:uppercase;fill:var(--ink-soft);font-weight:500}
+</style>
+
+<text x="40" y="52" class="sect">01 · Cantidad</text>
+<text x="40" y="70" class="mono">ancho ∝ log(n) — a escala lineal el final sería invisible</text>
+<path d="M308.0,120 L632.0,120 L631.7,206 L308.3,206 Z" fill="var(--flow)" opacity="0.90"/><text x="470" y="154" class="big" text-anchor="middle">5,012,204</text><text x="470" y="172" class="lbl" text-anchor="middle">variantes crudas</text><text x="648.0" y="160" class="mono">VCF completo · GRCh38 · Sentieon</text><path d="M308.3,206 L631.7,206 L511.7,292 L428.3,292 Z" fill="var(--flow)" opacity="0.75"/><text x="470" y="240" class="big" text-anchor="middle">4,943,948</text><text x="470" y="258" class="lbl" text-anchor="middle">anotadas a gen</text><text x="647.7" y="246" class="mono">VEP 116 offline · 68 256 en contigs decoy sin genes</text><path d="M428.3,292 L511.7,292 L480.9,378 L459.1,378 Z" fill="var(--flow)" opacity="0.60"/><text x="470" y="326" class="big" text-anchor="middle">13,581</text><text x="470" y="344" class="lbl" text-anchor="middle">HIGH + MODERATE</text><text x="527.7" y="332" class="mono">928 HIGH · 12 653 MODERATE, contadas por variante</text>
+
+<text x="40" y="378" class="sect">02 · Decisión biológica</text>
+<line x1="470" y1="378" x2="170" y2="408" stroke="var(--rule)" stroke-width="1.5"/><rect x="52" y="408" width="236" height="62" rx="3" fill="var(--panel)" stroke="var(--alive)" stroke-width="1.6"/><text x="170" y="430" class="lbl" text-anchor="middle" fill="var(--alive)">MVA</text><text x="170" y="446" class="mono" text-anchor="middle">2 HIGH · 23 MODERATE</text><text x="170" y="462" class="mono" text-anchor="middle" fill="var(--alive)">SOBREVIVE</text><path d="M170,470 L170,504 L470,504 L470,528" fill="none" stroke="var(--alive)" stroke-width="2.5"/><line x1="470" y1="378" x2="470" y2="408" stroke="var(--rule)" stroke-width="1.5"/><rect x="352" y="408" width="236" height="62" rx="3" fill="var(--panel)" stroke="var(--dead)" stroke-width="1.6"/><text x="470" y="430" class="lbl" text-anchor="middle" fill="var(--dead)">RENAL</text><text x="470" y="446" class="mono" text-anchor="middle">2 HIGH — ambas start_lost</text><text x="470" y="462" class="mono" text-anchor="middle" fill="var(--dead)">MUERE</text><line x1="470" y1="470" x2="470" y2="494" stroke="var(--dead)" stroke-width="1.5" stroke-dasharray="3 3"/><text x="470" y="508" class="mono" fill="var(--dead)" text-anchor="middle">alelos comunes de población</text><text x="470" y="522" class="mono" fill="var(--dead)" text-anchor="middle">AF 0,08 – 0,81 → DEGRADADO</text><line x1="470" y1="378" x2="770" y2="408" stroke="var(--rule)" stroke-width="1.5"/><rect x="652" y="408" width="236" height="62" rx="3" fill="var(--panel)" stroke="var(--open)" stroke-width="1.6"/><text x="770" y="430" class="lbl" text-anchor="middle" fill="var(--open)">GENOME-WIDE</text><text x="770" y="446" class="mono" text-anchor="middle">928 HIGH en 533 genes</text><text x="770" y="462" class="mono" text-anchor="middle" fill="var(--open)">ABIERTO</text><line x1="770" y1="470" x2="770" y2="494" stroke="var(--open)" stroke-width="1.5" stroke-dasharray="2 4" opacity=".7"/><text x="770" y="508" class="mono" fill="var(--open)" text-anchor="middle" opacity=".9">ABIERTO — protección contra</text><text x="770" y="522" class="mono" fill="var(--open)" text-anchor="middle" opacity=".9">sesgo de confirmación por panel</text>
+
+<text x="40" y="570" class="sect">03 · Investigación causal</text>
+<rect x="370" y="584" width="200" height="46" rx="3" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/><text x="470" y="614" class="big" text-anchor="middle">BUB1B</text><line x1="470" y1="630" x2="470" y2="642" stroke="var(--ink)" stroke-width="1.5"/><line x1="280" y1="642" x2="660" y2="642" stroke="var(--ink)" stroke-width="1.5"/><line x1="280" y1="642" x2="280" y2="656" stroke="var(--alive)" stroke-width="2"/><line x1="660" y1="642" x2="660" y2="656" stroke="var(--vus)" stroke-width="2"/>
+<text x="280" y="658" class="lbl" text-anchor="middle" fill="var(--alive)">TRUNCANTE</text><text x="280" y="672" class="mono" text-anchor="middle">stop gained · PASS · het</text><line x1="280" y1="678" x2="280" y2="692" stroke="var(--rule)" stroke-width="1.2"/><text x="280" y="712" class="lbl" text-anchor="middle" fill="var(--alive)">PVS1</text><text x="280" y="726" class="mono" text-anchor="middle">PTC a 748 nt de la última unión</text><line x1="280" y1="732" x2="280" y2="746" stroke="var(--rule)" stroke-width="1.2"/><text x="280" y="766" class="lbl" text-anchor="middle" fill="var(--alive)">ClinVar</text><text x="280" y="780" class="mono" text-anchor="middle">pathogenic / likely pathogenic</text><line x1="280" y1="786" x2="280" y2="800" stroke="var(--rule)" stroke-width="1.2"/>
+<text x="660" y="658" class="lbl" text-anchor="middle" fill="var(--vus)">MISSENSE</text><text x="660" y="672" class="mono" text-anchor="middle">rara · PASS · het</text><line x1="660" y1="678" x2="660" y2="692" stroke="var(--rule)" stroke-width="1.2"/><text x="660" y="712" class="lbl" text-anchor="middle" fill="var(--vus)">ausente de gnomAD</text><text x="660" y="726" class="mono" text-anchor="middle">SIFT y PolyPhen preocupantes</text><line x1="660" y1="732" x2="660" y2="746" stroke="var(--rule)" stroke-width="1.2"/><text x="660" y="766" class="lbl" text-anchor="middle" fill="var(--vus)">REVEL 0,472</text><text x="660" y="780" class="mono" text-anchor="middle">PP3 NO SE CUMPLE</text><line x1="660" y1="786" x2="660" y2="800" stroke="var(--rule)" stroke-width="1.2"/><text x="660" y="820" class="lbl" text-anchor="middle" fill="var(--vus)">panorama ClinVar</text><text x="660" y="834" class="mono" text-anchor="middle">PM1 · PS1 · PM5 NO SE CUMPLEN</text><line x1="660" y1="840" x2="660" y2="854" stroke="var(--rule)" stroke-width="1.2"/>
+<rect x="194" y="812" width="172" height="34" rx="3" fill="var(--alive)" opacity=".16"/><text x="280" y="834" class="lbl" text-anchor="middle" fill="var(--alive)">LIKELY PATHOGENIC</text><rect x="604" y="866" width="112" height="34" rx="3" fill="var(--vus)" opacity=".16"/><text x="660" y="888" class="lbl" text-anchor="middle" fill="var(--vus)">VUS</text>
+<path d="M280,846 L280,930 L660,930 L660,900" fill="none" stroke="var(--rule)" stroke-width="1.5"/><rect x="220" y="930" width="500" height="62" rx="3" fill="var(--panel)" stroke="var(--gate)" stroke-width="2.5"/><text x="470" y="956" class="lbl" text-anchor="middle" fill="var(--gate)" font-size="15">BIALLELIC MODEL NOT ESTABLISHED</text><text x="470" y="976" class="mono" text-anchor="middle" fill="var(--gate)">PHASE UNRESOLVED · hueco más corto 13,8× la longitud de fragmento</text>
+
+<text x="40" y="1012" class="sect">04 · El alelo que falta</text>
+<text x="470" y="1066" class="lbl" text-anchor="middle">BUB1B ± locus regulador</text><text x="470" y="1080" class="mono" text-anchor="middle">gen ±100 kb · 270 kb</text><line x1="470" y1="1086" x2="470" y2="1098" stroke="var(--rule)" stroke-width="1.2"/><text x="470" y="1118" class="lbl" text-anchor="middle">321 variantes</text><text x="470" y="1132" class="mono" text-anchor="middle">313 PASS · 8 en nivel de rescate</text><line x1="470" y1="1138" x2="470" y2="1150" stroke="var(--rule)" stroke-width="1.2"/><text x="470" y="1170" class="lbl" text-anchor="middle">4 raras</text><text x="470" y="1184" class="mono" text-anchor="middle">&lt; 1e-3 · dos ya conocidas · una en PAK6</text><line x1="470" y1="1190" x2="470" y2="1202" stroke="var(--rule)" stroke-width="1.2"/><text x="470" y="1222" class="lbl" text-anchor="middle">1 candidato nuevo</text><text x="470" y="1236" class="mono" text-anchor="middle">intrónico profundo · ausente de gnomAD</text><line x1="470" y1="1242" x2="470" y2="1254" stroke="var(--rule)" stroke-width="1.2"/><text x="470" y="1274" class="lbl" text-anchor="middle">AlphaGenome</text><text x="470" y="1288" class="mono" text-anchor="middle">REF ≈ ALT · sin Δ coherente</text><text x="470" y="1312" class="big" text-anchor="middle" fill="var(--dead)">✕</text>
+<line x1="470" y1="1300" x2="470" y2="1340" stroke="var(--open)" stroke-width="2"/><rect x="220" y="1340" width="500" height="72" rx="3" fill="var(--open)" opacity=".12"/><rect x="220" y="1340" width="500" height="72" rx="3" fill="none" stroke="var(--open)" stroke-width="2"/><text x="470" y="1364" class="lbl" text-anchor="middle" fill="var(--open)" font-size="15">BÚSQUEDA DE ALELO ESTRUCTURAL · SV / CNV</text><text x="470" y="1384" class="lbl" text-anchor="middle" fill="var(--open)">NEXT DATA BOTTLENECK</text><text x="470" y="1402" class="mono" text-anchor="middle">requiere BAM/CRAM de profundidad completa · solo L001 en disco (~13×)</text>
+
+<text x="900" y="276" class="sect">Hipótesis eliminadas · y por qué</text><line x1="900" y1="286" x2="1400" y2="286" stroke="var(--rule)"/><text x="900" y="312" class="big" fill="var(--dead)">✕</text><text x="930" y="308" class="lbl">Candidatas HIGH renales</text><text x="930" y="324" class="mono" fill="var(--dead)">frecuencia poblacional 0,08 – 0,81</text><line x1="900" y1="338" x2="1400" y2="338" stroke="var(--rule)" stroke-width=".7"/><text x="900" y="370" class="big" fill="var(--dead)">✕</text><text x="930" y="366" class="lbl">Missense como segundo alelo establecido</text><text x="930" y="382" class="mono" fill="var(--dead)">evidencia ACMG insuficiente</text><line x1="900" y1="396" x2="1400" y2="396" stroke="var(--rule)" stroke-width=".7"/><text x="900" y="428" class="big" fill="var(--dead)">✕</text><text x="930" y="424" class="lbl">Candidato regulador SNV/indel</text><text x="930" y="440" class="mono" fill="var(--dead)">AlphaGenome REF ≈ ALT</text><line x1="900" y1="454" x2="1400" y2="454" stroke="var(--rule)" stroke-width=".7"/><text x="900" y="486" class="big" fill="var(--dead)">✕</text><text x="930" y="482" class="lbl">Deleción grande que abarque BUB1B</text><text x="930" y="498" class="mono" fill="var(--dead)">sin señal de profundidad ni pérdida de heterocigosidad</text><line x1="900" y1="512" x2="1400" y2="512" stroke="var(--rule)" stroke-width=".7"/><text x="900" y="544" class="big" fill="var(--open)">?</text><text x="930" y="540" class="lbl">SV pequeña o equilibrada</text><text x="930" y="556" class="mono" fill="var(--open)">sin resolver sin alineamientos de profundidad completa</text><line x1="900" y1="570" x2="1400" y2="570" stroke="var(--rule)" stroke-width=".7"/><text x="900" y="606" class="mono" opacity=".85">El último lleva interrogante, no aspa:</text><text x="900" y="622" class="mono" opacity=".85">no está descartado, está sin resolver.</text>
+</svg>
+</div>
+
+<div class="cap">
+<p><strong>Los dos alelos recibieron trato distinto según la evidencia, no según nos
+convenía.</strong> El truncante acumuló <code>PVS1</code> y una clasificación de ClinVar; el
+missense fue perdiendo apoyo en cada paso — <code>REVEL 0,472</code> mató <code>PP3</code>,
+y el panorama de ClinVar mató <code>PM1</code>, <code>PS1</code> y <code>PM5</code>.</p>
+
+<p><strong>El carril genome-wide se dibuja abierto a propósito.</strong> Es la protección
+contra el sesgo de confirmación por panel: si el gen causal fuera uno que no está en
+ninguna de nuestras listas, ese carril es el único que podría encontrarlo.</p>
+
+<p><strong>El último cuadro no es un fracaso.</strong> Es saber qué dato resuelve la
+pregunta. Se dejó de calcular cuando calcular más habría sido inventar: con un solo carril
+(~13×) no se puede cerrar un negativo de variante estructural.</p>
+
+<p><strong>La última hipótesis lleva interrogante, no aspa.</strong> Una SV pequeña o
+equilibrada no está descartada — está sin resolver. Marcarla como muerta sería exactamente
+la clase de sobreafirmación que este funnel documenta haber evitado cinco veces.</p>
+</div>
+
+<div class="foot">
+ <span>5 012 204 → 1 MECANISMO</span>
+ <span>4 HIPÓTESIS ELIMINADAS · 1 SIN RESOLVER</span>
+ <span>FASE NO RESUELTA</span>
+ <span>SIGUIENTE: BAM/CRAM PROFUNDIDAD COMPLETA</span>
+</div>
+</div>
