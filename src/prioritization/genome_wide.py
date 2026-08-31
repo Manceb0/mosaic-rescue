@@ -23,15 +23,21 @@ def config_fingerprint(path: str = CONFIG_PATH) -> str:
 
 
 def _grab(txt, key, default):
-    m = _re.search(rf"^\s*{key}:\s*([^
-#]+)", txt, _re.M)
-    if not m:
-        return default
-    v = m.group(1).strip()
-    try:
-        return float(v)
-    except ValueError:
-        return v
+    """Lee un escalar del YAML congelado. Sin dependencias externas y sin
+    expresiones regulares: parseo linea a linea, que no se puede malinterpretar."""
+    needle = key + ":"
+    for line in txt.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(needle):
+            continue
+        v = stripped[len(needle):].split("#", 1)[0].strip()
+        if not v:
+            continue
+        try:
+            return float(v)
+        except ValueError:
+            return v
+    return default
 
 
 _CFG = _pl.Path(CONFIG_PATH).read_text(encoding="utf-8") if _pl.Path(CONFIG_PATH).exists() else ""
