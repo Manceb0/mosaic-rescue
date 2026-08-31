@@ -325,3 +325,58 @@ pierde por química, y ningún rotámero puede rescatarlo.
 
 **FoldX está bloqueado por licencia** (registro manual). Se ha preferido no sustituirlo por
 otro predictor y dar un ΔΔG no validable.
+
+---
+
+## Preregistro — qué pistas de AlphaGenome se dibujan
+
+Congelado **antes** de repetir la llamada, para que no se puedan elegir las más
+favorecedoras después de verlas.
+
+| Bloque | Pistas | Criterio de selección |
+|---|---|---|
+| Splicing | `splice_sites`, `splice_site_usage`, `splice_junctions` | **Obligatorias las tres.** Son el mecanismo por el que un intrónico profundo podría importar |
+| Insulador | **CTCF** y **RAD21** | Fueron los mayores cambios **absolutos** en la primera pasada |
+| Expresión | Las **2** pistas de RNA con mayor \|Δ\| local | **Solo si superan un mínimo de señal basal**: `ref_local ≥ 0,01`. Sin ese filtro se seleccionarían pistas de línea base nula, donde un Δ minúsculo da un porcentaje relativo enorme |
+| Cromatina | 1 de `ATAC` + 1 de `DNASE`, la de mayor \|Δ\| con el mismo mínimo | Representativas |
+
+**Todas se etiquetan con su tejido o modelo.**
+
+### Reglas de dibujo, también congeladas
+
+1. **REF y ALT comparten exactamente la misma escala Y** dentro de cada pista. Tres
+   gráficos con escalas distintas harían parecer grande algo minúsculo.
+2. **Δ = ALT − REF con el cero visible**, en su propio carril.
+3. Eje genómico real, con la posición del candidato marcada.
+4. A la derecha de cada pista: `máx |Δ|`, `línea base`, `Δ relativo`, `tejido`.
+5. **`PREDICTED — AlphaGenome`** en grande y en ocre, para que un recorte no se confunda
+   con medición experimental.
+
+### Qué se espera
+
+Que REF y ALT se vean **prácticamente idénticos** y el carril Δ **plano en el cero**. Si
+así sale, la figura muestra el negativo en vez de pedir que se nos crea.
+
+Si alguna pista mostrara un Δ visible, **se reporta igual** — la selección está congelada
+y no admite descartar la que no convenga.
+
+---
+
+## Regla de formato de figuras
+
+Toda figura final existe en tres versiones:
+
+| Fichero | Para qué |
+|---|---|
+| `figX_nombre.svg` | **Publicación y Markdown.** Es la que se embebe |
+| `figX_nombre.png` | Diapositivas y compatibilidad |
+| `figX_nombre.html` | Solo si aporta interactividad real |
+
+Y en el Markdown se embebe la imagen, no un enlace:
+
+```markdown
+![Figura 2 — BUBR1 Variant Landscape](../figures/fig2_landscape.svg)
+```
+
+**Motivo:** abrir el repositorio en GitHub tiene que enseñar la ciencia directamente, no
+una tarjeta bonita ni un enlace a un artifact.
