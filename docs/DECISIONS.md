@@ -288,3 +288,40 @@ junto con la fase, uno de los dos únicos caminos que mueven esta variante.
 **Pendiente:** conservación (falta el alineamiento múltiple, y es el dato que reconciliaría
 o no la discrepancia con REVEL) y un ΔΔG cuantitativo. Se ha preferido no dar un número que
 no se puede sostener.
+
+---
+
+## Cierre — AlphaGenome por pista, y matices estructurales
+
+### La rama SNV/indel reguladora queda cerrada
+
+Se revisaron las **pistas individuales** para descartar que un efecto específico de tejido
+se estuviera diluyendo en el agregado de 1 617 pistas de ChIP-TF y 667 de RNA.
+
+- **El top por cambio relativo es ruido.** Las líneas base locales de esas pistas son
+  ~0,0001–0,005; un 5 % sobre cero es división por un número minúsculo, no señal.
+- **El top por cambio absoluto** son pistas de CTCF y RAD21, con cambios relativos del
+  1,2–2,3 % sobre líneas base de 1 400–7 900. Nada funcionalmente interpretable.
+- **Sin coherencia biológica**: los tejidos del top son un surtido disperso (epitelio
+  traqueal, ovario, vía biliar, bazo, hígado). No hay señal renal ni hematopoyética.
+
+> *No candidate survived population filtering plus global and track-level AlphaGenome
+> interrogation.*
+>
+> **No** «AlphaGenome demostró que no existe un segundo alelo». Solo que **no apoyó los
+> SNV/indel candidatos que encontramos**.
+
+### El análisis geométrico corrige a la baja mi propio argumento estructural
+
+| Argumento | Estado tras el análisis |
+|---|---|
+| Choque estérico | **Debilitado.** Densidad de 47,1 át./1000 Å³, por debajo de núcleo (60–90) |
+| Carga enterrada | **Debilitado.** La cáscara donde aterrizaría tiene 131 Å² de SASA: hay salida al solvente |
+| **Pérdida de puente aceptor** | **En pie, y rotámero-independiente** |
+
+El punto que sobrevive: la cadena lateral silvestre **acepta** un puente del nitrógeno del
+esqueleto de un vecino. El grupo entrante es un amonio y **solo dona**. Ese contacto se
+pierde por química, y ningún rotámero puede rescatarlo.
+
+**FoldX está bloqueado por licencia** (registro manual). Se ha preferido no sustituirlo por
+otro predictor y dar un ΔΔG no validable.
