@@ -210,9 +210,16 @@ def haplotypic_events(variants: list) -> tuple[list, dict]:
     """Colapsa variantes probadas en CIS en un solo evento haplotipico.
 
     MOTIVO. Varias variantes distintas y cercanas NO son automaticamente varios
-    alelos de enfermedad. Un caso real de este proyecto: 33 variantes en 170 pb,
-    todas `0|1` y compartiendo bloque `PID`, se contaban como un recesivo
-    compuesto. Son UN haplotipo divergente, no dos alelos.
+    alelos de enfermedad. Caso real de este proyecto:
+
+      33 nearby phased variants collapse into a single local haplotypic event;
+      low allele balance suggests local mapping/representation complexity, but
+      the cause is not established.
+
+    Lo MEDIDO es que comparten bloque `PID` con la misma orientacion `PGT`, es
+    decir que estan en cis. Llamarlo "haplotipo divergente que mapea mal" seria
+    interpretacion: el balance de 0,13-0,30 lo hace sospechar, pero la causa no
+    esta establecida. Para el conteo de modelos recesivos basta con lo medido.
 
     Reglas, en orden:
       - Mismo `PID` y mismo `PGT`  -> mismo haplotipo. UN evento.

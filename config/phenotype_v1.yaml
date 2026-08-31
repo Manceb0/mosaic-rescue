@@ -1,0 +1,116 @@
+# =====================================================================
+# EXP-006 MODO B · METODO DE FENOTIPO — CONGELADO
+#
+# Se commitea ANTES de ver ningun ranking. No toca config/ranking_v1.yaml,
+# que sigue congelado para el modo A.
+# =====================================================================
+version: 1
+frozen_before_looking: true
+
+# ---------------------------------------------------------------------
+# QUE SIGNIFICA "PANEL-FREE" — y que NO significa
+# ---------------------------------------------------------------------
+panel_free_definition:
+  means: >
+    No entra ninguna lista curada de genes: ni MVA, ni renal, ni ningun gen
+    favorito. El motor no sabe que existe BUB1B.
+  does_NOT_mean: >
+    Knowledge-free. El motor SI usa relaciones conocidas HPO <-> enfermedad <->
+    gen, que es de donde sale la senal. Decir lo contrario seria enganoso.
+
+# ---------------------------------------------------------------------
+# METODO SEMANTICO — estandar, no inventado a ojo
+# ---------------------------------------------------------------------
+method:
+  similarity: "Resnik"
+  aggregation: "Best Match Average (BMA), simetrica"
+  propagation: "por ancestros en la DAG de HPO (is_a)"
+  ic_source: "frecuencia de anotacion en el corpus gen-fenotipo"
+  rationale: >
+    Se usa una metrica publicada en lugar de una bonificacion manual por gen.
+    Una bonificacion manual seria un panel por la puerta de atras.
+
+# ---------------------------------------------------------------------
+# PROCEDENCIA DE RECURSOS — con version, no "el HPO"
+# ---------------------------------------------------------------------
+resources:
+  ontology:
+    file: hp.obo
+    data_version: "hp/releases/2026-06-23"
+    active_terms: 19836
+  annotations:
+    file: genes_to_phenotype.txt
+    lines: 332600
+  note: "Descargados 2026-08-31. Si cambian, el resultado no es comparable."
+
+# ---------------------------------------------------------------------
+# FENOTIPO DEL PACIENTE — verificado contra la ontologia, no de memoria
+# ---------------------------------------------------------------------
+phenotype:
+  polarity_rule: >
+    Solo los terminos DOCUMENTADOS cuentan como positivos. Lo no mencionado es
+    DESCONOCIDO, nunca negativo. El documento del reto no declara ser un
+    fenotipado exhaustivo.
+
+  proband_core:
+    - {id: "HP:0002859", name: "Rhabdomyosarcoma"}
+    - {id: "HP:0000121", name: "Nephrocalcinosis"}
+    - {id: "HP:0004322", name: "Short stature"}
+    - {id: "HP:0001508", name: "Failure to thrive"}
+    - {id: "HP:0003202", name: "Skeletal muscle atrophy"}
+
+  perinatal_growth:
+    - {id: "HP:0001622", name: "Premature birth"}
+    - {id: "HP:0001518", name: "Small for gestational age"}
+    - {id: "HP:0001511", name: "Intrauterine growth retardation"}
+
+  family_history:
+    - {id: "HP:0200067", name: "Recurrent spontaneous abortion"}
+    channel: SEPARADO
+    reason: >
+      Es un rasgo de la MADRE, no del nino. Meterlo en el vector de similitud
+      del probando lo trataria como fenotipo corporal suyo y distorsionaria la
+      metrica. Va por canal propio y con peso propio.
+
+# ---------------------------------------------------------------------
+# PESOS DE COMBINACION — congelados antes de rankear
+# ---------------------------------------------------------------------
+combining:
+  genetics_weight: 1.0          # la puntuacion del modo A entra tal cual
+  phenotype_weight: 1.0         # escalado de la similitud semantica
+  family_history_weight: 0.3    # canal aparte, peso menor deliberadamente
+  formula: "score_A + phenotype_weight * sim_proband + family_history_weight * sim_family"
+  prohibition: >
+    PROHIBIDO reajustar estos pesos despues de ver la posicion de ningun gen.
+    Si se cambian, se crea phenotype_v2.yaml y se reportan AMBOS.
+
+# ---------------------------------------------------------------------
+# ANALISIS PREDEFINIDOS — todos se reportan, gane quien gane
+# ---------------------------------------------------------------------
+analyses:
+  A0: {name: "genetica intrinseca", clinvar: false, phenotype: false}
+  A1: {name: "genetica + ClinVar", clinvar: true, phenotype: false}
+  B0: {name: "fenotipo completo del probando", clinvar: true, phenotype: full}
+  B1: {name: "sin rabdomiosarcoma", drop: ["HP:0002859"]}
+  B2: {name: "sin fenotipo renal", drop: ["HP:0000121"]}
+  B3: {name: "sin crecimiento y perinatal", drop_group: perinatal_growth}
+  B4: {name: "sin historia familiar", drop_group: family_history}
+  LOO: {name: "leave-one-out por cada termino individual"}
+
+reporting:
+  requirement: >
+    Se reporta ESTABILIDAD DE RANGO, no solo el ganador. La salida es una matriz
+    gen x analisis. Si un gen sube al quitar un rasgo, se reporta igual.
+  interpretation:
+    stable_high: "gana por genotipo, no porque le contamos el fenotipo"
+    collapses_without_a_feature: "gana por el prior de ese rasgo — hallazgo relevante"
+
+# ---------------------------------------------------------------------
+# BASELINE EXTERNO
+# ---------------------------------------------------------------------
+external_baseline:
+  tool: "Exomiser u equivalente, offline"
+  rule: >
+    Se corre UNA vez con parametros preregistrados. PROHIBIDO ajustar nuestro
+    metodo para que coincida con el suyo. Concordancia y discordancia son ambas
+    resultados reportables.
