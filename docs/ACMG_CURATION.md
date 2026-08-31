@@ -169,21 +169,36 @@ Se puede demostrar, y produce además una figura útil:
 > las `B`/`LB`/`VUS`, y el candidato marcado. Si el dominio C-terminal concentra
 > efectivamente la enfermedad, `PM1` pasa a ser defendible **con el dato delante**.
 
-### Resultado — `PM1` **NO SE APLICA**, y el dato va en contra
+### Resultado — `PM1` **NO SE APLICA**, pero no por lo que parecía
 
-ClinVar completo (versión 2026-08-22), 2 470 variantes de la región anotadas sobre el
-transcrito MANE. Distribución por ventanas de 100 residuos:
+ClinVar completo (2026-08-22), 2 470 variantes de la región anotadas sobre el transcrito
+MANE.
 
-| Ventana | P/LP | B/LB | VUS | ratio P/LP:B/LB |
-|---|---:|---:|---:|---:|
-| 700–799 | 11 | 43 | 115 | 0,26 ← la mejor del gen |
-| 900–999 | 6 | 51 | 126 | 0,12 |
-| **1000–1099** | **0** | **35** | 79 | **0,00** ← aquí está el candidato |
+> **Corrección metodológica importante.** Un primer conteo dio «0 P/LP frente a 35 B/LB» en
+> la ventana del candidato y se leyó como que **el dato iba en contra**. Ese conteo mezclaba
+> todas las consecuencias: **31 de esos 35 «benignos» eran variantes sinónimas**, que no son
+> comparables con una missense. `PM1` se evalúa sobre la clase relevante de variante, no
+> contando cualquier entrada de ClinVar.
 
-**La ventana que contiene el residuo candidato tiene cero variantes P/LP y 35 benignas.**
-No es que falte evidencia para `PM1`: **el dato apunta en dirección contraria.**
+Rehecho **solo con missense** (n = 1 497 en el gen):
 
-**Veredicto:** `PM1` **NO SE APLICA.**
+| Ventana | P/LP | B/LB | VUS |
+|---|---:|---:|---:|
+| 400–499 | **1** | 4 | 141 |
+| 900–999 | 0 | 2 | 124 |
+| **1000–1099** | **0** | **4** | 78 |
+| **Todo el gen** | **1** | **35** | **1 426** |
+
+**En todo `BUB1B` hay exactamente UNA missense clasificada `P`/`LP`, y el 95 % de las
+missense del gen son VUS.**
+
+Eso cambia la conclusión. No es que la región del candidato esté empobrecida de patogénicas
+**respecto a otras regiones**: es que **ninguna región de este gen tiene un hotspot de
+missense patogénicas demostrable**. El panorama es uniforme y esencialmente vacío en todas
+partes.
+
+**Veredicto:** `PM1` **NO SE APLICA** — por ausencia de hotspot demostrable en cualquier
+punto del gen, no porque el dato señale específicamente en contra de este candidato.
 
 ---
 
@@ -237,9 +252,13 @@ missense en todo el gen ha alcanzado `P`/`LP`.
 > fase y de datos funcionales — el mismo problema que tenemos nosotros. La literatura de
 > investigación **sí** describe missense patogénicas en MVA por `BUB1B`.
 >
-> Lo que sí queda establecido: **no hay base empírica para `PM1` en este gen**, y la
-> probabilidad previa de que una missense sea el segundo alelo es más baja de lo que sugería
-> el patrón «truncante + missense» leído sin este contexto.
+> Lo que sí queda establecido: **no hay base empírica para `PM1` en ningún punto de este
+> gen**, y con el 95 % de las missense en VUS, la evidencia clínica actual no permite
+> sostener que esta región sea un hotspot de missense patogénicas.
+>
+> **Formulación defendible, la que va en la figura:** *«Current clinical evidence does not
+> support this region as a pathogenic missense hotspot, and an independent submission of the
+> same amino-acid substitution is also VUS.»* — **no** «la missense es benigna».
 
 ---
 
