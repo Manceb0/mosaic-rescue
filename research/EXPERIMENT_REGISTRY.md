@@ -12,7 +12,10 @@
 | **EXP-003** | Anotación VEP, pasada 1 | COMPLETO | `src/run_vep_pass1.sh` |
 | **EXP-004** | Escaneo del panel MVA | COMPLETO | `src/build_funnel.py` |
 | **EXP-005** | Escaneo del panel renal | COMPLETO | `src/build_funnel.py` |
-| **EXP-006** | **Ranking genome-wide sin panel** | **EN CURSO** | `src/prioritization/` |
+| **EXP-006** | **Ranking genome-wide sin panel** | **COMPLETO · SURVIVES** | `src/prioritization/` · `src/phenotype/` |
+| **EXP-017** | Auditoría renal / tubulopatía tras el modo B | **SIGUIENTE** | — |
+| **EXP-018** | Fenotipo residual: atrofia muscular | ABIERTO | — |
+| **EXP-019** | ¿La literatura de MVA cubre crecimiento y perinatales? | ABIERTO | — |
 | **EXP-007** | Curación ACMG de los alelos | COMPLETO | disperso → **falta notebook** |
 | **EXP-008** | Alelo regulador oculto | COMPLETO · **NEGATIVO** | disperso → **falta notebook** |
 | **EXP-009** | Prueba con AlphaGenome | COMPLETO · **NEGATIVO** | `src/alphagenome_*.py` |

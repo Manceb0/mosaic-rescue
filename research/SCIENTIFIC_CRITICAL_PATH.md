@@ -28,12 +28,14 @@ Si no responde a las dos, va al *backlog* de ingeniería, no al camino crítico.
 
 | # | Pregunta | Por qué importa | Evidencia actual | Estado | Bloqueo | Siguiente experimento | Impacto |
 |---|---|---|---|---|---|---|---|
-| 1 | ¿Qué gen explica el caso cuando compite todo el genoma codificante? | Sin esto, elegir `BUB1B` es sesgo de confirmación | `BUB1B` #1 de 8 730 en modo A, robusto a 5 variantes de puntuación | **EN CURSO** | — | Modo B + baseline externo | T1 |
+| 1 | ¿Qué gen explica el caso cuando compite todo el genoma codificante? | Sin esto, elegir `BUB1B` es sesgo de confirmación | **#1 en los 15 análisis**, incluido A0 sin fenotipo ni ClinVar. Modelo causal: OMIM:257300, compatible con herencia | **SURVIVES** | — | baseline externo, y cerrar | T1 |
 | 2 | ¿Los dos alelos de `BUB1B` están en *trans*? | Sin *trans* no hay modelo bialélico | Sin `PGT`/`PID`; hueco 13,8× la longitud de fragmento | **BLOCKED** | genotipos parentales o lectura larga dirigida | pedirlos | T1 · **el de mayor valor** |
 | 3 | ¿Hay un segundo alelo SNV/indel oculto en el locus? | El truncante necesita pareja | 270 kb, 1 candidato, AlphaGenome Δ plano | **NEGATIVE** | — | cerrado dentro del alcance evaluado | T1 |
 | 4 | ¿El segundo hit es estructural? | Es la clase que el VCF no ve | CNV grande sin evidencia desde profundidad y heterocigosidad | **BLOCKED** | BAM/CRAM de profundidad completa | pedirlo | T1 |
 | 5 | ¿Compite algún gen que no habíamos mirado? | Protege del sesgo de panel | `LZTR1` #2, `IGBP1` #3 | **EN CURSO** | — | auditar qué modelo de enfermedad sostiene cada uno | T1 |
-| 6 | ¿La nefrocalcinosis congénita exige un segundo diagnóstico? | No desaparece porque `BUB1B` gane | Primeros HIGH renales eran comunes — **eso no cierra la rama** | **ABIERTA** | — | auditoría de fenotipo residual completa | T1 |
+| 6 | ¿La nefrocalcinosis congénita exige un segundo diagnóstico? | No desaparece porque `BUB1B` gane | Primeros HIGH renales comunes. **Y el modo B añade señal: la nefrocalcinosis aporta poco soporte semántico al modelo MVA anotado** | **ABIERTA · prioridad subida** | — | EXP-017 | T1 |
+| 6b | ¿La atrofia muscular está cubierta por el modelo MVA? | Mismo patrón que la renal | Contribución semántica baja en el corpus HPO actual | **ABIERTA** | — | EXP-018 | T1 |
+| 6c | ¿La literatura de MVA respalda los rasgos de crecimiento y perinatales más allá de la anotación HPO? | Las bases HPO son incompletas; ausencia de anotación ≠ ausencia de asociación | Contribución semántica baja | **ABIERTA** | — | EXP-019 | T1 |
 | 7 | ¿Cuál es el mecanismo, no solo el gen? | Encontrar el gen no es encontrar el mecanismo | Truncante → NMD predicho; missense → hipótesis estructural | **PARCIAL** | — | conservación ortóloga; notebook estructural | **T1→T2** |
 | 8 | ¿El WGS conserva firma de mosaicismo? | Pieza central de originalidad | Nada ejecutado | **PARKED** | controles comparables | mCA/BAF/profundidad estándar primero | T1 |
 | 9 | ¿Hay señal mitocondrial ortogonal? | Lectura independiente del mismo WGS | Nada ejecutado | **PARKED** | controles y profundidad comparables | mtDNA-CN con controles | T1 |
