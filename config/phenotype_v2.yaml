@@ -1,0 +1,178 @@
+# =====================================================================
+# EXP-006 MODO B · METODO DE FENOTIPO — v2, CONGELADO
+#
+# SUSTITUYE a phenotype_v1.yaml, que NUNCA se ejecuto. v1 se conserva en el
+# historial para que se vea que cambio y por que.
+#
+# Los cuatro fallos de v1:
+#   1. Nueve terminos en vez de ocho. Anadi HP:0001511 (IUGR) que el documento
+#      clinico NO lista como termino: aparece solo como prosa justificando
+#      HP:0001518. Una observacion clinica partida en dos terminos correlados
+#      duplica senal en una metrica semantica.
+#   2. Peso 0,3 a historia familiar en el ranking principal. Es una decision
+#      manual y contamina el resultado primario.
+#   3. Resnik+BMA nombrado pero no especificado. Faltaba lo que mas sesga: como
+#      se agregan varias enfermedades de un mismo gen.
+#   4. "Nueve analisis" mal contado. Son quince.
+#
+# Y un hueco de procedencia que v1 no declaraba: los terminos de v1 los inferi
+# de la discusion del proyecto SIN haber leido el documento clinico. Para v2 se
+# leyo la fuente y los ocho identificadores salen literalmente de ella.
+# =====================================================================
+version: 2
+supersedes: phenotype_v1.yaml
+frozen_before_looking: true
+
+# ---------------------------------------------------------------------
+# 1 · INVENTARIO EXACTO — verificado contra el documento fuente
+# ---------------------------------------------------------------------
+phenotype_source:
+  document: "Challenge_Clinical_Phenotype_1.docx"
+  contains_explicit_hpo_ids: true
+  n_ids_in_document: 8
+  extraction: "work/pheno/source_text.txt (gitignored, nunca se commitea)"
+
+phenotype:
+  polarity_rule: >
+    Solo los terminos DOCUMENTADOS cuentan como positivos. Lo no mencionado es
+    DESCONOCIDO, nunca negativo. El documento no declara ser exhaustivo.
+
+  proband:                       # 7 terminos — los del documento, sin anadidos
+    - id: "HP:0002859"
+      label: "Rhabdomyosarcoma"
+      source_wording: "Malignant soft tissue tumour — the primary oncological event"
+      group: tumor
+    - id: "HP:0000121"
+      label: "Nephrocalcinosis"
+      source_wording: "Calcium deposits in kidney tissue; present since birth"
+      group: renal
+    - id: "HP:0004322"
+      label: "Short stature"
+      source_wording: "Height significantly below expected range for age and family background"
+      group: growth
+    - id: "HP:0001508"
+      label: "Failure to thrive"
+      source_wording: "poor weight gain and muscle development from early life"
+      group: growth
+    - id: "HP:0003202"
+      label: "Skeletal muscle atrophy"
+      source_wording: "Reduced muscle bulk observed clinically alongside failure to thrive"
+      group: muscle
+    - id: "HP:0001622"
+      label: "Premature birth"
+      source_wording: "Born at 32 weeks gestation"
+      group: perinatal
+    - id: "HP:0001518"
+      label: "Small for gestational age"
+      source_wording: "Approximately 1 kg at birth — severe low birth weight consistent with IUGR"
+      group: perinatal
+
+  family_history:                # 1 termino, canal SEPARADO
+    - id: "HP:0200067"
+      label: "Recurrent spontaneous abortion"
+      source_wording: "Multiple pregnancy losses prior to the proband's birth — reported as maternal/parental history"
+      group: family
+
+  excluded_terms:
+    - id: "HP:0001511"
+      label: "Intrauterine growth retardation"
+      reason: >
+        NO es un termino del documento. Aparece solo como prosa explicando el
+        peso al nacer que justifica HP:0001518. Incluirlo como termino
+        independiente duplicaria una unica observacion clinica y, al estar
+        semanticamente muy proximo a SGA, inflaria el emparejamiento de
+        cualquier gen anotado con cualquiera de los dos.
+
+  total: {proband: 7, family_history: 1, sum: 8}
+
+# ---------------------------------------------------------------------
+# 2 · LA HISTORIA FAMILIAR NO ENTRA EN EL RANKING PRINCIPAL
+# ---------------------------------------------------------------------
+family_history_policy:
+  primary_weight: 0.0
+  rationale: >
+    Un peso de 0,3 era una eleccion manual de modelado y contaminaria el
+    resultado primario. El ranking principal usa SOLO el fenotipo del probando.
+  sensitivity_weight: 0.3
+  sensitivity_id: FH_ON
+  note: >
+    El propio documento dice que la historia de abortos "should be treated as
+    part of the phenotypic input, not merely as background". Por eso se corre
+    como sensibilidad explicita en vez de descartarse — pero fuera del primario,
+    porque es un rasgo de la MADRE.
+
+# ---------------------------------------------------------------------
+# 3 · RESNIK + BMA, ESPECIFICADO ENTERO
+# ---------------------------------------------------------------------
+semantic_method:
+  ontology_version: "hp/releases/2026-06-23"
+  ontology_active_terms: 19836
+  annotation_release: "genes_to_phenotype.txt, 332600 lineas, descargado 2026-08-31"
+
+  ic_definition: "IC(t) = -log( n_genes_anotados_con_t_o_descendiente / n_genes_totales )"
+  ic_corpus: "el propio corpus gen-fenotipo, NO el corpus de enfermedades"
+  ancestor_propagation: >
+    El conjunto de terminos de cada gen se cierra sobre sus ancestros `is_a`
+    antes de calcular IC y similitud.
+
+  pairwise: "Resnik: IC del ancestro comun mas informativo"
+  aggregation: "Best Match Average ASIMETRICA, direccion paciente -> gen"
+  asymmetry_rationale: >
+    Para cada termino del paciente se toma su mejor emparejamiento contra el
+    conjunto del gen, y se promedia sobre los terminos del paciente. La
+    direccion inversa castigaria a genes con muchas anotaciones por rasgos que
+    el paciente no tiene, y "no tiene" aqui significa DESCONOCIDO, no ausente.
+
+  multi_disease_aggregation:
+    rule: "UNION de terminos de todas las enfermedades del gen, UNA sola vez"
+    forbidden: "similitud por enfermedad y luego tomar el maximo"
+    rationale: >
+      Si se calculara por enfermedad y se tomara el maximo, un gen con 30
+      modelos anotados tendria 30 oportunidades de sacar un emparejamiento alto
+      solo por tener mas modelos conocidos. Con la union, tiene UNA.
+
+  residual_bias_declared: >
+    La union no elimina del todo la ventaja por amplitud: un gen con muchos
+    terminos sigue teniendo mas probabilidad de que alguno empareje bien. Por eso
+    se REPORTA el numero de terminos anotados de cada gen junto a su puntuacion,
+    para que el sesgo sea visible en vez de invisible.
+
+# ---------------------------------------------------------------------
+# COMBINACION — congelada
+# ---------------------------------------------------------------------
+combining:
+  formula: "score_A + phenotype_weight * sim_proband + fh_weight * sim_family"
+  phenotype_weight: 1.0
+  fh_weight_primary: 0.0
+  fh_weight_sensitivity: 0.3
+  prohibition: >
+    PROHIBIDO reajustar pesos o regla de agregacion despues de ver la posicion
+    de ningun gen. Si se cambian, se crea v3 y se reportan ambos.
+
+# ---------------------------------------------------------------------
+# 4 · LOS QUINCE ANALISIS, con identificador estable
+# ---------------------------------------------------------------------
+analyses:
+  - {id: A0_GENETICS,                  phenotype: none, clinvar: false}
+  - {id: A1_GENETICS_CLINVAR,          phenotype: none, clinvar: true}
+  - {id: B0_FULL_PROBAND,              phenotype: all_7, clinvar: true}
+  - {id: B1_MINUS_RHABDOMYOSARCOMA,    drop: ["HP:0002859"]}
+  - {id: B2_MINUS_RENAL,               drop: ["HP:0000121"]}
+  - {id: B3_MINUS_GROWTH_PERINATAL,    drop: ["HP:0004322","HP:0001508","HP:0001622","HP:0001518"]}
+  - {id: B4_GENETICS_ONLY_CONTROL,     phenotype: none, clinvar: true}
+  - {id: FH_ON,                        phenotype: all_7, family_history: 0.3}
+  - {id: LOO_HP_0002859}
+  - {id: LOO_HP_0000121}
+  - {id: LOO_HP_0004322}
+  - {id: LOO_HP_0001508}
+  - {id: LOO_HP_0003202}
+  - {id: LOO_HP_0001622}
+  - {id: LOO_HP_0001518}
+  total: 15
+
+reporting:
+  required: >
+    Matriz de ESTABILIDAD DE RANGO gen x analisis para los genes lideres, no
+    solo el ganador. Y para cada candidato, que terminos de fenotipo lo empujan
+    de verdad.
+  also_report: "numero de terminos HPO anotados por gen, como covariable del sesgo por amplitud"
