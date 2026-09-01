@@ -145,7 +145,49 @@ def resnik_bma(patient_terms, model_terms, ic: dict, parents: dict, cache: dict)
     return total / len(patient_terms)
 
 
-def score_genes(patient_terms, models, ic, parents):
+def _pheno_cache_key(patient_terms, models):
+    """Huella del conjunto de terminos Y del corpus de modelos.
+
+    Si cambian los terminos o el corpus, la cache se invalida sola. Se usa el
+    numero de modelos y un hash de sus identificadores: recorrer los conjuntos
+    de terminos propagados seria mas caro que el propio calculo.
+    """
+    import hashlib
+    h = hashlib.sha256()
+    h.update(",".join(sorted(patient_terms)).encode())
+    h.update(f"|{len(models)}|".encode())
+    h.update(",".join(sorted(m.disease_id for m in models[:2000])).encode())
+    return h.hexdigest()[:16]
+
+
+def score_genes(patient_terms, models, ic, parents, use_cache=True):
+    """Envoltorio con cache en disco. El calculo real esta en `_score_genes`.
+
+    MOTIVO. Resnik+BMA sobre ~7 000 modelos y 8 conjuntos de terminos distintos
+    domina el coste del modo B. El resultado es determinista dadas las entradas
+    congeladas, asi que recalcularlo en cada sesion es puro gasto.
+    """
+    import io as _io, os, pickle
+    if not use_cache:
+        return _score_genes(patient_terms, models, ic, parents)
+    d = "work/cache"
+    path = os.path.join(d, f"pheno_{_pheno_cache_key(patient_terms, models)}.pkl")
+    if os.path.exists(path):
+        try:
+            with _io.open(path, "rb") as f:
+                return pickle.load(f)
+        except (pickle.UnpicklingError, EOFError):
+            pass
+    out = _score_genes(patient_terms, models, ic, parents)
+    os.makedirs(d, exist_ok=True)
+    tmp = path + ".tmp"
+    with _io.open(tmp, "wb") as f:
+        pickle.dump(out, f, protocol=pickle.HIGHEST_PROTOCOL)
+    os.replace(tmp, path)
+    return out
+
+
+def _score_genes(patient_terms, models, ic, parents):
     """Puntuacion por gen = MEJOR modelo de enfermedad, con trazabilidad.
 
     Devuelve, por gen: la puntuacion, que enfermedad la produce, y cuantos
