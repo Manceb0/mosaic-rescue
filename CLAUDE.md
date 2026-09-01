@@ -145,3 +145,62 @@ results/                  # IGNORADO por defecto
 - No abras Track 2 mientras EXP-006 (ranking genome-wide sin panel) siga en curso. Saltar de un panel a mecanismo es sesgo de confirmación.
 - No termines un analisis importante solo en CSV o Markdown. Cada hipotesis acaba en una figura interpretable, una conclusion, una incertidumbre y un falsificador (`docs/05_CONTRATO_VISUAL.md`).
 - No dibujes las predicciones de AlphaGenome como si fueran pistas medidas de un genome browser. La palabra PREDICHO va en el panel, no en el pie.
+
+---
+
+## MODO AUTONOMO — vigente desde 2026-08-31
+
+Se trabaja **desde el camino crítico**, sin parar a preguntar tras cada tarea.
+
+### Después de cada experimento
+
+1. Validar el resultado y correr los tests/QC existentes.
+2. Registrarlo como exactamente uno de: `SURVIVES` / `NEGATIVE` / `BLOCKED` / `PARKED`.
+3. Anotar **qué incertidumbre redujo** y **qué decisión desbloquea**.
+4. Actualizar `research/EXPERIMENT_REGISTRY.md` y `research/SCIENTIFIC_CRITICAL_PATH.md`.
+5. Elegir la siguiente tarea por esta prioridad:
+
+   | | Prioridad |
+   |---|---|
+   | **A** | Un resultado que pueda **tumbar** la interpretación causal |
+   | **B** | Un experimento desbloqueado sobre el mecanismo causal principal |
+   | **C** | Un fenotipo residual capaz de indicar diagnóstico mixto |
+   | **D** | Lecturas mecanísticas ortogonales |
+   | **E** | Deuda de reproducibilidad/documentación — **en paralelo o cuando cierre un bloque científico; nunca que consuma el proyecto** |
+
+6. Continuar automáticamente.
+
+### `A0` NO SE REESCRIBE — nunca
+
+`A0` congelado dio **`BUB1B` en el puesto 4**. `A0-FREQFIX` es una **sensibilidad posterior**,
+justificada por un defecto de frecuencia descubierto **después** del resultado.
+
+**Los dos números se reportan siempre juntos.** Prohibido borrar el #4 o narrar la historia
+como «`BUB1B` siempre fue #1». Contar las dos versiones nos favorece más: enseña exactamente
+por qué importa la procedencia de las frecuencias.
+
+### CONDICIONES DE PARADA — las únicas
+
+- Operación destructiva de Git o de historial.
+- Decisión de publicar o exponer información específica del paciente.
+- Nueva transmisión de datos genómicos del paciente a un servicio externo.
+- Necesidad de datos clínicos/parentales/de profundidad completa no disponibles.
+- Un resultado que **contradiga materialmente** el modelo causal actual.
+- Elección del candidato terapéutico final.
+- Acción irreversible o de coste alto.
+- Ambigüedad genuina en la que dos caminos cambiarían la conclusión científica.
+
+**No se para** por decisiones ordinarias de implementación, figuras, notebooks, descargas,
+análisis locales, búsqueda bibliográfica, tests ni corrección rutinaria de errores.
+
+Si una rama se **bloquea**, se salta inmediatamente a la de mayor valor desbloqueada.
+No se crean módulos exploratorios nuevos salvo que respondan a una incertidumbre que **ya
+esté** en el camino crítico.
+
+### Las cuatro pasadas
+
+`PASS 1 descubrir ampliamente` → `PASS 2 matar lo que falla obviamente` →
+`PASS 3 conectar las ramas supervivientes` → `PASS 4 robustez / red-team / reproducibilidad`
+
+El proyecto derivó por hacer PASS 4 mientras faltaban ramas de PASS 1–3. **La auditoría
+transversal se hace al final, sobre todo el conjunto**, no rama a rama.

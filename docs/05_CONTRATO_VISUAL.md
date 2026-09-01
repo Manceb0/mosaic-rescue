@@ -33,7 +33,7 @@ Ejemplo, MitoRead:
 
 ```
 HIPÓTESIS      el estrés aneuploide altera la homeostasis mitocondrial
-ESPERADO       mtDNA-CN del paciente por debajo de controles compatibles
+ESPERADO       estimación mtDNA-equivalente del paciente (prototipo) por debajo de controles compatibles
 OBSERVADO      paciente = percentil X de N controles emparejados
 SIGNIFICA      apoya / no apoya la rama mitocondrial
 LA MATARÍA     mtDNA-CN normal o alto, sin evidencia mitocondrial ortogonal
@@ -55,7 +55,7 @@ alimenta la última fila de esta tabla.
 | Función residual | Gráfico de dosis funcional | Cuán severo parece cada alelo, sin falsa precisión |
 | Bartter / HPO residual | Matriz fenotipo–gen | Qué síntomas explica MVA y cuáles quedan residuales |
 | Segundo hit estructural | Diagrama de breakpoints centrado en el gen | Dónde hay un hit que el VCF convencional no veía |
-| MitoRead | mtDNA-CN del paciente vs controles compatibles | Si existe señal mitocondrial anómala |
+| MitoRead | estimación mtDNA-equivalente del paciente (prototipo) vs controles compatibles | Si existe señal mitocondrial anómala |
 | Mosaic fingerprint | Mapa de dispersión LRR/BAF por cromosoma | Si el WGS bulk conserva firma de mosaicismo |
 | Método de dispersión | Curva de sensibilidad por simulación | Si nuestro estadístico gana al baseline |
 | Hipótesis terapéutica | Grafo causal mecanismo → fármaco | Por qué ese fármaco y no otro |

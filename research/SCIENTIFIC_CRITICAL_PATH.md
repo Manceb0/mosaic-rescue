@@ -28,18 +28,18 @@ Si no responde a las dos, va al *backlog* de ingeniería, no al camino crítico.
 
 | # | Pregunta | Por qué importa | Evidencia actual | Estado | Bloqueo | Siguiente experimento | Impacto |
 |---|---|---|---|---|---|---|---|
-| 1 | ¿Qué gen explica el caso cuando compite todo el genoma codificante? | Sin esto, elegir `BUB1B` es sesgo de confirmación | **#1 en los 15 análisis**, incluido A0 sin fenotipo ni ClinVar. Modelo causal: OMIM:257300, compatible con herencia | **SURVIVES** | — | baseline externo, y cerrar | T1 |
+| 1 | ¿Qué gen explica el caso cuando compite todo el genoma codificante? | Sin esto, elegir `BUB1B` es sesgo de confirmación | **#1 en 14 de los 15 análisis**. En `A0` congelado queda **#4**; los tres que lo superan resultaron ser **polimorfismos comunes con rsID** cuya frecuencia VEP no supo anotar (hasta 313 150 homocigotos en gnomAD). En la sensibilidad `A0-FREQFIX`, que repara los 33 alelos afectados, **vuelve al puesto 1**. Modelo causal: OMIM:257300, compatible con herencia | **CERRADO · SURVIVES** | — | baseline externo hecho (#2 de 398, modelo AR) · notebook 03 reproduce desde las entradas · Figura 6 regenerada desde él. **Bloque de ranking cerrado; no se refina más salvo fallo concreto** | T1 |
 | 2 | ¿Los dos alelos de `BUB1B` están en *trans*? | Sin *trans* no hay modelo bialélico | Sin `PGT`/`PID`; hueco 13,8× la longitud de fragmento | **BLOCKED** | genotipos parentales o lectura larga dirigida | pedirlos | T1 · **el de mayor valor** |
 | 3 | ¿Hay un segundo alelo SNV/indel oculto en el locus? | El truncante necesita pareja | 270 kb, 1 candidato, AlphaGenome Δ plano | **NEGATIVE** | — | cerrado dentro del alcance evaluado | T1 |
 | 4 | ¿El segundo hit es estructural? | Es la clase que el VCF no ve | CNV grande sin evidencia desde profundidad y heterocigosidad | **BLOCKED** | BAM/CRAM de profundidad completa | pedirlo | T1 |
-| 5 | ¿Compite algún gen que no habíamos mirado? | Protege del sesgo de panel | `LZTR1` #2, `IGBP1` #3 | **EN CURSO** | — | auditar qué modelo de enfermedad sostiene cada uno | T1 |
-| 6 | ¿La nefrocalcinosis congénita exige un segundo diagnóstico? | No desaparece porque `BUB1B` gane | Primeros HIGH renales comunes. **Y el modo B añade señal: la nefrocalcinosis aporta poco soporte semántico al modelo MVA anotado** | **ABIERTA · prioridad subida** | — | EXP-017 | T1 |
-| 6b | ¿La atrofia muscular está cubierta por el modelo MVA? | Mismo patrón que la renal | Contribución semántica baja en el corpus HPO actual | **ABIERTA** | — | EXP-018 | T1 |
-| 6c | ¿La literatura de MVA respalda los rasgos de crecimiento y perinatales más allá de la anotación HPO? | Las bases HPO son incompletas; ausencia de anotación ≠ ausencia de asociación | Contribución semántica baja | **ABIERTA** | — | EXP-019 | T1 |
-| 7 | ¿Cuál es el mecanismo, no solo el gen? | Encontrar el gen no es encontrar el mecanismo | Truncante → NMD predicho; missense → hipótesis estructural | **PARCIAL** | — | conservación ortóloga; notebook estructural | **T1→T2** |
-| 8 | ¿El WGS conserva firma de mosaicismo? | Pieza central de originalidad | Nada ejecutado | **PARKED** | controles comparables | mCA/BAF/profundidad estándar primero | T1 |
-| 9 | ¿Hay señal mitocondrial ortogonal? | Lectura independiente del mismo WGS | Nada ejecutado | **PARKED** | controles y profundidad comparables | mtDNA-CN con controles | T1 |
-| 10 | ¿Qué hipótesis terapéutica sobrevive? | **Es el diferencial del proyecto** | Nada | **GATED** | umbral de mecanismo | búsqueda bibliográfica ya permitida | **T2** |
+| 5 | ¿Compite algún gen que no habíamos mirado? | Protege del sesgo de panel | `LZTR1` #2, `IGBP1` #3. **El baseline externo añade `FANCD2` (#4, recesivo), que nosotros no teníamos en el top-50** | **EN CURSO** | — | `FANCD2` **NEGATIVE**: alelos comunes (~47 %) y todos heterocigotos, sin configuración recesiva posible. Quedan `LZTR1` e `IGBP1` por auditar | T1 |
+| 6 | ¿La nefrocalcinosis congénita exige un segundo diagnóstico? | No desaparece porque `BUB1B` gane | Primeros HIGH renales comunes. **Y el modo B añade señal: la nefrocalcinosis aporta poco soporte semántico al modelo MVA anotado** | **BARRIDO NEGATIVE · pregunta ABIERTA** | historia obstétrica y electrolitos | 0 alelos raros en 28 genes al umbral del panel; **0 variantes de `MAGED2`**. La nefrocalcinosis congénita sigue sin explicación propia | T1 |
+| 6b | ¿La atrofia muscular está cubierta por el modelo MVA? | Mismo patrón que la renal | **No anotada en el modelo y no cuantificada en la serie de 31 casos** | **PARKED** | dato ausente en la literatura | — | T1 |
+| 6c | ¿La literatura de MVA respalda crecimiento y perinatales? | Las bases HPO son incompletas | **Sí: 93,5 % de retraso de crecimiento.** El bajo soporte era **hueco de anotación**, no biología | **CERRADO · NEGATIVE como residual** | — | — | T1 |
+| 7 | ¿Cuál es el mecanismo, no solo el gen? | Encontrar el gen no es encontrar el mecanismo | Truncante → NMD predicho. Missense: **conservación ortóloga SURVIVES** — posición en el percentil 90 de su propia proteína, propiedad química conservada al 99,2 % en 120 ortólogos, la clase que introduce la sustitución no aparece en ninguno. **No cambia ACMG** | **PARCIAL · avanza** | ΔΔG explícito bloqueado por licencia FoldX | **siguiente mejor experimento registrado: ensayo de abundancia y recambio de BUBR1 específico de variante** | **T1→T2** |
+| 8 | ¿El WGS conserva firma de mosaicismo? | Pieza central de originalidad | **Simulación hecha (EXP-015a):** el BAF colapsa a potencia 0,000 al 20 % en escenario variegado; la dispersión de cobertura conserva 1,000. **Superioridad sobre MoChA NO demostrada** — la línea base usada carece de fase | **COMPUERTA SUPERADA · aplicación BLOQUEADA** | controles con pipeline idéntico | conseguir controles; comparar contra un método CON fase | T1 |
+| 9 | ¿Hay señal mitocondrial ortogonal? | Lectura independiente del mismo WGS | **Prototipo ejecutado:** 0,069 % de lecturas compatibles, *naive mtDNA-equivalent estimate* ≈259 bajo los supuestos del piloto. **Prototipo, no medida**: los NUMT no se excluyen sin alinear al genoma completo | **VIABILIDAD TÉCNICA · interpretación BLOCKED** | BAM/CRAM de profundidad completa **y** hemograma contemporáneo | pedir ambos; sin el hemograma la medida es ininterpretable | T1 |
+| 10 | ¿Qué hipótesis terapéutica sobrevive? | **Es el diferencial del proyecto** | **6 clases evaluadas; la modulación de proteostasis es la superviviente principal ENTRE LAS EVALUADAS.** Separada en T2-A (aguas arriba) y T2-B (aguas abajo), con riesgos oncológicos opuestos. **Puente 7 cerrado como `UNRESOLVED` con contraevidencia verificada**: en fibroblastos NPC1 la sobreexpresión de HSP70 rescató y arimoclomol no, sin inducir HSP70 (PMID 34481829); y en aneuploides humanos la inducción de HSR está al 50–60 % (PMID 25205676). **Sin nominación** | **ABIERTO** | puente 7 con prior en contra; puente 8 vacío | **Next Best Experiment redefinido**: par isogénico aneuploide/euploide ± coinductor, con **control positivo genético** y **lectura obligatoria de si el fármaco induce HSP**, midiendo a la vez CIN y supervivencia clonogénica | **T2** |
 
 ---
 
@@ -52,10 +52,16 @@ funcional». Con las advertencias de composición celular y controles.
 el índice de dispersión experimental **después**, y solo si gana una simulación. Nunca
 afirmar reconstrucción de cariotipos desde WGS bulk.
 
+**La discrepancia con REVEL sigue sin explicar.** EXP-011 falsó la explicación que el propio proyecto había escrito. Que un dato nuevo mate una explicación nuestra es el funcionamiento correcto, no un problema — pero queda como incógnita abierta, no como asunto resuelto.
+
+**El argumento de diagnóstico mixto se estrecha a UN solo rasgo.** De los cuatro con bajo soporte semántico, tres resultaron ser huecos de anotación o falta de dato. Solo la nefrocalcinosis carece de anotación **y** de respaldo en la literatura de MVA1.
+
+**El solapamiento entre los dos rankings es del 30 %**, no del 100 %. Los motores coinciden fuertemente en `BUB1B` y poco en el resto. La convergencia es sobre el candidato principal, no sobre el ranking entero, y así hay que presentarla.
+
 **Fenotipo residual** no se cierra porque los primeros HIGH renales fueran comunes. Se
 cierra con evidencia.
 
-**Track 2 está `GATED`, no olvidado.** La búsqueda bibliográfica sobre dosis de BUBR1,
+**Track 2 está ABIERTO desde el cierre de EXP-006.** La búsqueda bibliográfica sobre dosis de BUBR1,
 proteostasis y segregación cromosómica **ya está permitida**. Lo prohibido es **elegir el
 candidato terapéutico final** antes de establecer suficientemente el mecanismo.
 

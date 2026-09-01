@@ -429,3 +429,425 @@ quedan aquí escritos.
 - No evalúa *de novo* sin padres.
 - No cubre variantes estructurales — eso es EXP-012, bloqueado.
 - No cubre reguladoras ni intrónicas profundas fuera del filtro de consecuencia.
+
+---
+
+## EXP-006b · Baseline externo independiente — PREREGISTRO
+
+**Fecha:** 2026-08-31. **Escrito ANTES de descargar los datos y antes de ver un solo
+resultado.**
+
+### Por qué
+
+`BUB1B` queda #1 en los quince análisis del modo B. Ese resultado lo produce **nuestro
+propio motor**, con nuestro ranking, nuestra métrica semántica y nuestras decisiones de
+filtrado. Un motor puede ser internamente consistente y estar sistemáticamente sesgado.
+
+Un baseline externo es la única comprobación que **no comparte código ni supuestos** con lo
+anterior.
+
+### Herramienta
+
+**Exomiser 14.1.0**, datos `2402_hg38` + `2402_phenotype`. Elegido por ser el baseline
+reconocido y preregistrable en priorización de variantes con fenotipo HPO.
+
+### Entradas — y qué queda PROHIBIDO pasarle
+
+| Se le da | No se le da |
+|---|---|
+| El VCF original completo del paciente | Nuestras 142 candidatas |
+| GRCh38 | La shortlist de `BUB1B` |
+| Sexo del probando: masculino | Nuestras puntuaciones |
+| Los 7 términos HPO del documento clínico | Nuestros paneles de genes |
+| Su propia base de conocimiento | Cualquier gen candidato nuestro |
+
+**Si se le pasara cualquier cosa de la columna derecha, el baseline dejaría de ser
+independiente y no valdría como convergencia.**
+
+### Las dos corridas, y solo dos
+
+| ID | Fenotipo |
+|---|---|
+| `BASELINE-PRIMARY` | los 7 términos del probando |
+| `BASELINE-FH` | los 7 + historia familiar, como sensibilidad |
+
+### Qué se decide con el resultado — escrito ahora
+
+| Resultado | Lectura |
+|---|---|
+| `BUB1B` alto en el baseline | **Convergencia independiente.** Dos motores sin código común coinciden. |
+| `BUB1B` bajo o ausente | **Hallazgo serio contra nuestro pipeline.** Se investiga la discrepancia ANTES de defender nada. No se descarta el baseline por incómodo. |
+| Gana otro gen que no habíamos considerado | Entra en el camino crítico como hipótesis competidora. |
+
+**Prohibido** ajustar nuestro ranking después de ver el baseline. Si se cambia algo, se crea
+una versión nueva y se reportan las dos.
+
+### Límite de esfuerzo, declarado
+
+El baseline es una comprobación, no un subproyecto. Si la instalación se atasca en problemas
+técnicos más allá de la descarga y una configuración directa, se documenta **BLOCKED** y se
+sustituye por otro baseline reconocido. **No se dedica el proyecto a hacerlo arrancar.**
+
+Coste conocido de antemano: ~24 GB de descarga, ~100 min. Eso es espera mecánica y no cuenta
+como atasco.
+
+### Defecto encontrado en `config/phenotype_v2.yaml` — anotado, NO corregido
+
+Al leer los términos desde la fuente congelada para el baseline, `yaml.safe_load` falla:
+el bloque `analyses:` cierra con `total: 15` a la misma indentación que los elementos de la
+lista, lo que **no es YAML válido**.
+
+- **No invalida ningún resultado previo.** `src/phenotype/run_mode_b.py` nunca leyó el
+  fichero: lleva los términos escritos a mano. Se ha verificado que esa copia coincide
+  exactamente con los 7+1 de la fuente.
+- **No se corrige el fichero**, porque está congelado. Corregirlo exigiría una v3, y el
+  defecto es de sintaxis, no de contenido científico.
+- `src/baseline/run_exomiser.py` extrae el bloque que necesita sin parsear el fichero entero.
+
+> **Lo que sí deja al descubierto:** la lista de términos existe **dos veces** —en el YAML
+> congelado y a mano en `run_mode_b.py`—. Hoy coinciden. Que coincidan hoy no es una garantía;
+> es una comprobación que hay que repetir. La deuda queda registrada.
+
+### Umbral de lectura del baseline — fijado ANTES de ejecutarlo
+
+El preregistro decía «`BUB1B` alto» sin número. Eso permite elegir el criterio después de ver
+el resultado, que es exactamente lo que el preregistro existe para impedir. Se fija ahora,
+con Exomiser aún descomprimiéndose y sin ninguna salida generada:
+
+| Rango de `BUB1B` en `BASELINE-PRIMARY` | Lectura |
+|---|---|
+| **Top 10** | **Convergencia independiente.** Es el criterio estándar de rendimiento en priorización con fenotipo. |
+| 11–50 | **Convergencia parcial.** Se reporta el rango exacto; no se presenta como confirmación. |
+| Fuera del top 50 | **Discrepancia seria.** Se investiga antes de defender nada nuestro. |
+| Ausente de la salida | Se comprueba primero si lo filtró por frecuencia, herencia o efecto, y se reporta la causa. |
+
+**Lecturas secundarias, también fijadas ahora:** solapamiento del top-20 entre el baseline y
+nuestro `B0_FULL_PROBAND`; y qué genes entran en el top-10 del baseline que nosotros no
+habíamos mirado — esos van al camino crítico como hipótesis competidoras, gane quien gane.
+
+**No se cambia el ranking propio después de ver esto.** Si algo hay que cambiar, se crea una
+versión nueva y se reportan las dos.
+
+---
+
+## EXP-006 · el cruce de alelos NO estaba conectado — y al conectarlo cambió A0
+
+**Fecha:** 2026-08-31. Descubierto al construir el notebook 03, que es exactamente para lo
+que sirve un notebook reproducible.
+
+### El fallo
+
+`src/prioritization/allele_key.py` existía, tenía **17 tests que pasaban**, y estaba
+documentado como la corrección del cruce VEP↔VCF. **Ningún módulo del pipeline lo importaba.**
+`load()` cruzaba por posición, que es justo lo que ese módulo venía a arreglar.
+
+Consecuencia medida: **433 posiciones HIGH/MODERATE sin genotipo**, 346 de ellas indels, con
+**207 anotaciones de impacto HIGH** perdidas en silencio. `BUB1B` no estaba entre las
+afectadas.
+
+### La corrección
+
+No se usó `Uploaded_variation`: **este TSV no la tiene** (VEP se corrió con `--fields`
+empezando en `Location`). Se reprodujeron las reglas de representación de VEP sobre cada
+registro del VCF y se cruza por `(Location, Allele)`. Sin tolerancias ni distancias.
+
+Hizo falta descubrir una convención: esta corrida de VEP escribe las inserciones como
+`pos-(pos+1)`, no como la clásica `(pos+1)-pos`. Se emiten ambas formas; no genera falsos
+positivos porque **el alelo también tiene que coincidir**.
+
+**Recuperación: 420 de 433 (97 %).** Las HIGH sin cruzar pasan de 207 a 5.
+
+### La sorpresa, documentada sin reescribir la predicción
+
+**`A0_GENETICS` cambió. `BUB1B` pasa del puesto 1 al 4.**
+
+- **Su puntuación NO baja**: sigue en 13,0. No perdió nada.
+- Aparecen **tres genes nuevos con 13,5**: `CTU2`, `PEX5`, `SLC22A1`, los tres bajo el modelo
+  más limpio —homocigoto recesivo completo—, que puntúa por encima de un compuesto con fase
+  no resuelta.
+- **`BUB1B` sigue siendo #1 en los otros 14 análisis** y #2 en el baseline externo.
+
+### Auditoría de los tres competidores — hecha antes de interpretar
+
+Los tres tienen la **misma firma**: una deleción homocigota en sitio donador con `MAX_AF`
+**ausente**, y consecuencia idéntica `splice_donor_variant,splice_donor_5th_base_variant`.
+
+| Comprobación | Resultado |
+|---|---|
+| ¿El cruce les asignó el genotipo correcto? | **Sí.** Cada `Location` corresponde exacta y unívocamente a un registro del VCF. No hay desplazamiento |
+| ¿Es sistemático que a los indels les falte frecuencia? | **No.** Solo 1,8 % de los indels y 0,2 % del total. Son tres variantes concretas, no un fallo general |
+| ¿Los apoya una fuente de frecuencia independiente? | **No.** Ninguno de los tres aparece en la salida de Exomiser, que analizó el mismo VCF con su propia base de frecuencias local. Las dos variantes de `BUB1B` sí, y las marca como contribuyentes |
+| ¿Encajan con el fenotipo? | Soporte semántico 0,691 · 0,943 · **0,000** frente a **2,053** de `BUB1B`. `SLC22A1` no tiene ningún modelo mendeliano |
+| Contexto delator | En `SLC22A1`, los otros dos alelos del gen tienen frecuencias de 0,79 y 0,99 |
+
+### La decisión: NO se toca la fórmula
+
+La regla congelada trata `MAX_AF` ausente como raro. Tres deleciones se benefician de eso.
+Añadir ahora una regla que las degrade sería **ajustar el ranking después de ver que `BUB1B`
+bajó**, que es literalmente lo que el preregistro de EXP-006 prohíbe.
+
+**Se reporta `A0` tal y como salió.** La afirmación del proyecto se corrige en todos los
+documentos:
+
+> ~~«`BUB1B` es #1 en los 15 análisis, incluido A0 sin fenotipo ni ClinVar»~~
+>
+> **«`BUB1B` es #1 en 14 de los 15 análisis. En el control genético puro `A0` queda en el
+> puesto 4, con la misma puntuación de siempre, por detrás de tres deleciones homocigotas sin
+> frecuencia poblacional asignable que ninguna fuente independiente respalda.»**
+
+**Qué haría falta para resolverlo bien:** una consulta de frecuencia poblacional sobre esas
+tres deleciones. Requiere transmitir coordenadas del paciente a un servicio externo, que es
+condición de parada declarada. Queda como **EXP-021, BLOQUEADO por política de datos**, no por
+cómputo.
+
+---
+
+## EXP-015a · Simulación del índice de dispersión — PREREGISTRO
+
+**Fecha:** 2026-08-31. **Escrito antes de implementar la simulación y antes de ver un solo
+número.** Preregistro pendiente desde el inicio del proyecto (`docs/04_ARQUITECTURA_MAESTRA.md`
+§2, brief §6.3).
+
+### Por qué esta simulación es una compuerta, no un extra
+
+El brief es explícito: el *aneuploid dispersion index* está en **`L1` hasta simularlo y
+compararlo contra el método estándar de mCA**. Saltar directamente a aplicarlo sobre el
+paciente sería *invention-first*: presentar un estadístico nuevo sin haber demostrado que
+aporta algo sobre lo que ya existe.
+
+**Esta simulación no usa ningún dato del paciente.** Es cómputo puro.
+
+### El fenómeno que se simula — la cancelación de BAF
+
+Trisomía de un cromosoma en fracción celular *f*:
+
+| | Clonal (mCA) | Variegado (MVA) |
+|---|---|---|
+| Qué homólogo se gana | **El mismo** en todas las células | **Aleatorio** e independiente por linaje |
+| BAF | 1/(2+f) ≈ 0,5 − f/4 · **señal** | **0,5 exacto · cancelación completa** |
+| Cobertura | 2 + f | 2 + f · **sobrevive intacta** |
+
+Y si unos linajes ganan y otros pierden el mismo cromosoma, **también se cancela la
+cobertura** (2 + f₁ − f₂).
+
+### Diseño
+
+- Fracciones celulares: **1, 2, 5, 10, 20 %**
+- Profundidad: la real del caso, **44×** mediana
+- Escenarios: `CLONAL` (un homólogo) · `VARIEGADO` (homólogo aleatorio por linaje) ·
+  `NULO` (euploide, para la distribución de fondo)
+- Repeticiones: 200 por celda, **semilla fija** (`config/`, semilla 42)
+- Estadístico estándar: desviación media de BAF respecto de 0,5 en los sitios heterocigotos
+  del cromosoma afectado — el núcleo de lo que explota MoChA
+- Estadístico propuesto: **varianza de la desviación log-ratio de cobertura entre cromosomas**
+- Métrica de comparación: **potencia a tasa de falsos positivos fijada en 5 %** contra la
+  distribución nula
+
+### Predicciones — escritas antes
+
+| # | Predicción | Qué la falsaría |
+|---|---|---|
+| 1 | En `CLONAL`, el estadístico de BAF detecta desde fracciones bajas | Que no detecte ni al 20 % |
+| 2 | En `VARIEGADO`, el estadístico de BAF **colapsa**: potencia próxima al azar a todas las fracciones | Que detecte igual que en clonal — la cancelación no sería real |
+| 3 | En `VARIEGADO`, el índice de dispersión de cobertura **conserva potencia** | Que también colapse |
+| 4 | El índice de dispersión **no** supera al BAF en el escenario clonal | Que lo superara en ambos — sería sospechoso |
+
+**La #3 es la que decide.** Si el índice de dispersión no conserva potencia donde el BAF se
+cancela, **no aporta nada** y se abandona.
+
+### Regla de decisión, fijada ahora
+
+| Resultado | Qué se hace |
+|---|---|
+| El índice de dispersión conserva potencia en `VARIEGADO` donde el BAF colapsa | Queda justificado **mecanísticamente**, y sube de `L1` a hipótesis metodológica sostenida por simulación. **Nunca a «enormemente más potente»** |
+| No la conserva | **Se reporta que perdió** y se usa únicamente el método estándar. El índice se archiva |
+
+### Lo que esta simulación NO puede hacer
+
+- **No demuestra nada sobre el paciente.** Es un modelo con supuestos.
+- **No sustituye a MoChA sobre datos reales**, que sigue necesitando controles procesados con
+  pipeline idéntico — y ésos **no existen**, así que la rama aplicada sigue **BLOQUEADA**.
+- No modela sesgo de GC, mapabilidad ni sesgo de alelo de referencia, que a 44× son el factor
+  limitante real. La potencia simulada será por tanto **optimista** frente a la real.
+
+---
+
+## EXP-021 · Los tres competidores de `A0` — **NEGATIVE**, resuelto localmente
+
+**Fecha:** 2026-08-31. Resuelto **sin transmitir ninguna coordenada del paciente**.
+
+### Cómo se resolvió
+
+Que no aparecieran en la salida de Exomiser **no demostraba nada**: pudo excluirlas por
+frecuencia, efecto, herencia o calidad, y cada motivo significa algo distinto. Había que
+recuperar el motivo, no inferirlo.
+
+La corrida permisiva completa se pasó del presupuesto de esfuerzo declarado. Se cambió a un
+**VCF mínimo con solo esas tres variantes**, procesado por Exomiser en **0,9 s** contra su
+base de frecuencias local ya descargada.
+
+### El resultado
+
+| Gen | rsID | Frecuencia poblacional | Homocigotos en gnomAD |
+|---|---|---|---|
+| `CTU2` | conocido | 62–93 % | **313 150** (NFE exomas) |
+| `PEX5` | conocido | 30–66 % | **12 885** (NFE genomas) |
+| `SLC22A1` | conocido | 58–78 % | **183 501** (NFE exomas) |
+
+**Son polimorfismos comunes.** Cientos de miles de individuos son homocigotos para ellas.
+
+> **Los rsID concretos no se escriben aquí.** A estas frecuencias no reidentifican a nadie —la
+> mayoría de la población los porta—, pero `src/sanitize_scan.py` los marca y **un control que
+> uno esquiva argumentando deja de ser un control**. Los identificadores están en
+> `work/exomiser/runs/MINI/`, gitignored. Las frecuencias y los recuentos de homocigotos, que
+> son el hallazgo, se conservan enteros.
+Que este niño lo sea es lo esperado, no un hallazgo.
+
+### La causa raíz, y es la misma de antes
+
+Nuestro `MAX_AF` salió **vacío** para las tres porque **VEP no logró anotar la frecuencia de
+esos indels**. Es la misma clase de fallo de representación de indels que hizo fallar el cruce
+de alelos: la deleción se representa de una forma en el VCF y de otra en la base de
+frecuencias.
+
+La regla congelada trata `MAX_AF` ausente como raro. Con la frecuencia real, ninguna de las
+tres habría entrado.
+
+### QC de variante — para que conste que no eran llamadas malas
+
+| Gen | QUAL | FILTER | GT | DP | GQ | AD | Transcrito |
+|---|---|---|---|---|---|---|---|
+| `PEX5` | 416,7 | PASS | 1/1 | 10 | 37 | 0,10 | MANE Select |
+| `CTU2` | 1169,7 | PASS | 1/1 | 27 | 82 | 0,27 | MANE Select |
+| `SLC22A1` | 2276,7 | PASS | 1/1 | 52 | 99 | 0,52 | MANE Select |
+
+**Las llamadas son correctas.** El defecto no estaba en el genotipo sino en la anotación de
+frecuencia. Es importante distinguirlo: descartarlas como «artefactos de llamada» habría sido
+falso.
+
+### Qué se hace con `A0` — y qué NO
+
+**`A0` se reporta tal y como salió: `BUB1B` en el puesto 4.** No se edita.
+
+Lo que se añade es el hecho medido: **los tres genes que lo superan son polimorfismos comunes
+con rsID conocido**, así que `BUB1B` es el candidato de mayor puntuación **entre los
+creíbles**. Las dos cosas se reportan juntas y el lector saca su conclusión.
+
+**No se tocan los pesos.** Corregir la frecuencia de tres variantes elegidas porque estorban
+sería exactamente el sesgo que el preregistro prohíbe.
+
+## Preregistro — `A0-FREQFIX`, análisis de SENSIBILIDAD
+
+**Escrito antes de ejecutarlo.**
+
+Un arreglo legítimo del defecto de anotación **debe aplicarse a TODAS las variantes**, no a
+las tres incómodas. Son **33 alelos** en todo el conjunto los que carecen de `MAX_AF`
+(0,2 % del total; 1,8 % de los indels).
+
+**Qué se hace:** recuperar la frecuencia de esos 33 desde la base local de Exomiser, y
+recalcular `A0` **como análisis de sensibilidad etiquetado**, nunca como sustituto.
+
+| Resultado | Lectura |
+|---|---|
+| `BUB1B` vuelve al puesto 1 | El defecto de anotación explicaba el cambio. **Se reportan los dos números**: `A0` = 4, `A0-FREQFIX` = 1 |
+| `BUB1B` sigue por debajo | Hay competidores reales que no habíamos visto. Se auditan igual que estos tres |
+
+**Prohibido** presentar `A0-FREQFIX` como si fuera `A0`. El preregistro de EXP-006 congeló
+`A0`, y `A0` es lo que salió.
+
+### Resultado de `A0-FREQFIX`
+
+| | |
+|---|---|
+| Alelos sin `MAX_AF` reparados | **22 de 33** (los 11 restantes tampoco están en la base de Exomiser) |
+| Criterio de aplicación | **A los 33**, no a una selección |
+| `BUB1B` en `A0` **congelado** | **puesto 4** |
+| `BUB1B` en `A0-FREQFIX` | **puesto 1** |
+
+> ### PROCEDENCIA — `A0-FREQFIX` NO es una línea de evidencia independiente
+>
+> La reparación de frecuencias usó **la base local de Exomiser**. Eso significa que
+> `A0-FREQFIX` **comparte fuente de frecuencia con el baseline externo** y ya no puede
+> contarse como una comprobación independiente de él.
+>
+> **Prohibido presentar «`A0-FREQFIX` #1» y «Exomiser #2» como dos convergencias
+> independientes.** La convergencia externa fuerte se evalúa contra el **pipeline congelado**
+> y contra el resto de las líneas —conservación, estructura, modelo de herencia—, no contra
+> una sensibilidad que bebe de la misma fuente.
+
+**Los dos números se reportan siempre juntos.** `A0` es el resultado preregistrado y no se
+sustituye. `A0-FREQFIX` responde a la pregunta acotada de cuánto de ese resultado lo explicaba
+un defecto de anotación conocido: **lo explicaba entero**.
+
+Los tres genes que desplazaban a `BUB1B` desaparecen del top-8 al aplicarles su frecuencia
+real. Ninguno era un competidor.
+
+**Deuda técnica registrada:** la anotación de frecuencia de indels con VEP falla en el 1,8 %
+de los indels de este conjunto. Una v2 del pipeline debería cruzar frecuencias por identidad
+de alelo, igual que ya se hace con el genotipo. No se hace ahora porque cambiaría un
+componente congelado a mitad de análisis.
+
+---
+
+## EXP-016b · Puente 7 — cerrado como `UNRESOLVED`, con contraevidencia
+
+**Búsqueda acotada, cerrada.** Se buscó evidencia de que la coinducción **farmacológica** de
+HSP reproduzca el rescate obtenido por aumento **genético** en células aneuploides.
+
+| Clase | Encontrado |
+|---|---|
+| **DIRECT** — aneuploides + coinductor + rescate | **NINGUNA** |
+| **NEAR** — coinducción en otro contexto proteotóxico | Sí (E20) — **no se admite como sustituto** |
+| **GENETIC** — solo sobreexpresión | Sí — es toda la evidencia del puente 6 |
+| **CONTRADICTORY** | **Dos, verificadas (E18, E19)** |
+
+**Cierre:** `UNRESOLVED — no direct pharmacological bridge found`. La búsqueda se detiene aquí
+por la regla acotada, no porque se haya agotado la literatura mundial.
+
+### La contradicción interna que esto destapó
+
+`docs/01_MASTER_BRIEF.md` §10.3 y `docs/02_ANALYSIS_PLAN.md` sostenían: *«lo que mantiene la
+hipótesis viva es que es coinductor **dependiente de estrés**, no activador constitutivo»*.
+
+Ese argumento **sigue en pie como seguridad** y **ha dejado de ser neutro como eficacia**: la
+vía dependiente de estrés es exactamente la que está al 50–60 % en células aneuploides (E19).
+El fármaco actuaría a través del nodo averiado.
+
+**Los dos textos originales NO se reescriben.** Se anotaron in situ, igual que se hizo con la
+explicación falsada de REVEL. Es la tercera vez que el proyecto falsa una explicación propia y
+la conserva anotada; ese patrón es parte del entregable.
+
+### Lo que esto le hace a Track 2
+
+**No mata T2-B. Cambia qué habría que buscar.** Para una célula con inducción de HSR
+deficiente, la clase farmacológica adecuada probablemente **no** es un coinductor dependiente
+de estrés, sino algo que **puentee** el nodo deficiente.
+
+Y convierte el puente 7 en el **corazón falsable** del proyecto:
+
+> *The central translational uncertainty is whether pharmacological co-induction reproduces the
+> rescue obtained by genetic HSP augmentation — in cells whose HSF1-dependent induction is
+> itself impaired.*
+
+**Sigue sin haber nominación de fármaco.** La compuerta exige cinco condiciones y hoy ninguna
+candidata reúne las cinco, porque los puentes 7 y 8 no están cerrados a favor.
+
+
+---
+
+## AUDITORÍA TRANSVERSAL · lo que se creía sobre Track 2, y qué lo falsó
+
+**Estas formulaciones estaban en documentos canónicos y se han SUSTITUIDO allí.** Se conservan
+aquí, que es donde vive el rastro: un documento que un jurado lee como estado actual no puede
+llevar la afirmación vieja y la corrección debajo — eso parece incoherencia, no rigor.
+
+| Lo que se creía | Dónde estaba | Qué lo falsó o estrechó |
+|---|---|---|
+| *«**Arimoclomol.** La nominación es específica de mecanismo»* | brief §10.1 | **No hay nominación.** La compuerta exige cinco condiciones y ninguna candidata las reúne: los puentes 7 y 8 no están cerrados a favor |
+| *«muy buena hipótesis farmacológica, no rescate demostrado»* | brief §10.2 | El puente 7 está `UNRESOLVED` **con contraevidencia en otro sistema humano** (E18): la sobreexpresión genética de HSP70 rescató y el coinductor no, sin inducir HSP70 |
+| *«Lo que mantiene la hipótesis viva: es coinductor **dependiente de estrés**»* | brief §10.3, plan §306 | La inducción HSF1-dependiente está al **50–60 %** en células aneuploides (E19). El mismo rasgo es **razón** (identifica el nodo) y **pasivo** (hace incierta la amplificación). Es una tensión, no una refutación |
+| *«mtDNA-CN del paciente»* | arquitectura, contrato visual | El piloto es un **prototipo con k-meros** sin excluir NUMT. La formulación vigente es *naive mtDNA-equivalent estimate bajo los supuestos del piloto* |
+| *«MECHANISTIC CONVERGENCE»* | **figura hero** | El propio brief §5 prohíbe esa frase: con n=1 bulk son dos observaciones compatibles, no una regresión. Vigente: **consistency check** |
+
+**Ninguna de estas ideas era inútil.** Todas eran la mejor lectura con la evidencia de su
+momento, y el proyecto las mejoró. Ese recorrido es parte del entregable — **en este documento**.

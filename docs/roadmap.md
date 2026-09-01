@@ -214,7 +214,7 @@ flowchart LR
     B --> C[Mechanism router]
     C --> D[Non-obvious patient signal]
     D --> E[Independent validation]
-    E --> F[Mechanistic convergence]
+    E --> F[Consistency check]
     F --> G[Forecast / replay if justified]
     G --> H[Intervention mimicry]
     H --> I[Safety]

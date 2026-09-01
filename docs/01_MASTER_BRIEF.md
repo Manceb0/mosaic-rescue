@@ -19,14 +19,14 @@ La meta **no** es afirmar que hay una cura. Es producir **una hipótesis terapé
 
 | Archivo | Tamaño | Notas |
 |---|---|---|
-| `[REDACTED]_[REDACTED].vcf.gz` + índice | — | VCF de WGS |
+| VCF del paciente + índice (nombre real en `config/paths.yaml`, gitignored) | — | VCF de WGS |
 | `..._S16_L001_R1_001.fastq.gz` | 10,5 GB | Carril 1, lectura 1 |
 | `..._S16_L001_R2_001.fastq.gz` | 11 GB | Carril 1, lectura 2 |
 | `..._S16_L002/L003/L004_R1/R2_001.fastq.gz` | — | Carriles 2-4 |
 | **Total** | **~86 GB** | |
 | `Challenge_Clinical_Phenotype_1.docx` | — | Fenotipo HPO |
 
-`[REDACTED]` es patrón de flowcell NovaSeq S4. `S16` indica muestra 16 de la hoja de muestras.
+El identificador de flowcell del nombre de fichero sigue el patrón NovaSeq S4, y el sufijo de muestra indica su posición en la hoja de muestras. Los valores concretos no se reproducen aquí: identifican la corrida y la muestra.
 
 ### NO existe (no lo asumas, no lo inventes)
 
@@ -41,7 +41,7 @@ La meta **no** es afirmar que hay una cura. Es producir **una hipótesis terapé
 21,5 GB por carril × 4 ≈ 86 GB comprimidos. Eso **no** son 30x; el rango probable es **45-60x**, posiblemente más si las calidades están binarizadas (NovaSeq). Comando exacto sobre un carril:
 
 ```bash
-zcat [REDACTED]_[REDACTED]_S16_L001_R1_001.fastq.gz | \
+zcat "$FASTQ_L001_R1" | \
   awk 'NR%4==2 {n++; b+=length($0)} END {print n" reads, "b" bases"}'
 ```
 
@@ -373,15 +373,20 @@ Escribir siempre: *"se intentó faseo respaldado por lecturas / estadístico; la
 
 ## §10. Hipótesis farmacológica y su colisión con la oncología
 
-### §10.1 La nominación
+### §10.1 La clase mecanística candidata — **sin nominación de fármaco**
 
-**Arimoclomol.** La nominación es específica de mecanismo, no de enriquecimiento de vías: en el trabajo de aneuploidía-p62 (`Nat Commun` 16:5328, 2025), **la sobreexpresión de proteínas de choque térmico mitigó la agregación proteica y redujo la colocalización de p62 con TOMM20** — es decir, subir HSPs revierte precisamente la lesión que MitoRead propone medir.
+> **Estado a 2026-08-31: NO hay fármaco nominado.** La compuerta exige cinco condiciones
+> (aprobado · proximidad mecanística a un puente nombrado · evidencia **de ese** puente ·
+> predicción de rescate falsable · contra-test explícito de CIN/tumor) y **ninguna candidata las
+> reúne**. Ver `docs/TRACK2_MECHANISM_MAP.md`.
+
+La clase candidata es **modulación de proteostasis y chaperonas**, y lo es por mecanismo, no por enriquecimiento de vías: en el trabajo de aneuploidía-p62 (`Nat Commun` 16:5328, 2025), **la sobreexpresión de proteínas de choque térmico mitigó la agregación proteica y redujo la colocalización de p62 con TOMM20** — es decir, subir HSPs revierte precisamente la lesión que MitoRead propone medir.
 
 Arimoclomol es coinductor de HSP70, aprobado por la FDA el 20 de septiembre de 2024 para Niemann-Pick C en pacientes de 2 años o más, en combinación con miglustat; oral, con posología pediátrica por peso. Actúa **solo bajo estrés celular**, lo que implicaría acción preferente en las células más aneuploides del mosaico.
 
 ### §10.2 El hueco que hay que declarar
 
-**Sobreexpresar HSPs genéticamente ≠ administrar arimoclomol.** No hay evidencia de que arimoclomol haya sido probado en esas células aneuploides y haya restaurado la importación mitocondrial. Estado actual: **muy buena hipótesis farmacológica, no rescate demostrado.** Eso no la debilita para el hackathon; la vuelve falsable.
+**Sobreexpresar HSPs genéticamente ≠ administrar arimoclomol.** No hay evidencia de que arimoclomol haya sido probado en esas células aneuploides y haya restaurado la importación mitocondrial. Estado actual: **hipótesis mecanística con el puente farmacológico SIN RESOLVER.** Y hay contraevidencia en otro sistema humano: en fibroblastos NPC1 la sobreexpresión de HSP70 rescató y el coinductor **no lo reprodujo, sin llegar a inducir HSP70** (`docs/EVIDENCE.md` E18). Eso no mata la idea; la vuelve **falsable y concreta**.
 
 ### §10.3 La colisión con la oncología — peor de lo que parece
 
@@ -389,7 +394,21 @@ La literatura es explícita: las células cancerosas están **adictas** a HSF1; 
 
 Estamos proponiendo un coinductor de HSF1 en un niño que **ya tuvo un rabdomiosarcoma**. Es la dirección opuesta a lo que hace la oncología.
 
-Lo que mantiene la hipótesis viva: arimoclomol es coinductor dependiente de estrés, no activador constitutivo.
+**La tensión, formulada como corresponde.** Ser coinductor **dependiente de estrés** es a la vez lo que hace la hipótesis atractiva y lo que la hace incierta:
+
+| A favor | En contra |
+|---|---|
+| Actuaría preferentemente donde hay estrés, es decir en las células más aneuploides del mosaico | La inducción HSF1-dependiente está **al 50–60 %** en células aneuploides (E19): la respuesta que un coinductor amplifica es justo la que está deficiente |
+
+> *HSF1 impairment makes the pathway both mechanistically relevant and pharmacologically
+> uncertain. Genetic augmentation can bypass the deficit; whether a stress-dependent
+> pharmacological co-inducer can amplify the impaired endogenous response sufficiently
+> remains unresolved.*
+
+**No está demostrado que falle.** Un coinductor amplifica una respuesta ya iniciada y no exige una HSF1 intacta. Lo que se afirma es que **el resultado es impredecible desde la evidencia actual** — y por eso es el puente 7.
+
+
+
 
 ### §10.4 El experimento que es la mejor diapositiva del proyecto
 

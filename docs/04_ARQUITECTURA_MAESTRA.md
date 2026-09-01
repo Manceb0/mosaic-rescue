@@ -166,7 +166,7 @@ Posición: **aguas abajo** del mecanismo causal. No es diagnóstica de MVA.
 
 ```
 mecanismo MVA → estrés aneuploide → disrupción de proteostasis
-              → ¿disfunción mitocondrial? → mtDNA-CN del paciente
+              → ¿disfunción mitocondrial? → estimación mtDNA-equivalente (prototipo, NUMT no excluidos)
 ```
 
 Requisito de controles: mtDNA-CN exige controles compatibles en **tejido, librería y

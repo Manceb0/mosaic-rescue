@@ -193,7 +193,7 @@
 
     <rect x="40" y="756" width="1320" height="88" rx="3"
           fill="#FFFFFF" stroke="#14191E" stroke-width="1.8"/>
-    <text x="64" y="792" class="lbl" font-size="16">MECHANISTIC CONVERGENCE</text>
+    <text x="64" y="792" class="lbl" font-size="16">CONSISTENCY CHECK</text>
     <text x="64" y="818" class="lbl-sm">evidencia genómica · predicción funcional · literatura primaria</text>
     <text x="1336" y="792" class="mono" fill="#5A646D" text-anchor="end">NO ES UNA VOTACIÓN</text>
     <text x="1336" y="816" class="lbl-sm" text-anchor="end">las rutas no suman: tienen que encajar</text>

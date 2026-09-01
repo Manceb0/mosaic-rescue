@@ -303,7 +303,10 @@ Tres filtros duros por candidato:
 
 **a) Riesgo oncológico.** ¿El candidato aumenta tolerancia a aneuploidía, proliferación, escape de apoptosis, atenuación de p53, debilitamiento del checkpoint o tolerancia al daño del ADN? Si sí, bandera roja y trade-off documentado. Precedente a citar: la hormona de crecimiento en el caso de MVA2 (brief §3.3).
 
-Para arimoclomol específicamente: declarar la colisión frontal con la oncología (brief §10.3). Las células cancerosas están adictas a HSF1; el campo desarrolla **inhibidores** de HSF1 como antitumorales. Se está proponiendo un coinductor en un niño que ya tuvo un rabdomiosarcoma. Lo que mantiene la hipótesis viva es que es coinductor dependiente de estrés, no activador constitutivo — y eso es exactamente lo que hay que testar.
+Para arimoclomol específicamente: declarar la colisión frontal con la oncología (brief §10.3). Las células cancerosas están adictas a HSF1; el campo desarrolla **inhibidores** de HSF1 como antitumorales. Se está proponiendo un coinductor en un niño que ya tuvo un rabdomiosarcoma. Ser coinductor **dependiente de estrés** es a la vez la razón y el riesgo: actuaría donde hay estrés, pero la inducción HSF1-dependiente está al 50–60 % en células aneuploides (`docs/EVIDENCE.md` E19). **Tensión no resuelta — es el puente 7**, y es exactamente lo que hay que testar.
+
+
+
 
 **b) Disponibilidad pediátrica.** ¿Existe posología pediátrica establecida? (Arimoclomol sí, ≥2 años. Navitoclax no.)
 
