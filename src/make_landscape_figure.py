@@ -148,7 +148,7 @@ svg{{display:block;width:100%;height:auto;min-width:940px}}
 <line x1="{x(CAND):.1f}" y1="440" x2="{x(CAND):.1f}" y2="484" stroke="var(--measured)" stroke-width="2"/>
 
 <!-- zoom -->
-<text x="{ZX0}" y="640" class="sect">Ampliación · residuos {Z0}–{Z1}</text>
+<text x="{ZX0}" y="640" class="sect">Ampliación alrededor del candidato</text>
 <line x1="{ZX0}" y1="652" x2="{ZX0+ZW}" y2="652" stroke="var(--rule)"/>
 <text x="{ZX0-12}" y="690" class="lbl-sm" text-anchor="end" fill="var(--path)">P/LP</text>
 <text x="{ZX0-12}" y="722" class="lbl-sm" text-anchor="end" fill="var(--vus)">VUS</text>
@@ -157,7 +157,7 @@ svg{{display:block;width:100%;height:auto;min-width:940px}}
 {zoom}
 <line x1="{zx(CAND):.1f}" y1="676" x2="{zx(CAND):.1f}" y2="772" stroke="var(--measured)" stroke-width="2"/>
 <circle cx="{zx(CAND):.1f}" cy="766" r="5" fill="var(--measured)"/>
-<text x="{zx(CAND):.1f}" y="668" class="mono" fill="var(--measured)" text-anchor="middle">residuo {CAND}</text>
+<text x="{zx(CAND):.1f}" y="668" class="mono" fill="var(--measured)" text-anchor="middle">candidato</text>
 <text x="{ZX0}" y="792" class="mono" fill="var(--ink-soft)">{Z0}</text>
 <text x="{ZX0+ZW}" y="792" class="mono" fill="var(--ink-soft)" text-anchor="end">{Z1}</text>
 <rect x="{zx(CAND)+14:.1f}" y="700" width="290" height="40" rx="3" fill="var(--panel)" stroke="var(--accent)"/>

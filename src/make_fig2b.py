@@ -57,7 +57,7 @@ for v in V:
     if v["cls"] == "B/LB":
         zoom += (f'<line x1="{x:.1f}" y1="{ZAXIS}" x2="{x:.1f}" y2="{ZAXIS+52}" stroke="var(--benign)" stroke-width="1.6"/>'
                  f'<circle cx="{x:.1f}" cy="{ZAXIS+52}" r="5" fill="var(--benign)"/>'
-                 f'<text x="{x:.1f}" y="{ZAXIS+70}" class="mono" fill="var(--benign)" text-anchor="middle">{v["pos"]}</text>')
+                 f'<text x="{x:.1f}" y="{ZAXIS+70}" class="mono" fill="var(--benign)" text-anchor="middle">{v["pos"]-CAND:+d}</text>')
     elif v["cls"] == "CONFLICTIVA":
         zoom += (f'<line x1="{x:.1f}" y1="{ZAXIS}" x2="{x:.1f}" y2="{ZAXIS+30}" stroke="var(--confl)" stroke-width="1.4"/>'
                  f'<circle cx="{x:.1f}" cy="{ZAXIS+30}" r="3.5" fill="var(--confl)"/>')
@@ -68,7 +68,7 @@ for v in V:
 ticks = ""
 for r in range(Z0, Z1 + 1, 10):
     ticks += (f'<line x1="{zx(r):.1f}" y1="{ZAXIS}" x2="{zx(r):.1f}" y2="{ZAXIS+7}" stroke="var(--ink-soft)" stroke-width="1"/>'
-              f'<text x="{zx(r):.1f}" y="{ZAXIS+20}" class="mono" text-anchor="middle">{r}</text>')
+              f'<text x="{zx(r):.1f}" y="{ZAXIS+20}" class="mono" text-anchor="middle">{r-CAND:+d}</text>')
 
 HTML = f"""<title>BUBR1 Missense Landscape</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -135,7 +135,7 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <line x1="{px(CAND):.1f}" y1="{AXIS-120}" x2="{px(CAND):.1f}" y2="{AXIS+100}" stroke="var(--target)" stroke-width="2.5"/>
 <circle cx="{px(CAND):.1f}" cy="{AXIS}" r="9" fill="var(--target)"/>
 <circle cx="{px(CAND):.1f}" cy="{AXIS}" r="16" fill="none" stroke="var(--target)" stroke-width="1.5" opacity=".5"/>
-<text x="{px(CAND):.1f}" y="{AXIS-130}" class="lbl" fill="var(--target)" text-anchor="middle">candidato del paciente · residuo {CAND}</text>
+<text x="{px(CAND):.1f}" y="{AXIS-130}" class="lbl" fill="var(--target)" text-anchor="middle">candidato del paciente</text>
 <text x="{px(CAND):.1f}" y="{AXIS-116}" class="mono" fill="var(--target)" text-anchor="middle">MEASURED · VUS</text>
 
 {doms}
@@ -143,10 +143,10 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <text x="{X0+XW}" y="{AXIS+146}" class="mono" text-anchor="end">{L} aa</text>
 <text x="{X0}" y="{AXIS+166}" class="lbl-sm">Los dominios son contexto externo (UniProt), no evidencia de este análisis. La evidencia son las posiciones de los lollipops.</text>
 
-<text x="{X0}" y="{AXIS+206}" class="lbl">Una sola missense P/LP en todo el gen (residuo {by['P/LP'][0]}). Las 35 benignas se reparten de punta a punta. El 95 % son VUS.</text>
+<text x="{X0}" y="{AXIS+206}" class="lbl">Una sola missense P/LP en todo el gen, lejos del candidato. Las 35 benignas se reparten de punta a punta. El 95 % son VUS.</text>
 
 <!-- ═══ PANEL B ═══ -->
-<text x="{ZX0}" y="{ZAXIS-124}" class="sect">B · Ampliación {Z0}–{Z1} · resolución de residuo</text>
+<text x="{ZX0}" y="{ZAXIS-124}" class="sect">B · Ampliación ±50 residuos alrededor del candidato · resolución de residuo</text>
 <text x="1340" y="{ZAXIS-124}" class="mono" text-anchor="end">{sum(zc.values())} missense en la ventana</text>
 <line x1="{ZX0}" y1="{ZAXIS-112}" x2="1340" y2="{ZAXIS-112}" stroke="var(--rule)"/>
 <text x="{ZX0-10}" y="{ZAXIS-24}" class="lbl-sm" fill="var(--vus)" text-anchor="end">VUS {zc['VUS']}</text>
@@ -159,15 +159,15 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <circle cx="{zx(CAND):.1f}" cy="{ZAXIS}" r="8" fill="var(--target)"/>
 <g transform="translate({zx(CAND)-152:.1f},{ZAXIS-104})">
   <rect x="0" y="-24" width="304" height="66" rx="3" fill="var(--panel)" stroke="var(--target)"/>
-  <text x="152" y="-8" class="lbl" fill="var(--target)" text-anchor="middle">residuo {CAND} · tres cambios distintos</text>
-  <text x="12" y="12" class="mono" fill="var(--target)">T&gt;G</text>
+  <text x="152" y="-8" class="lbl" fill="var(--target)" text-anchor="middle">la posición candidata · tres cambios nucleotídicos distintos</text>
+  <text x="12" y="12" class="mono" fill="var(--target)">1</text>
   <text x="66" y="12" class="lbl-sm" fill="var(--target)">nuestro paciente — no está en ClinVar</text>
-  <text x="12" y="28" class="mono" fill="var(--vus)">T&gt;A</text>
+  <text x="12" y="28" class="mono" fill="var(--vus)">2</text>
   <text x="66" y="28" class="lbl-sm">mismo aminoácido · ClinVar VUS</text>
-  <text x="12" y="44" class="mono" fill="var(--benign)">T&gt;C</text>
+  <text x="12" y="44" class="mono" fill="var(--benign)">3</text>
   <text x="66" y="44" class="lbl-sm">sinónima · Likely benign</text>
 </g>
-<text x="{ZX0}" y="{ZAXIS+104}" class="lbl-sm">Vecinos inmediatos con missense benignas: residuos 977 (×2), 1004, 1013, 1040 y 1042.</text>
+<text x="{ZX0}" y="{ZAXIS+104}" class="lbl-sm">Seis missense benignas en vecinos inmediatos, repartidas a ambos lados del candidato.</text>
 
 <line x1="{X0}" y1="762" x2="1340" y2="762" stroke="var(--rule)"/>
 <text x="{X0}" y="786" class="lbl">Current clinical evidence does not support this region as a pathogenic missense hotspot,</text>
@@ -181,7 +181,7 @@ número: están repartidas de punta a punta del gen, incluidas <strong>seis en l
 candidato</strong> y una en el residuo inmediatamente contiguo. La única P/LP del gen está
 en el residuo {by['P/LP'][0]}, lejos.</p>
 
-<p><strong>El residuo {CAND} tiene tres cambios nucleotídicos distintos documentados.</strong>
+<p><strong>La posición candidata tiene tres cambios nucleotídicos distintos documentados.</strong>
 El del paciente no está en ClinVar. Otro produce <em>el mismo cambio de aminoácido</em> por
 otra ruta y está clasificado <strong>VUS</strong> por un <em>submitter</em> independiente
 con criterios. El tercero es sinónimo y benigno.</p>

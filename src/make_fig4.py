@@ -10,6 +10,14 @@ Uso: python src/make_fig4.py
 """
 import io, json, numpy as np
 
+def _anon(lbl):
+    """VAL998:O -> "vecino 2:O". Conserva el atomo (importa quimicamente) y
+    elimina identidad y posicion del residuo (no importan, y reidentifican)."""
+    res, _, atom = lbl.partition(":")
+    _anon.seen.setdefault(res, len(_anon.seen) + 1)
+    return "vecino %d:%s" % (_anon.seen[res], atom)
+_anon.seen = {}
+
 D = json.load(io.open("work/struct/fig4.json", encoding="utf-8"))
 AT, BO, HB, SH, PL = D["atoms"], D["bonds"], D["hbonds"], D["shells"], D["plddt_profile"]
 T = D["target"]
@@ -82,7 +90,7 @@ for k, h in enumerate(sorted(HB, key=lambda x: x["don"], reverse=True)):
     mark = "" if h["don"] else "  ← IRRECUPERABLE"
     ehb += (f'<text x="{EX0}" y="{yy}" class="lbl" fill="{col}">cadena lateral {rol}</text>'
             f'<text x="{EX0+170}" y="{yy}" class="mono" fill="{col}">{h["d"]:.2f} A</text>'
-            f'<text x="{EX0+240}" y="{yy}" class="lbl-sm">{h["lbl"]}</text>'
+            f'<text x="{EX0+240}" y="{yy}" class="lbl-sm">{_anon(h["lbl"])}</text>'
             f'<text x="{EX0}" y="{yy+18}" class="lbl-sm">{verdict}{mark}</text>'
             f'<line x1="{EX0}" y1="{yy+30}" x2="{EX0+EW}" y2="{yy+30}" stroke="var(--rule)"/>')
 
@@ -100,7 +108,7 @@ for k, s in enumerate(SH):
                    f'<text x="{CX0+max(w,1.5)+7}" y="{yy+10}" class="mono" fill="var(--ink-soft)">{s["dens"]:.0f}</text>')
 core_lo = CX0 + 60 / maxd * CW
 
-HTML = f"""<title>[REDACTED] Structural Interrogation</title>
+HTML = f"""<title>Interrogatorio estructural del residuo candidato</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -161,7 +169,7 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 <text x="{AX0+6}" y="{ay(glob)-5:.1f}" class="mono">media global {glob:.1f}</text>
 <line x1="{ax(T):.1f}" y1="{AY0-6}" x2="{ax(T):.1f}" y2="{AY0+AH}" stroke="var(--target)" stroke-width="2"/>
 <circle cx="{ax(T):.1f}" cy="{ay(D['plddt_target']):.1f}" r="5" fill="var(--target)"/>
-<text x="{ax(T)-8:.1f}" y="{AY0-12}" class="lbl" fill="var(--target)" text-anchor="end">residuo {T} · pLDDT {D['plddt_target']}</text>
+<text x="{ax(T)-8:.1f}" y="{AY0-12}" class="lbl" fill="var(--target)" text-anchor="end">residuo candidato · pLDDT {D['plddt_target']}</text>
 <text x="{AX0}" y="{AY0+AH+16}" class="mono">1</text>
 <text x="{AX0+AW}" y="{AY0+AH+16}" class="mono" text-anchor="end">1050 aa</text>
 <text x="{AX0}" y="{AY0+AH+34}" class="lbl-sm">La media global baja refleja las regiones desordenadas de BUBR1. El residuo candidato está muy por encima: por eso su geometría local es utilizable.</text>
@@ -174,7 +182,7 @@ svg{{display:block;width:100%;height:auto;min-width:1000px}}
 {hb_svg}
 {atoms_svg}
 <circle cx="{tgt_px[0]:.1f}" cy="{tgt_px[1]:.1f}" r="26" fill="none" stroke="var(--target)" stroke-width="1.5" opacity=".55"/>
-<text x="{tgt_px[0]:.1f}" y="{tgt_px[1]-32:.1f}" class="lbl" fill="var(--target)" text-anchor="middle">{D['resname']}{T}</text>
+<text x="{tgt_px[0]:.1f}" y="{tgt_px[1]-32:.1f}" class="lbl" fill="var(--target)" text-anchor="middle">candidato</text>
 <g transform="translate({BX0+10},{BY0+BH-72})">
   <text x="0" y="0" class="mono">ÁTOMOS</text>
   <circle cx="6" cy="14" r="4" fill="var(--at-c)"/><text x="16" y="18" class="lbl-sm">C</text>
