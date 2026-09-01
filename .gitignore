@@ -116,3 +116,10 @@ desktop.ini
 **/Challenge_Clinical*
 **/phenotype_raw*
 **/*_identifiable*
+
+# Bytecode de Python. Va AQUI y no arriba porque `!src/**` (excepcion amplia
+# para versionar el codigo) reintroducia los .pyc: en git gana la ultima regla
+# que coincide. Ese fue el motivo real de que se commitearan la primera vez.
+__pycache__/
+**/__pycache__/
+*.py[cod]
