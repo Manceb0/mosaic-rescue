@@ -188,6 +188,20 @@ mucho la conservación evolutiva. Un residuo puede ser estructuralmente crítico
 plegamiento y aun así no estar profundamente conservado. Además, la representación de
 dominios pseudoquinasa en los conjuntos de entrenamiento es pobre.
 
+> ### ⚠ Esta explicación quedó FALSADA por EXP-011
+>
+> La conservación ortóloga (`docs/ORTHOLOG_CONSERVATION.md`) mide la posición en el
+> **percentil 90 de su propia proteína**, con la propiedad química conservada al 99,2 % en
+> 120 ortólogos. **El residuo sí está conservado**, así que la primera mitad del párrafo de
+> arriba —un residuo crítico pero poco conservado— no describe este caso.
+>
+> **Se conserva el texto original en vez de reescribirlo**, conforme a la regla del proyecto.
+> La discrepancia con REVEL queda **sin explicar y es más llamativa que antes**. La segunda
+> mitad (pseudoquinasas mal representadas en el entrenamiento) sigue en pie como hipótesis
+> **no verificada** sobre el predictor.
+>
+> **Nada de esto reabre `PP3`.**
+
 > **Esto NO revierte la decisión de `PP3`.** Los umbrales estaban preregistrados y REVEL
 > quedó por debajo. Usar el resultado estructural para reabrir `PP3` sería exactamente
 > buscar el predictor que da la respuesta deseada. **La tabla ACMG no cambia.**
