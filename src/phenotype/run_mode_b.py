@@ -40,7 +40,7 @@ parents, ic = PREP["parents"], PREP["ic"]
 
 # --- v4: SOLO relaciones causales establecidas ---
 from src.phenotype.relationships import causal_pairs, disease_inheritance, genotype_compatible
-CAUSAL, DROPPED = causal_pairs()
+CAUSAL, DROPPED, RELTYPE = causal_pairs()
 INHERIT = disease_inheritance()
 _all = PREP["models"]
 models = [m for m in _all if (m.gene, m.disease_id) in CAUSAL]
@@ -51,15 +51,15 @@ models = [m for m in _all if (m.gene, m.disease_id) in CAUSAL]
 import collections as _c
 _types = _c.Counter()
 for m in _all:
-    _types["MENDELIAN" if (m.gene, m.disease_id) in CAUSAL else "no causal"] += 1
+    _types[RELTYPE.get((m.gene, m.disease_id), "sin entrada")] += 1
 assert sum(_types.values()) == len(_all), "los tipos no suman el total"
 print(f"  modelos con anotacion HPO : {len(_all):,}")
 for k, v in _types.most_common():
     print(f"    {k:<22} {v:>7,}")
 print(f"  -> se conservan {len(models):,} causales; se eliminan {len(_all)-len(models):,}")
 
-rows = load("work/gw/highmod_ann.tsv",
-            "C:/Users/USUARIO/Downloads/[REDACTED]_[REDACTED].vcf.gz")
+from src.paths import patient_vcf          # Regla Dura 2: la ruta NO vive en el codigo
+rows = load("work/gw/highmod_ann.tsv", patient_vcf())
 
 # --- puntuacion genetica, con y sin ClinVar ---
 def genetics(with_clinvar: bool):
@@ -102,7 +102,8 @@ for name, terms, clinvar, fhw in ANALYSES:
         ph_score = 0.0 if compat == "INCOMPATIBLE" else p.get("score", 0.0)
         total = gs + 1.0 * ph_score + fhw * f.get("score", 0.0)
         scored.append((g, total, model, dis, p.get("n_models_tested", 0),
-                       round(ph_score, 3), compat, why))
+                       round(ph_score, 3), compat, why,
+                       RELTYPE.get((g, dis), "—") if dis else "—"))
     scored.sort(key=lambda x: (-x[1], x[0]))
     results[name] = scored
     print(f"  {name:<28} listo   top: {', '.join(s[0] for s in scored[:3])}")

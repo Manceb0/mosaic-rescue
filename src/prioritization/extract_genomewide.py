@@ -13,7 +13,8 @@ VCF. Se acepta ahora una tolerancia de +-1 y se VERIFICA la recuperacion.
 import io, gzip, collections
 
 VEP = "work/pass1/pass1_20260830T043708Z.tsv"
-VCF = "C:/Users/USUARIO/Downloads/[REDACTED]_[REDACTED].vcf.gz"
+from src.paths import patient_vcf          # Regla Dura 2: la ruta NO vive en el codigo
+VCF = patient_vcf()
 OUT = "work/gw/highmod.vcf"
 
 want = collections.defaultdict(set)      # chrom -> {pos}

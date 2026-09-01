@@ -27,18 +27,24 @@ def causal_pairs(path="work/hpo/genes_to_disease.txt", keep=("MENDELIAN",)):
     Un par puede declarar VARIOS tipos (hay uno MENDELIAN+POLYGENIC). Se acepta
     si ALGUNO de sus tipos es causal, en vez de exigir coincidencia exacta.
     """
-    ok, dropped = set(), collections.Counter()
+    ok, dropped, types = set(), collections.Counter(), {}
     with io.open(path, encoding="utf-8", errors="replace") as f:
         h = f.readline().rstrip("\n").split("\t")
         ix = {k: i for i, k in enumerate(h)}
         for line in f:
             p = line.rstrip("\n").split("\t")
-            t = p[ix["association_type"]]
-            if t in keep:
-                ok.add((p[ix["gene_symbol"]], p[ix["disease_id"]]))
-            else:
-                dropped[t] += 1
-    return ok, dropped
+            key = (p[ix["gene_symbol"]], p[ix["disease_id"]])
+            types.setdefault(key, set()).add(p[ix["association_type"]])
+    for key, ts in types.items():
+        if ts & set(keep):
+            ok.add(key)
+        else:
+            dropped["+".join(sorted(ts))] += 1
+    # El tipo original NO se pierde al admitir el par: un MENDELIAN+POLYGENIC
+    # entra al universo causal pero conserva su etiqueta MIXED en procedencia.
+    label = {k: ("MIXED:" + "+".join(sorted(v)) if len(v) > 1 else next(iter(v)))
+             for k, v in types.items()}
+    return ok, dropped, label
 
 
 def disease_inheritance(path="work/hpo/phenotype.hpoa"):

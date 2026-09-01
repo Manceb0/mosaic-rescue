@@ -77,6 +77,7 @@ class Variant:
     hgvsp: str
     canonical: bool
     mane: str
+    allele: str = ""     # ALT tal y como VEP lo representa; clave del cruce con el VCF
     gt: str = ""
     dp: int = 0
     gq: int = 0
@@ -160,8 +161,61 @@ def _f(x):
         return None
 
 
-def load(ann_tsv: str, vcf_gz: str) -> list[Variant]:
-    """Cruza la anotacion de VEP con genotipo y calidad del VCF."""
+CACHE_DIR = "work/cache"
+
+
+def _fingerprint(ann_tsv: str, vcf_gz: str) -> str:
+    """Huella de las ENTRADAS y del CODIGO que las procesa.
+
+    Incluye el propio fichero fuente: si cambia la logica del cruce, la cache se
+    invalida sola. Sin eso, una cache es una forma silenciosa de seguir usando
+    un resultado obsoleto — que es peor que no tener cache.
+    """
+    import os
+    parts = []
+    for p in (ann_tsv, vcf_gz, __file__,
+              os.path.join(os.path.dirname(__file__), "allele_key.py"),
+              CONFIG_PATH):
+        try:
+            st = os.stat(p)
+            parts.append(f"{os.path.basename(p)}:{st.st_size}:{int(st.st_mtime)}")
+        except OSError:
+            parts.append(f"{os.path.basename(p)}:missing")
+    return _hl.sha256("|".join(parts).encode()).hexdigest()[:16]
+
+
+def load(ann_tsv: str, vcf_gz: str, use_cache: bool = True) -> list[Variant]:
+    """Cruza la anotacion de VEP con genotipo y calidad del VCF.
+
+    CACHE. El cruce recorre el VCF entero — 5 M lineas, ~17 s — y lo llaman seis
+    scripts distintos, algunos varias veces por sesion. El resultado se cachea en
+    `work/cache/` con una huella de las entradas Y del codigo; si cualquiera
+    cambia, se recalcula. La cache vive en work/, que esta gitignored.
+    """
+    import os, pickle
+    if use_cache:
+        fp = _fingerprint(ann_tsv, vcf_gz)
+        path = os.path.join(CACHE_DIR, f"load_{fp}.pkl")
+        if os.path.exists(path):
+            try:
+                with io.open(path, "rb") as f:
+                    return pickle.load(f)
+            except (pickle.UnpicklingError, EOFError, AttributeError):
+                pass          # cache corrupta o de otra version: se recalcula
+
+    rows = _load_uncached(ann_tsv, vcf_gz)
+
+    if use_cache:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        tmp = path + ".tmp"
+        with io.open(tmp, "wb") as f:
+            pickle.dump(rows, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp, path)   # atomico: nunca deja una cache a medias
+    return rows
+
+
+def _load_uncached(ann_tsv: str, vcf_gz: str) -> list[Variant]:
+    """El cruce real. Separado para que la cache no oculte la logica."""
     rows, ix = [], None
     with io.open(ann_tsv, encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -181,28 +235,37 @@ def load(ann_tsv: str, vcf_gz: str) -> list[Variant]:
                 max_af=_f(p[ix["MAX_AF"]]),
                 sift=p[ix["SIFT"]], polyphen=p[ix["PolyPhen"]],
                 clinsig=p[ix["CLIN_SIG"]], hgvsp=p[ix["HGVSp"]],
-                canonical=p[ix["CANONICAL"]] == "YES", mane=p[ix["MANE_SELECT"]]))
+                canonical=p[ix["CANONICAL"]] == "YES", mane=p[ix["MANE_SELECT"]],
+                allele=p[ix["Allele"]] if "Allele" in ix else ""))
 
-    want = {r.loc.split(":")[0] + ":" + r.loc.split(":")[1].split("-")[0] for r in rows}
+    # --- cruce por (Location, Allele), NO por posicion ---
+    # Cruzar solo por posicion perdia 433 posiciones HIGH/MODERATE, 346 de ellas
+    # indels, porque VEP desplaza la coordenada del indel respecto al VCF. Aqui
+    # se reproduce la representacion exacta de VEP para cada registro del VCF.
+    # Sin tolerancias: un alelo complejo se queda sin cruzar y se declara.
+    from src.prioritization.allele_key import vep_location_allele
+
+    want = {(r.loc, r.allele) for r in rows}
+    want_loc = {r.loc for r in rows}
     geno = {}
     with gzip.open(vcf_gz, "rt", encoding="utf-8", errors="replace") as f:
         for line in f:
             if line[0] == "#":
                 continue
             p = line.rstrip("\n").split("\t")
-            k = f"{p[0]}:{p[1]}"
-            if k not in want:
-                continue
-            d = dict(zip(p[8].split(":"), p[9].split(":")))
-            geno[k] = (d.get("GT", "").replace("|", "/"),
-                       int(d["DP"]) if d.get("DP", "").isdigit() else 0,
-                       int(d["GQ"]) if d.get("GQ", "").isdigit() else 0,
-                       d.get("AD", ""), p[6],
-                       d.get("PGT", ""), d.get("PID", ""))
+            for a in p[4].split(","):
+                for key in vep_location_allele(p[0], p[1], p[3], a):
+                    if key in want:
+                        d = dict(zip(p[8].split(":"), p[9].split(":")))
+                        geno[key] = (d.get("GT", "").replace("|", "/"),
+                                     int(d["DP"]) if d.get("DP", "").isdigit() else 0,
+                                     int(d["GQ"]) if d.get("GQ", "").isdigit() else 0,
+                                     d.get("AD", ""), p[6],
+                                     d.get("PGT", ""), d.get("PID", ""))
     for r in rows:
-        k = r.loc.split(":")[0] + ":" + r.loc.split(":")[1].split("-")[0]
-        if k in geno:
-            r.gt, r.dp, r.gq, r.ad, r.filt, r.pgt, r.pid = geno[k]
+        g = geno.get((r.loc, r.allele))
+        if g:
+            r.gt, r.dp, r.gq, r.ad, r.filt, r.pgt, r.pid = g
     return rows
 
 
