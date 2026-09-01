@@ -38,8 +38,8 @@ from src.paths import patient_vcf                                   # noqa: E402
 HOME = "work/exomiser/exomiser-cli-14.1.0"
 JAR = os.path.join(HOME, "exomiser-cli-14.1.0.jar")
 # Barras NORMALES a proposito: en un fichero .properties de Java la barra
-# invertida es un caracter de escape, asi que "C:\Users\..." se deserializa como
-# "UsersUSUARIO..." y Jannovar no encuentra los datos.
+# invertida es un caracter de escape, asi que una ruta de Windows se deserializa
+# sin sus separadores y Jannovar no encuentra los datos.
 DATA = os.path.abspath("work/exomiser/data").replace("\\", "/")
 RUNS = "work/exomiser/runs"
 XMX = "4g"          # la RAM es el recurso escaso. 4 GB bastan: la corrida real uso
@@ -93,7 +93,7 @@ def vcf_sample_name(vcf: str) -> str:
 
 
 def write_sample(path: str, terms, vcf: str) -> None:
-    # `htsFiles.uri` se parsea como URI, no como ruta: con "C:/Users/..." Java
+    # `htsFiles.uri` se parsea como URI, no como ruta: con una ruta de Windows Java
     # toma "C" por esquema y falla con FileSystemNotFoundException.
     sample_id = vcf_sample_name(vcf)
     vcf = "file:///" + os.path.abspath(vcf).replace("\\", "/").lstrip("/")

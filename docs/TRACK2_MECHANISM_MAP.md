@@ -92,7 +92,7 @@ preacordada:
 **Pipalia NH, Saad SZ, Subramanian K, et al. *J Lipid Res* 2021;62:100114. PMID 34481829 ·
 DOI 10.1016/j.jlr.2021.100114.**
 
-En fibroblastos NPC1 I1061T, la **sobreexpresión de HSP70 redujo el almacenamiento de
+En fibroblastos NPC1 I1061T (PMID 34481829), la **sobreexpresión de HSP70 redujo el almacenamiento de
 colesterol** — «incluso una pequeña cantidad de sobreexpresión de HSP70» bastó. **Arimoclomol
 no lo reprodujo**, hasta **500 µM durante 72–120 h**. Y el detalle que más pesa:
 

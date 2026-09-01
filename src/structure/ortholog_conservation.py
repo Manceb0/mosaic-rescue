@@ -259,10 +259,12 @@ def analyse(orthologs_json: str, target: int, pocket=(), lineages=None):
 
 
 if __name__ == "__main__":
-    TARGET = [REDACTED]
-    POCKET = [973, 977, 978, 997, 998, 999, 1000, 1001, 1003, 1004]
     import sys
     sys.path.insert(0, ".")
+    from src.paths import get
+    # La posicion NO se escribe aqui: un fichero versionado no puede llevarla.
+    TARGET = get("candidate", "residue")
+    POCKET = get("candidate", "pocket")
     from src.structure.clades import fetch_lineages
     src = fetch("ENSG00000156970", "work/conservation/orthologs.json")   # BUB1B
     tids = sorted({h["target"]["taxon_id"] for h in _one2one(src)})

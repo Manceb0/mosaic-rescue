@@ -41,6 +41,11 @@ PATTERNS = [
 FORBIDDEN_EXT = re.compile(r"\.(vcf|bam|cram|bai|crai|tbi|fastq|fq|docx|xlsx)(\.gz)?$", re.I)
 
 SKIP_DIRS = ("work/", "results/", ".git/")
+
+# El propio escaner CONTIENE los patrones que busca, asi que se disparaba consigo
+# mismo en cada pasada. Exencion DECLARADA, no disimulada: es el unico fichero
+# exento y solo por esa razon.
+SELF = "src/sanitize_scan.py"
 BINARY_EXT = re.compile(r"\.(png|jpg|jpeg|gif|pdf|pyc|zip|gz|woff2?)$", re.I)
 
 
@@ -75,7 +80,7 @@ def scan(staged=False):
         if FORBIDDEN_EXT.search(f):
             hits.append((f, 0, "EXTENSION PROHIBIDA", f))
             continue
-        if BINARY_EXT.search(f) or not os.path.exists(f):
+        if BINARY_EXT.search(f) or not os.path.exists(f) or f == SELF:
             continue
         checked += 1
         for n, line in enumerate(io.open(f, encoding="utf-8", errors="replace"), 1):

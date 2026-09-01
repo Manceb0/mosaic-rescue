@@ -334,7 +334,7 @@ MD["dec"] = """## 11 · Decisión
 | **Estado de EXP-006** | **SURVIVES**, con una corrección importante |
 | Predicción #4 | **Acertada** — `BUB1B` queda #1 en 14 de los 15 análisis, muy por encima del top-20 exigido |
 | Control genético puro `A0` | **Queda #4, no #1.** Su puntuación no baja (13,0): emergen tres deleciones homocigotas con `MAX_AF` ausente que puntúan 13,5 bajo el modelo más limpio |
-| Auditoría de esos tres (EXP-021) | **Resueltos: son polimorfismos comunes.** `rs[REDACTED]`, `rs[REDACTED]`, `rs[REDACTED]`, con frecuencias del 30–93 % y hasta **313 150 homocigotos** en gnomAD. VEP no supo anotarles la frecuencia por la representación del indel |
+| Auditoría de esos tres (EXP-021) | **Resueltos: son polimorfismos comunes**, con rsID conocido, frecuencias del 30–93 % y hasta **313 150 homocigotos** en gnomAD. Los identificadores concretos no se escriben aquí: `src/sanitize_scan.py` los marca, y un control que uno esquiva argumentando deja de ser un control. VEP no supo anotarles la frecuencia por la representación del indel |
 | Sensibilidad `A0-FREQFIX` | Reparando **los 33** alelos sin `MAX_AF` (no solo los tres), `BUB1B` **vuelve al puesto 1**. `A0` congelado sigue siendo 4; se reportan los dos |
 | Qué NO se hizo | **No se tocó la fórmula.** Degradar ahora las variantes sin frecuencia sería ajustar el ranking después de ver bajar a `BUB1B`, que el preregistro prohíbe |
 | Comprobación independiente | Exomiser lo sitúa #2 de 398, modelo recesivo, sin código común |
