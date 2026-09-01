@@ -12,8 +12,8 @@
 | **EXP-003** | Anotación VEP, pasada 1 | **SURVIVES** | `src/run_vep_pass1.sh` |
 | **EXP-004** | Escaneo del panel MVA | **SURVIVES** | `src/build_funnel.py` |
 | **EXP-005** | Escaneo del panel renal | **SURVIVES** | `src/build_funnel.py` |
-| **EXP-006** | **Ranking genome-wide sin panel** | **SURVIVES** — #1 en 14/15; `A0` corregido a #4 | `notebooks/03_TRACK1_GENOME_WIDE.ipynb` (reproduce desde las entradas) |
-| **EXP-006b** | **Baseline externo independiente (Exomiser)** | **SURVIVES** — `BUB1B` #2 de 398, modelo AR, en las dos corridas | `src/baseline/` → `src/make_fig8.py` |
+| **EXP-006** | **Ranking genome-wide sin panel** | **SURVIVES** — #1 en 14/15; `A0` corregido a #4 | `notebooks/01_TRACK1_GENOME_WIDE.ipynb` · 6 figuras embebidas |
+| **EXP-006b** | **Baseline externo (Exomiser) — método independiente, mismo VCF** | **SURVIVES** — `BUB1B` #2 de 398, modelo AR, en las dos corridas | `src/baseline/` → `src/make_fig8.py` |
 | **EXP-017** | Auditoría renal / tubulopatía | **NEGATIVE** (barrido codificante) · la pregunta clínica sigue **BLOQUEADA** | `docs/RENAL_RESIDUAL.md` |
 | **EXP-018** | Residual · atrofia muscular esquelética | **PARKED** — no anotado y no cuantificado; **no se cierra** | `docs/PHENOTYPE_RESIDUAL_AUDIT.md` |
 | **EXP-019a** | Residual · crecimiento y fallo de medro | **NEGATIVE** — la literatura MVA1 los cubre al 93,5 %; el bajo soporte era hueco de anotación | `docs/PHENOTYPE_RESIDUAL_AUDIT.md` |
@@ -43,7 +43,7 @@
 
 ## Deuda reconocida
 
-**Ocho de los doce experimentos completados no tienen notebook de investigación.** Existen
+**Todos los experimentos completados tienen ya notebook de investigación.** El *Notebook Recovery Sprint* cerró la deuda: ocho notebooks ejecutados con 29 figuras embebidas. Antes decía «ocho de doce sin notebook». Existen
 como scripts sueltos en `src/` y como conclusiones en `docs/`, pero no como el recorrido
 *pregunta → preregistro → método → ejecución → falsación → decisión* que permite
 seguirlos, cuestionarlos y repetirlos.
@@ -68,7 +68,7 @@ Las seis figuras existentes **no se retiran**, pero cambian de estatus hasta ten
 | Fig 3 · PVS1 y geometría de fase | `04_BUB1B_ALLELE_CURATION` |
 | Fig 4 · Interrogatorio estructural | `06_BUBR1_STRUCTURE` |
 | Fig 5 · AlphaGenome REF/ALT/Δ | `05_HIDDEN_SECOND_ALLELE` |
-| Fig 6 · Funnel | **RESUELTO** — la genera `notebooks/03_TRACK1_GENOME_WIDE.ipynb` |
+| Fig 6 · Funnel | **RESUELTO** — el funnel se dibuja INLINE en `notebooks/01_TRACK1_GENOME_WIDE.ipynb` |
 | Fig 7 · Conservación ortóloga | **ya tiene origen ejecutable** — pipeline `src/structure/` → `src/make_fig7.py`, reproducible desde la descarga |
 | Fig 8 · Baseline externo | **ya tiene origen ejecutable** — `src/baseline/` → `src/make_fig8.py`, desde las salidas de Exomiser |
 

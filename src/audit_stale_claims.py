@@ -28,7 +28,7 @@ CANONICAL = (
     "research/CANONICAL_CLAIMS.md",
 )
 # Las figuras son lo PRIMERO que lee un jurado: cuentan como canonicas.
-CANONICAL_PREFIX = ("figures/",)
+CANONICAL_PREFIX = ("figures/", "notebooks/")
 # Documentos cuyo VALOR es conservar lo que se creyo y que lo falso.
 HISTORICAL = ("docs/DECISIONS.md", "docs/EVIDENCE.md", "research/agent_findings/")
 
@@ -73,6 +73,15 @@ STALE = [
     (r"mantiene la hipotesis viva.{0,60}dependiente de estres|stress-dependent action keeps",
      "la via dependiente de estres esta al 50-60 % en celulas aneuploides: es a la vez razon y pasivo",
      "tension mecanistica: la deficiencia de HSF1 hace la via relevante Y la farmacologia incierta"),
+    (r"CONVERGENCIA INDEPENDIENTE|convergencia independiente",
+     "Exomiser es metodo independiente sobre el MISMO VCF, no evidencia biologica independiente",
+     "convergencia metodologica"),
+    (r"[Bb]aseline externo independiente",
+     "la palabra 'independiente' sin calificar sobredimensiona: comparte el VCF",
+     "baseline externo — metodo independiente, mismo VCF"),
+    (r"gano sin fenotipo y sin ClinVar|ganado sin fenotipo",
+     "en el A0 congelado BUB1B quedo #4; el #1 es la sensibilidad A0-FREQFIX",
+     "A0 congelado #4 · A0-FREQFIX #1, ambos visibles"),
     (r"subir HSP.{0,40}(luego|por tanto|therefore).{0,40}coinduct",
      "sustitucion prohibida: puente 6 no es puente 7",
      "el aumento genetico rescata; la coinduccion farmacologica no esta demostrada"),
@@ -86,7 +95,15 @@ def files():
             if f.endswith(keep) and not f.startswith(("work/", "results/"))]
 
 
+# CANONICAL_CLAIMS.md es el registro que DEFINE las formulaciones prohibidas:
+# tiene que contenerlas para servir de algo. Exencion declarada, como la del
+# propio escaner. Son los dos unicos ficheros exentos y solo por esa razon.
+SELF_REFERENTIAL = ("research/CANONICAL_CLAIMS.md",)
+
+
 def classify(path):
+    if path in SELF_REFERENTIAL:
+        return "AUTOREFERENCIAL"
     if path.startswith(HISTORICAL):
         return "HISTORICO"
     if path in CANONICAL or path.startswith(CANONICAL_PREFIX):
@@ -114,7 +131,7 @@ def main():
                 frag = txt.splitlines()[line - 1][:110] if line <= len(txt.splitlines()) else ""
                 rows.append((classify(f), f, line, m.group(0)[:40], why, current, frag))
 
-    order = {"CANONICO": 0, "OTRO": 1, "HISTORICO": 2}
+    order = {"CANONICO": 0, "OTRO": 1, "HISTORICO": 2, "AUTOREFERENCIAL": 3}
     rows.sort(key=lambda r: (order[r[0]], r[1], r[2]))
 
     print(f"  ficheros revisados: {len(files())}\n")
@@ -124,7 +141,8 @@ def main():
             cur = cls
             head = {"CANONICO": "REQUIEREN CORRECCION — un lector externo los toma como verdad actual",
                     "OTRO": "REVISAR — codigo, figuras y docs secundarios",
-                    "HISTORICO": "CORRECTOS ASI — el rastro de auditoria DEBE conservarlos"}[cls]
+                    "HISTORICO": "CORRECTOS ASI — el rastro de auditoria DEBE conservarlos",
+                    "AUTOREFERENCIAL": "CORRECTOS ASI — este fichero DEFINE las frases prohibidas"}[cls]
             print(f"\n=== {cls} · {head} ===\n")
         print(f"  {f}:{line}")
         print(f"    coincide   : {hit!r}")

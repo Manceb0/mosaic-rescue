@@ -1,4 +1,4 @@
-# EXP-006b · Baseline externo independiente
+# EXP-006b · Baseline externo — método independiente sobre el mismo VCF
 
 > **`EXTERNAL`** — Exomiser 14.1.0 con datos `2402_hg38` + `2402_phenotype` y su propia base
 > de conocimiento. **`DERIVED`** — la comparación con nuestro ranking, calculada aquí.

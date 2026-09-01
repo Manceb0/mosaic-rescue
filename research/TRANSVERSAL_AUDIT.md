@@ -205,8 +205,9 @@ Ordenadas por ganancia de información esperada.
 
 > **Las cinco están bloqueadas por datos o por laboratorio. Ninguna es computacional.**
 >
-> Eso es el resultado más importante de la auditoría: **el proyecto ha agotado lo que se puede
-> hacer con este VCF y esta máquina**. Lo que queda no se resuelve con más cómputo, y seguir
+> Eso significa que no queda **ciencia nueva sobre los mismos datos**. Sí quedaba trabajo
+> computacional —consolidación, procedencia y visualización— y era justo lo que faltaba: ver
+> AUDIT 11. Lo que queda no se resuelve con más cómputo, y seguir
 > generando análisis sobre los mismos datos produciría volumen, no información.
 >
 > **Cuatro de las cinco son un email.** Ese es el siguiente movimiento real.
@@ -227,3 +228,61 @@ Ordenadas por ganancia de información esperada.
 **El diferencial no es haber encontrado `BUB1B`.** Es la disciplina con la que el proyecto
 intentó romperlo — y las tres veces que falsó sus propias explicaciones y las conservó
 anotadas.
+
+---
+
+## AUDIT 11 · Capa de notebooks — el fallo que las auditorías 1–10 no cubrían
+
+**Encontrado por inspección humana de los `.ipynb`, no por ningún escáner.** Las auditorías
+leían `.md`, figuras y código, pero **no juzgaban lo que un jurado ve al abrir un notebook**.
+
+### El diagnóstico
+
+| Problema | Evidencia |
+|---|---|
+| `03_TRACK1_GENOME_WIDE.ipynb` no mostraba **ninguna** figura | 0 salidas `display_data` con imagen. La sección «Figura 6» ejecutaba un script e imprimía el **nombre del fichero** que acababa de escribir fuera |
+| `00_data_inventory.ipynb` era una plantilla sin ejecutar | `execution_count: null`, un `../data` que nunca existió, tabla para rellenar a mano |
+| Afirmaciones obsoletas **dentro** del notebook ejecutado | decía correctamente `A0 = #4` y después «ganó sin fenotipo ni ClinVar»; y «baseline externo **independiente**», con la salida imprimiendo `CONVERGENCIA INDEPENDIENTE` |
+
+**Por eso «0 obsoletos en canónicos» no era cierto:** el escáner no incluía `notebooks/`.
+
+### Lo corregido en la raíz
+
+- `src/baseline/compare_baseline.py` — el veredicto impreso **era la fuente** del claim
+  obsoleto. Ahora imprime *convergencia metodológica sobre el MISMO VCF*.
+- `src/audit_stale_claims.py` — `notebooks/` y `figures/` cuentan como **canónicos**, y se
+  añadieron los tres patrones que se escaparon.
+
+### El sprint
+
+| Notebook | Ejecutado | Figuras | Mín. | Errores | Estado |
+|---|---|---|---|---|---|
+| `00_DATA_REALITY` | sí | 3 | 3 | 0 | **OK** |
+| `01_TRACK1_GENOME_WIDE` | sí | **6** | 6 | 0 | **OK** |
+| `02_BUB1B_ALLELE_CURATION` | sí | 4 | 4 | 0 | **OK** |
+| `03_BUBR1_MECHANISM` | sí | 4 | 4 | 0 | **OK** |
+| `04_HIDDEN_SECOND_ALLELE` | sí | 3 | 3 | 0 | **OK** |
+| `05_RESIDUAL_PHENOTYPE` | sí | 3 | 3 | 0 | **OK** |
+| `06_MOSAIC_AND_MITOREAD` | sí | 3 | 3 | 0 | **OK** |
+| `07_TRACK2_SAFE_RESCUE` | sí | 3 | 3 | 0 | **OK** |
+
+**29 figuras embebidas. Cero errores. Escáner limpio.**
+
+Una figura solo cuenta si está **dentro** del `.ipynb` como `display_data`. Escribir un SVG en
+`figures/` no cuenta — que era exactamente el fallo.
+
+### Lo retirado
+
+`00_data_inventory.ipynb` y el README antiguo (quince notebooks presuponiendo RNA-seq,
+single-cell, longitudinal y cariotipo celular — **ninguno existe**) van a `docs/history/`.
+`03_TRACK1_GENOME_WIDE.ipynb` queda sustituido por `01_TRACK1_GENOME_WIDE.ipynb`.
+
+### La corrección que esto obliga a hacer sobre AUDIT 10
+
+La frase *«el proyecto ha agotado lo que se puede hacer con este VCF y esta máquina»* **era
+falsa cuando la escribí**: quedaba todo este trabajo, y era computacional.
+
+La formulación correcta: **los experimentos restantes de mayor información requieren datos o
+evidencia de laboratorio no disponibles en este dataset.** Lo que no queda es *ciencia nueva
+sobre los mismos datos*; consolidación, procedencia y visualización sí quedaban — y eran
+justo lo que faltaba para que el proyecto se pudiera evaluar.

@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """EXP-006b · comparacion entre el baseline externo y nuestro ranking.
 
+QUE ES ESTA COMPARACION
+    Convergencia METODOLOGICA: dos motores sin codigo comun sobre el MISMO
+    VCF. Un artefacto compartido los engana a los dos (ocurrio: SERPINA1).
+    Nunca se presenta como dos observaciones biologicas.
+
 Se ejecuta DESPUES de Exomiser. La comparacion no puede influir en el baseline:
 Exomiser ya termino y no ha visto nada nuestro.
 
@@ -74,7 +79,8 @@ def verdict(rank):
     if rank is None:
         return "AUSENTE de la salida — comprobar si lo filtro por frecuencia, herencia o efecto"
     if rank <= 10:
-        return "CONVERGENCIA INDEPENDIENTE (top 10)"
+        return ("CONVERGENCIA METODOLOGICA (top 10) — metodo independiente "
+                "sobre el MISMO VCF del paciente; no es evidencia biologica independiente")
     if rank <= 50:
         return f"CONVERGENCIA PARCIAL (puesto {rank}) — no se presenta como confirmacion"
     return f"DISCREPANCIA SERIA (puesto {rank}) — investigar antes de defender nada nuestro"

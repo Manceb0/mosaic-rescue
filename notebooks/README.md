@@ -1,119 +1,75 @@
-# MOSAIC RESCUE — Notebook Guide
+# Los notebooks — la investigación, ejecutable y visible
 
-> ⚠️ **SUPERADO.** El inventario real del dataset (`docs/01_MASTER_BRIEF.md` §1) invalida
-> las ramas que este documento describe: no hay RNA-seq, single-cell, longitudinal ni
-> cariotipo celular. Ver `docs/00_ESTADO_Y_OBSOLESCENCIA.md`. Se conserva como registro.
+> **Ocho notebooks, ejecutados, con 29 figuras embebidas.** No son un registro de que algo
+> ocurrió: son la investigación, y se leen de arriba abajo sin salir de ellos.
+>
+> El README anterior describía una arquitectura de quince notebooks que presuponía RNA-seq,
+> single-cell, series longitudinales y cariotipo celular. **Ninguno de esos datos existe.** Se
+> conserva en `docs/history/notebooks_README_SUPERSEDED.md`.
 
----
+## La regla que se aplica en todos
 
-The notebooks are the reproducible scientific record of the project. They are **not** a sequence that must all run. Each later notebook is activated only if the data and mechanism justify it.
+**Generar una figura y escribirla en `figures/` NO basta.** Aparece INLINE, en la misma celda o
+la siguiente, con un caption que declara cuatro cosas:
 
-## Required notebook structure
-
-Every notebook should contain these sections in order:
-
-1. **Biological question**
-2. **Hypothesis ID(s)**
-3. **Inputs and provenance**
-4. **Data QC**
-5. **Assumptions**
-6. **Method**
-7. **Primary result**
-8. **Primary scientific visualization**
-9. **Robustness / uncertainty analysis**
-10. **Alternative explanations**
-11. **Contradictory evidence**
-12. **Evidence-level update (L0-L5)**
-13. **Falsification criterion**
-14. **Next Best Experiment**
-
-## Visual rule
-
-Each major notebook should produce at least:
-
-- one QC/diagnostic figure,
-- one primary scientific figure,
-- one uncertainty/robustness figure.
-
-Interactive visualizations are useful for exploration, but important results should also export a stable static figure under `figures/`.
-
-## Activation sequence
-
-| Notebook | Purpose | Activation gate |
-|---|---|---|
-| `00_data_inventory.ipynb` | Inventory every hackathon file/modality | Always — first notebook |
-| `01_variant_discovery.ipynb` | Track 1 causal variant prioritization | VCF/genomic data available |
-| `02_mechanism_router.ipynb` | Classify molecular failure mode | Lead variant(s) exist |
-| `03_mosaic_landscape.ipynb` | Build patient mosaic state map | Cell-resolved or sufficiently informative WGS data |
-| `04_ghost_karyotypes.ipynb` | Expected-vs-observed negative-space analysis | Explicit null/generation model possible |
-| `05_fitness_landscape.ipynb` | Infer relative persistence/selection landscape | State frequencies/transition evidence sufficient |
-| `06_synthetic_rescue.ipynb` | Functional-genomics compensation search | Candidate patient mechanism/state identified |
-| `07_cell_competition.ipynb` | Test relative cellular-fitness ecology | Appropriate cell-state evidence / external support |
-| `08_mosaic_forecast.ipynb` | Forecast plausible cellular states | Longitudinal/cell-resolved calibration; otherwise scenario mode only |
-| `09_rescue_replay.ipynb` | Counterfactual intervention trajectories | Validated compensatory mechanism exists |
-| `10_safe_rescue_corridor.ipynb` | Benefit-vs-evolutionary-risk analysis | Candidate interventions exist |
-| `11_drug_mimicry.ipynb` | Mechanism-driven intervention nomination | Independent rescue validation passed |
-| `12_structural_mechanism.ipynb` | Structure-guided mechanism refinement | Variant is structurally informative and changes a decision |
-| `13_pgx_safety.ipynb` | PGx / pediatric / exposure context | Specific candidate(s) exist |
-| `14_try_to_kill_hypothesis.ipynb` | Adversarial falsification / contradictions | Lead hypothesis exists |
-| `15_next_best_experiment.ipynb` | Rank experiments that reduce uncertainty | Competing hypotheses remain |
-
-## Branch logic
-
-```mermaid
-flowchart TD
-    A[00 Data inventory] --> B[01 Variant discovery]
-    B --> C[02 Mechanism router]
-    C --> D{Patient data support mosaic-state analysis?}
-    D -- Yes --> E[03 Mosaic landscape]
-    D -- No --> F[External functional-genomics route]
-    E --> G{Expected-state model defensible?}
-    G -- Yes --> H[04 Ghost Karyotypes]
-    G -- No --> I[Skip ghost claims]
-    H --> J[05 Fitness landscape]
-    E --> J
-    F --> K[06 Synthetic rescue]
-    J --> K
-    K --> L{Independent functional convergence?}
-    L -- No --> M[Revise / reject]
-    L -- Yes --> N[Mechanism-driven intervention branch]
-    N --> O[09 Rescue Replay]
-    O --> P[10 Safe Rescue Corridor]
-    P --> Q[11 Drug/intervention mimicry]
-    Q --> R[13 PGx / safety]
-    R --> S[14 Try to Kill It]
-    S --> T[15 Next Best Experiment]
+```
+experimento · clase de evidencia · qué enseña · QUÉ NO DEMUESTRA
 ```
 
-## Data inventory notebook — exact first objective
+La última es la que más cuesta escribir y la que más vale.
 
-`00_data_inventory.ipynb` must answer:
+**Clases de evidencia:** `MEASURED` (observación directa sobre el caso) · `DERIVED` (calculado
+por nosotros) · `EXTERNAL` (base de datos o literatura) · `PREDICTED` (salida de un modelo) ·
+`SIMULATED` (modelo sin datos del paciente).
 
-- exact file names,
-- formats,
-- genome build,
-- sample/tissue source,
-- patient vs family samples,
-- VCF vs BAM/CRAM availability,
-- single-cell availability,
-- bulk RNA availability,
-- longitudinal timepoints,
-- clinical karyotype/cytogenetic ground truth,
-- phenotype/HPO metadata,
-- any proteomic, imaging, fibroblast, iPSC or organoid material,
-- access/data-handling restrictions.
+## Estructura obligatoria
 
-The final cell should print a **Branch Activation Matrix** stating which later notebooks are:
+`pregunta biológica → hipótesis y preregistro → entradas y procedencia → QC → método →
+resultado primario → visualización → robustez → explicaciones alternativas → evidencia
+contradictoria → qué NO demuestra → decisión → siguiente experimento`
 
-- `ACTIVE`
-- `CONDITIONAL`
-- `BLOCKED`
-- `NOT APPLICABLE`
+Y un mínimo de **tres figuras**: QC, resultado principal, e incertidumbre o robustez.
 
-## Reproducibility rule
+## Los ocho
 
-A figure that cannot be regenerated from documented inputs and code does not belong in the final scientific claim chain.
+| # | Notebook | Pregunta | Figuras |
+|---|---|---|---|
+| **00** | `DATA_REALITY` | ¿Qué se puede y qué no responder con los datos que hay? | 3 |
+| **01** | `TRACK1_GENOME_WIDE` | ¿Qué gen explica el caso cuando compite todo el genoma? | **6** |
+| **02** | `BUB1B_ALLELE_CURATION` | ¿Qué sostiene cada alelo, y qué haría falta para que el par sea causal? | 4 |
+| **03** | `BUBR1_MECHANISM` | El missense no se mueve por clasificación: ¿se mueve por mecanismo? | 4 |
+| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | 3 |
+| **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | 3 |
+| **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | 3 |
+| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | 3 |
 
-## Claim boundary
+## Cómo reconstruirlos
 
-Notebooks may generate computational/preclinical hypotheses. They must not present model output as a diagnosis, clinical prognosis, prescription, or cure.
+```bash
+python src/nb/build_all.py
+```
+
+Reconstruye y ejecuta los ocho, y emite la matriz de verificación. **Los notebooks se generan
+desde `src/nb/`**: la fuente de verdad vive en `src/`, y generarlos garantiza que ejecutan las
+mismas funciones del pipeline en vez de una copia que puede divergir.
+
+## Definición de HECHO
+
+Un notebook **no** está terminado porque corra sin errores. Lo está cuando:
+
+1. ejecuta de arriba abajo · 2. usa las entradas correctas con su hash · 3. **muestra** sus
+resultados, no solo los escribe · 4. tiene QC + principal + robustez · 5. interpreta cada
+figura · 6. presenta la evidencia contradictoria · 7. dice qué NO demuestra · 8. termina en una
+decisión · 9. nombra el siguiente experimento · 10. está saneado · 11. no contiene afirmaciones
+obsoletas · 12. cualquier figura puede regenerarse.
+
+`src/nb/build_all.py` comprueba 1, 3, 4 y 10 mecánicamente. El resto se audita con
+`src/audit_stale_claims.py`, que trata `notebooks/` como documentación **canónica**.
+
+## Saneado
+
+Los notebooks se commitean **con sus salidas**, así que las salidas también se sanean: solo
+agregados, conteos y símbolos de gen. Nunca coordenadas, genotipos, identidad de variantes,
+rutas locales ni identificadores de muestra.
+
+Los notebooks 00 y 01 ejecutan el escáner al final, sobre sí mismos.
