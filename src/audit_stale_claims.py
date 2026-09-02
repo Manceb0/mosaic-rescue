@@ -101,6 +101,48 @@ def files():
 SELF_REFERENTIAL = ("research/CANONICAL_CLAIMS.md",)
 
 
+# Una frase prohibida usada DENTRO de una negacion no es una afirmacion obsoleta:
+# es el documento prohibiendola. Los lookaheads de los patrones solo miran hacia
+# ADELANTE, asi que esto mira hacia ATRAS.
+#
+# No se afloja el patron: se le da clase propia. Un hallazgo negado sigue siendo
+# visible y revisable; lo que deja de hacer es contaminar la lista de los que hay
+# que corregir, que es como un control asi acaba ignorandose.
+NEG = re.compile(r"\bno\b|\bnunca\b|\bprohibid|\bconcluia|\bconcluía|\bdecia|\bdecía|\bya no\b|\bdeja de\b|\btampoco\b", re.I)
+# `sin` y `ni` estaban en esta lista y se retiraron: son demasiado comunes
+# para servir de marcador de negacion, y ensanchaban NEGADO hasta el punto
+# de poder tapar una afirmacion obsoleta de verdad.
+
+
+# Nombres de criterio: "PM3 en trans con patogenica" es como se LLAMA el
+# criterio de ACMG, no una afirmacion sobre la fase de este caso.
+CRITERIO = re.compile(r"PM3[^a-zA-Z]{0,4}en trans", re.I)
+NL = chr(10)
+
+
+def negado(txt, start, end, ipynb=False):
+    """Hay una negacion pegada a la frase, por delante o por detras.
+
+    Mira a los DOS lados. Un documento niega la frase igual escribiendo
+    "NO establece que esten en trans" que "...en trans. `unphased` no es
+    `trans`", y el patron original solo tenia lookahead.
+
+    En un .ipynb los saltos de linea son trozos de una cadena JSON, no finales
+    de frase: cortar en ellos partia la negacion de su frase. Por eso ahi no se
+    corta.
+    """
+    ini, fin = max(0, start - 90), min(len(txt), end + 90)
+    izq, der = txt[ini:start], txt[end:fin]
+    if not ipynb:
+        c = max(izq.rfind(". "), izq.rfind(NL))
+        izq = izq[c + 1:]
+        c = min([i for i in (der.find(". "), der.find(NL)) if i >= 0] or [len(der)])
+        der = der[:c]
+    if CRITERIO.search(txt[max(0, start - 12):end + 20]):
+        return True
+    return bool(NEG.search(izq) or NEG.search(der))
+
+
 def classify(path):
     if path in SELF_REFERENTIAL:
         return "AUTOREFERENCIAL"
@@ -126,12 +168,16 @@ def main():
         except OSError:
             continue
         for pat, why, current in STALE:
-            for m in re.finditer(pat, norm(txt), re.I):
-                line = norm(txt).count("\n", 0, m.start()) + 1
+            nt = norm(txt)
+            for m in re.finditer(pat, nt, re.I):
+                line = nt.count("\n", 0, m.start()) + 1
                 frag = txt.splitlines()[line - 1][:110] if line <= len(txt.splitlines()) else ""
-                rows.append((classify(f), f, line, m.group(0)[:40], why, current, frag))
+                neg = negado(nt, m.start(), m.end(), f.endswith(".ipynb"))
+                cls = "NEGADO" if neg else classify(f)
+                rows.append((cls, f, line, m.group(0)[:40], why, current, frag))
 
-    order = {"CANONICO": 0, "OTRO": 1, "HISTORICO": 2, "AUTOREFERENCIAL": 3}
+    order = {"CANONICO": 0, "OTRO": 1, "NEGADO": 2, "HISTORICO": 3,
+             "AUTOREFERENCIAL": 4}
     rows.sort(key=lambda r: (order[r[0]], r[1], r[2]))
 
     print(f"  ficheros revisados: {len(files())}\n")
@@ -142,6 +188,7 @@ def main():
             head = {"CANONICO": "REQUIEREN CORRECCION — un lector externo los toma como verdad actual",
                     "OTRO": "REVISAR — codigo, figuras y docs secundarios",
                     "HISTORICO": "CORRECTOS ASI — el rastro de auditoria DEBE conservarlos",
+                    "NEGADO": "CORRECTOS ASI — la frase aparece DENTRO de una negacion: el documento la PROHIBE, no la afirma",
                     "AUTOREFERENCIAL": "CORRECTOS ASI — este fichero DEFINE las frases prohibidas"}[cls]
             print(f"\n=== {cls} · {head} ===\n")
         print(f"  {f}:{line}")
@@ -152,7 +199,8 @@ def main():
         print()
 
     n_can = sum(1 for r in rows if r[0] == "CANONICO")
-    print(f"\n  TOTAL {len(rows)} coincidencias · {n_can} en documentos CANONICOS")
+    n_neg = sum(1 for r in rows if r[0] == "NEGADO")
+    print(f"\n  TOTAL {len(rows)} coincidencias · {n_can} en documentos CANONICOS que la AFIRMAN · {n_neg} que la NIEGAN")
     return 1 if n_can else 0
 
 

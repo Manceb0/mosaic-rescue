@@ -1,0 +1,103 @@
+#	Matriz de evidencia de Track 2, en formato largo. UNA FILA POR CELDA.
+#
+#	POR QUE ESTE FICHERO EXISTE
+#	  La figura de Track 2 dibujaba cajas escritas dentro del codigo de la figura.
+#	  Eso hace imposible auditarla: no se puede diff-ear una caja. Aqui cada celda
+#	  de la matriz es una fila versionada, con su fuente, y la figura solo la lee.
+#
+#	VOCABULARIO DE `clase` — cerrado, cinco valores
+#	  DIRECT         evidencia del tipo exacto que el puente necesita
+#	  NEAR           evidencia adyacente; NO se admite como sustituto
+#	  GENETIC        existe, pero solo por perturbacion genetica
+#	  CONTRADICTORY  evidencia verificada que apunta en contra
+#	  ABSENT         no hay
+#
+#	REGLA DURA: ninguna fila con `clase` distinta de ABSENT puede quedarse sin
+#	`fuente`. Y ninguna fuente se escribe sin haberla verificado (CLAUDE.md §5).
+#	Las fuentes de aqui son las mismas de docs/EVIDENCE.md y
+#	docs/TRACK2_MECHANISM_MAP.md; este fichero no anade ninguna nueva.
+#
+#	dimension: paciente · mva_humana · celulas_aneuploides · otro_contexto ·
+#	           perturbacion_genetica · perturbacion_farmacologica ·
+#	           abundancia_bubr1 · proteostasis · cin · supervivencia_clonogenica
+puente	titulo	ruta	dimension	clase	sistema	fuerza	fuente	nota
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	paciente	NEAR	in silico	L0-L1	src/structure/ (EXP-010, EXP-011)	inferencia estructural y conservacion; NO es una medida de abundancia
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	mva_humana	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	celulas_aneuploides	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	otro_contexto	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	perturbacion_genetica	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	perturbacion_farmacologica	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	abundancia_bubr1	ABSENT				es exactamente lo que mediria EXP-011b, que este proyecto no ejecuta
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	proteostasis	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	cin	ABSENT
+1	variante de ESTE paciente -> BUBR1 inestable	T2-A	supervivencia_clonogenica	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	paciente	ABSENT				la evidencia es de OTROS alelos, no del suyo
+2	BUBR1 inestable -> menos proteina	T2-A	mva_humana	DIRECT	pacientes	L5	docs/EVIDENCE.md	niveles muy bajos en pacientes con mutaciones en BUBR1, incluso missense
+2	BUBR1 inestable -> menos proteina	T2-A	celulas_aneuploides	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	otro_contexto	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	perturbacion_genetica	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	perturbacion_farmacologica	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	abundancia_bubr1	DIRECT	pacientes	L5	docs/EVIDENCE.md
+2	BUBR1 inestable -> menos proteina	T2-A	proteostasis	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	cin	ABSENT
+2	BUBR1 inestable -> menos proteina	T2-A	supervivencia_clonogenica	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	paciente	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	mva_humana	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	celulas_aneuploides	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	otro_contexto	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	perturbacion_genetica	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	perturbacion_farmacologica	CONTRADICTORY	celulas	L4	PMID 20516114	INHIBIR HSP90 desploma mutantes missense de BUBR1: dependencia basal. Que quitar el soporte hunda NO implica que anadirlo suba
+3	subir chaperonas -> subir BUBR1	T2-A	abundancia_bubr1	CONTRADICTORY	celulas	L4	PMID 20516114	la evidencia disponible va en la direccion contraria a la que el puente necesita
+3	subir chaperonas -> subir BUBR1	T2-A	proteostasis	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	cin	ABSENT
+3	subir chaperonas -> subir BUBR1	T2-A	supervivencia_clonogenica	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	paciente	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	mva_humana	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	celulas_aneuploides	NEAR	HeLa shRNA	L4	DOI 10.1007/s00439-008-0572-y	aneuploidia inducida por knockdown, no celulas de MVA
+4	mas BUBR1 -> menos CIN	T2-A	otro_contexto	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	perturbacion_genetica	DIRECT	HeLa shRNA	L4	DOI 10.1007/s00439-008-0572-y	gradiente 8,5-77 % de proteina residual
+4	mas BUBR1 -> menos CIN	T2-A	perturbacion_farmacologica	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	abundancia_bubr1	DIRECT	HeLa shRNA	L4	DOI 10.1007/s00439-008-0572-y
+4	mas BUBR1 -> menos CIN	T2-A	proteostasis	ABSENT
+4	mas BUBR1 -> menos CIN	T2-A	cin	DIRECT	HeLa shRNA	L4	DOI 10.1007/s00439-008-0572-y	aneuploidia clara por debajo del ~50 % de proteina residual
+4	mas BUBR1 -> menos CIN	T2-A	supervivencia_clonogenica	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	paciente	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	mva_humana	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	celulas_aneuploides	DIRECT	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4	p62 citosolico con precursores mitocondriales, importacion deficiente, ADNmt bajo, ROS alto
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	otro_contexto	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	perturbacion_genetica	ABSENT				el puente es observacional: describe el estado aneuploide, no lo perturba
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	perturbacion_farmacologica	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	abundancia_bubr1	ABSENT
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	proteostasis	DIRECT	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	cin	NEAR	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4	el sistema ES aneuploide; no se mide CIN como variable
+5	aneuploidia -> estres proteotoxico y mitocondrial	T2-B	supervivencia_clonogenica	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	paciente	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	mva_humana	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	celulas_aneuploides	GENETIC	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4	el rescate DEPENDIO del cariotipo: una linea aneuploide no respondio igual
+6	subir HSP -> rescate de ese estres	T2-B	otro_contexto	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	perturbacion_genetica	DIRECT	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4	HSP27, HSP90alfa, HSF1 WT y constitutivamente activo
+6	subir HSP -> rescate de ese estres	T2-B	perturbacion_farmacologica	ABSENT				este hueco ES el puente 7
+6	subir HSP -> rescate de ese estres	T2-B	abundancia_bubr1	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	proteostasis	DIRECT	celulas isogenicas	L4	DOI 10.1038/s41467-025-60857-4	menos agregados y menos colocalizacion p62-TOMM20
+6	subir HSP -> rescate de ese estres	T2-B	cin	ABSENT
+6	subir HSP -> rescate de ese estres	T2-B	supervivencia_clonogenica	ABSENT
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	paciente	ABSENT
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	mva_humana	ABSENT
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	celulas_aneuploides	ABSENT				cero evidencia DIRECT: celulas aneuploides + coinductor farmacologico + rescate
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	otro_contexto	CONTRADICTORY	fibroblastos NPC1 I1061T	L4	PMID 34481829 · DOI 10.1016/j.jlr.2021.100114	existe NEAR (coinduccion en otro contexto proteotoxico) pero no se admite como sustituto; el contraejemplo verificado pesa mas
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	perturbacion_genetica	GENETIC	fibroblastos NPC1 I1061T	L4	PMID 34481829	la sobreexpresion de HSP70 SI redujo el almacenamiento de colesterol
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	perturbacion_farmacologica	CONTRADICTORY	fibroblastos NPC1 I1061T	L4	PMID 34481829	arimoclomol no lo reprodujo hasta 500 uM durante 72-120 h, y por si solo no subio HSP70 en esas celulas
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	abundancia_bubr1	ABSENT
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	proteostasis	CONTRADICTORY	fibroblastos NPC1 I1061T	L4	PMID 34481829	el rescate genetico NO se reprodujo farmacologicamente
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	cin	ABSENT
+7	coinduccion FARMACOLOGICA -> el mismo rescate	T2-B	supervivencia_clonogenica	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	paciente	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	mva_humana	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	celulas_aneuploides	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	otro_contexto	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	perturbacion_genetica	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	perturbacion_farmacologica	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	abundancia_bubr1	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	proteostasis	ABSENT
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	cin	ABSENT				NUNCA MEDIDO: es el contra-test de seguridad que nadie hizo
+8	la misma intervencion -> CIN y supervivencia clonogenica	ambas	supervivencia_clonogenica	ABSENT				NUNCA MEDIDO: si el rescate aumenta la supervivencia de celulas con CIN, convierte el beneficio en dano

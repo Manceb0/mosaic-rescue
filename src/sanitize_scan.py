@@ -50,9 +50,23 @@ BINARY_EXT = re.compile(r"\.(png|jpg|jpeg|gif|pdf|pyc|zip|gz|woff2?)$", re.I)
 
 
 def tracked_files(staged: bool):
-    cmd = ["git", "diff", "--cached", "--name-only"] if staged else ["git", "ls-files"]
-    out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
-    return [f for f in out.splitlines() if f and not f.startswith(SKIP_DIRS)]
+    """Ficheros que un commit versionaria: los YA seguidos MAS los nuevos.
+
+    Antes solo listaba `git ls-files`, es decir lo ya seguido. Un fichero nuevo
+    y sin ignorar —una figura recien generada, por ejemplo— quedaba fuera del
+    escaneo y salia LIMPIO sin haberse mirado. Un control que solo revisa lo que
+    ya paso por el no sirve de control.
+    """
+    if staged:
+        cmds = [["git", "diff", "--cached", "--name-only"]]
+    else:
+        cmds = [["git", "ls-files"],
+                ["git", "ls-files", "--others", "--exclude-standard"]]
+    out = []
+    for cmd in cmds:
+        r = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+        out += [f for f in r.splitlines() if f and not f.startswith(SKIP_DIRS)]
+    return sorted(set(out))
 
 
 def load_forbidden(path="work/sanitize/forbidden.txt"):
