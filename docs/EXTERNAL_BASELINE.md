@@ -145,7 +145,7 @@ Genes del top-10 externo fuera de nuestro top-50: `HLA-DRB1`, `FANCD2`, `HLA-DQA
 | Variantes de partida | 4 943 948 anotadas | 4 962 047 leídas |
 | Regla de filtrado | dos niveles: `PASS` primario + rescate examinado variante a variante | `PASS_ONLY` |
 | Efecto | HIGH + MODERATE | preset de exoma, sin UTR/intrón/regulador |
-| Tras filtros | 6 322 genes | 398 genes / 835 variantes |
+| Tras filtros | 6 321 genes | 398 genes / 835 variantes |
 
 El preset de exoma se eligió porque corresponde al alcance que declaramos en EXP-006 —pasada
 codificante y de splicing—, no al genoma regulador. Usar el preset de genoma habría comparado

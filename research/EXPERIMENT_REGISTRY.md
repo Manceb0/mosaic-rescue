@@ -105,14 +105,14 @@ El filtro es únicamente consecuencia funcional.
 |---|---|
 | Entrada | 4 943 948 variantes anotadas |
 | Filtro | `IMPACT` HIGH o MODERATE, sin panel |
-| Extraídas | **13 109 variantes en 6 322 genes** |
+| Extraídas | **13 109 variantes en 6 321 genes** (el `6 322` de la primera pasada quedó obsoleto al arreglar el cruce de alelos; ver `docs/DECISIONS.md`) |
 | Siguiente | frecuencia poblacional, modelos de herencia, agregación por gen |
 
 **Preregistro.** Ver `docs/DECISIONS.md`.
 
 **Los dos desenlaces son buenos:**
 
-- Si `BUB1B` queda arriba compitiendo contra 6 322 genes, entonces *no lo encontramos porque lo
+- Si `BUB1B` queda arriba compitiendo contra 6 321 genes, entonces *no lo encontramos porque lo
   buscábamos; sobrevivió a una búsqueda sin panel*.
 - Si gana otro gen, **acabamos de evitar un error**, que vale más.
 

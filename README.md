@@ -1,193 +1,131 @@
 # MOSAIC RESCUE
 
-### *The disease is running an evolutionary experiment. We decode it.*
+Research-first genomic analysis of one real paediatric patient with suspected Mosaic
+Variegated Aneuploidy, for the **Rare Disease, Real Kid: MVA Hackathon 2026**.
 
-MOSAIC RESCUE is a research-first, Jupyter/Python project for the **Rare Disease, Real Kid: MVA Hackathon 2026**. The goal is not to claim a cure or recommend treatment. The goal is to generate **patient-specific, traceable, falsifiable therapeutic hypotheses** from real genomic and clinical data.
+The deliverable is not a cure or a treatment recommendation. It is a **traceable, falsifiable
+preclinical hypothesis**, plus the record of every branch we killed on the way there.
 
-> **The patient is not only the case. The patient may also contain the experiment.**
+> An earlier version of this file described a planned architecture of sixteen notebooks and
+> eight hypotheses, most of which assumed single-cell, RNA-seq or longitudinal data that this
+> case does not have. That plan was superseded by what the data actually supported. It is kept
+> in `docs/history/` for traceability.
 
-## Core idea
+## What is in here
 
-Mosaic Variegated Aneuploidy (MVA) generates chromosomally distinct cellular states. Instead of treating that mosaicism only as a consequence of disease, we ask whether the states that **persist, disappear, or become more likely under an inferred fitness landscape** reveal endogenous rules of cellular fitness and compensation.
+Eight executed notebooks, 27 embedded figures, 22 of them scientific. Every figure is
+regenerated from a module in `src/figures/`, and the notebooks call that same code, so the
+publication figure and the notebook figure cannot drift apart.
 
-Those rules must then survive independent functional validation before they are allowed to inform intervention hypotheses.
+| # | Notebook | Question | Status |
+|---|---|---|---|
+| 00 | `DATA_REALITY` | What can and cannot be answered with the data that exists? | Fit for use, not sufficient |
+| 01 | `TRACK1_GENOME_WIDE` | Which gene explains the case when the whole coding genome competes? | `BUB1B` survives a panel-free search |
+| 02 | `BUB1B_ALLELE_CURATION` | What supports each allele, and what would make the pair causal? | Truncating allele Likely Pathogenic; missense stays VUS |
+| 03 | `BUBR1_MECHANISM` | The missense will not move by classification. Does it move by mechanism? | `UNRESOLVED`, needs an abundance assay |
+| 04 | `HIDDEN_SECOND_ALLELE` | Is there a second allele the coding pipeline cannot see? | `NEGATIVE` for SNV and indel |
+| 05 | `RESIDUAL_PHENOTYPE` | Which traits does MVA not explain? | Nephrocalcinosis is the only one failing both checks |
+| 06 | `MOSAIC_AND_MITOREAD` | What happens to the mosaicism signal when clonality breaks? | Cancellation mechanism reproduced |
+| 07 | `TRACK2_SAFE_RESCUE` | Is there a plausible, falsifiable and safe therapeutic mechanism? | Two bridges of eight are empty |
 
-## Visual architecture
-
-```mermaid
-flowchart TD
-    A[Patient data] --> B[Data inventory and QC]
-    B --> C[Causal variant discovery]
-    C --> D{Mechanism router}
-    D --> D1[Dosage / expression]
-    D --> D2[Protein stability]
-    D --> D3[Interface / complex]
-    D --> D4[Splicing / regulatory / other]
-    D1 --> E
-    D2 --> E
-    D3 --> E
-    D4 --> E
-    E{Cell-resolved data available?}
-    E -- Yes --> F[Patient-as-Screen]
-    E -- No --> G[WGS / bulk mosaic fingerprint]
-    F --> H[Observed states]
-    G --> H
-    H --> I[Ghost Karyotypes / negative space]
-    I --> J[Fitness landscape]
-    J --> K[Synthetic + natural rescue candidates]
-    K --> L[Independent validation]
-    L --> M{Convergent mechanism?}
-    M -- No --> N[Reject / revise hypothesis]
-    N --> H
-    M -- Yes --> O[Mechanistic state model]
-    O --> P[Mosaic forecast - conditional]
-    P --> Q[Rescue Replay]
-    Q --> R[Safe Rescue Corridor]
-    R --> S[Drug / intervention mimicry]
-    S --> T[PGx / pediatric / PK context]
-    T --> U[Try to Kill the Hypothesis]
-    U --> V{Still survives?}
-    V -- No --> W[Reject candidate]
-    W --> S
-    V -- Yes --> X[Next Best Experiment]
-    X --> Y[Falsifiable therapeutic hypothesis dossier]
+```bash
+python src/nb/build_all.py        # rebuild and execute all eight notebooks
+python src/figures/render_all.py  # full-size figures: SVG + PNG at 300 dpi
+python src/sanitize_scan.py       # privacy scan over everything a commit would add
+python src/audit_stale_claims.py  # find claims superseded by later results
 ```
 
-## Closed-loop research logic
+## Where the project stands
 
-```mermaid
-flowchart LR
-    O[OBSERVE\nWhat exists?] --> N[NEGATIVE SPACE\nWhat is missing?]
-    N --> E[EXPLAIN\nWhat mechanism fits?]
-    E --> V[VALIDATE\nDoes independent evidence agree?]
-    V --> F[FORECAST\nWhat states are plausible next?]
-    F --> R[REPLAY\nWhat changes under intervention?]
-    R --> S[SAFETY\nDoes rescue increase danger?]
-    S --> X[NEXT EXPERIMENT\nWhat reduces uncertainty most?]
-    X --> O
-```
+**Track 1, the causal mechanism.** `BUB1B` ranks first in 14 of 15 phenotype-perturbation
+analyses. In the frozen, preregistered `A0` it ranks **fourth**; in the later `A0-FREQFIX`
+sensitivity it ranks first. Both numbers are always reported together, because the difference
+is what shows why allele-frequency provenance matters. An independent method on the same VCF,
+Exomiser, places it second of 398 under a recessive model.
 
-## The eight research hypotheses we will test
+The truncating allele reaches Likely Pathogenic (9 ACMG points). The missense allele is a VUS
+and stays there: `PM3` is blocked because **phase is unresolved** without parental genotypes,
+and `PS3` needs a functional assay this project does not run. So the correct statement is
+*candidate compound heterozygosity with phase unresolved*, and nothing stronger.
 
-1. **Patient-as-Screen.** MVA may create a natural perturbation screen inside one patient.
-2. **Ghost Karyotypes**, depleted or missing chromosomal states may be as informative as surviving ones.
-3. **Evolutionary Fitness Landscape**, the distribution of states may reveal selection rules rather than simple generation frequencies.
-4. **Natural / Synthetic Rescue**, compensatory mechanisms may be discoverable by combining patient evidence with independent perturbation screens.
-5. **Mosaic Forecast**, with suitable data and calibration, the inferred landscape may support probabilistic forecasting of plausible cellular states.
-6. **Rescue Replay**, interventions should be evaluated against the patient-specific tolerated state, not only a generic healthy signature.
-7. **Safe Rescue Corridor**, rescue is not equal to survival; benefit must not increase CIN, abnormal clonal fitness, apoptosis escape, or tumor-like adaptation.
-8. **Next Best Experiment**, the system should identify the experiment that best distinguishes surviving hypotheses.
+**Track 2, the therapeutic hypothesis.** The mechanistic chain is broken into eight bridges and
+audited against ten dimensions of evidence. Of 80 cells, **61 are empty**. Bridge 7, whether
+pharmacological co-induction reproduces the rescue that genetic overexpression achieves, has
+verified counter-evidence. Bridge 8, whether the same intervention affects chromosome
+instability and clonogenic survival, has never been measured by anyone. **No drug is
+nominated**, and no overall score is computed, because combining heterogeneous evidence into
+one number would need a preregistered method that does not exist.
 
-## Data gates
+**What blocks the rest.** Parental genotypes, full-depth BAM or CRAM, a contemporaneous blood
+count, and the obstetric history. Five of sixteen branches are blocked by missing data, not by
+missing compute.
 
-We will **not invent modalities**.
+## Results we did not want
 
-```mermaid
-flowchart TD
-    A[Dataset inventory] --> B{scRNA / single-cell?}
-    B -- Yes --> C[Cell-level karyotype + state analysis]
-    B -- No --> D{BAM / CRAM / high-depth WGS?}
-    D -- Yes --> E[Mosaic fingerprint from allelic balance / copy-number evidence]
-    D -- No --> F[VCF + clinical phenotype + external functional genomics]
-    A --> G{Bulk RNA-seq?}
-    G -- Yes --> H[Pathway / stress signatures - bulk only]
-    A --> I{Variant structurally informative?}
-    I -- Yes --> J[Experimental structures + AlphaFold/FoldX/Rosetta branch]
-    I -- No --> K[Skip structural modeling]
-```
+These are here because the decision tables were written before the analyses ran.
 
-## Evidence standard
+- The allele join was broken. `allele_key.py` existed, had passing tests, and **no module
+  imported it**. Fixing it moved `BUB1B` from first to fourth in the frozen `A0`. The number
+  was reported, not buried.
+- AlphaGenome predicted no coherent molecular effect for the only regulatory candidate. That
+  closed the hidden second allele branch as `NEGATIVE`.
+- Three homozygous deletions outranked `BUB1B` in `A0`. They turned out to be common
+  polymorphisms VEP had failed to annotate.
+- `FANCD2` as a competing hypothesis: all three alleles at about 47 % frequency, all
+  heterozygous. `NEGATIVE`.
+- The HPO matrix shows `MVA1` covers three of seven proband terms by annotation, not six as an
+  earlier caption claimed. The caption is now computed from the matrix.
 
-Every claim must be tagged by evidence level:
+## Rules this repository is held to
 
-- **L0, speculation**: plausible idea, no direct evidence.
-- **L1, associative**: observational or correlational support.
-- **L2, orthogonal support**: independent dataset or method supports the claim.
-- **L3, functional evidence**: perturbation supports the mechanism.
-- **L4, replicated functional evidence**: convergent functional evidence across systems.
-- **L5, clinically established**: established human evidence; use rarely and only when truly justified.
+**No rescue without a do-no-harm test.** MVA carries tumour predisposition. A mechanism that
+helps aneuploid cells survive can be dangerous. Safety is part of the hypothesis, not a
+disclaimer appended to it.
 
-A drug/intervention hypothesis does **not** advance because it is exciting. It advances only when the chain is traceable:
+**Nothing is fabricated.** No blots, no microscopy, no karyotypes, no coverage tracks, no
+Hi-C, and no confidence interval that nobody computed. Where uncertainty is declared
+unquantified, the figure shows an open-ended range rather than inventing a bound.
 
-```mermaid
-flowchart LR
-    A[Variant] --> B[Molecular mechanism]
-    B --> C[Patient-specific evidence]
-    C --> D[Independent functional evidence]
-    D --> E[Compensatory mechanism]
-    E --> F[Intervention mimic]
-    F --> G[Safety + exposure + PGx]
-    G --> H[Falsification experiment]
-```
+**Every figure declares two things**, and they are different questions: its `FIGURE CLASS`
+(what kind of object it is: `DATA`, `MODEL_OUTPUT`, `SIMULATION`, `CURATED_EVIDENCE`,
+`SYNTHESIS`, `NARRATIVE`) and its `EVIDENCE ORIGIN` (where the content came from: `MEASURED`,
+`DERIVED`, `EXTERNAL`, `PREDICTED`, `SIMULATED`). Collapsing them is how a figure starts
+misrepresenting itself.
 
-## Mandatory adversarial rule
+**Every claim carries an evidence level.** `L0` speculation, `L1` associative, `L2` orthogonal
+support, `L3` functional, `L4` replicated functional, `L5` clinically established.
 
-**No rescue without a do-no-harm test.**
+**No patient data in this repository.** No FASTQ, BAM, CRAM, VCF, variant coordinates,
+genotypes or sample identifiers. Paths live in `config/paths.yaml`, which is gitignored, and
+`src/sanitize_scan.py` checks everything a commit would add, including files not yet tracked.
 
-MVA may involve tumor predisposition. A mechanism that helps aneuploid cells survive can also be biologically dangerous. Safety is part of the hypothesis itself, not a disclaimer added later.
+## What a therapeutic dossier would have to contain
 
-## Research operating system
+A causal variant, the molecular mechanism it disrupts, the patient evidence behind it, a
+compensatory mechanism, independent validation, an intervention that mimics it, and a safety
+and falsification plan. We do not have all seven for any candidate, and the evidence matrix in
+notebook 07 says exactly which parts are missing.
 
-This repository is designed for multiple research agents working in parallel. Before contributing, read:
+## Reading order
 
-- [`AGENTS.md`](AGENTS.md), agent behavior and quality bar
-- [`CONTRIBUTING_RESEARCH.md`](CONTRIBUTING_RESEARCH.md), how to submit findings
-- [`docs/research_protocol.md`](docs/research_protocol.md), evidence requirements and hypothesis gates
-- [`docs/agent_workplan.md`](docs/agent_workplan.md), parallel research streams
-- [`docs/roadmap.md`](docs/roadmap.md), execution phases and decision gates
-- [`docs/visualization_plan.md`](docs/visualization_plan.md), scientific visualizations and notebook outputs
-- [`docs/diagrams.md`](docs/diagrams.md), rendered project diagrams
-- [`research/evidence_registry.md`](research/evidence_registry.md), accepted evidence log
-- [`research/contradictions.md`](research/contradictions.md), evidence against our favorite ideas
-- [`research/crazy_ideas.md`](research/crazy_ideas.md), high-risk transfer ideas worth testing
+1. [`docs/01_MASTER_BRIEF.md`](docs/01_MASTER_BRIEF.md), the scientific context, evidence and
+   counter-evidence.
+2. [`docs/04_ARQUITECTURA_MAESTRA.md`](docs/04_ARQUITECTURA_MAESTRA.md), the current scientific
+   hierarchy. It overrides any earlier module or idea.
+3. [`research/EXPERIMENT_REGISTRY.md`](research/EXPERIMENT_REGISTRY.md), every experiment with
+   its status and its executable origin.
+4. [`notebooks/README.md`](notebooks/README.md), how the notebooks are built and what makes one
+   finished.
+5. [`PUBLICATION_FIGURE_QA.md`](PUBLICATION_FIGURE_QA.md), one row per figure, including the
+   mandatory column: what a reader could wrongly conclude from it.
 
-## Notebook sequence
-
-The planned analysis sequence is:
-
-1. `00_data_inventory.ipynb`
-2. `01_variant_discovery.ipynb`
-3. `02_mechanism_router.ipynb`
-4. `03_mosaic_landscape.ipynb`
-5. `04_ghost_karyotypes.ipynb`
-6. `05_fitness_landscape.ipynb`
-7. `06_synthetic_rescue.ipynb`
-8. `07_cell_competition.ipynb`
-9. `08_mosaic_forecast.ipynb`
-10. `09_rescue_replay.ipynb`
-11. `10_safe_rescue_corridor.ipynb`
-12. `11_drug_mimicry.ipynb`
-13. `12_structural_mechanism.ipynb`
-14. `13_pgx_safety.ipynb`
-15. `14_try_to_kill_hypothesis.ipynb`
-16. `15_next_best_experiment.ipynb`
-
-Not every notebook will necessarily activate. The dataset and causal mechanism decide which branches are scientifically justified.
-
-## Every notebook must answer
-
-- What biological question are we asking?
-- Which data support the analysis?
-- Which assumptions are required?
-- What would support the hypothesis?
-- What would falsify it?
-- What is the strongest alternative explanation?
-- What uncertainty remains?
-- What scientific visualization best exposes the phenomenon?
-- What experiment should be run next?
-
-## North-star output
-
-We do **not** want a list of 50 drugs.
-
-We want at most a few dossiers with this structure:
-
-**A causal variant, the molecular mechanism it disrupts, the patient evidence behind it, a compensatory mechanism, independent validation, an intervention that mimics it, and a safety and falsification plan.**
+Contributing: [`AGENTS.md`](AGENTS.md) and
+[`CONTRIBUTING_RESEARCH.md`](CONTRIBUTING_RESEARCH.md).
+Evidence against our own preferred ideas lives in
+[`research/contradictions.md`](research/contradictions.md).
 
 ## Scientific boundary
 
-This project produces **computational and preclinical research hypotheses**. It does not diagnose, prescribe, recommend administration, or claim a cure.
-
----
-
-New ideas are welcome, but every idea must earn its place through evidence, explicit assumptions, contradiction search, and falsifiability.
+This project produces computational and preclinical research hypotheses. It does not diagnose,
+prescribe, recommend administration, or claim a cure. The patient's family consented to their
+story being shared; nothing here identifies them, and no attempt was made to find them.

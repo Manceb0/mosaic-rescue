@@ -275,7 +275,8 @@ for r, (g, sc, *_rest) in enumerate(A0, start=1):
     if gb:
         pts.append((g, gb[0], gb[1], sc, r))
 
-# Carga genomica de fondo: densidad de los 6 322 genes HIGH/MODERATE por bin
+# Carga genomica de fondo: densidad de los genes HIGH/MODERATE por bin.
+# El recuento no se escribe a mano, se imprime desde len(by_gene).
 load_bins = collections.Counter()
 for g in by_gene:
     gb = gene_bin(g)

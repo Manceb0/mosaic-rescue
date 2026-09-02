@@ -22,6 +22,13 @@ Sale con codigo 1 si encuentra algo, para poder colgarlo de un hook.
 from __future__ import annotations
 import io, os, re, sys, subprocess
 
+# La consola de Windows usa cp1252 por defecto y print() muere con los caracteres
+# no ASCII de los propios hallazgos. Sin esto hay que invocarlo con
+# PYTHONIOENCODING=utf-8, y un control que no arranca al clonar no es un control.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # Patrones genericos. Cada uno con un nombre legible para el informe.
 PATTERNS = [
     ("coordenada genomica",   re.compile(r"\bchr[0-9XYMT]{1,2}[:\-_]\d{4,}\b", re.I)),

@@ -19,6 +19,14 @@ NO decide por si solo. Produce la lista para revisarla una a una.
 from __future__ import annotations
 import io, re, sys, subprocess
 
+# La consola de Windows usa cp1252 por defecto y print() muere con los caracteres
+# no ASCII de los propios hallazgos. El escaner leia bien los ficheros; lo que
+# fallaba era escribir el informe. Sin esto hay que invocarlo con
+# PYTHONIOENCODING=utf-8, y un control que no arranca al clonar no es un control.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # Documentos que un lector externo toma como estado ACTUAL del proyecto.
 CANONICAL = (
     "README.md", "CLAUDE.md",
