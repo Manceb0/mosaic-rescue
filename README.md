@@ -69,14 +69,14 @@ flowchart LR
 
 ## The eight research hypotheses we will test
 
-1. **Patient-as-Screen** — MVA may create a natural perturbation screen inside one patient.
-2. **Ghost Karyotypes** — depleted or missing chromosomal states may be as informative as surviving ones.
-3. **Evolutionary Fitness Landscape** — the distribution of states may reveal selection rules rather than simple generation frequencies.
-4. **Natural / Synthetic Rescue** — compensatory mechanisms may be discoverable by combining patient evidence with independent perturbation screens.
-5. **Mosaic Forecast** — with suitable data and calibration, the inferred landscape may support probabilistic forecasting of plausible cellular states.
-6. **Rescue Replay** — interventions should be evaluated against the patient-specific tolerated state, not only a generic healthy signature.
-7. **Safe Rescue Corridor** — rescue is not equal to survival; benefit must not increase CIN, abnormal clonal fitness, apoptosis escape, or tumor-like adaptation.
-8. **Next Best Experiment** — the system should identify the experiment that best distinguishes surviving hypotheses.
+1. **Patient-as-Screen.** MVA may create a natural perturbation screen inside one patient.
+2. **Ghost Karyotypes**, depleted or missing chromosomal states may be as informative as surviving ones.
+3. **Evolutionary Fitness Landscape**, the distribution of states may reveal selection rules rather than simple generation frequencies.
+4. **Natural / Synthetic Rescue**, compensatory mechanisms may be discoverable by combining patient evidence with independent perturbation screens.
+5. **Mosaic Forecast**, with suitable data and calibration, the inferred landscape may support probabilistic forecasting of plausible cellular states.
+6. **Rescue Replay**, interventions should be evaluated against the patient-specific tolerated state, not only a generic healthy signature.
+7. **Safe Rescue Corridor**, rescue is not equal to survival; benefit must not increase CIN, abnormal clonal fitness, apoptosis escape, or tumor-like adaptation.
+8. **Next Best Experiment**, the system should identify the experiment that best distinguishes surviving hypotheses.
 
 ## Data gates
 
@@ -100,12 +100,12 @@ flowchart TD
 
 Every claim must be tagged by evidence level:
 
-- **L0 — speculation**: plausible idea, no direct evidence.
-- **L1 — associative**: observational or correlational support.
-- **L2 — orthogonal support**: independent dataset or method supports the claim.
-- **L3 — functional evidence**: perturbation supports the mechanism.
-- **L4 — replicated functional evidence**: convergent functional evidence across systems.
-- **L5 — clinically established**: established human evidence; use rarely and only when truly justified.
+- **L0, speculation**: plausible idea, no direct evidence.
+- **L1, associative**: observational or correlational support.
+- **L2, orthogonal support**: independent dataset or method supports the claim.
+- **L3, functional evidence**: perturbation supports the mechanism.
+- **L4, replicated functional evidence**: convergent functional evidence across systems.
+- **L5, clinically established**: established human evidence; use rarely and only when truly justified.
 
 A drug/intervention hypothesis does **not** advance because it is exciting. It advances only when the chain is traceable:
 
@@ -130,16 +130,16 @@ MVA may involve tumor predisposition. A mechanism that helps aneuploid cells sur
 
 This repository is designed for multiple research agents working in parallel. Before contributing, read:
 
-- [`AGENTS.md`](AGENTS.md) — agent behavior and quality bar
-- [`CONTRIBUTING_RESEARCH.md`](CONTRIBUTING_RESEARCH.md) — how to submit findings
-- [`docs/research_protocol.md`](docs/research_protocol.md) — evidence requirements and hypothesis gates
-- [`docs/agent_workplan.md`](docs/agent_workplan.md) — parallel research streams
-- [`docs/roadmap.md`](docs/roadmap.md) — execution phases and decision gates
-- [`docs/visualization_plan.md`](docs/visualization_plan.md) — scientific visualizations and notebook outputs
-- [`docs/diagrams.md`](docs/diagrams.md) — rendered project diagrams
-- [`research/evidence_registry.md`](research/evidence_registry.md) — accepted evidence log
-- [`research/contradictions.md`](research/contradictions.md) — evidence against our favorite ideas
-- [`research/crazy_ideas.md`](research/crazy_ideas.md) — high-risk transfer ideas worth testing
+- [`AGENTS.md`](AGENTS.md), agent behavior and quality bar
+- [`CONTRIBUTING_RESEARCH.md`](CONTRIBUTING_RESEARCH.md), how to submit findings
+- [`docs/research_protocol.md`](docs/research_protocol.md), evidence requirements and hypothesis gates
+- [`docs/agent_workplan.md`](docs/agent_workplan.md), parallel research streams
+- [`docs/roadmap.md`](docs/roadmap.md), execution phases and decision gates
+- [`docs/visualization_plan.md`](docs/visualization_plan.md), scientific visualizations and notebook outputs
+- [`docs/diagrams.md`](docs/diagrams.md), rendered project diagrams
+- [`research/evidence_registry.md`](research/evidence_registry.md), accepted evidence log
+- [`research/contradictions.md`](research/contradictions.md), evidence against our favorite ideas
+- [`research/crazy_ideas.md`](research/crazy_ideas.md), high-risk transfer ideas worth testing
 
 ## Notebook sequence
 
@@ -182,7 +182,7 @@ We do **not** want a list of 50 drugs.
 
 We want at most a few dossiers with this structure:
 
-**causal variant → molecular mechanism → patient evidence → compensatory mechanism → independent validation → intervention mimic → safety / PGx / PK context → uncertainty → exact falsification experiment**
+**A causal variant, the molecular mechanism it disrupts, the patient evidence behind it, a compensatory mechanism, independent validation, an intervention that mimics it, and a safety and falsification plan.**
 
 ## Scientific boundary
 

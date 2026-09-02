@@ -11,14 +11,14 @@ Regla operativa: **antes de cada fase**, escribir en `docs/DECISIONS.md` qué se
 Alinear 86 GB de FASTQ cuesta decenas de core-horas y ~500 GB de disco. **No lo hagas hasta la Fase 6.** El orden aprovecha tres atajos:
 
 1. **El VCF ya existe.** Si trae `FORMAT/AD` y `FORMAT/DP`, se puede calcular BAF directamente sin realinear. Comprobar primero.
-2. **Para `mtDNA-CN` basta un submuestreo aleatorio.** El cociente mtDNA/nuclear se preserva en una muestra aleatoria de lecturas — `fastMitoCalc` usa deliberadamente el 0,1 % del genoma nuclear. Un 2-5 % de las lecturas alineadas da una estimación buena a coste ridículo.
+2. **Para `mtDNA-CN` basta un submuestreo aleatorio.** El cociente mtDNA/nuclear se preserva en una muestra aleatoria de lecturas, `fastMitoCalc` usa deliberadamente el 0,1 % del genoma nuclear. Un 2-5 % de las lecturas alineadas da una estimación buena a coste ridículo.
 3. **La cobertura por bin para LRR** tolera submuestreo mucho mejor que el llamado de variantes.
 
 Solo el llamado de SV (Fase 6) requiere el BAM completo.
 
 ---
 
-## FASE 0 — Higiene y verificación (día 1, ~2 h)
+## FASE 0: Higiene y verificación (día 1, ~2 h)
 
 ### 0.1 Seguridad del repositorio
 
@@ -58,7 +58,7 @@ Preguntar a los organizadores (§14 del brief). Proxy si no responden: tras alin
 
 ---
 
-## FASE 1 — Auditoría HPO Residual (día 1, ~4 h) — PUEDE INTERRUMPIR TODO
+## FASE 1: Auditoría HPO Residual (día 1, ~4 h). Puede interrumpir todo lo demás
 
 Se ejecuta primero porque es barata y porque un resultado positivo reordena las prioridades del proyecto entero (ver brief §8).
 
@@ -89,7 +89,7 @@ ALPL SLC9A3R1 KCNJ16 SLC12A3 HNF1B
 
 **Atención especial a `MAGED2`** (Xp11.2, X-ligado recesivo): si el probando es varón, basta **una** variante hemicigota. Un pipeline que filtre por "bialélico" la perderá. Buscar explícitamente hemicigotos en X.
 
-### 1.3 Tabla de decisión preregistrada — Fase 1
+### 1.3 Tabla de decisión preregistrada: Fase 1
 
 | Resultado | Interpretación | Acción |
 |---|---|---|
@@ -100,7 +100,7 @@ ALPL SLC9A3R1 KCNJ16 SLC12A3 HNF1B
 
 ---
 
-## FASE 2 — Track 1: mecanismo causal (días 1-3)
+## FASE 2: Track 1: mecanismo causal (días 1-3)
 
 ### 2.1 Panel MVA ampliado
 
@@ -111,7 +111,7 @@ CENATAC CCDC84 SLF2 SMC5 CEP192 PLK4 CENPE KNL1 CASC5
 CENPF NDC80 ZW10 ZWILCH RZZ TUBB CDC20 ANAPC1
 ```
 
-Modelos a probar: bialélico (hom / comp-het), hemicigoto X, de novo (no verificable sin padres — marcar como "no confirmable"), y **un solo alelo patogénico** (bandera roja que dispara la Fase 6).
+Modelos a probar: bialélico (hom / comp-het), hemicigoto X, de novo (no verificable sin padres, marcar como "no confirmable"), y **un solo alelo patogénico** (bandera roja que dispara la Fase 6).
 
 ### 2.2 Anotación y priorización
 
@@ -119,14 +119,14 @@ Modelos a probar: bialélico (hom / comp-het), hemicigoto X, de novo (no verific
 - `gnomAD` v4: AF, pLI, LOEUF, homocigotos observados
 - `ClinVar`
 - `AlphaMissense` + `ESM-1b` para missense
-- `SpliceAI` para variantes de splicing — **crítico**, dado que el patrón típico de BUB1B incluye alelos de sitio de splicing canónico
+- `SpliceAI` para variantes de splicing, **crítico**, dado que el patrón típico de BUB1B incluye alelos de sitio de splicing canónico
 - Predicción de **NMD**: aplicar la regla de los 50 nt respecto a la última unión exón-exón. Determina si el alelo truncante produce proteína truncada o nada, y eso cambia la dirección terapéutica
 
 ### 2.3 Priorización fenotípica no convencional
 
 Además de conservación y predicción de patogenicidad, priorizar por **fenotipo mitótico observado**: genes cuyo knockdown produce en **MitoCheck** (`Nature` 464:721) las clases fenotípicas de retraso mitótico, cromosomas no alineados y missegregación. Es respaldo funcional independiente que ningún predictor de secuencia aporta. Datos en `mitocheck.org` / Cellular Phenotype Database del EBI.
 
-### 2.4 Faseo — sin prometer de más
+### 2.4 Faseo: sin prometer de más
 
 ```bash
 whatshap phase --reference "$REF" -o work/phased.vcf "$VCF" "$BAM"   # requiere BAM (Fase 6)
@@ -140,7 +140,7 @@ Para la variante missense candidata, clasificar el **mecanismo**, no solo la pat
 | Clase | Firma computacional | Implicación terapéutica |
 |---|---|---|
 | Desestabilización de plegamiento | ΔΔG alto (FoldX sobre AF2 con pLDDT>70), región de alta confianza | Rama de proteostasis viva |
-| Disrupción de interfaz | AF3 del complejo MCC: ipTM cae, PAE inter-cadena sube, contactos perdidos | Sin ruta farmacológica clara — decirlo |
+| Disrupción de interfaz | AF3 del complejo MCC: ipTM cae, PAE inter-cadena sube, contactos perdidos | Sin ruta farmacológica clara, decirlo |
 | Pérdida catalítica | Residuo en sitio activo, conservación alta, ΔΔG bajo | Otra rama |
 | Truncante / sin transcrito | — | Cuenta como dosis 0 |
 
@@ -150,9 +150,9 @@ Para la variante missense candidata, clasificar el **mecanismo**, no solo la pat
 
 ---
 
-## FASE 3 — Huella de mosaicismo (días 3-6)
+## FASE 3: Huella de mosaicismo (días 3-6)
 
-### 3a. BAF desde el VCF (si hay `AD`) — barato
+### 3a. BAF desde el VCF (si hay `AD`): barato
 
 ```bash
 bcftools query -i 'GT="het" && FORMAT/DP>20' \
@@ -162,7 +162,7 @@ BAF por SNP = `alt / (ref + alt)`. Agregar por bins de 1 Mb y por cromosoma.
 
 ### 3b. Cobertura / LRR
 
-Sobre BAM submuestreado (5 %) o completo: cobertura mediana por bin de 1 Mb, corregida por GC y mapabilidad. Normalizar contra controles procesados **con pipeline idéntico**. Base sugerida: 1000 Genomes 30x de NYGC (procesamiento uniforme, público) — con la advertencia de que la profundidad difiere.
+Sobre BAM submuestreado (5 %) o completo: cobertura mediana por bin de 1 Mb, corregida por GC y mapabilidad. Normalizar contra controles procesados **con pipeline idéntico**. Base sugerida: 1000 Genomes 30x de NYGC (procesamiento uniforme, público), con la advertencia de que la profundidad difiere.
 
 ### 3c. MoChA
 
@@ -174,7 +174,7 @@ Definición: varianza de la desviación log-ratio de cobertura **a través de** 
 
 **Etiqueta de evidencia: `L1`.** La afirmación "más potente que el llamado por cromosoma" **no está demostrada** y no debe escribirse sin la simulación de 3e.
 
-### 3e. Simulación — no opcional
+### 3e. Simulación: no opcional
 
 Simular in silico, a la profundidad real del paciente:
 1. **mCA clonal**: un solo homólogo ganado, fracciones 0,5-5 %.
@@ -185,20 +185,20 @@ Medir sensibilidad de: MoChA, llamado por cromosoma con umbral, e índice de dis
 
 ### 3f. Predicción preregistrada
 
-MVA debería producir **dispersión de LRR elevada con dispersión de BAF relativamente preservada** — asimetría que las mCA clonales no producen. El BAF residual no cancelado informa sobre selección clonal.
+MVA debería producir **dispersión de LRR elevada con dispersión de BAF relativamente preservada**, asimetría que las mCA clonales no producen. El BAF residual no cancelado informa sobre selección clonal.
 
-### 3g. Tabla de decisión preregistrada — Fase 3
+### 3g. Tabla de decisión preregistrada: Fase 3
 
 | Resultado | Interpretación |
 |---|---|
 | Dispersión LRR ↑, BAF preservada | Firma consistente con aneuploidía variegada. Cuantificar carga |
-| Dispersión LRR ↑ **y** BAF ↑ | Sugiere componente clonal (¿expansión?). Interesante, distinto de lo predicho — **documentar la sorpresa, no reescribir la predicción** |
+| Dispersión LRR ↑ **y** BAF ↑ | Sugiere componente clonal (¿expansión?). Interesante, distinto de lo predicho, **documentar la sorpresa, no reescribir la predicción** |
 | Ninguna dispersión elevada | Techo de detección del WGS bulk. Reportar como hallazgo metodológico con la simulación 3e como respaldo cuantitativo |
 | MoChA llama eventos que la dispersión no ve | Revisar; probablemente componente clonal real |
 
 ---
 
-## FASE 4 — MitoRead (día 4, ~4 h)
+## FASE 4: MitoRead (día 4, ~4 h)
 
 ### 4.1 Cálculo
 
@@ -219,10 +219,10 @@ Semilla fija (`-s42`) declarada en `config/`. Alternativa validada: `fastMitoCal
 ### 4.2 Salidas gratuitas del mismo alineamiento
 
 - Heteroplasmia mitocondrial (`mutserve` / `mtDNA-Server`)
-- Haplogrupo mitocondrial (`HaploGrep`) — sirve además como control de identidad de muestra
+- Haplogrupo mitocondrial (`HaploGrep`), sirve además como control de identidad de muestra
 - NUMTs
 
-### 4.3 Controles — la parte difícil
+### 4.3 Controles: la parte difícil
 
 Requisitos mínimos del control: edad pediátrica comparable, mismo tejido, misma extracción, misma preparación de librería, misma plataforma, mismo pipeline. **Y el hemograma contemporáneo** (plaquetas + fórmula), porque las plaquetas aportan mtDNA sin ADN nuclear y sesgan el cociente al alza.
 
@@ -232,7 +232,7 @@ Si no se consigue un control comparable, la conclusión honesta es: *"el valor a
 
 Escribir siempre: **"medida genómica derivada de cobertura de secuenciación"**, un proxy del contenido mitocondrial. **Nunca** "ensayo funcional".
 
-Y el encuadre correcto (brief §7.3): esto podría identificar un **mecanismo aguas abajo que contribuye** a fenotipos ya conocidos de MVA. No "explica lo que MVA no explica" — el retraso de crecimiento está en el 93,5 % de los casos de MVA.
+Y el encuadre correcto (brief §7.3): esto podría identificar un **mecanismo aguas abajo que contribuye** a fenotipos ya conocidos de MVA. No "explica lo que MVA no explica", el retraso de crecimiento está en el 93,5 % de los casos de MVA.
 
 ### 4.5 Limitación n=1
 
@@ -240,7 +240,7 @@ Una sola muestra bulk = un punto, no una curva dosis-respuesta. No se puede demo
 
 ---
 
-## FASE 5 — Consistency check y tabla 2×2 preregistrada
+## FASE 5: Consistency check y tabla 2×2 preregistrada
 
 **Escribir esta tabla en `docs/DECISIONS.md` ANTES de ejecutar las Fases 3 y 4.** Su valor es que demuestra ausencia de p-hacking.
 
@@ -253,7 +253,7 @@ Tres de las cuatro celdas son publicables.
 
 ---
 
-## FASE 6 — Variantes estructurales y segundo hit (días 6-9) — CARA
+## FASE 6: Variantes estructurales y segundo hit (días 6-9), la fase cara
 
 Solo ahora se justifica el alineamiento completo.
 
@@ -280,7 +280,7 @@ Si la Fase 2 encontró **un solo** alelo patogénico:
 - Variantes intrónicas profundas con `SpliceAI` alto
 - Región promotora / 5'UTR / 3'UTR del gen
 - CNV intragénicas por profundidad (`CNVpytor`, `cn.mops`)
-- Verificar cobertura exón a exón en el gen candidato — una deleción de un exón se ve como caída local de cobertura
+- Verificar cobertura exón a exón en el gen candidato, una deleción de un exón se ve como caída local de cobertura
 
 ### 6.3 Faseo definitivo
 
@@ -288,22 +288,22 @@ Con el BAM completo, `whatshap`. Reportar honestamente los tres estados posibles
 
 ---
 
-## FASE 7 — Hipótesis farmacológica y análisis de seguridad
+## FASE 7: Hipótesis farmacológica y análisis de seguridad
 
 ### 7.1 Nominación
 
 Ver brief §10. **No empezar por una base de datos de fármacos.** La secuencia es:
-`defecto del paciente` → `consecuencia mecanística` → `punto de intervención` → *y solo entonces* → `¿existe un aprobado que perturbe ese punto en la dirección requerida?`
+Del defecto del paciente a su consecuencia mecanística, de ahí al punto de intervención, y solo entonces `¿existe un aprobado que perturbe ese punto en la dirección requerida?`
 
 Un fármaco aprobado con relevancia mecanística débil es **peor** que no tener candidato.
 
-### 7.2 Capa de seguridad — la que nadie más va a construir
+### 7.2 Capa de seguridad: la que nadie más va a construir
 
 Tres filtros duros por candidato:
 
 **a) Riesgo oncológico.** ¿El candidato aumenta tolerancia a aneuploidía, proliferación, escape de apoptosis, atenuación de p53, debilitamiento del checkpoint o tolerancia al daño del ADN? Si sí, bandera roja y trade-off documentado. Precedente a citar: la hormona de crecimiento en el caso de MVA2 (brief §3.3).
 
-Para arimoclomol específicamente: declarar la colisión frontal con la oncología (brief §10.3). Las células cancerosas están adictas a HSF1; el campo desarrolla **inhibidores** de HSF1 como antitumorales. Se está proponiendo un coinductor en un niño que ya tuvo un rabdomiosarcoma. Ser coinductor **dependiente de estrés** es a la vez la razón y el riesgo: actuaría donde hay estrés, pero la inducción HSF1-dependiente está al 50–60 % en células aneuploides (`docs/EVIDENCE.md` E19). **Tensión no resuelta — es el puente 7**, y es exactamente lo que hay que testar.
+Para arimoclomol específicamente: declarar la colisión frontal con la oncología (brief §10.3). Las células cancerosas están adictas a HSF1; el campo desarrolla **inhibidores** de HSF1 como antitumorales. Se está proponiendo un coinductor en un niño que ya tuvo un rabdomiosarcoma. Ser coinductor **dependiente de estrés** es a la vez la razón y el riesgo: actuaría donde hay estrés, pero la inducción HSF1-dependiente está al 50–60 % en células aneuploides (`docs/EVIDENCE.md` E19). **Tensión no resuelta, es el puente 7**, y es exactamente lo que hay que testar.
 
 
 
@@ -340,14 +340,14 @@ Y la observación que hay que decir en voz alta: si el efecto **sí** es selecti
 
 ---
 
-## FASE 8 — Reproducibilidad y entrega (semana final)
+## FASE 8: Reproducibilidad y entrega (semana final)
 
 Reservar la semana completa. En un hackathon científico, un repositorio que un juez puede ejecutar es una ventaja competitiva mayor que un modelo adicional.
 
 - Entorno bloqueado (`environment.yml` con versiones fijas)
 - Semillas fijas declaradas en `config/`
 - Pipeline ejecutable de cero en una máquina limpia con datos de prueba sintéticos
-- `docs/EVIDENCE.md` completo, con los `⚠` del brief §11 resueltos en PubMed
+- `docs/EVIDENCE.md` completo, con las entradas sin verificar del brief §11 resueltas en PubMed
 - `docs/DECISIONS.md` como bitácora íntegra, **incluidos los resultados negativos**
 - Figuras agregadas y no identificables únicamente
 
@@ -372,7 +372,7 @@ Un equipo que entrega una hipótesis bien construida derrota a uno que entrega c
 
 ## PITCH DE 20 SEGUNDOS (versión calibrada)
 
-> Todos los equipos van a llamar variantes. Nosotros miramos las lecturas que los pipelines diagnósticos descartan: el ~1 % que mapea al genoma mitocondrial. De ahí sale el número de copias de ADN mitocondrial de este niño. Las células aneuploides pierden ADN mitocondrial porque el estrés proteotóxico atasca la importación de proteínas a la mitocondria — un mecanismo aguas abajo que podría contribuir a su fallo de medro y su atrofia muscular. Lo calculamos desde su propio WGS, sin un solo experimento nuevo. Y el mismo trabajo que describe la lesión muestra que subir las proteínas de choque térmico la revierte, para lo cual existe un aprobado de 2024 con dosis pediátrica. Ahora bien: subir HSF1 es exactamente lo que la oncología intenta bloquear, y este niño ya tuvo un rabdomiosarcoma. Por eso diseñamos un solo experimento que mide la eficacia y el riesgo con la misma lectura.
+> Todos los equipos van a llamar variantes. Nosotros miramos las lecturas que los pipelines diagnósticos descartan: el ~1 % que mapea al genoma mitocondrial. De ahí sale el número de copias de ADN mitocondrial de este niño. Las células aneuploides pierden ADN mitocondrial porque el estrés proteotóxico atasca la importación de proteínas a la mitocondria, un mecanismo aguas abajo que podría contribuir a su fallo de medro y su atrofia muscular. Lo calculamos desde su propio WGS, sin un solo experimento nuevo. Y el mismo trabajo que describe la lesión muestra que subir las proteínas de choque térmico la revierte, para lo cual existe un aprobado de 2024 con dosis pediátrica. Ahora bien: subir HSF1 es exactamente lo que la oncología intenta bloquear, y este niño ya tuvo un rabdomiosarcoma. Por eso diseñamos un solo experimento que mide la eficacia y el riesgo con la misma lectura.
 
 ## "¿Por qué recordarían los jueces este proyecto 24 horas después?"
 

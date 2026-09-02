@@ -1,4 +1,4 @@
-# MASTER BRIEF — MVA Hackathon 2026
+# MASTER BRIEF: MVA Hackathon 2026
 
 > **Repositorio privado obligatorio.** Este documento contiene fenotipo clínico de un menor real. Ver `CLAUDE.md`, Regla Dura 1.
 
@@ -6,14 +6,14 @@
 
 ## §0. El reto
 
-**Track 1** — identificar la(s) variante(s) causal(es).
-**Track 2** — proponer fármacos ya aprobados científicamente plausibles para investigación terapéutica.
+**Track 1**, identificar la(s) variante(s) causal(es).
+**Track 2**, proponer fármacos ya aprobados científicamente plausibles para investigación terapéutica.
 
 La meta **no** es afirmar que hay una cura. Es producir **una hipótesis terapéutica novedosa, falsable, reproducible y defendible** para investigación posterior, más un diagnóstico causal bien argumentado.
 
 ---
 
-## §1. Inventario de datos — lo que existe y lo que no
+## §1. Inventario de datos: lo que existe y lo que no
 
 ### Existe
 
@@ -36,7 +36,7 @@ El identificador de flowcell del nombre de fichero sigue el patrón NovaSeq S4, 
 - Genotipos parentales o material de productos de la concepción
 - Tejido tumoral del rabdomiosarcoma
 
-### Estimación de cobertura — resolver el día 1
+### Estimación de cobertura: resolver el día 1
 
 21,5 GB por carril × 4 ≈ 86 GB comprimidos. Eso **no** son 30x; el rango probable es **45-60x**, posiblemente más si las calidades están binarizadas (NovaSeq). Comando exacto sobre un carril:
 
@@ -57,13 +57,13 @@ Nota importante: a 45-60x el factor limitante deja de ser el ruido binomial y pa
 
 | Rasgo clínico | Término HPO | HPO ID | Presentación / notas |
 |---|---|---|---|
-| Rabdomiosarcoma | Rhabdomyosarcoma | HP:0002859 | Tumor maligno de partes blandas — el evento oncológico primario que desencadenó la investigación urgente |
+| Rabdomiosarcoma | Rhabdomyosarcoma | HP:0002859 | Tumor maligno de partes blandas, el evento oncológico primario que desencadenó la investigación urgente |
 | Nefrocalcinosis | Nephrocalcinosis | HP:0000121 | Depósitos de calcio en tejido renal; **presente desde el nacimiento** |
 | Talla baja | Short stature | HP:0004322 | Talla muy por debajo del rango esperado para edad y contexto familiar |
 | Baja masa muscular / fallo de medro | Failure to thrive | HP:0001508 | Documentado repetidamente; escasa ganancia ponderal y desarrollo muscular desde etapa temprana |
 | Baja masa muscular / fallo de medro | Skeletal muscle atrophy | HP:0003202 | Masa muscular reducida clínicamente junto al fallo de medro |
 | Parto prematuro | Premature birth | HP:0001622 | Nacido a las **32 semanas** de gestación |
-| Muy bajo peso al nacer | Small for gestational age | HP:0001518 | **~1 kg al nacer** — bajo peso severo, compatible con CIR |
+| Muy bajo peso al nacer | Small for gestational age | HP:0001518 | **~1 kg al nacer**, bajo peso severo, compatible con CIR |
 | Abortos de repetición parentales | Recurrent spontaneous abortion | HP:0200067 | Múltiples pérdidas gestacionales previas al nacimiento del probando; historia materna/parental |
 
 **Notas de los organizadores, textuales en su intención:**
@@ -82,7 +82,7 @@ Frecuencias en una serie de 31 casos de MVA1 (`Neurol Sci` 2022, DOI 10.1007/s10
 | Convulsiones epilépticas | 45,1 % | **No listado** |
 | Anomalías cerebrales (incl. CAA) | 32,2 % | No listado |
 | Malformación Dandy-Walker | 25,8 % | **No listado** |
-| Malignidad | 38,7 % (Wilms, RMS, leucemia) | **Sí — rabdomiosarcoma** |
+| Malignidad | 38,7 % (Wilms, RMS, leucemia) | **Sí, rabdomiosarcoma** |
 | Disfunción renal | 12,9 % | Sí (nefrocalcinosis) |
 | Anomalías genitales | 12,9 % | No listado |
 | Disfunción endocrina | 12,9 % | No listado |
@@ -91,13 +91,13 @@ Frecuencias en una serie de 31 casos de MVA1 (`Neurol Sci` 2022, DOI 10.1007/s10
 1. La lista es deliberadamente parcial (solo los rasgos que dispararon el WGS).
 2. El caso es atípico para MVA1 clásica.
 
-En Track 1 esto debe **redistribuir peso entre genes MVA**, no ignorarse. Nota incómoda: MVA2 (`CEP57`) cursa con tamaño cefálico normal y sin microcefalia ni retraso del desarrollo comunes — pero tampoco con predisposición tumoral, y este niño tuvo un rabdomiosarcoma. Ese conflicto hay que resolverlo con la variante, no con la narrativa.
+En Track 1 esto debe **redistribuir peso entre genes MVA**, no ignorarse. Nota incómoda: MVA2 (`CEP57`) cursa con tamaño cefálico normal y sin microcefalia ni retraso del desarrollo comunes, pero tampoco con predisposición tumoral, y este niño tuvo un rabdomiosarcoma. Ese conflicto hay que resolverlo con la variante, no con la narrativa.
 
 **La nefrocalcinosis es el rasgo anómalo.** No es un rasgo reconocido de MVA (la serie reporta "disfunción renal" genérica al 12,9 %, no nefrocalcinosis), y **"presente desde el nacimiento"** descarta el mecanismo adquirido habitual del prematuro (furosemida, NPT, carga de calcio), que es postnatal y se desarrolla en semanas. Ver §8.
 
 ---
 
-## §3. Genética de la MVA — base que restringe todo
+## §3. Genética de la MVA: base que restringe todo
 
 ### §3.1 Universo génico (NO hardcodear BUB1B)
 
@@ -107,7 +107,7 @@ Ampliación documentada (`Clin Cancer Res` 30:5009, 2024): **CENATAC** (=CCDC84)
 
 Un panel de tres genes tiene probabilidad no trivial de fallar.
 
-### §3.2 Arquitectura alélica en BUB1B — la palanca terapéutica
+### §3.2 Arquitectura alélica en BUB1B: la palanca terapéutica
 
 Patrón dominante: **compuesto heterocigoto, un alelo truncante (nonsense / splice / transcrito ausente) más un alelo missense, típicamente en el dominio quinasa**. Hay familias con missense materno y ausencia total de transcrito paterno demostrada por RT-PCR. Existe además un haplotipo hipomórfico común que actúa como segundo alelo.
 
@@ -117,7 +117,7 @@ Umbral cuantificado (`Hum Genet` 2008, DOI 10.1007/s00439-008-0572-y): un gradie
 
 > Consecuencia conceptual: la MVA1 es, al menos en parte, **una enfermedad de dosis proteica con umbral conocido**, como la FQ o Gaucher. Eso abre la vía de estabilización postraduccional en vez de corrección genética.
 
-### §3.3 Riesgo tumoral — el limitante duro
+### §3.3 Riesgo tumoral: el limitante duro
 
 ~1 de cada 3 individuos con MVA desarrolla cáncer, típicamente antes de los 5 años: tumor de Wilms, rabdomiosarcoma embrionario, LLA, tumor de células de la granulosa. También SMD. Vigilancia recomendada: ecografía renal cada 3-4 meses hasta los 5 años; sin cribado establecido para los demás tumores.
 
@@ -132,17 +132,17 @@ El riesgo convincente está descrito sobre todo para MVA1 (`BUB1B`) y MVA3 (`TRI
 - **Asimetría ganancia/pérdida** (`Cell` 2025, modelo isogénico 3q gain / 3p loss): la ganancia se compensa por **mayor degradación** de subunidades excedentes; la pérdida **no** se contrarresta por degradación global sino por **mayor síntesis** de las proteínas del segmento perdido que forman complejos estables. Dos mecanismos, dos dianas distintas.
 - **Autofagia saturada.** Se activa en cariotipos anormales, pero funcionar cerca de saturación compromete la mitofagia, acumula mitocondrias disfuncionales y ROS.
 - **mPOS.** Ver §7.
-- **Inflamación.** La CIN puede evocar respuesta inflamatoria vía cGAS-STING por micronúcleos rotos o puentes de cromatina — **fuertemente cuestionado**, ver §12.
+- **Inflamación.** La CIN puede evocar respuesta inflamatoria vía cGAS-STING por micronúcleos rotos o puentes de cromatina, **fuertemente cuestionado**, ver §12.
 
 ### §3.5 Supresores genéticos y adaptación
 
 - **UBP6** (levadura): pérdida de función mejora el crecimiento de cuatro cepas aneuploides distintas atenuando los cambios de composición proteica. Homólogo humano relevante: `USP14`.
-- **SSD1** (levadura silvestre): aislados silvestres toleran amplificación cromosómica; la base es Ssd1, regulador traduccional de unión a ARN, vía fisiología mitocondrial + mitigación del estrés de proteostasis. **Recapitular los defectos de `ssd1Δ` con tratamiento farmacológico combinatorio bloqueó selectivamente la proliferación de aneuploides frente a euploides** — prueba de concepto de que un estado supresor genético puede imitarse farmacológicamente.
+- **SSD1** (levadura silvestre): aislados silvestres toleran amplificación cromosómica; la base es Ssd1, regulador traduccional de unión a ARN, vía fisiología mitocondrial + mitigación del estrés de proteostasis. **Recapitular los defectos de `ssd1Δ` con tratamiento farmacológico combinatorio bloqueó selectivamente la proliferación de aneuploides frente a euploides**, prueba de concepto de que un estado supresor genético puede imitarse farmacológicamente.
 - **Adaptación humana** (`EMBO Rep` 25:5169, 2024): clones aneuploides de RPE-1 p53−/− adaptados tras cultivo prolongado proliferan más manteniendo cariotipos aberrantes; **todos muestran CIN reducida e inflamación reducida**.
 
 ### §3.6 El eje progeroide
 
-Ratones `BubR1^H/H` (~10 % de proteína) son progeroides y acumulan células p16^Ink4a^-positivas. En ese fondo, INK-ATTAC elimina esas células y **la eliminación de por vida retrasa los fenotipos; la tardía atenúa los ya establecidos** — pero **sin aumento significativo de la esperanza de vida**, y eliminando solo ~30 % de las células p16+. En dirección opuesta, la sobreexpresión sostenida de BubR1 preserva integridad genómica, reduce tumorigénesis y retrasa el envejecimiento.
+Ratones `BubR1^H/H` (~10 % de proteína) son progeroides y acumulan células p16^Ink4a^-positivas. En ese fondo, INK-ATTAC elimina esas células y **la eliminación de por vida retrasa los fenotipos; la tardía atenúa los ya establecidos**, pero **sin aumento significativo de la esperanza de vida**, y eliminando solo ~30 % de las células p16+. En dirección opuesta, la sobreexpresión sostenida de BubR1 preserva integridad genómica, reduce tumorigénesis y retrasa el envejecimiento.
 
 Vías farmacológicas hacia arriba (ambas con conflicto interno, ver §12):
 - **K250**: acetilación por PCAF protege a BubR1 de la degradación por APC/C-Cdc20; HDAC2/3 la revierten.
@@ -154,14 +154,14 @@ Vías farmacológicas hacia arriba (ambas con conflicto interno, ver §12):
 
 Toda la literatura oncológica de aneuploidía busca **matar** células aneuploides. En MVA el paciente **es** un mosaico de células aneuploides. Eso define dos ejes literalmente contrarios:
 
-| | **Eje A — Tolerancia** | **Eje B — Poda clonal** |
+| | **Eje A (Tolerancia** | **Eje B) Poda clonal** |
 |---|---|---|
 | Objetivo | Que las células aneuploides funcionen mejor | Que los clones más inestables desaparezcan |
 | Fenotipo diana | Crecimiento, proteostasis | Riesgo tumoral |
 | Precedentes | `ubp6Δ`, `SSD1`, HSF1↑, adaptación RPE-1 | KIF18A, AICAR+17-AAG |
 | Riesgo dominante | **Tolerar aneuploidía = fenotipo precanceroso** | Matar células en un niño en desarrollo |
 
-**Esta tensión es la aportación intelectual central del proyecto.** Todos van a proponer "un fármaco que ayude". Casi nadie va a formalizar que ayudar a la célula a tolerar la aneuploidía es exactamente lo que la oncología define como paso temprano de tumorigénesis — en un niño que **ya tuvo un rabdomiosarcoma**.
+**Esta tensión es la aportación intelectual central del proyecto.** Todos van a proponer "un fármaco que ayude". Casi nadie va a formalizar que ayudar a la célula a tolerar la aneuploidía es exactamente lo que la oncología define como paso temprano de tumorigénesis, en un niño que **ya tuvo un rabdomiosarcoma**.
 
 Desambiguación: es una cuestión de compartimento celular (postmitótico vs. progenitor proliferativo), no filosófica.
 
@@ -244,7 +244,7 @@ MoChA alcanza sensibilidad reportada por debajo del 1 % de fracción clonal en e
 
 **Esa sensibilidad no transfiere directamente a MVA**, y no porque MoChA sea malo. Las mCA de hematopoyesis clonal descienden de **una** célula ancestral: un solo homólogo, cero cancelación, y el faseo de largo alcance amplifica esa asimetría. **MVA viola el supuesto de clonalidad del que MoChA extrae su potencia.**
 
-### §6.3 El índice de dispersión — justificación correcta
+### §6.3 El índice de dispersión: justificación correcta
 
 El "aneuploid dispersion index" **no** debe venderse como "enormemente más potente". Esa afirmación no está demostrada. Su justificación correcta es mecanística: **es el estadístico que sobrevive a la cancelación.**
 
@@ -254,7 +254,7 @@ Definición operativa: la varianza de la desviación log-ratio de cobertura (y d
 
 ### §6.4 Predicción preregistrable
 
-MVA debería producir **dispersión de LRR elevada con dispersión de BAF relativamente preservada** — una asimetría que las mCA clonales no producen. Esa asimetría *es* la huella. Y el BAF residual que no se cancele informa sobre selección clonal, que es justo lo que la literatura de adaptación a aneuploidía (§3.5) predice.
+MVA debería producir **dispersión de LRR elevada con dispersión de BAF relativamente preservada**, una asimetría que las mCA clonales no producen. Esa asimetría *es* la huella. Y el BAF residual que no se cancele informa sobre selección clonal, que es justo lo que la literatura de adaptación a aneuploidía (§3.5) predice.
 
 ### §6.5 Metodología recomendada
 
@@ -264,7 +264,7 @@ No prometer reconstrucción de células individuales. No prometer "cariotipos fa
 
 ---
 
-## §7. MitoRead — la medición ortogonal
+## §7. MitoRead: la medición ortogonal
 
 ### §7.1 La idea
 
@@ -274,7 +274,7 @@ El ~1 % de las lecturas de cualquier WGS mapea al genoma mitocondrial y práctic
 
 ### §7.2 Cadena biológica
 
-`aneuploidía en mosaico` → `exceso de proteína de cromosomas ganados → estrés proteotóxico` → `saturación de chaperonas → secuestro de precursores mitocondriales en cuerpos p62/SQSTM1` → `importación mitocondrial deficiente` → `red mitocondrial agrupada perinuclearmente, ROS elevado, menos ADNmt`.
+El mosaicismo aneuploide produce exceso de proteína de los cromosomas ganados, y ese exceso genera estrés proteotóxico → `saturación de chaperonas → secuestro de precursores mitocondriales en cuerpos p62/SQSTM1` → `importación mitocondrial deficiente` → `red mitocondrial agrupada perinuclearmente, ROS elevado, menos ADNmt`.
 
 ### §7.3 Encuadre correcto respecto al fenotipo
 
@@ -282,11 +282,11 @@ El ~1 % de las lecturas de cualquier WGS mapea al genoma mitocondrial y práctic
 
 El encuadre correcto es: **MitoRead podría identificar un mecanismo aguas abajo que contribuya a fenotipos ya conocidos de MVA** (fallo de medro, atrofia muscular, talla baja). Eso es una afirmación de **mediación**, no de explicación, y es más científica.
 
-### §7.4 Confusores — serios
+### §7.4 Confusores: serios
 
 `mtDNA-CN` en sangre depende fuertemente de:
 - **Composición celular** (fórmula leucocitaria)
-- **Recuento plaquetario** — las plaquetas tienen mitocondrias pero **no núcleo**, así que distorsionan directamente el cociente mtDNA/nuclear
+- **Recuento plaquetario**, las plaquetas tienen mitocondrias pero **no núcleo**, así que distorsionan directamente el cociente mtDNA/nuclear
 - Edad, sexo, método de extracción, preparación de librería, plataforma, pipeline
 
 Un control pediátrico de otro protocolo de secuenciación puede producir un "wow" completamente falso.
@@ -303,7 +303,7 @@ Que la `mtDNA-CN` en **sangre periférica** refleja el estado mitocondrial de m�
 
 ---
 
-## §8. HPO Residual — promovido de QC a hipótesis
+## §8. HPO Residual: promovido de QC a hipótesis
 
 ### §8.1 Qué cambió
 
@@ -323,7 +323,7 @@ El prior que originalmente favorecía la explicación adquirida **se invierte**.
 | Ausencia de microcefalia y retraso del desarrollo | Consistente: aBS no los causa |
 | Abortos de repetición | Depende del subtipo, ver abajo |
 
-**Rama X-ligada — MAGED2** (Xp11.2): causa aBS transitorio, la forma perinatalmente más grave, con polihidramnios desde la semana 18-20 y prematuridad extrema. En la serie original (`NEJM` 2016, DOI 10.1056/NEJMoa1507629): en una familia, **tres gestaciones de varones se complicaron con polihidramnios y prematuridad; un feto murió**; en la cohorte total **dos fetos murieron in utero sin causa reconocible en autopsia**. Herencia recesiva ligada al X, madre portadora sana → **pérdidas recurrentes de fetos varones afectados**, sin invocar aneuploidía.
+**Rama X-ligada, MAGED2** (Xp11.2): causa aBS transitorio, la forma perinatalmente más grave, con polihidramnios desde la semana 18-20 y prematuridad extrema. En la serie original (`NEJM` 2016, DOI 10.1056/NEJMoa1507629): en una familia, **tres gestaciones de varones se complicaron con polihidramnios y prematuridad; un feto murió**; en la cohorte total **dos fetos murieron in utero sin causa reconocible en autopsia**. Herencia recesiva ligada al X, madre portadora sana → **pérdidas recurrentes de fetos varones afectados**, sin invocar aneuploidía.
 
 Detalle notable: MAGED2 codifica una proteína que transloca al nucleoplasma bajo estrés nucleolar, **se considera implicada en regulación del ciclo celular**, y está vinculada a varios cánceres.
 
@@ -335,7 +335,7 @@ Detalle notable: MAGED2 codifica una proteína que transloca al nucleoplasma baj
 - **1 kg a las 32 semanas es CIR severo**, y el CIR severo es firma de MVA (93,5 %), no de Bartter, donde el CIR es ocasional. Prematuridad y nefrocalcinosis tiran hacia un lado; CIR severo hacia el otro. **Esa divergencia es la firma de un fenotipo mezclado**, no de un gen que lo explique todo.
 - Tasa base: los diagnósticos duales ocurren en ~2-7,5 % de los casos diagnosticados, y son ~3× más frecuentes en familias consanguíneas (`Genet Med` 2019, Smith et al.). Precedente casi con esta forma: microcefalia por `ASPM` homocigoto **+** cistinosis nefropática por `CTNS`, con acidosis tubular renal, microcefalia, restricción de crecimiento y retraso de maduración ósea.
 
-### §8.4 La pregunta que lo resuelve — una sola
+### §8.4 La pregunta que lo resuelve: una sola
 
 **¿Hubo polihidramnios en el embarazo?**
 
@@ -349,7 +349,7 @@ Si son compatibles: indometacina + reposición electrolítica es tratamiento apr
 
 ### §8.6 Encuadre estratégico
 
-Esto **no reemplaza** la línea principal — el hackathon es de MVA. Pero el valor esperado de una tarde de trabajo es desproporcionado, y hay una asimetría: si aciertan, el resultado es un niño con una tubulopatía tratable que se estaba perdiendo bajo el diagnóstico de MVA. Ningún candidato de reposicionamiento va a competir con eso.
+Esto **no reemplaza** la línea principal, el hackathon es de MVA. Pero el valor esperado de una tarde de trabajo es desproporcionado, y hay una asimetría: si aciertan, el resultado es un niño con una tubulopatía tratable que se estaba perdiendo bajo el diagnóstico de MVA. Ningún candidato de reposicionamiento va a competir con eso.
 
 Diferencial completo a testar en el VCF: ver `config/panels/nephrocalcinosis.txt`.
 
@@ -363,7 +363,7 @@ No tenemos a los padres. Pero si un progenitor la porta, el probando puede porta
 
 **Corolario decisivo para Track 1:** si el análisis estándar encuentra **un solo** alelo patogénico en un gen MVA, el segundo puede ser un SV, una variante intrónica profunda o una reguladora. Esto es el problema del "segundo hit ausente", es frecuentísimo en diagnóstico real, y es la razón por la que entregaron FASTQ y no solo un VCF.
 
-### §9.1 Sobre el faseo — no prometer de más
+### §9.1 Sobre el faseo: no prometer de más
 
 **`unphased` ≠ `trans`.** Con short-read PE, dos variantes separadas por más de la distancia de fragmento quedan sin fase salvo que haya un SNP heterocigoto puente. Sin padres, el resultado honesto es *"fase no resuelta"*.
 
@@ -373,14 +373,14 @@ Escribir siempre: *"se intentó faseo respaldado por lecturas / estadístico; la
 
 ## §10. Hipótesis farmacológica y su colisión con la oncología
 
-### §10.1 La clase mecanística candidata — **sin nominación de fármaco**
+### §10.1 La clase mecanística candidata: **sin nominación de fármaco**
 
 > **Estado a 2026-08-31: NO hay fármaco nominado.** La compuerta exige cinco condiciones
 > (aprobado · proximidad mecanística a un puente nombrado · evidencia **de ese** puente ·
 > predicción de rescate falsable · contra-test explícito de CIN/tumor) y **ninguna candidata las
 > reúne**. Ver `docs/TRACK2_MECHANISM_MAP.md`.
 
-La clase candidata es **modulación de proteostasis y chaperonas**, y lo es por mecanismo, no por enriquecimiento de vías: en el trabajo de aneuploidía-p62 (`Nat Commun` 16:5328, 2025), **la sobreexpresión de proteínas de choque térmico mitigó la agregación proteica y redujo la colocalización de p62 con TOMM20** — es decir, subir HSPs revierte precisamente la lesión que MitoRead propone medir.
+La clase candidata es **modulación de proteostasis y chaperonas**, y lo es por mecanismo, no por enriquecimiento de vías: en el trabajo de aneuploidía-p62 (`Nat Commun` 16:5328, 2025), **la sobreexpresión de proteínas de choque térmico mitigó la agregación proteica y redujo la colocalización de p62 con TOMM20**, es decir, subir HSPs revierte precisamente la lesión que MitoRead propone medir.
 
 Arimoclomol es coinductor de HSP70, aprobado por la FDA el 20 de septiembre de 2024 para Niemann-Pick C en pacientes de 2 años o más, en combinación con miglustat; oral, con posología pediátrica por peso. Actúa **solo bajo estrés celular**, lo que implicaría acción preferente en las células más aneuploides del mosaico.
 
@@ -388,7 +388,7 @@ Arimoclomol es coinductor de HSP70, aprobado por la FDA el 20 de septiembre de 2
 
 **Sobreexpresar HSPs genéticamente ≠ administrar arimoclomol.** No hay evidencia de que arimoclomol haya sido probado en esas células aneuploides y haya restaurado la importación mitocondrial. Estado actual: **hipótesis mecanística con el puente farmacológico SIN RESOLVER.** Y hay contraevidencia en otro sistema humano: en fibroblastos NPC1 la sobreexpresión de HSP70 rescató y el coinductor **no lo reprodujo, sin llegar a inducir HSP70** (`docs/EVIDENCE.md` E18). Eso no mata la idea; la vuelve **falsable y concreta**.
 
-### §10.3 La colisión con la oncología — peor de lo que parece
+### §10.3 La colisión con la oncología: peor de lo que parece
 
 La literatura es explícita: las células cancerosas están **adictas** a HSF1; el HSF1 nuclear alto se asocia a mal pronóstico en varios tumores; y el campo desarrolla **inhibidores** de HSF1 como estrategia antitumoral.
 
@@ -405,7 +405,7 @@ Estamos proponiendo un coinductor de HSF1 en un niño que **ya tuvo un rabdomios
 > pharmacological co-inducer can amplify the impaired endogenous response sufficiently
 > remains unresolved.*
 
-**No está demostrado que falle.** Un coinductor amplifica una respuesta ya iniciada y no exige una HSF1 intacta. Lo que se afirma es que **el resultado es impredecible desde la evidencia actual** — y por eso es el puente 7.
+**No está demostrado que falle.** Un coinductor amplifica una respuesta ya iniciada y no exige una HSF1 intacta. Lo que se afirma es que **el resultado es impredecible desde la evidencia actual**, y por eso es el puente 7.
 
 
 
@@ -424,31 +424,31 @@ Mismo ensayo, dos lecturas opuestas. Diseño: células aneuploides / del pacient
 
 ## §11. Tabla de evidencia
 
-Marcador de verificación: ✔ = identificador confirmado en búsqueda; ⚠ = conocido en la literatura pero **PMID/DOI no verificado — resolver en PubMed antes de uso público**.
+Marcador de verificación: ✔ = identificador confirmado en búsqueda; ⚠ = conocido en la literatura pero **PMID/DOI no verificado, resolver en PubMed antes de uso público**.
 
 | # | Referencia | Año / tipo | Sistema | Hallazgo usado | Apoya/Contradice | Nivel | Limitación |
 |---|---|---|---|---|---|---|---|
-| E1 ✔ | Amponsah PS et al. *Nat Commun* 16:5328. DOI 10.1038/s41467-025-60857-4 | 2025, primario | Células humanas aneuploides isogénicas | p62 citosólico enriquecido en precursores mitocondriales; importación deficiente; **ADNmt reducido**; ROS↑. **HSPs↑ mitigan agregación y colocalización p62–TOMM20** | Apoya + da la diana | L4 | Aneuploidía inducida en líneas, no mosaicismo constitucional |
-| E2 ✔ | Qian Y et al. *Bioinformatics* 33:1399. PMID 28453676, DOI 10.1093/bioinformatics/btw835 | 2017, método | Computacional / WGS | mtDNA-CN estimable desde WGS por cociente de cobertura | Apoya (método) | L5 método | Sensible a cobertura y composición celular |
-| E3 ✔ | Hintzen DC et al. *EMBO Rep* 25:5169. DOI 10.1038/s44319-024-00252-0 | 2024, primario | RPE-1 p53−/− | Adaptación a aneuploidía = menos CIN + menos inflamación | Apoya marco tolerancia | L4 | p53-deficiente; el paciente no lo es |
-| E4 ✔ | *Hum Genet* 2008. DOI 10.1007/s00439-008-0572-y | 2008, primario | HeLa shRNA | Gradiente BUBR1 8,5-77 %; aneuploidía < ~50 % | Apoya umbral de dosis | L4 | Línea cancerosa, no célula primaria |
-| E5 ✔ | García-Castillo H et al. PMID 18548531 | 2008, primario | Pacientes MVA | PCS en 8/8 probandos y **7/7 padres portadores** | Apoya marco familiar | L3 | Cohorte pequeña |
-| E6 ✔ | *Clin Cancer Res* 30:5009 | 2024, guía | Humano | Universo génico MVA ampliado (CENATAC, SLF2, SMC5, MAD2L1BP) | Apoya (no hardcodear) | L5 | Guía, no primario |
-| E7 ✔ | *Neurol Sci* 2022. DOI 10.1007/s10072-022-06247-w | 2022, serie + revisión | 31 casos MVA1 | Frecuencias por rasgo (§2.1) | Define línea base | L2 | Series pequeñas, sesgo de publicación |
-| E8 ✔ | Laghmani K et al. *NEJM* 2016. DOI 10.1056/NEJMoa1507629 | 2016, primario | Humano, 13 varones / 7 familias | `MAGED2` → aBS transitorio; polihidramnios 19-20 sem; **2 fetos muertos in utero**; nefrocalcinosis en 6, persistente en 4 | Apoya §8 | L5 | Fenotipo transitorio; no explica talla baja persistente |
-| E9 ✔ | Consenso ERKNet Bartter. *Kidney Int* 2021 | 2021, guía | Humano | Poliuria, deshidratación, fallo de medro, retraso de crecimiento, polihidramnios con parto prematuro; hipercalciuria y nefrocalcinosis típicas de algunas formas | Apoya §8 | L5 | Guía |
-| E10 ✔ | *Bioinformatics/AJHG* — Bi-allelic TRIP13 y ovocitos. PMID 32473092, DOI 10.1016/j.ajhg.2020.05.001 | 2020, primario | Humano + HeLa | Variantes TRIP13 reducen proteína y acumulan HORMAD2; **sin efecto mitótico detectable**; cRNA de TRIP13 rescató ovocitos | Contexto mecanístico | L4 | Rescate en meiosis/infertilidad, **no** en MVA |
-| E11 ✔ | Ahlmann-Eltze C et al. *Nat Methods* 22:1657. PMID 40759747 | 2025, benchmark | Computacional | Modelos fundacionales **no superan** líneas base lineales en predicción de perturbación | **Contradice** uso acrítico de DL | L5 | Rebatido en parte (bioRxiv oct-2025: sesgo de métricas) |
-| E12 ✔ | Keam SJ. *Drugs* 85:111 | 2025, regulatorio | Humano | Arimoclomol: aprobación FDA 20-sep-2024, NPC, ≥2 años, oral, dosis por peso | Apoya viabilidad | L5 seguridad / L0 para MVA | Sin datos en aneuploidía |
-| E13 ⚠ | Benatar M et al., arimoclomol en ELA | 2024, ECA | Humano | **No efectivo** para modificar progresión | **Contradice** | L5 | Subir HSPs no es universalmente beneficioso |
-| E14 ⚠ | Torres EM et al. *Cell* 143:71 | 2010, primario | Levadura | Mutaciones tolerantes a aneuploidía; `UBP6` | Apoya §3.5 | L4 | Ortología imperfecta; dependiente de cariotipo |
-| E15 ⚠ | Smith ED et al. *Genet Med* 21:2199 | 2019, retrospectivo | Humano | Diagnósticos múltiples ~3× más frecuentes en consanguíneos | Apoya §8 (tasa base) | L4 | Cohorte de laboratorio comercial |
-| E16 ⚠ | Loh PR et al. / MoChA, *Nature Genetics* 2023, 67 390 WGS ~30x | 2023, primario | Humano | mCA detectadas con genotipos faseados + BAF + cobertura; sensibilidad reportada <1 % de fracción clonal | Apoya método, **con la salvedad de §6.2** | L5 | Validado en mCA **clonales**, no variegadas |
-| E17 ⚠ | Neumann B et al. *Nature* 464:721. PMID 20360735 | 2010, primario | HeLa, RNAi genómico | MitoCheck: perfilado fenotípico de ~21 000 genes por imagen time-lapse; ~600 genes con papel en mitosis | Priorización fenotípica Track 1 | L4 | HeLa; RNAi con off-targets |
+| E1 (verificado) | Amponsah PS et al. *Nat Commun* 16:5328. DOI 10.1038/s41467-025-60857-4 | 2025, primario | Células humanas aneuploides isogénicas | p62 citosólico enriquecido en precursores mitocondriales; importación deficiente; **ADNmt reducido**; ROS↑. **HSPs↑ mitigan agregación y colocalización p62–TOMM20** | Apoya + da la diana | L4 | Aneuploidía inducida en líneas, no mosaicismo constitucional |
+| E2 (verificado) | Qian Y et al. *Bioinformatics* 33:1399. PMID 28453676, DOI 10.1093/bioinformatics/btw835 | 2017, método | Computacional / WGS | mtDNA-CN estimable desde WGS por cociente de cobertura | Apoya (método) | L5 método | Sensible a cobertura y composición celular |
+| E3 (verificado) | Hintzen DC et al. *EMBO Rep* 25:5169. DOI 10.1038/s44319-024-00252-0 | 2024, primario | RPE-1 p53−/− | Adaptación a aneuploidía = menos CIN + menos inflamación | Apoya marco tolerancia | L4 | p53-deficiente; el paciente no lo es |
+| E4 (verificado) | *Hum Genet* 2008. DOI 10.1007/s00439-008-0572-y | 2008, primario | HeLa shRNA | Gradiente BUBR1 8,5-77 %; aneuploidía < ~50 % | Apoya umbral de dosis | L4 | Línea cancerosa, no célula primaria |
+| E5 (verificado) | García-Castillo H et al. PMID 18548531 | 2008, primario | Pacientes MVA | PCS en 8/8 probandos y **7/7 padres portadores** | Apoya marco familiar | L3 | Cohorte pequeña |
+| E6 (verificado) | *Clin Cancer Res* 30:5009 | 2024, guía | Humano | Universo génico MVA ampliado (CENATAC, SLF2, SMC5, MAD2L1BP) | Apoya (no hardcodear) | L5 | Guía, no primario |
+| E7 (verificado) | *Neurol Sci* 2022. DOI 10.1007/s10072-022-06247-w | 2022, serie + revisión | 31 casos MVA1 | Frecuencias por rasgo (§2.1) | Define línea base | L2 | Series pequeñas, sesgo de publicación |
+| E8 (verificado) | Laghmani K et al. *NEJM* 2016. DOI 10.1056/NEJMoa1507629 | 2016, primario | Humano, 13 varones / 7 familias | `MAGED2` → aBS transitorio; polihidramnios 19-20 sem; **2 fetos muertos in utero**; nefrocalcinosis en 6, persistente en 4 | Apoya §8 | L5 | Fenotipo transitorio; no explica talla baja persistente |
+| E9 (verificado) | Consenso ERKNet Bartter. *Kidney Int* 2021 | 2021, guía | Humano | Poliuria, deshidratación, fallo de medro, retraso de crecimiento, polihidramnios con parto prematuro; hipercalciuria y nefrocalcinosis típicas de algunas formas | Apoya §8 | L5 | Guía |
+| E10 (verificado) | *Bioinformatics/AJHG*: Bi-allelic TRIP13 y ovocitos. PMID 32473092, DOI 10.1016/j.ajhg.2020.05.001 | 2020, primario | Humano + HeLa | Variantes TRIP13 reducen proteína y acumulan HORMAD2; **sin efecto mitótico detectable**; cRNA de TRIP13 rescató ovocitos | Contexto mecanístico | L4 | Rescate en meiosis/infertilidad, **no** en MVA |
+| E11 (verificado) | Ahlmann-Eltze C et al. *Nat Methods* 22:1657. PMID 40759747 | 2025, benchmark | Computacional | Modelos fundacionales **no superan** líneas base lineales en predicción de perturbación | **Contradice** uso acrítico de DL | L5 | Rebatido en parte (bioRxiv oct-2025: sesgo de métricas) |
+| E12 (verificado) | Keam SJ. *Drugs* 85:111 | 2025, regulatorio | Humano | Arimoclomol: aprobación FDA 20-sep-2024, NPC, ≥2 años, oral, dosis por peso | Apoya viabilidad | L5 seguridad / L0 para MVA | Sin datos en aneuploidía |
+| E13 (sin verificar) | Benatar M et al., arimoclomol en ELA | 2024, ECA | Humano | **No efectivo** para modificar progresión | **Contradice** | L5 | Subir HSPs no es universalmente beneficioso |
+| E14 (sin verificar) | Torres EM et al. *Cell* 143:71 | 2010, primario | Levadura | Mutaciones tolerantes a aneuploidía; `UBP6` | Apoya §3.5 | L4 | Ortología imperfecta; dependiente de cariotipo |
+| E15 (sin verificar) | Smith ED et al. *Genet Med* 21:2199 | 2019, retrospectivo | Humano | Diagnósticos múltiples ~3× más frecuentes en consanguíneos | Apoya §8 (tasa base) | L4 | Cohorte de laboratorio comercial |
+| E16 (sin verificar) | Loh PR et al. / MoChA, *Nature Genetics* 2023, 67 390 WGS ~30x | 2023, primario | Humano | mCA detectadas con genotipos faseados + BAF + cobertura; sensibilidad reportada <1 % de fracción clonal | Apoya método, **con la salvedad de §6.2** | L5 | Validado en mCA **clonales**, no variegadas |
+| E17 (sin verificar) | Neumann B et al. *Nature* 464:721. PMID 20360735 | 2010, primario | HeLa, RNAi genómico | MitoCheck: perfilado fenotípico de ~21 000 genes por imagen time-lapse; ~600 genes con papel en mitosis | Priorización fenotípica Track 1 | L4 | HeLa; RNAi con off-targets |
 
 ---
 
-## §12. Contraevidencia consolidada — leer antes de afirmar nada
+## §12. Contraevidencia consolidada: leer antes de afirmar nada
 
 | Afirmación | Evidencia en contra | Consecuencia |
 |---|---|---|
@@ -471,7 +471,7 @@ Marcador de verificación: ✔ = identificador confirmado en búsqueda; ⚠ = co
 
 Mostrar caminos rechazados con la cita que los mata comunica que no se está vendiendo cada correlación encontrada. Un jurado científico lo valora más que una idea adicional.
 
-**Minus-End Anchor / la paradoja del taxano.** Existen líneas celulares que *requieren* paclitaxel para dividirse, y el rescate opera impidiendo el desprendimiento de extremos menos del centrosoma — el modo de fallo de la rama `CEP57`. **Rechazado:** la exposición breve a paclitaxel a dosis baja **induce husos multipolares y aneuploidía**; más neurotoxicidad y mielosupresión en un niño con atrofia muscular y antecedente de rabdomiosarcoma.
+**Minus-End Anchor / la paradoja del taxano.** Existen líneas celulares que *requieren* paclitaxel para dividirse, y el rescate opera impidiendo el desprendimiento de extremos menos del centrosoma, el modo de fallo de la rama `CEP57`. **Rechazado:** la exposición breve a paclitaxel a dosis baja **induce husos multipolares y aneuploidía**; más neurotoxicidad y mielosupresión en un niño con atrofia muscular y antecedente de rabdomiosarcoma.
 
 **Conformer Flux (TRIP13/MAD2L1BP).** Mecanísticamente sólido: TRIP13 mantiene el pool de O-MAD2; su pérdida vacía el depósito del freno en lugar de apagarlo. **Rechazado para Track 2:** no existe fármaco aprobado que suba `MAD2L1` o `TRIP13`. Forzar una nominación sería peor que no tener candidato. Conservar como marco de Track 1.
 

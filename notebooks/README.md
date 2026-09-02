@@ -1,7 +1,13 @@
-# Los notebooks — la investigación, ejecutable y visible
+# Los notebooks: la investigación, ejecutable y visible
 
-> **Ocho notebooks, ejecutados, con 29 figuras embebidas.** No son un registro de que algo
-> ocurrió: son la investigación, y se leen de arriba abajo sin salir de ellos.
+> **Ocho notebooks, ejecutados, con 27 figuras embebidas, 22 de ellas científicas.** No son un
+> registro de que algo ocurrió: son la investigación, y se leen de arriba abajo sin salir de
+> ellos.
+>
+> Las figuras de publicación viven en `figures/pub/` (SVG vectorial + PNG 300 dpi) y se
+> regeneran con `python src/figures/render_all.py`. El objeto científico principal de cada
+> notebook, con su origen y su librería, está en
+> [`VISUAL_SCIENCE_PASS.md`](VISUAL_SCIENCE_PASS.md).
 >
 > El README anterior describía una arquitectura de quince notebooks que presuponía RNA-seq,
 > single-cell, series longitudinales y cariotipo celular. **Ninguno de esos datos existe.** Se
@@ -24,24 +30,48 @@ por nosotros) · `EXTERNAL` (base de datos o literatura) · `PREDICTED` (salida 
 
 ## Estructura obligatoria
 
-`pregunta biológica → hipótesis y preregistro → entradas y procedencia → QC → método →
-resultado primario → visualización → robustez → explicaciones alternativas → evidencia
-contradictoria → qué NO demuestra → decisión → siguiente experimento`
+Pregunta biológica, hipótesis y preregistro, entradas con su procedencia, QC, método y
+resultado primario. Después: visualización, robustez, explicaciones alternativas,
+evidencia contradictoria, el límite de lo que se demuestra, la decisión y el siguiente
+experimento.
 
-Y un mínimo de **tres figuras**: QC, resultado principal, e incertidumbre o robustez.
+### El mínimo, y por qué cambió
+
+**Antes:** «un mínimo de tres figuras». Ese requisito produjo **relleno**, cajas, flechas y
+estados dibujados con Matplotlib para llegar al número.
+
+**Ahora:** cada notebook mayor necesita **al menos una figura CIENTÍFICA**, y toda figura
+declara su clase:
+
+| Clase | Qué es | ¿Puede ser la principal? |
+|---|---|---|
+| `DATA` | objeto o distribución calculada desde datos del caso | **Sí** |
+| `MODEL_OUTPUT` | salida de un modelo (AlphaFold, AlphaGenome, Exomiser) | **Sí** |
+| `SIMULATION` | distribución generada por simulación, sin datos del paciente | **Sí** |
+| `CURATED_EVIDENCE` | tabla de evidencia versionada, con fuente por celda | **Sí** |
+| `SYNTHESIS` | integra resultados ya obtenidos; no expone el dato crudo | No |
+| `NARRATIVE` | explica una conclusión; no contiene dato | No |
+
+`SYNTHESIS` y `NARRATIVE` siguen siendo legítimas y útiles. Lo que ya no pueden es **contar
+para el mínimo**. La clase va en el pie **y estampada en la propia imagen**, para que la
+etiqueta viaje con la figura si alguien la recorta y la pega en una diapositiva.
+
+La prueba que decide: *si le quito el título, el pie y la conclusión, ¿un experto reconoce qué
+objeto científico está mirando?* Si ve un transcrito, una distribución, una estructura, un
+alineamiento, BAF, un heatmap o cobertura, la respuesta es sí. Si ve «SURVIVES», cajas verdes y flechas, es que no.
 
 ## Los ocho
 
-| # | Notebook | Pregunta | Figuras |
-|---|---|---|---|
-| **00** | `DATA_REALITY` | ¿Qué se puede y qué no responder con los datos que hay? | 3 |
-| **01** | `TRACK1_GENOME_WIDE` | ¿Qué gen explica el caso cuando compite todo el genoma? | **6** |
-| **02** | `BUB1B_ALLELE_CURATION` | ¿Qué sostiene cada alelo, y qué haría falta para que el par sea causal? | 4 |
-| **03** | `BUBR1_MECHANISM` | El missense no se mueve por clasificación: ¿se mueve por mecanismo? | 4 |
-| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | 3 |
-| **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | 3 |
-| **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | 3 |
-| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | 3 |
+| # | Notebook | Pregunta | Objeto científico principal | fig · cient. |
+|---|---|---|---|---|
+| **00** | `DATA_REALITY` | ¿Qué se puede y qué no responder con los datos que hay? | QC de FASTQ por ciclo, calculado sobre L001 | 1 · 1 |
+| **01** | `TRACK1_GENOME_WIDE` | ¿Qué gen explica el caso cuando compite todo el genoma? | Manhattan de priorización sobre `A0` congelado | **7 · 7** |
+| **02** | `BUB1B_ALLELE_CURATION` | ¿Qué sostiene cada alelo, y qué haría falta para que el par sea causal? | Navegador del gen: exones, dominios y 1 497 missense de ClinVar | 4 · 3 |
+| **03** | `BUBR1_MECHANISM` | El missense no se mueve por clasificación: ¿se mueve por mecanismo? | Bolsillo de AlphaFold con distancias reales + logo de conservación | 3 · 3 |
+| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | Navegador REF/ALT/Δ de las nueve pistas congeladas, en dos figuras por modalidad | 4 · 4 |
+| **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | Matriz término HPO × modelo de enfermedad, en bits de Resnik | 3 · 2 |
+| **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | Distribuciones de BAF simuladas + curva de potencia | 3 · 1 |
+| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | Matriz 8 puentes × 10 dimensiones de evidencia curada | 2 · 1 |
 
 ## Cómo reconstruirlos
 

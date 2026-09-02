@@ -94,7 +94,7 @@ Lo que queremos poder enseñar no es *«usamos AlphaGenome»*, sino:
 > *«Esta variante era casi invisible para un pipeline de codificante. AlphaGenome predice
 > que cambiar esta única base reconfigura esta salida molecular concreta.»*
 
-### 3.1 Figura A — Pistas REF vs ALT
+### 3.1 Figura A: Pistas REF vs ALT
 
 > **Sustituida por la versión de tres capas del §12.** Se conserva aquí el análisis de
 > riesgo, que sigue aplicando íntegro.
@@ -117,7 +117,7 @@ REF                  ▲▲▲▲▲
 ALT                  ░░░░░
 ```
 
-> ### ⚠ Riesgo de diseño — la figura más peligrosa del proyecto
+> ### Riesgo de diseño: la figura que más fácilmente induce a error
 >
 > **Esta figura se parece a una captura de un genome browser.** Un jurado con experiencia
 > en genómica leerá esas pistas como datos medidos, porque es exactamente así como se ven
@@ -134,7 +134,7 @@ ALT                  ░░░░░
 > 4. Si la figura se recorta y se pega en otro sitio sin el pie, **debe seguir diciendo
 >    que es una predicción**. Ese es el test.
 
-### 3.2 Figura B — Tarjeta de mecanismo de variante
+### 3.2 Figura B: Tarjeta de mecanismo de variante
 
 ```
 Candidato: Variante B
@@ -151,7 +151,7 @@ Interpretación:
   candidato a pérdida de función reguladora / de splicing
 
 Estado de evidencia:
-  PREDICHO — no demostrado experimentalmente
+  PREDICHO, no demostrado experimentalmente
 ```
 
 > **Corrección necesaria: las flechas tienen que estar definidas.** `↓↓↓` frente a `↓`
@@ -161,7 +161,7 @@ Estado de evidencia:
 > Cada tarjeta debe llevar la leyenda con los cortes usados, y el valor bruto del modelo
 > junto a la flecha. La flecha es un resumen legible; el número es lo auditable.
 
-### 3.3 Figura C — Mapa alelo → mecanismo
+### 3.3 Figura C: Mapa alelo → mecanismo
 
 ```
                         PHASE UNRESOLVED
@@ -199,7 +199,7 @@ NMD / pérdida de proteína                     AlphaGenome
 >
 > 1. **No decir «el gen funciona» si están en cis.** Eso presupone haplosuficiencia, que
 >    depende del gen, de la dosis y del mecanismo. En genes de MVA hay portadores
->    heterocigotos con fenotipos celulares sutiles descritos — precisamente el gradiente
+>    heterocigotos con fenotipos celulares sutiles descritos, precisamente el gradiente
 >    de BubR1 del brief §3.2 muestra PCS por encima del umbral de aneuploidía. Lo único
 >    afirmable en cis es que **no hemos demostrado disrupción bialélica**.
 > 2. **«dos variantes candidatas», no «dos candidatos independientes».** «Independiente»
@@ -207,7 +207,7 @@ NMD / pérdida de proteína                     AlphaGenome
 >
 > Esto no debilita la figura. La hace defendible.
 
-### 3.4 Figura D — El candidato que AlphaGenome tumba
+### 3.4 Figura D: El candidato que AlphaGenome tumba
 
 **La figura más valiosa de la familia**, y la que más credibilidad da:
 
@@ -221,7 +221,7 @@ candidato DEGRADADO en el ranking
 
 Demuestra que AlphaGenome no se está usando para confirmar lo que ya queríamos creer.
 Un jurado distingue perfectamente entre una herramienta usada como filtro y una usada
-como adorno confirmatorio — y esta figura es la prueba de lo primero.
+como adorno confirmatorio, y esta figura es la prueba de lo primero.
 
 **Se produce aunque no haya un hallazgo positivo.** De hecho, si la rama del segundo
 alelo muere, esta es la figura que queda, y sigue mereciendo estar en la presentación.
@@ -230,7 +230,7 @@ alelo muere, esta es la figura que queda, y sigue mereciendo estar en la present
 
 ## §4. Reglas de diseño transversales
 
-0. **Toda figura declara su procedencia** — `MEASURED` / `DERIVED` / `PREDICTED` /
+0. **Toda figura declara su procedencia**, `MEASURED` / `DERIVED` / `PREDICTED` /
    `EXTERNAL`, en una esquina del panel. Ver §11. Es la regla más importante de esta lista.
 1. **Nada de radares.** Seis ejes en escalas no comparables codifican magnitud como área y
    exageran diferencias. Barras divergentes o heatmap por modalidad
@@ -261,7 +261,7 @@ El tercero es el que más se descuida y el que más pesa en un jurado.
 
 ---
 
-## §6. Catálogo de figuras — el blueprint
+## §6. Catálogo de figuras: el blueprint
 
 **Condicional.** «Depende de» dice qué tiene que existir para que la figura se pueda
 construir. Si eso no aparece, la figura no se hace y la rama pasa al cementerio.
@@ -281,7 +281,7 @@ construir. Si eso no aparece, la figura no se hace y la rama pasa al cementerio.
 | 11 | **Hypothesis Graveyard** | Decisión | `docs/DECISIONS.md` | Qué murió y por qué | Decisiones y evidencia ya registradas |
 
 **Construibles antes del análisis del VCF: #1, #5 y #11.** Es la etiqueta exacta, y no
-«no dependen de datos» — solo la #1 es realmente independiente de todo. La #5 necesita el
+«no dependen de datos», solo la #1 es realmente independiente de todo. La #5 necesita el
 fenotipo clínico real y la literatura; la #11 necesita las decisiones y la evidencia que
 ya están registradas. Las otras ocho esperan a los datos del paciente.
 
@@ -296,7 +296,7 @@ local se leen mal a ojo, y la resta la hace evidente.
 
 ---
 
-## §7. Corrección — la figura 4 vuelve a afirmar `trans`
+## §7. Corrección: la figura 4 vuelve a afirmar `trans`
 
 El cierre propuesto era:
 
@@ -341,15 +341,15 @@ Historia completa, mecanismo-wow, y honestidad narrativa.
 | 2 | Nuestra apuesta: por qué no es un pipeline variante→fármaco estándar | — |
 | 3 | **Hero architecture** | — |
 | 4 | Candidatos causales y por qué sobrevivieron | — |
-| 5 | **AlphaGenome hidden allele** | **→ figura §3.4: el candidato que AlphaGenome tumba** |
-| 6 | Fenotipo mixto / diagnóstico residual | → matriz con la rama renal descartada, y por qué |
-| 7 | MitoRead / mosaic — evidencia ortogonal | → el resultado negativo, con su falsificador |
-| 8 | Mecanismo → fármaco (no ranking de fármacos) | → «no llegamos aquí, y este es el motivo» |
+| 5 | **AlphaGenome hidden allele** | **Figura §3.4: el candidato que AlphaGenome tumba** |
+| 6 | Fenotipo mixto / diagnóstico residual | Matriz con la rama renal descartada, y por qué |
+| 7 | MitoRead / mosaic, evidencia ortogonal | El resultado negativo, con su falsificador |
+| 8 | Del mecanismo al fármaco, no un ranking de fármacos | «No llegamos aquí, y este es el motivo» |
 | 9 | Try to kill it | — |
 | 10 | **Graveyard + hipótesis final** | — |
 
 **La columna de la derecha es obligatoria.** El slide 5 es el wow, y depende de encontrar
-un segundo alelo — cosa que puede no pasar. Un pitch cuyo momento culminante desaparece si
+un segundo alelo, cosa que puede no pasar. Un pitch cuyo momento culminante desaparece si
 un análisis sale negativo está mal construido. La figura §3.4 cubre ese hueco y, dicho
 honestamente, casi lo cubre mejor: *«miramos, y esto es lo que descartamos»*.
 
@@ -400,13 +400,13 @@ Verificado a fecha de hoy: las cinco entradas propuestas tienen acta de defunci�
 | Estabilización del huso tipo taxano | **rechazada** | brief §455: el paclitaxel breve a dosis baja **induce** husos multipolares y aneuploidía; más neurotoxicidad y mielosupresión en un niño con atrofia muscular y antecedente de rabdomiosarcoma |
 | Reconstrucción de cariotipos desde bulk WGS | **rechazada por sobreafirmación** | `00_ESTADO_Y_OBSOLESCENCIA.md`; tres auditorías independientes |
 
-La cuarta es la mejor lápida del conjunto: una idea que era *elegante* —rescatar el modo de
-fallo de `CEP57` anclando extremos menos— y que murió por el mecanismo mismo que proponía.
+La cuarta es la lápida más instructiva del conjunto: una idea elegante, rescatar el modo
+de fallo de `CEP57` anclando extremos menos, que murió por el mecanismo mismo que proponía.
 Eso es exactamente lo que el jurado tiene que ver.
 
 ---
 
-## §11. Etiqueta de procedencia — obligatoria en toda figura
+## §11. Etiqueta de procedencia: obligatoria en toda figura
 
 Regla universal, en una esquina de cada panel. Es ortogonal al nivel `L0`–`L5`: el nivel
 dice **cuán fuerte** es la evidencia, la etiqueta dice **de dónde sale**.
@@ -420,7 +420,7 @@ dice **cuán fuerte** es la evidencia, la etiqueta dice **de dónde sale**.
 
 Parece un detalle menor y no lo es: es lo que separa un proyecto que sabe qué está
 enseñando de uno que mezcla medición y predicción en el mismo panel sin darse cuenta.
-Y resuelve de raíz el riesgo de §3.1 — una figura de AlphaGenome marcada `PREDICTED` en
+Y resuelve de raíz el riesgo de §3.1, una figura de AlphaGenome marcada `PREDICTED` en
 la esquina ya no se puede confundir con un browser de RNA-seq.
 
 **Una figura con dos procedencias lleva las dos etiquetas, por panel.** Si un panel mezcla
@@ -428,7 +428,7 @@ la esquina ya no se puede confundir con un browser de RNA-seq.
 
 ---
 
-## §12. La figura de AlphaGenome, versión definitiva — tres capas
+## §12. La figura de AlphaGenome, versión definitiva: tres capas
 
 Sustituye a la de §3.1. El resultado que interesa no es la pista REF ni la ALT: es
 **qué cambió al introducir la variante**.
@@ -470,7 +470,7 @@ Sustituye a la de §3.1. El resultado que interesa no es la pista REF ni la ALT:
    a una captura de browser que dos pistas apiladas, así que reduce el riesgo de §3.1 en
    vez de agravarlo.
 2. **El contexto declarado.** Tejido, tipo celular y ventana. Una predicción de expresión
-   sin decir en qué contexto se predijo no es interpretable — y en este caso importa
+   sin decir en qué contexto se predijo no es interpretable, y en este caso importa
    especialmente, porque el fenotipo tiene eje renal y eje hematopoyético, y el modelo no
    predice lo mismo en cada uno.
 
@@ -484,18 +484,18 @@ slide: le cambia el título.**
 | Rama | Si sale positiva | Si sale negativa |
 |---|---|---|
 | Segundo alelo / AlphaGenome | *This single base rewires this molecular output* | *The strongest-looking noncoding candidate failed functional prediction* |
-| MitoRead | *An orthogonal mitochondrial signal supports the branch* | *A mechanism we expected — and the patient's genome did not support* |
+| MitoRead | *An orthogonal mitochondrial signal supports the branch* | *A mechanism we expected, and the patient's genome did not support* |
 | Bartter / fenotipo residual | *Congenital nephrocalcinosis opened a second diagnosis* | *Congenital nephrocalcinosis triggered a second-diagnosis search. The genome did not support it* |
 | Mosaic fingerprint | *The bulk genome retains a mosaic signature* | *We looked for a mosaic signature in bulk WGS and report what we could not resolve* |
 | Índice de dispersión | *Our statistic beats the standard method* | *Our statistic lost to the standard method, and here is the simulation that showed it* |
 
 Esto es lo que hace que el pitch **deje de depender de tener suerte**. Cada rama produce
 material presentable en los dos desenlaces, y el conjunto de los negativos es el
-cementerio — que es, él solo, una de las tres figuras hero.
+cementerio, que es, él solo, una de las tres figuras hero.
 
 ---
 
-## §14. Regla dura — una figura no se acepta por ser bonita
+## §14. Regla dura: una figura no se acepta por ser bonita
 
 Regla añadida tras revisar las primeras figuras y encontrar que eran **envoltorios de
 presentación**, no evidencia: tarjetas, barras resumen, tiras de densidad y pistas
@@ -551,7 +551,7 @@ Markdown. **El bloque se congela aquí** hasta que entre evidencia nueva.
 
 | # | Figura | Qué contiene que no se podía dibujar antes |
 |---|---|---|
-| 1 | *From one genome to one mechanism* | Arquitectura del sistema — la única que no depende de datos |
+| 1 | *From one genome to one mechanism* | Arquitectura del sistema, la única que no depende de datos |
 | 2 | *BUBR1 missense landscape* | 1 497 variantes de ClinVar, cada una en su residuo |
 | 3 | *Two alleles, one gene, no phase* | Exones sondeados a 2 pb · 748 nt medidos · 10 911 pb a escala con fragmentos reales |
 | 4 | *Structural interrogation* | 140 átomos con coordenadas 3D · 3 puentes de H medidos · pLDDT de 1 050 residuos |

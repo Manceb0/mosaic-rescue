@@ -1,0 +1,278 @@
+# Publication figure QA
+
+> One row per publication figure. The column that matters most is
+> **possible misleading interpretation**, it is mandatory, and it is where a jury finds the
+> problem before we do.
+>
+> Regenerate everything: `python src/figures/render_all.py` → `figures/pub/*.svg` (vector,
+> text kept as text) + `*.png` at 300 dpi + a **separate** small render in `figures/pub/thumb/`.
+> Index: `python src/nb/contact_sheet.py`.
+
+## The standard these figures are held to
+
+| | |
+|---|---|
+| **Language** | English inside every final figure. Notebooks explain in Spanish; a figure never mixes both. |
+| **Panels** | `A B C D` top-left, outside the data area. Reading order is grid order. |
+| **Type** | one family, one scale, 6.0 pt floor. No title banners inside the axes. |
+| **Axes** | every axis labelled, every label carries its unit. |
+| **Colour** | Okabe-Ito, colour-blind safe. Colour is never the only encoder, categories also differ by marker or dash. |
+| **Grids** | hairline or absent. No grey page backgrounds. |
+| **Caption** | lives in the notebook. Only a provenance strip sits on the figure, outside the axes. |
+| **Metadata** | **two axes, both stamped on the figure**: `FIGURE CLASS` (what kind of object it is) and `EVIDENCE ORIGIN` (where what is inside came from). |
+| **Export** | SVG (`svg.fonttype=none`, text stays text) + PNG 300 dpi + separate thumbnail. Dense track paths are `rasterized=True` inside the SVG; axes and text stay vector. |
+| **Thumbnails** | never a downscale of the 300-dpi raster. The full-size figure is the deliverable; the contact sheet is an index. |
+
+**Not negotiable:** nothing is fabricated. No blots, no microscopy, no karyotypes, no coverage
+tracks, no Hi-C, and no confidence interval that nobody computed.
+
+---
+
+## The two metadata axes, and why they are not one
+
+Collapsing them is how a figure starts lying about itself.
+
+| | |
+|---|---|
+| **`FIGURE CLASS`** | what kind of object the figure is: `DATA` · `MODEL_OUTPUT` · `SIMULATION` · `CURATED_EVIDENCE` · `SYNTHESIS` · `NARRATIVE` |
+| **`EVIDENCE ORIGIN`** | where the content came from: `MEASURED` · `DERIVED` · `EXTERNAL` · `PREDICTED` · `SIMULATED` |
+
+Only the first four figure classes may be a notebook's primary scientific figure. Origins
+combine with `+`. `src/figures/style.py::export()` refuses to write a figure that does not
+declare both, and stamps both on the image so they survive a crop into a slide.
+
+**The two cases that forced the split:**
+
+- **Fig 6, the HPO matrix.** `FIGURE CLASS = DATA`, but `EVIDENCE ORIGIN =
+  MEASURED+EXTERNAL+DERIVED`, the proband's own HPO terms, external disease models, and a
+  Resnik value we computed. Under one label it read as "patient data". It is not.
+- **Fig 8, the Track 2 matrix.** `FIGURE CLASS = CURATED_EVIDENCE`, `EVIDENCE ORIGIN =
+  EXTERNAL+DERIVED`. Under one label it read as an experimental matrix. It is a versioned
+  literature inventory.
+
+| figure | FIGURE CLASS | EVIDENCE ORIGIN |
+|---|---|---|
+| `fig00_fastq_qc` | `DATA` | `MEASURED` |
+| `fig01_prioritization_genomewide` | `DATA` | `MEASURED+DERIVED` |
+| `fig02_gene_browser` | `DATA` | `EXTERNAL+MEASURED` |
+| `fig03_pocket_and_conservation` | `MODEL_OUTPUT` | `PREDICTED+EXTERNAL` |
+| `fig04_alphagenome_rna_splicing` | `MODEL_OUTPUT` | `PREDICTED` |
+| `fig04S_alphagenome_accessibility_tf` | `MODEL_OUTPUT` | `PREDICTED` |
+| `fig05_hpo_disease_matrix` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
+| `fig06_baf_cancellation` | `SIMULATION` | `SIMULATED` |
+| `fig07_track2_evidence_matrix` | `CURATED_EVIDENCE` | `EXTERNAL+DERIVED` |
+
+---
+
+## Fig 1 · FASTQ QC: `fig00_fastq_qc`
+
+| | |
+|---|---|
+| **notebook** | `00_DATA_REALITY` |
+| **source data** | lane L001, read 1, reproducible subsample, first 300 000 records |
+| **n** | 300 000 reads · 149 bp · 44.7 M bases |
+| **axes / units** | A: cycle (bp) × % of bases outside top bin · B: % GC per read × density · C: mean Phred per read × reads · D: cycle (bp) × % of bases at cycle |
+| **statistic represented** | per-cycle occupancy of four discrete quality bins; per-read GC and mean quality; per-cycle base composition |
+| **FIGURE CLASS** | `DATA` |
+| **EVIDENCE ORIGIN** | `MEASURED` |
+| **uncertainty represented?** | yes, the whole of panel A is the dispersion; C is a full distribution |
+| **uncertainty quantified?** | yes for sampling (n stated); **no** for subsample-to-lane extrapolation |
+| **possible misleading interpretation** | that good QC means the data are **sufficient**. It does not: five branches of the project are blocked by modalities that do not exist. Second risk: reading the four bins as a continuous quality distribution, two earlier versions of panel A did exactly that and had to be discarded. |
+| **correction applied** | provenance strip states n, read length as the degenerate value it is, and Q30 fraction; panel A states the four bins by name; the notebook's decision cell says in as many words that fit ≠ sufficient |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 2 · Genome-wide prioritization: `fig01_prioritization_genomewide`
+
+| | |
+|---|---|
+| **notebook** | `01_TRACK1_GENOME_WIDE` |
+| **source data** | `work/gw/mode_b_results_v4.pkl` (A0 **frozen**) + contig lengths read from the VCF header |
+| **n** | 6 321 genes in the HIGH/MODERATE universe · 151 scored under an inheritance model |
+| **axes / units** | A: chromosome, 1 Mb bins × A0 genetics-only prioritization score (dimensionless) · B: genes per Mb |
+| **statistic represented** | a weighted sum of preregistered terms. **Not a test statistic.** |
+| **FIGURE CLASS** | `DATA` |
+| **EVIDENCE ORIGIN** | `MEASURED+DERIVED`, patient variant calls, plus a score we computed |
+| **uncertainty represented?** | partly, the frozen/FREQFIX pair is stated, but no interval is drawn |
+| **uncertainty quantified?** | **no**, and deliberately: there is no null distribution for this score |
+| **possible misleading interpretation** | **that this is a Manhattan plot of association.** A reader who has seen a thousand GWAS figures will supply a p-value axis and a significance line that do not exist. Second risk: that only 151 genes competed. |
+| **correction applied** | y axis reads literally `A0 genetics-only prioritization score`; no `−log10(p)`, no threshold line, no "hits"; the provenance strip says NOT a p-value in the first sentence. The 6 321-gene universe is drawn twice (as a baseline rug in A and as density in B) so the subset cannot be mistaken for the field. Frozen rank #4 is the one plotted, with A0-FREQFIX #1 stated alongside. |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 3 · BUB1B gene browser: `fig02_gene_browser`
+
+| | |
+|---|---|
+| **notebook** | `02_BUB1B_ALLELE_CURATION` |
+| **source data** | Ensembl REST release 116 (exons, InterPro/Pfam domains) + `work/clinvar/landscape_missense.json` |
+| **n** | 23 exons · 1 050 aa · 1 497 ClinVar missense records at 835 distinct residues |
+| **axes / units** | protein position (aa) shared by all four panels; C: records per residue; D: records per 25 aa |
+| **statistic represented** | counts. Nothing is smoothed, fitted or interpolated. |
+| **FIGURE CLASS** | `DATA` |
+| **EVIDENCE ORIGIN** | `EXTERNAL+MEASURED`, meaning Ensembl and ClinVar plus the two case-allele markers |
+| **uncertainty represented?** | no interval, counts are exact |
+| **uncertainty quantified?** | n/a; the real uncertainty is ascertainment, stated in the caption |
+| **possible misleading interpretation** | that ClinVar density maps where the important mutations are. It maps **how much the gene has been sequenced and reported**. Second risk: reading "no hotspot" as evidence *against* the candidate. |
+| **correction applied** | caption states the ascertainment bias and that absence of a hotspot means PM1 does not apply *anywhere*, which is not the same as evidence against; the candidate marker is a thin guide line, not an oversized point that would distort the distribution |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 4 · Pocket geometry and evolutionary constraint: `fig03_pocket_and_conservation`
+
+| | |
+|---|---|
+| **notebook** | `03_BUBR1_MECHANISM` |
+| **source data** | `work/struct/AF-O60566-F1.pdb` (coordinates, B-factor = pLDDT) + `work/conservation/orthologs.json` |
+| **n** | 9 neighbours ≤ 5 Å · 3 candidate H-bonds · 153 one-to-one orthologs · 117–122 aligned per column |
+| **axes / units** | A: Å (3-D, axes hidden) · B: minimum heavy-atom distance (Å) · C: information (bits) and n aligned · D: pLDDT, position relative to candidate (aa) |
+| **statistic represented** | Euclidean distances between heavy atoms; Shannon information per alignment column; AlphaFold pLDDT |
+| **FIGURE CLASS** | `MODEL_OUTPUT` |
+| **EVIDENCE ORIGIN** | `PREDICTED+EXTERNAL`, meaning AlphaFold coordinates plus Ensembl orthologs |
+| **uncertainty represented?** | yes, pLDDT is a confidence track, and alignment coverage is its own sub-track |
+| **uncertainty quantified?** | pLDDT yes; phylogenetic non-independence **no**, stated, not drawn |
+| **possible misleading interpretation** | **that "3 candidate H-bonds" are demonstrated interactions.** They are donor/acceptor pairs within 3.5 Å in a *predicted* structure that carries no hydrogens, so no angle was checked. Second risk: reading 153 orthologs as 153 independent observations. |
+| **correction applied** | the word CANDIDATE is in the legend entry, the panel and the provenance strip; the strip states that the effective clade-level count is ~5–6; the coverage sub-track shows that alignment depth is not constant and that the deepest clades drop out first |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 5 / 5S · AlphaGenome browser: `fig04_alphagenome_rna_splicing`, `fig04S_alphagenome_accessibility_tf`
+
+| | |
+|---|---|
+| **notebook** | `04_HIDDEN_SECOND_ALLELE` |
+| **source data** | `work/alphagenome/arrays_*.json`, nine tracks frozen before the call was repeated |
+| **n** | 5 tracks in the main figure, 4 in the supplement · ±5 000 bp window |
+| **axes / units** | offset from the candidate variant (bp), shared; per-track predicted signal in the model's own units; Δ = ALT − REF in the same units |
+| **statistic represented** | model output per bin. **Not a measurement.** |
+| **FIGURE CLASS** | `MODEL_OUTPUT` |
+| **EVIDENCE ORIGIN** | `PREDICTED`, no measurement of any kind is behind these tracks |
+| **uncertainty represented?** | no, the model returns a point prediction |
+| **uncertainty quantified?** | **no**, and nothing is drawn that would imply otherwise |
+| **possible misleading interpretation** | **that these are measured genome-browser tracks.** They look exactly like ENCODE tracks because that is what the model was trained to emit. Second risk: that a flat Δ proves no second allele exists. |
+| **correction applied** | PREDICTED is in the figure title, in the class stamp and in the first line of the provenance strip; the strip states there is no patient tissue and no tissue of any kind behind the tracks; the caption states this is one candidate, not a sweep. Nine tracks were split into two figures rather than compressed, the split is by **modality**, stated on the figure, so it cannot be read as track-picking. |
+| **full-size render checked?** | yes, both |
+
+---
+
+## Fig 6 · HPO term × disease model: `fig05_hpo_disease_matrix`
+
+| | |
+|---|---|
+| **notebook** | `05_RESIDUAL_PHENOTYPE` |
+| **source data** | `work/hpo/prepared.pkl` (9 155 disease models) + `work/hpo/phenotype.hpoa` (disease names) |
+| **n** | 7 proband terms × 12 models = 84 cells |
+| **axes / units** | rows: proband HPO terms with their own IC · columns: disease models · cell value and colour: **bits** · panel B: profile BMA in bits |
+| **statistic represented** | Resnik: IC of the most informative common ancestor. The same quantity the ranking engine consumes. |
+| **FIGURE CLASS** | `DATA` |
+| **EVIDENCE ORIGIN** | `MEASURED+EXTERNAL+DERIVED`, proband HPO terms, external disease models, computed Resnik. **This is the case the two axes exist for.** |
+| **uncertainty represented?** | partly, the IC scale is shown; annotation bias is stated, not drawn |
+| **uncertainty quantified?** | **no** for annotation bias, and it cannot be from this corpus |
+| **possible misleading interpretation** | **that a low cell means the trait does not occur in that disease.** It means the corpus does not annotate it. Second risk: that literature support has been folded into the bits. Third: that MVA1 covering 3 of 7 terms is evidence against MVA1, it is not, because three of the four uncovered terms have literature support. |
+| **correction applied** | literature support is a dashed **ring**, never a number, and the legend says "not a Resnik score"; the provenance strip states the annotation bias explicitly and says the columns are neighbours of the full profile, not a search for renal models; the computed caption names which terms are covered and which are not, rather than asserting a count |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 7 · BAF cancellation: `fig06_baf_cancellation`
+
+| | |
+|---|---|
+| **notebook** | `06_MOSAIC_AND_MITOREAD` |
+| **source data** | `src/mosaic/simulate_dispersion.py`, seed 42 (preregistered) |
+| **n** | 200 replicates per cell · 400 sites/chromosome · 3 affected chromosomes · 1 200 sites per panel · depth 44× |
+| **axes / units** | A–C: BAF (fraction) × density, identical scales · D: cell fraction (%) × power at fixed FPR 0.05 |
+| **statistic represented** | site-level BAF distributions; power against a fixed false-positive rate |
+| **FIGURE CLASS** | `SIMULATION` |
+| **EVIDENCE ORIGIN** | `SIMULATED`, not one value from the case |
+| **uncertainty represented?** | yes, the distributions *are* the uncertainty; power is estimated from 200 replicates |
+| **uncertainty quantified?** | sampling yes; **model misspecification no**, and that is the dominant term |
+| **possible misleading interpretation** | **that the dispersion index beats the standard method.** The comparator is a site-wise *unphased* BAF statistic; MoChA gets its power from long-range phasing and is not reproduced here. Second risk: reading simulated power as achievable power. |
+| **correction applied** | the comparator is named `site-wise unphased BAF statistic` in the legend, and a boxed note inside the panel reads "NOT MoChA: no long-range phasing" so it survives a crop; the provenance strip states the power is optimistic, no GC bias, no mappability, no reference-allele bias |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 8 · Track 2 curated evidence matrix: `fig07_track2_evidence_matrix`
+
+| | |
+|---|---|
+| **notebook** | `07_TRACK2_SAFE_RESCUE` |
+| **source data** | `research/track2_evidence.tsv`, versioned, one row per cell |
+| **n** | 8 bridges × 10 dimensions = 80 cells · 7 distinct sources |
+| **axes / units** | categorical × categorical. **No numeric axis, on purpose.** |
+| **statistic represented** | none. It is an inventory with a five-value closed vocabulary: `DIRECT` `GENETIC` `NEAR` `CONTRADICTORY` `ABSENT`. |
+| **FIGURE CLASS** | `CURATED_EVIDENCE` |
+| **EVIDENCE ORIGIN** | `EXTERNAL+DERIVED`, published literature, plus the project's own in-silico evidence |
+| **uncertainty represented?** | structurally: 61 of 80 cells are empty and that emptiness is the message |
+| **uncertainty quantified?** | **no**, and it must not be, see below |
+| **possible misleading interpretation** | **that these 80 cells are experimental observations of the patient.** Calling it plain "data" would invite exactly that, which is why the class is written out in full in the title and the stamp. Second risk: that the coloured cells can be added up into a score or a winner. |
+| **correction applied** | title reads `CURATED EVIDENCE MATRIX (external literature + project evidence, not patient observations)`; the provenance strip states that no overall score, weight or ranking is computed and why, combining heterogeneous evidence needs a preregistered method and none exists; it also states that ABSENT means nobody measured it, not that the claim is false. Build-time assertion: no cell other than ABSENT may lack a source. |
+| **full-size render checked?** | yes |
+
+---
+
+## Figures classified as synthesis or narrative
+
+These are legitimate and stay in the notebooks. What they may **not** do is count as a
+notebook's scientific figure.
+
+| figure | notebook | class | why not scientific |
+|---|---|---|---|
+| ACMG points applied and missing | `02_BUB1B_ALLELE_CURATION` | `SYNTHESIS` | integrates a curation already done; exposes no raw data |
+| Ortholog conservation with its three controls (`fig7_conservation.svg`) | `03_BUBR1_MECHANISM` | `DATA`, kept | still scientific; retained because the logo does not show the percentile, chemical-class or clade controls |
+| HPO annotation vs literature | `05_RESIDUAL_PHENOTYPE` | `SYNTHESIS` | a two-check summary; the underlying quantity is in Fig 6 |
+| Preregistered-prediction scorecard | `06_MOSAIC_AND_MITOREAD` | `SYNTHESIS` | the falsification record, 2 confirmed / 2 failed; no distribution |
+| MitoRead prototype and its uncertainty | `06_MOSAIC_AND_MITOREAD` | `SYNTHESIS` | a point estimate beside unquantified bias sources |
+| Eight bridges and the Safe Rescue Corridor (`fig10_track2_bridges.svg`) | `07_TRACK2_SAFE_RESCUE` | `SYNTHESIS` | the corridor is a scientific synthesis, deliberately kept out of the evidence matrix |
+
+**Withdrawn during the visual pass** (redundant or contentless): modality inventory bars,
+`fig2_landscape.svg`, the standalone pLDDT QC, `fig4_structural.svg`, "the two remaining
+routes", `fig5_alphagenome.svg`, "the phenotype pulls two ways", `fig9_mosaic_sim.svg`,
+"bridge 7 tension", "the four Try-to-Kill-It outcomes". Reasons per figure in
+`notebooks/VISUAL_SCIENCE_PASS.md`.
+
+---
+
+## Figure 4: the structural upgrade that was tried and abandoned
+
+A time-boxed attempt was made to replace the Matplotlib 3-D panel with a PyMOL/ChimeraX
+cartoon-surface render.
+
+| step | result |
+|---|---|
+| PyMOL / ChimeraX on PATH or as a module | **absent** |
+| ChimeraX installer | not attempted, downloading an executable binary is barred by project policy |
+| `pymol-open-source` prebuilt wheel | downloads, but `import pymol._cmd` fails: **DLL load failed** (needs the conda-forge native stack) |
+| decision | **aborted at the time-box**, exactly as instructed. The Matplotlib figure stands. |
+
+**It left a mess that had to be cleaned up:** the wheel pulled NumPy up to 2.5.2, and the
+Matplotlib in this environment is built against NumPy 1.x, so the whole plotting stack broke
+with `numpy.core.multiarray failed to import`. Environment restored to `numpy 1.26.4`, PyMOL
+uninstalled, every figure re-rendered and verified.
+
+Cost of a real upgrade, for the record: a conda environment or a ChimeraX install. Worth it
+for a poster; not worth it inside this time-box.
+
+## One deliberate omission, recorded
+
+**No MitoRead error bars.** The uncertainty is declared *not quantified*; drawing an interval
+would be inventing the missing number. The figure shows the point estimate with open-ended
+arrows instead: the bias is not bounded, and that is the only true statement available.
+
+## Sanitisation verdict
+
+`python src/sanitize_scan.py` → **CLEAN**, 181 files (tracked + new-and-unignored).
+
+The scanner was fixed during this pass: it listed only `git ls-files`, so **new, unignored
+files were never examined** and reported clean without being read. It now also lists
+`git ls-files --others --exclude-standard`, which is what a commit would actually add, 156
+files before, 181 after.
+
+Manual check of the SVG text on top of the scanner: no residue number, no HGVS, no genomic
+coordinate. The only long numeric tokens are public cell-line ontology identifiers in the
+AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).

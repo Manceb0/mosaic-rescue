@@ -6,14 +6,14 @@
 > `docs/05_CONTRATO_VISUAL.md` para qué figura debe cada hipótesis.
 
 Existe por una razón concreta: ahora mismo hay varias hipótesis atractivas a la vez, y
-ese es exactamente el momento de mayor riesgo. El peligro no es quedarse sin ideas — es
+ese es exactamente el momento de mayor riesgo. El peligro no es quedarse sin ideas, es
 enamorarse de una antes de correr el VCF.
 
 ---
 
 ## El flujo
 
-![Figura 1 — From one genome to one mechanism](../figures/hero_pipeline.svg)
+![Figura 1. From one genome to one mechanism](../figures/hero_pipeline.svg)
 
 
 ```
@@ -102,7 +102,7 @@ Do not design the project backward from a favorite gene or drug.
 
 **Qué significa en la práctica.** Hoy no está elegido `BUB1B`. No está elegido Bartter.
 No está elegido arimoclomol. Son ramas competidoras, y los datos las van matando. Si un
-análisis se diseña partiendo de la respuesta deseada, ese análisis no cuenta — da igual
+análisis se diseña partiendo de la respuesta deseada, ese análisis no cuenta, da igual
 lo elegante que sea.
 
 ---
@@ -116,19 +116,19 @@ Se registran porque revierten decisiones escritas antes en este mismo repositori
 | Antes | Ahora |
 |---|---|
 | Dosis residual = prioridad #1 absoluta | **Condicional**: solo si Track 1 resuelve a `BUB1B` |
-| Segundo alelo oculto = #2 | **Prioridad general #1** — no depende de conocer el gen |
+| Segundo alelo oculto = #2 | **Prioridad general #1**, no depende de conocer el gen |
 | "no usar en SV complejas" | **SV → Manta / DELLY / GRIDSS.** Nunca AlphaGenome |
 | Palanca reguladora = PARK | **Exploratorio**, techo alto, no columna vertebral |
 
 Dos prohibiciones nuevas: **ningún porcentaje de proteína residual** (la salida es una
-clase, no una cifra), y **AlphaGenome no resuelve fase** — el soporte multi-variante en
+clase, no una cifra), y **AlphaGenome no resuelve fase**, el soporte multi-variante en
 1 Mb evalúa una hipótesis de haplotipo que le suministramos, no la infiere.
 
 Motivo de fondo del cambio de orden: el umbral del ~50 % es **evidencia BubR1-específica**.
 No hay gradiente publicado equivalente para `TRIP13` ni `CEP57`. Si el causal es otro gen,
 la rama pierde su ancla externa. Detalle en `docs/03_ALPHAGENOME_ASSESSMENT.md` §4.1.
 
-### 2. Mosaicismo — cambia el lenguaje, y con él la promesa
+### 2. Mosaicismo: cambia el lenguaje, y con él la promesa
 
 Queda **prohibido** en el repositorio y en la presentación:
 
@@ -172,7 +172,7 @@ mecanismo MVA → estrés aneuploide → disrupción de proteostasis
 Requisito de controles: mtDNA-CN exige controles compatibles en **tejido, librería y
 pipeline**. Sin eso el número no significa nada. Y el confusor hematológico sigue vivo:
 las plaquetas tienen mitocondrias y carecen de núcleo, así que distorsionan el cociente
-directamente — de ahí que el hemograma contemporáneo sea una de las tres preguntas.
+directamente, de ahí que el hemograma contemporáneo sea una de las tres preguntas.
 
 Arimoclomol permanece como **hipótesis de reposicionamiento**. No es rescate demostrado
 en MVA, y el brief §10.3 ya documenta la colisión oncológica en un niño con antecedente
@@ -192,7 +192,7 @@ Se mantiene como **rama competitiva**, no como curiosidad. Tres correcciones de 
 
 **Corrección de prioridad dentro del panel.** El Bartter antenatal por `MAGED2` es
 **transitorio** por definición: remite por completo en los primeros meses de vida
-(Laghmani et al., *N Engl J Med* 2016;374(19):1853-63, PMID 27120771 ✔ verificado).
+(Laghmani et al., *N Engl J Med* 2016;374(19):1853-63, PMID 27120771, verificado).
 Por tanto, si la nefrocalcinosis es **persistente hoy**, `MAGED2` baja y suben las
 tubulopatías que no remiten: `SLC12A1`, `KCNJ1`, `CLCNKB`, `BSND`.
 
@@ -224,8 +224,8 @@ pequeños de profundidad como evidencia de mosaicismo**.
 Sobreviven intactos: Track 1, búsqueda de SV, AlphaGenome, la rama renal, splicing y no
 codificante. BAF sigue siendo utilizable.
 
-La pregunta sigue mereciendo el email —cambia cuánto peso soporta la rama de
-mosaicismo—, pero no bloquea el proyecto.
+La pregunta sigue mereciendo el email, porque cambia cuánto peso soporta la rama de
+mosaicismo, pero no bloquea el proyecto.
 
 ---
 
@@ -235,8 +235,8 @@ El siguiente paso no es otro documento conceptual. Son datos.
 
 | # | Paso | Entrega |
 |---|---|---|
-| 1 | **L001 R1/R2** — caracterización real | reads, bp, longitud, calidad, proxy de duplicación, pistas de instrumento y librería, cobertura bruta |
-| 2 | **VCF — búsqueda causal** | genes MVA + universo renal/tubulopatía + candidatos raros genome-wide |
+| 1 | **L001 R1/R2**, caracterización real | reads, bp, longitud, calidad, proxy de duplicación, pistas de instrumento y librería, cobertura bruta |
+| 2 | **VCF, búsqueda causal** | genes MVA + universo renal/tubulopatía + candidatos raros genome-wide |
 | 3 | **Auditoría de heterocigosis compuesta** | alelo A + posible alelo B |
 | 4 | **AlphaGenome sobre la shortlist** | solo priorizadas: intrónicas profundas, reguladoras, splicing |
 | 5 | **Si falta segundo hit → caza de SV en FASTQ** | Manta / DELLY / GRIDSS |
@@ -267,7 +267,7 @@ presentación: no la idea que sobrevivió, sino todas las que matamos y por qué
 
 Cada muerte se registra en `docs/DECISIONS.md` con la evidencia que la causó. Un jurado
 distingue perfectamente entre un equipo que encontró una respuesta y un equipo que además
-supo descartar las alternativas — y solo el segundo es defendible.
+supo descartar las alternativas, y solo el segundo es defendible.
 
 ---
 
@@ -278,5 +278,5 @@ figura interpretable, una conclusión, una incertidumbre y un falsificador**.
 
 El contrato figura por figura, la estructura narrativa obligatoria y las reglas de diseño
 están en `docs/05_CONTRATO_VISUAL.md`. Es condicional: la mayoría de estas ramas va a
-morir, y nadie construye una figura para una rama muerta — la muerte alimenta el
+morir, y nadie construye una figura para una rama muerta, la muerte alimenta el
 cementerio de hipótesis.
