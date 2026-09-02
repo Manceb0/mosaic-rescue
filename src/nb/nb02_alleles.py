@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/02_BUB1B_ALLELE_CURATION.ipynb"
 
 CELLS = [
-("md", """# 02 · Los dos alelos de `BUB1B` — curación estilo ACMG
+("md", """# 02 · Los dos alelos de `BUB1B`, curación estilo ACMG
 
 > **Saneado:** sin posición, sin identidad de aminoácidos, sin coordenadas. Los alelos se
 > nombran por su papel (`truncante`, `missense`), que es lo que importa para la curación.
@@ -27,6 +27,8 @@ CELLS = [
 para que un predictor no informativo no se sumara a conveniencia."""),
 
 ("code", SETUP),
+
+("code", 'fl.labels("Interpretacion", "Limite de la evidencia")'),
 
 ("md", """## Entradas, QC de las dos llamadas
 
@@ -47,10 +49,16 @@ for v in rows:
     seen.add(k); alleles.append(v)
 
 ROLE = {"HIGH": "alelo A · truncante", "MODERATE": "alelo B · missense"}
+# El campo GT crudo NO se imprime: es el genotipo del paciente en el formato
+# exacto que la regla dura prohibe versionar. La cigosidad si se dice, en
+# palabras, porque ya es la afirmacion canonica del proyecto. Lo demas son
+# metricas de calidad de la llamada, que es lo que este QC evalua.
+ZYG = {"0/1": "heterocigoto", "1|0": "heterocigoto", "0|1": "heterocigoto",
+       "1/1": "homocigoto alternativo"}
 for v in alleles:
     ab = v.allele_balance
-    print(f"  {ROLE.get(v.impact, v.impact):<24} GT={v.gt}  DP={v.dp}  GQ={v.gq}  "
-          f"AB={ab:.2f}  FILTER={v.filt}  MAX_AF="
+    print(f"  {ROLE.get(v.impact, v.impact):<24} {ZYG.get(v.gt, 'cigosidad no resuelta'):<14}"
+          f"DP={v.dp}  GQ={v.gq}  AB={ab:.2f}  FILTER={v.filt}  MAX_AF="
           f"{('%.2e' % v.max_af) if v.max_af is not None else 'AUSENTE'}")'''),
 
 ("code", '''fig, axes = plt.subplots(1, 3, figsize=(11.0, 3.4))
@@ -74,6 +82,7 @@ axes[2].text(1.5, 0.62, "banda esperada\\npara heterocigoto", fontsize=7.4, colo
              ha="right")
 
 fl.done(fig, "Figura QC · las dos llamadas, antes de curar nada", "EXP-007", "MEASURED",
+        "DATA",
         "profundidad por encima de la mediana del conjunto, GQ maxima y balance alelico "
         "dentro de la banda esperada para heterocigotos en ambos alelos. Las llamadas son "
         "solidas.",
@@ -81,10 +90,63 @@ fl.done(fig, "Figura QC · las dos llamadas, antes de curar nada", "EXP-007", "M
         "mosaicismo; NO establece que los alelos esten en trans.",
         prov="VCF del paciente, cruzado por identidad de alelo")'''),
 
-("md", """## Resultado primario 1 · el paisaje de missense en ClinVar
+("md", """## Resultado primario 1 · la anatomía del gen, con todo ClinVar encima
+
+La curación necesita saber **dónde** cae cada alelo dentro del gen. Hasta ahora eso se dibujaba
+a mano. Aquí el modelo de transcrito y los dominios vienen de **Ensembl REST**, y el paisaje de
+variantes son los **1 497 registros missense de ClinVar** para este gen, uno a uno.
+
+> La petición a Ensembl lleva únicamente el símbolo `BUB1B`. **Ningún dato del paciente sale de
+> la máquina.** Las posiciones del caso entran solo como marcas sobre el eje, sin número."""),
+
+("code", '''from src.structure.transcript_model import fetch
+T = fetch()                                   # cacheado en work/struct/transcript.json
+L = T["translation"]["length"]
+DOM = [d for d in T["domains"] if d["type"] in ("Pfam", "Gene3D")]
+EX  = [e for e in T["exons"] if e.get("aa")]
+
+print(f"  Ensembl release {T['release']} · {T['transcript']} [{T['transcript_pick']}]")
+print(f"  {T['n_exons']} exones · proteina {L} aa · CDS {T['translation']['cds_len']:,} nt")
+for d in DOM:
+    print(f"    {d['type']:<8}{d['start']:>5}-{d['end']:<5} {d['desc'][:52]}")
+
+cv = json.load(io.open("work/clinvar/landscape_missense.json", encoding="utf-8"))
+tot = cv["totals"]
+per = collections.defaultdict(collections.Counter)
+for v in cv["variants"]:
+    per[v["pos"]][v["cls"]] += 1
+print()
+print(f"  ClinVar missense en el gen: {len(cv['variants']):,} registros "
+      f"sobre {len(per):,} residuos distintos")
+for k, v in tot.items():
+    print(f"    {k:<8}{v:>6}  ({100*v/sum(tot.values()):.1f} %)")'''),
+
+("md", """### Figura principal 1 · navegador del gen, exones, dominios y ClinVar"""),
+
+("code", '''from src.figures import fig02_browser as FB
+
+g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
+fig = FB.build(T, cv, {"ptc_aa": g["ptc_cds"] // 3 + 1, "mis_aa": g["mis_cds"] // 3 + 1})
+fl.pub(fig, "Figura principal 1 · navegador del gen, exones, dominios y ClinVar",
+       "EXP-007", "EXTERNAL", "DATA",
+       f"la anatomia real del transcrito canonico ({T['n_exons']} exones, {L} aa), los "
+       f"dominios que Ensembl anota sobre la traduccion, y las {len(cv['variants']):,} "
+       f"missense que ClinVar tiene registradas en el gen, una por registro. "
+       f"{100*tot['VUS']/sum(tot.values()):.0f} % son VUS y hay UNA sola P/LP en todo el gen: "
+       f"no existe hotspot demostrable en ninguna parte, y por eso PM1 no aplica aqui ni en "
+       f"ningun otro punto. El panel D convierte los 1 497 registros en una distribucion "
+       f"legible; las dos guias verticales situan los alelos del caso en esa anatomia.",
+       "que estar dentro de un dominio sea patogenicidad. La densidad de ClinVar refleja "
+       "sobre todo cuanto se ha secuenciado y reportado el gen, no donde estan las mutaciones "
+       "que importan; y la ausencia de hotspot NO es evidencia contra el candidato.",
+       source="Ensembl REST release " + str(T["release"]) +
+              " + work/clinvar/landscape_missense.json (1 497 registros)",
+       lib="dna_features_viewer + matplotlib", slug="fig02_gene_browser")'''),
+
+("md", """## Resultado primario 2 · el paisaje de missense en ClinVar
 
 `PM1`, `PS1` y `PM5` se evalúan sobre la clase comparable. El error que esto corrigió: contar
-«0 P/LP frente a 35 B/LB» mezclaba todas las consecuencias — **31 de esas 35 eran sinónimas**."""),
+«0 P/LP frente a 35 B/LB» mezclaba todas las consecuencias, **31 de esas 35 eran sinónimas**."""),
 
 ("code", '''d = json.load(io.open("work/clinvar/landscape_missense.json", encoding="utf-8"))
 tot = d["totals"]
@@ -95,17 +157,7 @@ print()
 print(f"  -> {100*tot.get('VUS',0)/sum(tot.values()):.0f} % son VUS. Ningun punto del gen")
 print("     tiene hotspot demostrable, asi que PM1 no aplica en NINGUNA parte.")'''),
 
-("code", '''fl.svg("figures/fig2_landscape.svg",
-       "Figura principal 1 · las missense de ClinVar en todo el gen",
-       "EXP-007", "EXTERNAL",
-       "cada missense de ClinVar en su residuo, y la ampliacion alrededor del candidato en "
-       "coordenadas RELATIVAS. Una sola P/LP en todo el gen, 35 benignas repartidas de punta "
-       "a punta, y 95 % de VUS.",
-       "que la ausencia de hotspot sea evidencia CONTRA este candidato. PM1 no aplica por "
-       "ausencia de hotspot en cualquier parte del gen, que es distinto.",
-       generator="src/make_fig2b.py")'''),
-
-("md", """## Resultado primario 2 · geometría de NMD y de la fase
+("md", """## Resultado primario 3 · geometría de NMD y de la fase
 
 Dos medidas geométricas deciden dos cosas distintas: si el truncante activa NMD, y si los dos
 alelos pueden conectarse con lecturas cortas."""),
@@ -120,8 +172,8 @@ print()
 print("  -> NMD predicho con holgura. PVS1 candidato, con el arbol de decision recorrido.")'''),
 
 ("code", '''fl.svg("figures/fig3_phase.svg",
-       "Figura principal 2 · geometria de NMD y de la fase",
-       "EXP-007 · EXP-013", "MEASURED+DERIVED",
+       "Figura principal 3 · geometria de NMD y de la fase",
+       "EXP-007 · EXP-013", "MEASURED+DERIVED", "DATA",
        f"el PTC cae a ~{margin:,} nt de la ultima union exon-exon, muy por encima del umbral "
        "de 50-55 nt: NMD predicho con holgura. Y abajo, por que la fase no se resuelve: el "
        "hueco entre los dos alelos es de ~11 kb frente a fragmentos de ~300 pb, con un solo "
@@ -164,7 +216,7 @@ for ax, (name, items) in zip(axes, EVID.items()):
     ax.legend(fontsize=7.6, frameon=False, loc="lower right", bbox_to_anchor=(1, 0.16))
 
 fl.done(fig, "Figura de robustez · puntos ACMG aplicados y los que faltan",
-        "EXP-007", "DERIVED",
+        "EXP-007", "DERIVED", "SYNTHESIS",
         "el truncante suma 9 puntos (PVS1 + PM2_Supporting) y llega a Likely Pathogenic. El "
         "missense suma 1: se queda en VUS, y seguiria en VUS aunque entrara PP3, porque el "
         "maximo alcanzable con PM1+PM5 son 5 puntos y VUS llega hasta 5.",
@@ -177,7 +229,7 @@ fl.done(fig, "Figura de robustez · puntos ACMG aplicados y los que faltan",
 
 **SIFT `deleterious` 0,01 y PolyPhen 0,997 apuntaban fuerte a patogenicidad.** El predictor
 calibrado dice que no hay evidencia asignable. Sumar los dos primeros habría dado un `PP3`
-injustificado — **se ve el tamaño del error que el preregistro evitó**.
+injustificado, **se ve el tamaño del error que el preregistro evitó**.
 
 Y un error propio: afirmé que ninguna candidata estaba en dbSNP, deduciéndolo de la columna
 `ID` vacía del VCF. **Falso**: esa columna solo indica que el caller no anotó. El truncante sí
@@ -199,12 +251,12 @@ resolver, y sin eso el modelo bialélico es *candidato*, no establecido.
 ### Falsificador
 
 Genotipos parentales, o lectura larga dirigida sobre los ~11 kb que separan los dos alelos.
-Cualquiera de los dos convierte «candidato» en resuelto — **en la dirección que sea**.
+Cualquiera de los dos convierte «candidato» en resuelto, **en la dirección que sea**.
 
 ### Siguiente experimento
 
-`03_BUBR1_MECHANISM` — si el missense no se mueve por clasificación, ¿se mueve por mecanismo?"""),
+`03_BUBR1_MECHANISM`, si el missense no se mueve por clasificación, ¿se mueve por mecanismo?"""),
 ]
 
 if __name__ == "__main__":
-    run(OUT, CELLS, min_figs=4)
+    run(OUT, CELLS, min_sci=1)

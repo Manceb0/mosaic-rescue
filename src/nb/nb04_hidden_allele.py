@@ -28,12 +28,15 @@ precedente humano publicado** de un segundo alelo regulador decenas de kb aguas 
 restringirse al cuerpo del gen sería conceptualmente incorrecto.
 
 Orden de matanza, del filtro barato al caro:
-`frecuencia → calidad → posición funcional → conservación y regulación → AlphaGenome`
+frecuencia poblacional, calidad de la llamada, posición funcional, conservación y
+señal reguladora, y por último AlphaGenome
 
-**La predicción #4 decía que AlphaGenome daría Δ plano — y se escribió queriendo fallarla**,
+**La predicción #4 decía que AlphaGenome daría Δ plano, y se escribió queriendo fallarla**,
 para que un negativo fuera reportable en vez de decepcionante."""),
 
 ("code", SETUP),
+
+("code", 'fl.labels("Que se observa", "Alcance del resultado")'),
 
 ("md", """## Método · el funnel del locus"""),
 
@@ -64,6 +67,7 @@ for i, v in enumerate(vals):
 ax.set_title("Funnel del locus ampliado de BUB1B")
 
 fl.done(fig, "Figura principal 1 · el funnel del locus", "EXP-008", "MEASURED+DERIVED",
+        "DATA",
         "de 321 variantes en 270 kb, una sola sobrevivio a frecuencia, calidad y posicion "
         "funcional: una intronica profunda ausente de gnomAD, sin rsID, PASS, heterocigota, "
         "a mas de 1 kb del borde de exon mas cercano.",
@@ -98,18 +102,56 @@ if spl:
     print(f"  delta LOCAL de junciones de splicing        : "
           f"{min(m['delta_local_max'] for m in spl):.4f}")'''),
 
-("code", '''fl.svg("figures/fig5_alphagenome.svg",
-       "Figura principal 2 · AlphaGenome REF / ALT / delta",
-       "EXP-009", "PREDICTED",
-       "REF y ALT practicamente identicos, y el carril delta plano en el cero. Las tres "
-       "modalidades de splicing por debajo del 1,2 %, con el delta local de junciones en "
-       "0,0000. El control de sanidad paso: las medias REF y ALT son NO triviales, asi que "
-       "el delta plano es un RESULTADO, no una llamada fallida.",
-       "que AlphaGenome demuestre que no existe un segundo alelo. Solo dice que NO APOYA el "
-       "unico candidato SNV/indel que encontramos. Ademas el resumen agrega miles de pistas: "
-       "un efecto fuerte en un solo tejido podria diluirse — el argumento que no depende de "
-       "ese promedio es el splicing, cuyo delta local es cero.",
-       generator="src/make_fig5.py")'''),
+("md", """### Figura principal 2 · navegador REF / ALT / Δ, pista a pista
+
+La figura resumen agrega por modalidad. Esta **no agrega nada**: dibuja las nueve pistas
+congeladas tal y como salieron del modelo, sobre un **eje genómico compartido**, con el modelo
+del gen encima.
+
+Dos reglas de dibujo, fijadas antes de mirar:
+
+1. **REF y ALT comparten escala Y exacta** dentro de cada pista. Sin esto, cualquier diferencia
+   puede fabricarse reescalando.
+2. **El Δ va en su propio carril con el cero visible** y escala simétrica. Nunca superpuesto.
+
+> El eje X es **desplazamiento respecto a la variante**, no coordenada absoluta."""),
+
+("code", '''AR = glob.glob("work/alphagenome/arrays_*.json")[0]
+ar = json.load(io.open(AR, encoding="utf-8"))
+TRK = ar["tracks"]
+VPOS = ar["pos"]
+FL = ar["flank_bp"]
+print(f"  estado: {ar['status']}  ·  ventana: +/-{FL:,} pb  ·  pistas congeladas: {len(TRK)}")
+for t in TRK:
+    print(f"    {t['mod']:<20}{t['bp_per_bin']:>8.0f} pb/bin  {len(t['ref']):>6} bins   "
+          f"{str(t['meta'])[:52]}")
+
+from src.structure.transcript_model import fetch as fetch_tx
+TX = fetch_tx()
+EXW = [(e["start"] - VPOS, e["end"] - VPOS) for e in TX["exons"]
+       if e["end"] > VPOS - FL and e["start"] < VPOS + FL]
+print(f"  exones de {TX['transcript']} dentro de la ventana: {len(EXW)}")'''),
+
+("code", '''from src.figures import fig04_tracks as FT
+
+_figs, _ar = FT.load_and_build()
+for _which, _slug, _tag in (("main", "fig04_alphagenome_rna_splicing", "principal 2"),
+                            ("supp", "fig04S_alphagenome_accessibility_tf", "suplementaria 2S")):
+    _f, _st = _figs[_which]
+    fl.pub(_f, f"Figura {_tag}. Navegador REF / ALT / delta: {FT.GROUPS[_which]['title']}",
+           "EXP-009", "PREDICTED", "MODEL_OUTPUT",
+           f"{_st['n_tracks']} de las nueve pistas congeladas sobre el mismo eje genomico, "
+           f"con el modelo del gen encima. REF y ALT comparten escala Y exacta dentro de "
+           f"cada pista y el delta va en su propio carril con el cero visible. El mayor "
+           f"|delta| de cualquier bin aqui es {_st['max_abs_delta']:.4g}.",
+           "que no exista un segundo alelo. Es una PREDICCION de un modelo sobre UN "
+           "candidato SNV/indel, no una medida y no un barrido. Estas pistas NO son datos "
+           "medidos del paciente ni de ningun tejido suyo.",
+           source="work/alphagenome/arrays_*.json · pistas congeladas antes de repetir la "
+                  "llamada; el reparto entre figura y suplemento es por MODALIDAD",
+           lib="matplotlib", slug=_slug)'''),
+
+("md", """### La figura resumen, que fue la que cerró la rama"""),
 
 ("md", """### Control de robustez · se revisaron las pistas individuales
 
@@ -138,7 +180,7 @@ if top:
             "un numero minusculo", fontsize=7.6, color=fl.DEAD)
     ax.set_title("Robustez · por que el top por cambio relativo es ruido")
     fl.done(fig, "Figura de robustez · el % relativo enganya cuando la base es cero",
-            "EXP-009", "PREDICTED",
+            "EXP-009", "PREDICTED", "MODEL_OUTPUT",
             "cada punto es una de las pistas con mayor cambio relativo. Las que producen "
             "porcentajes grandes tienen lineas base proximas a cero: el porcentaje es un "
             "artefacto de la division, no senal.",
@@ -153,7 +195,7 @@ else:
 | Rama | Estado |
 |---|---|
 | **Segundo alelo SNV/indel regulador** | **NEGATIVE** en el alcance evaluado |
-| **Segundo alelo estructural (SV/CNV)** | **BLOCKED** — falta BAM/CRAM de profundidad completa |
+| **Segundo alelo estructural (SV/CNV)** | **BLOCKED**, falta BAM/CRAM de profundidad completa |
 
 **La formulación exacta:** *No candidate survived population filtering plus global and
 track-level AlphaGenome interrogation.*
@@ -163,7 +205,7 @@ track-level AlphaGenome interrogation.*
 ### Sobre la CNV grande
 
 Desde la profundidad y la heterocigosidad del VCF: la región no muestra pérdida de
-heterocigosidad ni caída de profundidad — se observa lo contrario. Pero **la profundidad del
+heterocigosidad ni caída de profundidad, se observa lo contrario. Pero **la profundidad del
 VCF no está normalizada para llamar número de copia**, así que lo defendible es *no evidence
 for a large heterozygous deletion*, no «CNV descartada».
 
@@ -172,14 +214,15 @@ cambian número de copia, inserciones, y todo lo local a un punto de rotura.
 
 ### Falsificador
 
-BAM/CRAM de los cuatro carriles → llamado de SV con pares discordantes y *split reads*.
+Con el BAM/CRAM de los cuatro carriles se llamarían variantes estructurales usando pares
+discordantes y *split reads*.
 **Prohibido cerrar un negativo estructural con L001**: un carril a ~13× es piloto, no ausencia.
 
 ### Siguiente experimento
 
-`05_RESIDUAL_PHENOTYPE` — si el segundo alelo no aparece, ¿y si parte del fenotipo no es de
+`05_RESIDUAL_PHENOTYPE`. Si el segundo alelo no aparece, ¿y si parte del fenotipo no es de
 `BUB1B`?"""),
 ]
 
 if __name__ == "__main__":
-    run(OUT, CELLS, min_figs=3)
+    run(OUT, CELLS, min_sci=1)

@@ -22,7 +22,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/01_TRACK1_GENOME_WIDE.ipynb"
 
 CELLS = [
-("md", """# 01 · Track 1 — ranking genome-wide sin panel
+("md", """# 01. Track 1: ranking genome-wide sin panel
 
 > **Reproduce el experimento desde las entradas.** No muestra resultados guardados: reejecuta
 > el pipeline importando `src/`, que es la fuente de verdad.
@@ -41,11 +41,13 @@ lo mismo que sobrevivir a una búsqueda sin panel.
 
 `docs/DECISIONS.md` § EXP-006, escrito antes de ejecutar. La predicción que importa es la #4:
 **`BUB1B` queda entre los 20 primeros** del ranking sin panel. Los dos desenlaces se
-declararon buenos por adelantado — si no quedaba arriba, habríamos evitado un error.
+declararon buenos por adelantado: si no quedaba arriba, habríamos evitado un error.
 
 **Garantía de diseño:** `src/prioritization/extract_genomewide.py` no menciona ningún gen."""),
 
 ("code", SETUP),
+
+("code", 'fl.labels("Que muestra", "Lo que queda fuera")'),
 
 ("md", """## Entradas y procedencia
 
@@ -71,7 +73,7 @@ estaba documentado como la corrección del cruce. **Ningún módulo lo importaba
 cruzaba por posición, justo lo que ese módulo venía a arreglar.
 
 VEP desplaza la coordenada de los indels respecto al VCF, así que un cruce por posición los
-pierde. La solución **no pudo ser** `Uploaded_variation` —este TSV no la tiene— sino reproducir
+pierde. La solución **no pudo ser** `Uploaded_variation` (este TSV no la tiene) sino reproducir
 las reglas de representación de VEP y cruzar por `(Location, Allele)`. Sin tolerancias: la
 proximidad no es una clave de unión, y ese arreglo ya se había rechazado antes por poder
 emparejar indels vecinos distintos."""),
@@ -120,8 +122,8 @@ A = {"SNV": len({v.loc for v in after_lost if not is_indel(v)}),
      "HIGH": len([v for v in after_lost if v.impact == "HIGH"])}
 tot_before = len({v.loc for v in before_lost})
 tot_after = len({v.loc for v in after_lost})
-print(f"  posiciones HIGH/MODERATE sin genotipo — cruce por POSICION : {tot_before}")
-print(f"  posiciones HIGH/MODERATE sin genotipo — cruce (Location,Allele): {tot_after}")
+print(f"  posiciones HIGH/MODERATE sin genotipo, cruce por POSICION : {tot_before}")
+print(f"  posiciones HIGH/MODERATE sin genotipo, cruce (Location,Allele): {tot_after}")
 print(f"  recuperadas: {tot_before - tot_after}  ({100*(tot_before-tot_after)/tot_before:.0f} %)")'''),
 
 ("md", """### Figura QC · el tamaño del bug, y el de la corrección"""),
@@ -145,14 +147,15 @@ axes[0].legend(fontsize=8, frameon=False)
 axes[1].barh([0], [tot_before], color=fl.DEAD, alpha=0.35, height=0.5)
 axes[1].barh([0], [tot_after], color=fl.ALIVE, height=0.5)
 axes[1].set_yticks([]); axes[1].set_xlabel("posiciones HIGH/MODERATE sin genotipo")
-axes[1].set_title("Antes → despues")
+axes[1].set_title("Antes y despues")
 axes[1].text(tot_before, 0.32, f"  {tot_before} perdidas", fontsize=9.4, color=fl.DEAD, va="center")
 axes[1].text(tot_after, -0.32, f"  {tot_after} restantes", fontsize=9.4, color=fl.ALIVE, va="center")
 axes[1].grid(False)
 
 fl.done(fig, "Figura QC · reconciliacion de alelos, antes y despues", "EXP-006", "DERIVED",
-        f"el cruce por posicion perdia {tot_before} posiciones HIGH/MODERATE — la mayoria "
-        f"indels, porque VEP desplaza su coordenada — con {B['HIGH']} anotaciones de alto "
+        "DATA",
+        f"el cruce por posicion perdia {tot_before} posiciones HIGH/MODERATE, la mayoria "
+        f"indels, porque VEP desplaza su coordenada, con {B['HIGH']} anotaciones de alto "
         f"impacto entre ellas. Reproducir la representacion de VEP recupera "
         f"{tot_before - tot_after}.",
         "que el cruce sea perfecto: quedan " + str(tot_after) + " posiciones sin resolver, y "
@@ -162,7 +165,7 @@ fl.done(fig, "Figura QC · reconciliacion de alelos, antes y despues", "EXP-006"
 ("md", """## Método · funnel genome-wide
 
 Tres decisiones congeladas en `config/ranking_v1.yaml` que cambian el resultado: regla de dos
-niveles para `FILTER`, normalización a alelo único, y **agregación haplotípica** — variantes
+niveles para `FILTER`, normalización a alelo único, y **agregación haplotípica**, variantes
 con el mismo `PID` y `PGT` están probadas en *cis* y colapsan en un solo evento."""),
 
 ("code", '''pos_all = {v.loc for v in rows}
@@ -207,7 +210,7 @@ ax.set_title("Funnel genome-wide · ancho proporcional a log10(n)")
 ax.text(0.0, -0.9, "sin panel: el unico filtro es consecuencia funcional",
         fontsize=8.4, color=fl.SOFT)
 
-fl.done(fig, "Figura principal 1 · funnel genome-wide", "EXP-006", "MEASURED+DERIVED",
+fl.done(fig, "Figura principal 1 · funnel genome-wide", "EXP-006", "MEASURED+DERIVED", "DATA",
         "el descenso real de 5,0 M variantes a los genes que compiten con un modelo de "
         "herencia. Ninguna etapa es un panel: el unico filtro es consecuencia funcional.",
         "que las etapas evaluen lo que no evaluan. No cubre variantes estructurales, "
@@ -215,13 +218,104 @@ fl.done(fig, "Figura principal 1 · funnel genome-wide", "EXP-006", "MEASURED+DE
         "la fase.",
         prov="work/gw/highmod_ann.tsv + VCF, hashes arriba")'''),
 
+("md", """## Figura principal 2 · el panorama genómico de la competición
+
+El funnel dice **cuántos** genes compiten. No dice **dónde** ni **con qué puntuación**. Esta es
+la vista que falta: cada gen que recibió modelo de herencia, colocado en su cromosoma, con su
+puntuación `A0` **congelada** en el eje Y.
+
+> **Saneado por diseño.** El eje X es orden cromosómico en **bins de 1 Mb** derivados de la
+> posición del gen, no la coordenada de ninguna variante del paciente. Las longitudes de
+> cromosoma se leen de la cabecera del VCF, no se escriben a mano."""),
+
+("code", '''# Longitudes de cromosoma: de la cabecera del VCF, no hardcodeadas.
+import gzip
+contigs = {}
+with gzip.open(VCF, "rt", errors="replace") as f:
+    for line in f:
+        if not line.startswith("#"):
+            break
+        if line.startswith("##contig="):
+            body = line.strip()[10:-1]
+            d = dict(kv.split("=", 1) for kv in body.split(",") if "=" in kv)
+            if "ID" in d and "length" in d:
+                contigs[d["ID"]] = int(d["length"])
+
+# La cabecera de este VCF nombra los contigs SIN prefijo "chr"; se aceptan las
+# dos convenciones para que el notebook no dependa de cual use el fichero.
+PLAIN = [str(i) for i in range(1, 23)] + ["X", "Y"]
+CH = [c for c in PLAIN if c in contigs]
+if not CH:
+    CH = [c for c in ("chr" + c for c in PLAIN) if c in contigs]
+
+BIN = 1_000_000                                  # resolucion del eje: 1 Mb
+off, acc = {}, 0
+for c in CH:
+    off[c] = acc
+    acc += contigs[c] // BIN + 1
+GENOME_BINS = acc
+
+def gene_bin(g):
+    """Bin de 1 Mb del gen = minimo de sus variantes HIGH/MODERATE. Nunca la
+    coordenada exacta de una variante: el bin se redondea antes de salir."""
+    vs = by_gene.get(g, [])
+    if not vs:
+        return None
+    ch = vs[0].loc.split(":")[0]
+    if ch not in off:
+        return None
+    p = min(int(v.loc.split(":")[1].split("-")[0]) for v in vs)
+    return ch, off[ch] + p // BIN
+
+res = pickle.load(io.open("work/gw/mode_b_results_v4.pkl", "rb"))
+A0 = res["A0_GENETICS"]                          # (gen, score, modelo, ...) CONGELADO
+pts = []
+for r, (g, sc, *_rest) in enumerate(A0, start=1):
+    gb = gene_bin(g)
+    if gb:
+        pts.append((g, gb[0], gb[1], sc, r))
+
+# Carga genomica de fondo: densidad de los 6 322 genes HIGH/MODERATE por bin
+load_bins = collections.Counter()
+for g in by_gene:
+    gb = gene_bin(g)
+    if gb:
+        load_bins[gb[1]] += 1
+
+print(f"  cromosomas en la cabecera : {len(CH)}  ·  bins de {BIN//10**6} Mb: {GENOME_BINS:,}")
+print(f"  genes puntuados en A0     : {len(A0)}  ·  situados en el genoma: {len(pts)}")
+print(f"  genes HIGH/MODERATE       : {len(by_gene):,} repartidos en {len(load_bins):,} bins")
+print(f"  rango de puntuacion A0    : {min(p[3] for p in pts):.1f} a {max(p[3] for p in pts):.1f}")'''),
+
+("code", '''from src.figures import fig01_manhattan as FM
+
+M = FM.prepare(by_gene, res["A0_GENETICS"], FM.contig_lengths(VCF))
+fig = FM.build(M)
+_bub = next(s for s in M["scored"] if s["gene"] == "BUB1B")
+_tie = sum(1 for s in M["scored"] if s["score"] >= _bub["score"])
+fl.pub(fig, "Figura principal 2 · priorizacion genome-wide", "EXP-006",
+       "MEASURED+DERIVED", "DATA",
+       f"la competicion completa vista sobre el genoma: los {M['n_universe']:,} genes con "
+       f"variante HIGH/MODERATE que forman el universo, dibujados como alfombra sobre la "
+       f"linea base y como densidad en el panel B, y los {M['n_scored']} que llegaron a "
+       f"tener modelo de herencia, con su puntuacion A0 CONGELADA. BUB1B esta marcado en su "
+       f"puesto real del A0 congelado, el #{_bub['rank']}, con {_tie} genes empatados o por "
+       f"encima. No solo compitieron 151: compitieron 6 321, y esa es la lectura que la "
+       f"figura esta construida para no permitir equivocar.",
+       "que la puntuacion sea una probabilidad ni un p-valor. El eje Y es una suma de "
+       "terminos con pesos elegidos por nosotros: NO es un estadistico, no tiene distribucion "
+       "nula y por eso la figura se niega a dibujar una linea de significacion. Tampoco cubre "
+       "variantes estructurales ni reguladoras, y la posicion en X es el bin de 1 Mb del gen, "
+       "no la de ninguna variante.",
+       source="work/gw/mode_b_results_v4.pkl (A0 congelado) + longitudes de contig del VCF",
+       lib="matplotlib", slug="fig01_prioritization_genomewide")'''),
+
 ("md", """## Resultado primario · estabilidad de rango
 
 Lo que el preregistro exige reportar **no es el ganador** sino la matriz gen × análisis. Un
 gen que solo gana en una configuración no es un resultado."""),
 
-("code", '''res = pickle.load(io.open("work/gw/mode_b_results_v4.pkl", "rb"))
-ORDER = ["A0_GENETICS", "A1_GENETICS_CLINVAR", "B0_FULL_PROBAND",
+("code", '''ORDER = ["A0_GENETICS", "A1_GENETICS_CLINVAR", "B0_FULL_PROBAND",
          "B1_MINUS_RHABDOMYOSARCOMA", "B2_MINUS_RENAL", "B3_MINUS_GROWTH_PERINATAL",
          "B4_GENETICS_ONLY_CONTROL", "FH_ON"] + sorted(k for k in res if k.startswith("LOO_"))
 LEAD = [r[0] for r in res["B0_FULL_PROBAND"][:6]]
@@ -235,7 +329,7 @@ for j, an in enumerate(ORDER):
 print(f"  {len(ORDER)} analisis · {len(LEAD)} genes lideres")
 print(f"  BUB1B es #1 en {int((M[LEAD.index('BUB1B')] == 1).sum())} de {len(ORDER)}")'''),
 
-("md", """### Figura principal 2 · matriz de estabilidad de rango"""),
+("md", """### Figura principal 3 · matriz de estabilidad de rango"""),
 
 ("code", '''fig, ax = plt.subplots(figsize=(11.2, 3.5))
 im = ax.imshow(M, cmap="RdYlGn_r", vmin=1, vmax=8, aspect="auto")
@@ -254,21 +348,22 @@ ax.grid(False)
 ax.set_title("Estabilidad de rango · puesto de cada gen lider en los 15 analisis")
 cb = plt.colorbar(im, ax=ax, fraction=0.02, pad=0.01); cb.set_label("puesto", fontsize=8)
 
-fl.done(fig, "Figura principal 2 · estabilidad de rango, gen x analisis", "EXP-006", "DERIVED",
-        "BUB1B es #1 en 14 de los 15 analisis. La excepcion es A0_GENETICS —el control sin "
-        "fenotipo ni ClinVar— donde queda #4. El hallazgo no es el ganador de una formula: es "
+fl.done(fig, "Figura principal 3 · estabilidad de rango, gen x analisis", "EXP-006", "DERIVED",
+        "DATA",
+        "BUB1B es #1 en 14 de los 15 analisis. La excepcion es A0_GENETICS, el control sin "
+        "fenotipo ni ClinVar, donde queda #4. El hallazgo no es el ganador de una formula: es "
         "que el resultado es estable al quitar terminos, al quitar ClinVar y al cambiar pesos.",
         "que la estabilidad sea independencia. Los 15 analisis comparten codigo, datos y "
         "supuestos: no son 15 comprobaciones independientes.",
         prov="work/gw/mode_b_results_v4.pkl")'''),
 
-("md", """### Figura principal 3 · `A0` congelado frente a `A0-FREQFIX`
+("md", """### Figura principal 4 · `A0` congelado frente a `A0-FREQFIX`
 
 Aquí está el episodio más importante del experimento, y **los dos números se enseñan juntos**.
 
 Al conectar el cruce de alelos, `BUB1B` pasó de #1 a **#4** en `A0`. Su puntuación **no bajó**:
 emergieron tres deleciones homocigotas con `MAX_AF` ausente. La auditoría las resolvió
-localmente — son **polimorfismos comunes** que VEP no supo anotar.
+localmente, son **polimorfismos comunes** que VEP no supo anotar.
 
 **No se tocó la fórmula.** `A0-FREQFIX` es una sensibilidad **posterior al resultado**,
 aplicada a los 33 alelos afectados y no a los tres incómodos."""),
@@ -324,8 +419,8 @@ for ax, data, title, sub in (
 axes[0].text(13.05, 4.0, f"BUB1B  #{rk_f}", fontsize=10, color=fl.ALIVE, fontweight="bold")
 axes[1].text(13.05, 7.0, f"BUB1B  #{rk_x}", fontsize=10, color=fl.ALIVE, fontweight="bold")
 
-fl.done(fig, "Figura principal 3 · A0 congelado frente a A0-FREQFIX", "EXP-006 · EXP-021b",
-        "DERIVED",
+fl.done(fig, "Figura principal 4 · A0 congelado frente a A0-FREQFIX", "EXP-006 · EXP-021b",
+        "DERIVED", "DATA",
         f"en el A0 preregistrado BUB1B queda #{rk_f}, por detras de tres deleciones "
         f"homocigotas sin frecuencia asignable. Reparando el defecto de anotacion en TODOS "
         f"los alelos afectados, vuelve al #{rk_x} y los tres desaparecen del top.",
@@ -341,7 +436,7 @@ conocimiento. No recibió ninguna de nuestras candidatas, puntuaciones ni panele
 
 > **Es convergencia METODOLÓGICA sobre el MISMO VCF.** No es evidencia biológica independiente:
 > los dos motores leen el mismo genoma y los mismos errores de llamada. Hay prueba de que
-> importa — ambos señalan `SERPINA1`."""),
+> importa, ambos señalan `SERPINA1`."""),
 
 ("code", '''from src.baseline.compare_baseline import read_exomiser
 ext, path, nrows = read_exomiser("BASELINE-PRIMARY")
@@ -350,10 +445,10 @@ our_rank = {r[0]: i + 1 for i, r in enumerate(res["B0_FULL_PROBAND"])}
 
 shared = [g for g in ext_rank if g in our_rank and (ext_rank[g] <= 25 or our_rank[g] <= 25)]
 print(f"  Exomiser: {len(ext)} genes unicos ({nrows} filas gen x herencia)")
-print(f"  BUB1B — nuestro puesto {our_rank.get('BUB1B')} · Exomiser puesto {ext_rank.get('BUB1B')}")
+print(f"  BUB1B, nuestro puesto {our_rank.get('BUB1B')} · Exomiser puesto {ext_rank.get('BUB1B')}")
 print(f"  genes en el top-25 de alguno de los dos: {len(shared)}")'''),
 
-("md", """### Figura principal 4 · rango frente a rango"""),
+("md", """### Figura principal 5 · rango frente a rango"""),
 
 ("code", '''fig, ax = plt.subplots(figsize=(6.6, 6.2))
 xs = [our_rank[g] for g in shared]
@@ -373,10 +468,10 @@ ax.set_xlabel("nuestro puesto  (B0_FULL_PROBAND)")
 ax.set_ylabel("puesto de Exomiser")
 ax.set_title("Metodo independiente · MISMO VCF del paciente")
 
-fl.done(fig, "Figura principal 4 · nuestro ranking frente a Exomiser", "EXP-006b",
-        "EXTERNAL+DERIVED",
+fl.done(fig, "Figura principal 5 · nuestro ranking frente a Exomiser", "EXP-006b",
+        "EXTERNAL+DERIVED", "MODEL_OUTPUT",
         "cada punto es un gen en el top-25 de alguno de los dos motores; la diagonal seria "
-        "acuerdo perfecto. Coinciden fuertemente en BUB1B —#1 y #2— y poco en el resto: "
+        "acuerdo perfecto. Coinciden fuertemente en BUB1B (#1 y #2) y poco en el resto: "
         "el solapamiento del top-20 es de 6 de 20.",
         "que sean dos observaciones biologicas independientes. Comparten el VCF, y un "
         "artefacto compartido los engana a los dos: SERPINA1 esta alto en ambos por la "
@@ -413,7 +508,7 @@ ax.set_yticks(range(len(names))); ax.set_yticklabels(names, fontsize=9)
 ax.set_xlabel("cambio en el soporte fenotipico al retirar el termino")
 ax.set_title("Robustez · leave-one-out sobre el gen lider")
 
-fl.done(fig, "Figura de robustez · contribucion de cada termino", "EXP-006", "DERIVED",
+fl.done(fig, "Figura de robustez · contribucion de cada termino", "EXP-006", "DERIVED", "DATA",
         "solo el rabdomiosarcoma sostiene con fuerza el emparejamiento. El resto contribuye "
         "poco o negativamente en el corpus HPO actual.",
         "que un LOO negativo signifique que MVA no explica ese rasgo. Con Best Match Average, "
@@ -437,7 +532,7 @@ fl.done(fig, "Figura de robustez · contribucion de cada termino", "EXP-006", "D
 | | |
 |---|---|
 | **Estado de EXP-006** | **SURVIVES** |
-| Predicción #4 | **Acertada** — pedía top-20; queda #1 en 14 de 15 análisis |
+| Predicción #4 | **Acertada**, pedía top-20; queda #1 en 14 de 15 análisis |
 | `A0` congelado | **#4**, y así se reporta |
 | `A0-FREQFIX` | **#1**, etiquetado como sensibilidad post-hoc no independiente de Exomiser |
 
@@ -449,18 +544,33 @@ patogénico**.
 
 ### Falsificador
 
-Que un gen con perfil de evidencia limpio —variantes raras, frecuencia asignable, modelo de
-herencia compatible— supere a `BUB1B` en el `A0` congelado. Ocurrió, se investigó, y los tres
+Que un gen con perfil de evidencia limpio (variantes raras, frecuencia asignable, modelo de
+herencia compatible) supere a `BUB1B` en el `A0` congelado. Ocurrió, se investigó, y los tres
 candidatos resultaron ser polimorfismos comunes.
 
 ### Siguiente experimento
 
-`02_BUB1B_ALLELE_CURATION` — qué dicen los dos alelos por separado, y por qué la fase decide."""),
+`02_BUB1B_ALLELE_CURATION`: qué dicen los dos alelos por separado, y por qué la fase decide."""),
 
-("code", '''r = subprocess.run([sys.executable, "src/sanitize_scan.py"], capture_output=True, text=True,
+("code", '''# Se imprime SOLO el veredicto, nunca el cuerpo del informe.
+#
+# Volcar r.stdout aqui era un canal de fuga creado por el propio control: el
+# escaner CITA el texto que encuentra, asi que al imprimirlo dentro de un
+# notebook versionado se copiaba el hallazgo en un fichero versionado. Lo
+# destapo el escaner al detectar sus propias citas dentro de este notebook.
+r = subprocess.run([sys.executable, "src/sanitize_scan.py"], capture_output=True, text=True,
                    env={**os.environ, "PYTHONIOENCODING": "utf-8"})
-print(r.stdout[-400:])'''),
+out = r.stdout
+n = 0
+for line in out.splitlines():
+    t = line.strip()
+    if t.endswith("COINCIDENCIAS:"):
+        n = int(t.split()[0])
+print(f"  escaner de saneado sobre lo versionado: "
+      f"{'LIMPIO' if 'LIMPIO' in out else str(n) + ' coincidencia(s)'}")
+print("  el detalle NO se imprime aqui a proposito: se lee con "
+      "`python src/sanitize_scan.py`")'''),
 ]
 
 if __name__ == "__main__":
-    run(OUT, CELLS, min_figs=6)
+    run(OUT, CELLS, min_sci=1)

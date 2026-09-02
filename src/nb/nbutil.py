@@ -10,7 +10,7 @@ POR QUE GENERADOS Y NO ESCRITOS A MANO
 DEFINICION DE HECHO (impuesta por verify())
     - ejecuta de arriba abajo sin errores;
     - contiene al menos N_FIGS salidas graficas EMBEBIDAS (display_data con
-      image/png o image/svg+xml) — generar un SVG en figures/ no cuenta;
+      image/png o image/svg+xml). Generar un SVG en figures/ no cuenta;
     - pasa el escaner de saneado despues de ejecutarse.
 """
 from __future__ import annotations
@@ -51,10 +51,19 @@ def execute(path: str, timeout: int = 1800):
     return nb, time.time() - t0
 
 
-def verify(path: str, min_figs: int):
-    """(errores, figuras embebidas). Una figura solo cuenta si esta DENTRO."""
+def verify(path: str, min_sci: int = 1):
+    """(errores, figuras, cientificas, ok).
+
+    Una figura solo cuenta si esta EMBEBIDA. Y solo cuenta como CIENTIFICA si
+    su caption la declara DATA, MODEL_OUTPUT, SIMULATION o CURATED_EVIDENCE:
+    una infografia con Rectangle y texto no satisface el requisito por muchas
+    que haya.
+
+    Ya NO se exige un minimo de figuras totales. Ese requisito produjo relleno:
+    el objetivo es 1+ figura cientifica densa, no llegar a tres.
+    """
     nb = nbf.read(path, as_version=4)
-    errs, figs = 0, 0
+    errs = figs = sci = 0
     for c in nb.cells:
         if c.cell_type != "code":
             continue
@@ -64,15 +73,21 @@ def verify(path: str, min_figs: int):
             data = o.get("data", {})
             if "image/png" in data or "image/svg+xml" in data:
                 figs += 1
-    ok = errs == 0 and figs >= min_figs
-    return errs, figs, ok
+            md = data.get("text/markdown", "")
+            if isinstance(md, list):
+                md = "".join(md)
+            if any(f"`{k}`" in md for k in
+                   ("DATA", "MODEL_OUTPUT", "SIMULATION", "CURATED_EVIDENCE")):
+                sci += 1
+    ok = errs == 0 and sci >= min_sci
+    return errs, figs, sci, ok
 
 
-def run(path: str, cells: list, min_figs: int):
+def run(path: str, cells: list, min_sci: int = 1):
     build(path, cells)
     _, secs = execute(path)
-    errs, figs, ok = verify(path, min_figs)
+    errs, figs, sci, ok = verify(path, min_sci)
     tag = "OK" if ok else "FALLA"
-    print(f"  {os.path.basename(path):<38} {secs:5.0f}s  figuras embebidas: {figs:>2}  "
-          f"errores: {errs}  [{tag}]")
+    print(f"  {os.path.basename(path):<34} {secs:5.0f}s  figuras: {figs:>2}  "
+          f"cientificas: {sci:>2}  errores: {errs}  [{tag}]")
     return ok

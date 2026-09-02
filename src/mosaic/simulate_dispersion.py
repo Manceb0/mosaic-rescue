@@ -52,7 +52,7 @@ def _binom(rng, n, p):
     return sum(1 for _ in range(n) if rng.random() < p)
 
 
-def simulate_chromosome(rng, f: float, mode: str):
+def simulate_chromosome(rng, f: float, mode: str, collect=None):
     """Devuelve (desviacion media de BAF, log-ratio de cobertura) de un cromosoma.
 
     mode: 'null' euploide · 'clonal' un homologo · 'variegated' homologo aleatorio
@@ -82,6 +82,8 @@ def simulate_chromosome(rng, f: float, mode: str):
         else:
             local = p_shift
         alt = _binom(rng, dp, min(max(0.5 + local, 0.01), 0.99))
+        if collect is not None:
+            collect.append(alt / dp)          # BAF crudo del sitio, sin resumir
         devs.append(abs(alt / dp - 0.5))
     baf_stat = statistics.fmean(devs)
     lrr = math.log2(cov)
@@ -102,6 +104,21 @@ def simulate_genome(rng, f: float, mode: str, n_affected: int = 3):
         bafs.append(b)
         lrrs.append(l + rng.gauss(0, 0.02))     # ruido tecnico de cobertura
     return statistics.fmean(bafs[:n_affected]), statistics.pvariance(lrrs)
+
+
+def site_bafs(seed: int, f: float, mode: str, n_chrom: int = 3):
+    """BAF sitio a sitio de un genoma representativo, SIN resumir.
+
+    La figura de la parte A necesita la distribucion, no el estadistico: la
+    cancelacion se ve como una distribucion que vuelve a centrarse en 0,5
+    teniendo aneuploidia, y eso un promedio no lo ensena.
+    RNG propio para no tocar la secuencia de run() y su semilla preregistrada.
+    """
+    rng = random.Random(seed)
+    out = []
+    for c in range(n_chrom):
+        simulate_chromosome(rng, f, mode, collect=out)
+    return out
 
 
 def power_at(null_vals, alt_vals, alpha=ALPHA):
@@ -132,7 +149,14 @@ def run():
                 "mode": mode, "fraction": f,
                 "power_baf": round(power_at(null_baf, ab), 3),
                 "power_dispersion": round(power_at(null_disp, ad), 3),
+                # distribuciones POR REPETICION: sin ellas la figura solo puede
+                # dibujar el resumen, y el resumen es justo lo que oculta la
+                # cancelacion.
+                "baf_reps": [round(v, 6) for v in ab],
+                "disp_reps": [round(v, 8) for v in ad],
             })
+    out["null"] = {"baf_reps": [round(v, 6) for v in null_baf],
+                   "disp_reps": [round(v, 8) for v in null_disp]}
     return out
 
 

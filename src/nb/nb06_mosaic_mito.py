@@ -23,12 +23,14 @@ CELLS = [
 
 ("code", SETUP),
 
+("code", 'fl.labels("Que muestra la simulacion", "Lo que no transfiere al caso")'),
+
 ("md", """# Parte A · La cancelación de BAF
 
 ## Pregunta biológica
 
 MVA es **variegada**: cada linaje gana o pierde cromosomas de forma independiente. Los métodos
-estándar de mosaicismo asumen **clonalidad** — una célula ancestral, un solo homólogo.
+estándar de mosaicismo asumen **clonalidad**, una célula ancestral, un solo homólogo.
 
 **¿Qué le pasa a la señal cuando ese supuesto se rompe?**
 
@@ -57,19 +59,52 @@ for r in sim["results"]:
     print(f"  {r['mode']:<14}{r['fraction']*100:>9.0f}%{r['power_baf']:>15.3f}"
           f"{r['power_dispersion']:>22.3f}")'''),
 
-("md", """### Figura principal · el modo de fallo, reproducido"""),
+("md", """### Figura principal A · las distribuciones de BAF, no el resumen
 
-("code", '''fl.svg("figures/fig9_mosaic_sim.svg",
-       "Figura principal A · la cancelacion de BAF en simulacion",
-       "EXP-015a", "SIMULATED",
-       "en el escenario variegado la potencia del estadistico de BAF cae a 0,000 en la "
-       "fraccion del 20 %: cuanto MAYOR es el evento, PEOR detecta. Se vuelve "
-       "anti-informativo. La dispersion de cobertura conserva 1,000, igual que en clonal, "
-       "porque no depende de que homologo se gano.",
-       "que el indice de dispersion supere al metodo estandar. La linea base usada es una "
-       "desviacion de BAF POR SITIO, SIN FASE; MoChA obtiene su potencia del faseo de largo "
-       "alcance. La comparacion cara a cara NO se ha hecho.",
-       generator="src/mosaic/simulate_dispersion.py → src/make_fig9.py")'''),
+Un promedio no puede enseñar una cancelación: el estadístico resumido de un genoma variegado se
+parece al de un genoma euploide, y esa es exactamente la trampa. Lo que hay que mirar es **la
+distribución de BAF sitio a sitio**, con la misma escala en los tres escenarios."""),
+
+("code", '''from src.mosaic.simulate_dispersion import site_bafs, SEED, FRACTIONS, DEPTH, N_SITES
+from src.figures import fig06_baf as FBAF
+
+F = 0.20                                   # la fraccion donde la cancelacion es total
+SCEN = [("A · euploide", "null", 0.0, fl.SOFT),
+        ("B · clonal (mismo homologo en todas las celulas)", "clonal", F, fl.FLOW),
+        ("C · variegado (homologo al azar por linaje)", "variegated", F, fl.VOID)]
+BAFS = {k: site_bafs(SEED + i, f, m) for i, (k, m, f, _c) in enumerate(SCEN)}
+# Mismas trazas, con las etiquetas en ingles que usa la figura de publicacion.
+BAFS_PUB = {lab: site_bafs(SEED + i, 0.0 if mode == "null" else F, mode)
+            for i, (lab, mode, _col) in enumerate(FBAF.SCEN)}
+
+print(f"  semilla {SEED} · profundidad {DEPTH}x · {N_SITES} sitios por cromosoma · "
+      f"3 cromosomas afectados · fraccion celular {F*100:.0f} %")
+print()
+print(f"  {'escenario':<48}{'n sitios':>10}{'|BAF-0,5| medio':>18}{'BAF medio':>12}")
+for k, m, f, _c in SCEN:
+    v = np.asarray(BAFS[k])
+    print(f"  {k:<48}{len(v):>10}{np.abs(v - 0.5).mean():>18.4f}{v.mean():>12.4f}")'''),
+
+("code", '''from src.figures import fig06_baf as FBAF
+
+fig = FBAF.build(sim, BAFS_PUB, F)
+_pv = [r["power_baf"] for r in sim["results"] if r["mode"] == "variegated"]
+fl.pub(fig, "Figura principal A · distribuciones de BAF y potencia",
+       "EXP-015a", "SIMULATED", "SIMULATION",
+       f"la cancelacion, vista donde ocurre y con la MISMA escala en los tres paneles: el "
+       f"euploide se centra en 0,5; el clonal se desplaza hacia los dos modos esperados, "
+       f"marcados; y el variegado, con la misma fraccion celular de aneuploidia, VUELVE a "
+       f"centrarse en 0,5. El panel D lo cuantifica: la potencia del BAF en variegado cae de "
+       f"{_pv[0]:.3f} a {_pv[-1]:.3f} segun CRECE el evento.",
+       "nada sobre el paciente: no hay ni un dato suyo. Y no demuestra superioridad sobre el "
+       "metodo estandar: el comparador es una desviacion de BAF por sitio y sin fase, que no es "
+       "MoChA, y eso esta escrito dentro del panel para que sobreviva a un recorte. La "
+       "potencia simulada es ademas optimista: sin sesgo de GC, sin mapabilidad y sin sesgo "
+       "de alelo de referencia.",
+       source=f"src/mosaic/simulate_dispersion.py · semilla {sim['seed']}",
+       lib="matplotlib", slug="fig06_baf_cancellation")'''),
+
+("md", """### La misma conclusión, en la figura publicada del proyecto"""),
 
 ("md", """### Robustez · las cuatro predicciones, con el marcador
 
@@ -96,6 +131,7 @@ for i, (o, n) in enumerate(zip(ok, note)):
 ax.set_title("Las cuatro predicciones preregistradas")
 
 fl.done(fig, "Figura de robustez A · marcador de las predicciones", "EXP-015a", "SIMULATED",
+        "SYNTHESIS",
         "la #2 y la #3 confirman el mecanismo: la cancelacion es un modo de fallo real y la "
         "dispersion sobrevive a el. La #4 fallo, y eso REVELA que la linea base de BAF usada "
         "es debil, no que nuestro estadistico sea superior.",
@@ -109,8 +145,8 @@ fl.done(fig, "Figura de robustez A · marcador de las predicciones", "EXP-015a",
 
 | Hipótesis | Estado |
 |---|---|
-| **EXP-015a · el mecanismo de cancelación** | **SURVIVES** — modo de fallo reproducido y cuantificado |
-| **EXP-015b · el índice como DETECTOR** | **PARKED · no validado** — el comparador no es MoChA |
+| **EXP-015a · el mecanismo de cancelación** | **SURVIVES**, modo de fallo reproducido y cuantificado |
+| **EXP-015b · el índice como DETECTOR** | **PARKED · no validado**, el comparador no es MoChA |
 
 **Prohibido decir** «enormemente más potente» o «supera a MoChA». Lo que subió de estatus es el
 **mecanismo**, no el rendimiento relativo.
@@ -151,13 +187,21 @@ una medida."""),
                          gridspec_kw={"width_ratios": [1, 1.5]})
 
 est = mp["mtdna_cn_estimate"]
+# SIN barras de error. La incertidumbre esta declarada NO CUANTIFICADA: dibujar
+# un intervalo equivale a inventarse el numero que falta. Se dibuja el punto y,
+# encima, una banda ABIERTA sin extremo, que es lo que de verdad sabemos.
 axes[0].bar(["estimacion\\ningenua"], [est], color=fl.SOFT, alpha=0.55, width=0.45)
-axes[0].errorbar([0], [est], yerr=[[est * 0.6], [est * 0.9]], fmt="none",
-                 ecolor=fl.DEAD, elinewidth=2.2, capsize=9)
+axes[0].scatter([0], [est], s=70, color=fl.INK, zorder=5)
+axes[0].annotate("", xy=(0, est * 2.05), xytext=(0, est),
+                 arrowprops=dict(arrowstyle="-|>", color=fl.DEAD, lw=1.8, ls=(0, (3, 2))))
+axes[0].annotate("", xy=(0, est * 0.30), xytext=(0, est),
+                 arrowprops=dict(arrowstyle="-|>", color=fl.DEAD, lw=1.8, ls=(0, (3, 2))))
+axes[0].text(0.30, est, "sin extremo:" + chr(10) + "el sesgo no" + chr(10) + "esta acotado",
+             fontsize=7.4, color=fl.DEAD, va="center")
 axes[0].axhspan(50, 500, color=fl.ALIVE, alpha=0.10)
 axes[0].text(0.42, 300, "rango fisiologico\\nhabitual en sangre", fontsize=7.8, color=fl.ALIVE)
 axes[0].set_ylabel("copias-equivalentes por celula")
-axes[0].set_title("PROTOTIPO — no es una medida")
+axes[0].set_title("PROTOTIPO, no es una medida")
 axes[0].text(0, est * 1.55, "incertidumbre\\nNO cuantificada", ha="center", fontsize=8.4,
              color=fl.DEAD, fontweight="bold")
 
@@ -175,22 +219,25 @@ axes[1].set_xticks([]); axes[1].set_xlim(0, 1.05); axes[1].grid(False)
 axes[1].set_title("Fuentes de incertidumbre, ninguna cuantificada")
 
 fl.done(fig, "Figura B · el prototipo y su incertidumbre, juntos", "EXP-014a", "DERIVED",
+        "SYNTHESIS",
         f"la senal es extraible: {100*mp['fraction']:.3f} % de las lecturas de L001 son "
         f"compatibles con el genoma mitocondrial, y el cociente da ~{est:.0f} "
         "copias-equivalentes. **Eso valida que la rama es tecnicamente ejecutable.**",
         "NADA sobre la biologia del paciente. Que el valor caiga en el rango fisiologico es "
         "precisamente lo que lo hace peligroso, no lo que lo respalda. La formulacion correcta "
         "es *naive mtDNA-equivalent estimate bajo los supuestos del piloto*, NUNCA "
-        "'mtDNA-CN del paciente'.",
+        "'mtDNA-CN del paciente'. Y no hay barras de error a proposito: la incertidumbre esta "
+        "declarada NO CUANTIFICADA, asi que un intervalo dibujado seria un numero inventado. "
+        "Las flechas SIN extremo dicen lo unico cierto: el sesgo no esta acotado.",
         prov="submuestra de L001 R1 · k-meros de 31 pb contra la referencia mitocondrial")'''),
 
 ("md", """### Decisión de la parte B
 
 | | |
 |---|---|
-| **EXP-014a** | **UNRESOLVED · prototipo** — la señal es extraíble; nada está calibrado |
-| **EXP-014b** | **BLOCKED** — BAM/CRAM completo · controles · hemograma |
-| **EXP-014a-v2** (alineamiento para excluir NUMT) | **PARKED** — sin alineador instalable y descargar binarios está prohibido por política |
+| **EXP-014a** | **UNRESOLVED · prototipo**, la señal es extraíble; nada está calibrado |
+| **EXP-014b** | `BLOCKED`, a la espera de BAM/CRAM completo, controles y hemograma |
+| **EXP-014a-v2** (alineamiento para excluir NUMT) | **PARKED**, sin alineador instalable y descargar binarios está prohibido por política |
 
 ### El supuesto más atacable de toda la rama
 
@@ -200,8 +247,8 @@ Y con n=1 bulk **no hay gradiente interno**: es un punto, no una curva dosis-res
 ### Siguiente experimento
 
 Alineamiento al genoma completo con exclusión de NUMT, **controles** procesados con pipeline
-idéntico, y el **hemograma contemporáneo** — que sigue sin respuesta y es un email."""),
+idéntico, y el **hemograma contemporáneo**, que sigue sin respuesta y es un email."""),
 ]
 
 if __name__ == "__main__":
-    run(OUT, CELLS, min_figs=3)
+    run(OUT, CELLS, min_sci=1)

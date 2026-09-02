@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/03_BUBR1_MECHANISM.ipynb"
 
 CELLS = [
-("md", """# 03 · Mecanismo del alelo missense — estructura y conservación
+("md", """# 03 · Mecanismo del alelo missense, estructura y conservación
 
 > **Saneado:** sin posición ni identidad de aminoácidos. El residuo se nombra por su papel.
 >
@@ -28,11 +28,13 @@ proteína?»."""),
 
 ("code", SETUP),
 
+("code", 'fl.labels("Lectura", "Lo que no se puede concluir")'),
+
 ("md", """## QC · ¿es fiable el modelo en esa región?
 
 Sin esto, medir enterramiento o contactos no significaría nada. **Uso permitido de pLDDT:**
 evaluar si el modelo es fiable ahí. **Uso prohibido:** comparar pLDDT silvestre frente a
-mutante como evidencia de desestabilización — el brief lo veta, porque ΔpLDDT correlaciona
+mutante como evidencia de desestabilización, el brief lo veta, porque ΔpLDDT correlaciona
 muy débilmente con ΔΔG."""),
 
 ("code", '''d = json.load(io.open("work/struct/fig4.json", encoding="utf-8"))
@@ -43,55 +45,109 @@ print(f"  media de toda la proteina     : {prof.mean():.1f}")
 print(f"  percentil del candidato       : {100*(prof < t).mean():.0f}")
 print(f"  RSA relativa                  : {d['rsa']} %   (< 20 % = enterrado)")'''),
 
-("code", '''fig, axes = plt.subplots(1, 2, figsize=(11.2, 3.5),
-                         gridspec_kw={"width_ratios": [2.4, 1]})
-axes[0].plot(prof, lw=0.7, color=fl.FLOW, alpha=0.85)
-axes[0].axhline(90, color=fl.ALIVE, ls="--", lw=1.1)
-axes[0].axhline(prof.mean(), color=fl.SOFT, ls=":", lw=1.1)
-axes[0].axhline(t, color=fl.DEAD, lw=1.4)
-axes[0].text(len(prof) * 0.02, 92, "confianza muy alta (>90)", fontsize=7.6, color=fl.ALIVE)
-axes[0].text(len(prof) * 0.02, prof.mean() - 6, f"media global {prof.mean():.0f}",
-             fontsize=7.6, color=fl.SOFT)
-axes[0].text(len(prof) * 0.55, t + 2, f"residuo candidato  {t}", fontsize=8.2, color=fl.DEAD)
-axes[0].set_xlabel("posicion en la proteina"); axes[0].set_ylabel("pLDDT")
-axes[0].set_title("Confianza local del modelo")
-axes[0].set_xticklabels([])
+("md", """## Resultado primario 1 · la molécula
 
-axes[1].hist(prof, bins=34, color=fl.FLOW, alpha=0.7)
-axes[1].axvline(t, color=fl.DEAD, lw=1.8)
-axes[1].set_xlabel("pLDDT"); axes[1].set_ylabel("residuos")
-axes[1].set_title("Distribucion")
+Hasta ahora la estructura del proyecto era **un SVG dibujado a mano**. Aquí las coordenadas se
+leen del modelo de AlphaFold `AF-O60566-F1`, y cada distancia de la figura está calculada entre
+átomos pesados reales.
 
-fl.done(fig, "Figura QC · el modelo es fiable donde importa", "EXP-010", "PREDICTED",
-        f"la media global baja ({prof.mean():.0f}) refleja las regiones desordenadas de "
-        f"BUBR1, pero el residuo candidato esta en {t}, por encima del percentil "
-        f"{100*(prof < t).mean():.0f}. Eso es lo que legitima medir geometria ahi.",
-        "nada sobre el efecto de la variante. Comparar pLDDT silvestre frente a mutante como "
-        "prueba de desestabilizacion esta PROHIBIDO en este proyecto: correlaciona muy debil "
-        "con la energia libre.",
-        prov="AlphaFold DB · las dos estructuras experimentales no cubren el residuo")'''),
+> **Todo en coordenadas RELATIVAS al residuo candidato.** El número absoluto no aparece: no
+> hace falta para el argumento estructural, y sacarlo sería identificable.
+>
+> **Es un modelo predicho, no una estructura experimental.** Por eso el pLDDT viaja en la misma
+> figura: sin él, un modelo de AlphaFold se lee como si fuera cristalografía."""),
 
-("md", """## Resultado primario 1 · el interrogatorio estructural
+("code", '''from src.structure import pocket_geometry as pg
+from src.paths import get
+
+TGT = int(get("candidate", "residue"))
+S = pg.summary(TGT)
+res, NB, HB = S["res"], S["neighbours"], S["hbonds"]
+
+def rel(n):                                   # SIEMPRE relativo: nunca el absoluto
+    d = n - TGT
+    return f"{d:+d}" if d else "0"
+
+print(f"  modelo AlphaFold · {len(res):,} residuos · residuo candidato: {S['aa']} "
+      f"con pLDDT {S['plddt']:.1f}")
+print(f"  vecinos a <= {pg.CONTACT:.0f} A por atomo pesado de cadena lateral: {len(NB)}")
+for n in NB:
+    tag = "contiguo en secuencia" if n["contiguo"] else "contacto TERCIARIO"
+    print(f"    {n['aa']}{rel(n['resnum']):<6}{n['dmin']:>5.2f} A  "
+          f"{n['atoms'][0]}-{n['atoms'][1]:<6}pLDDT {n['plddt']:>4.0f}   {tag}")
+sc = [h for h in HB if h["from"] not in pg.BACKBONE]
+print(f"  puentes de H CANDIDATOS desde la cadena lateral (<= {pg.HB_MAX} A, sin angulo): "
+      f"{len(sc)}")
+for h in sc:
+    print(f"    {h['from']:<5}-> {h['to_aa']}{rel(h['to_res']):<6}{h['to_atom']:<5}"
+          f"{h['dist']:>5.2f} A")'''),
+
+("md", """### Figura principal 1 · el bolsillo, con sus distancias reales"""),
+
+("code", '''from src.figures import fig03_pocket as FP
+
+LOGO = FP.prepare_logo(TGT)
+fig = FP.build(S, LOGO)
+fl.pub(fig, "Figura principal 1 · geometria del bolsillo y restriccion evolutiva",
+       "EXP-010 · EXP-011", "PREDICTED+EXTERNAL", "MODEL_OUTPUT",
+       f"geometria local, confianza del modelo y restriccion evolutiva en la misma figura. "
+       f"{len(NB)} residuos con algun atomo pesado a {pg.CONTACT:.0f} A o menos, de los "
+       f"cuales {sum(1 for x in NB if not x['contiguo'])} son contactos TERCIARIOS; "
+       f"{len(sc)} puentes de hidrogeno CANDIDATOS desde la cadena lateral, el mas corto a "
+       f"{min((h['dist'] for h in sc), default=float('nan')):.2f} A; pLDDT {S['plddt']:.1f} "
+       f"en el candidato; y una columna de alineamiento con "
+       f"{LOGO['info_at_candidate']:.2f} bits de {LOGO['hmax']:.2f} sobre "
+       f"{LOGO['n_orthologs']} ortologos, con la cobertura del alineamiento a la vista "
+       f"porque NO es constante.",
+       "que la sustitucion desestabilice la proteina. Describe el entorno del residuo "
+       "SILVESTRE; no hay calculo de energia libre, y sin hidrogenos en el modelo los "
+       "puentes de H son candidatos geometricos, no confirmados. Los ortologos comparten "
+       "ancestro: no son observaciones independientes, y el desglose por clado deja el "
+       "numero efectivo en ~5-6.",
+       source="work/struct/AF-O60566-F1.pdb + work/conservation/orthologs.json",
+       lib="matplotlib 3D + logomaker + src/structure/pocket_geometry.py",
+       slug="fig03_pocket_and_conservation")'''),
+
+("md", """### Vista interactiva de la misma región, fuera del notebook, a propósito
+
+`py3Dmol` sobre el **mismo fichero**. Pero **no se renderiza aquí**, y el motivo lo destapó el
+escáner de saneado, no una revisión a ojo: el widget serializa dentro del `.ipynb` el PDB
+completo y las llamadas `addStyle` / `zoomTo` con los **números de residuo absolutos**. Eso
+metería el residuo candidato en un fichero versionado.
+
+Así que la vista se genera igual, es reproducible igual, y se escribe en `work/`, ignorado por
+git. La figura científica es la estática de arriba, que además es la que se ve en GitHub."""),
+
+("code", '''try:
+    import py3Dmol
+    v = py3Dmol.view(width=900, height=520)
+    v.addModel(io.open("work/struct/AF-O60566-F1.pdb", encoding="utf-8").read(), "pdb")
+    v.setStyle({"cartoon": {"colorscheme": {"prop": "b", "gradient": "roygb",
+                                            "min": 50, "max": 100}}})
+    for nbr in NB:
+        v.addStyle({"resi": nbr["resnum"]}, {"stick": {"radius": 0.14, "color": "0x8C99A4"}})
+    v.addStyle({"resi": TGT}, {"stick": {"radius": 0.26, "color": "0xC07A2E"}})
+    v.zoomTo({"resi": [TGT] + [nbr["resnum"] for nbr in NB]})
+    OUTV = "work/struct/pocket_view.html"
+    io.open(OUTV, "w", encoding="utf-8").write(v.write_html())
+    print(f"  vista interactiva escrita en {OUTV} ({os.path.getsize(OUTV)/1024:.0f} kB)")
+    print("  cartoon coloreado por pLDDT (azul alto -> rojo bajo) · palos: bolsillo ·")
+    print("  naranja: residuo candidato · abrir en un navegador para girarla")
+    print()
+    print("  NO se muestra inline: el widget incrustaria el PDB y los numeros de residuo")
+    print("  absolutos en el .ipynb, que es un fichero versionado.")
+except Exception as e:
+    print("py3Dmol no disponible en este entorno:", type(e).__name__, e)'''),
+
+("md", """## Resultado primario 2 · el interrogatorio estructural
 
 Y su **corrección a la baja**: la primera versión concluía «desestabilizante». El análisis
 geométrico del mutante debilitó dos de los tres argumentos."""),
 
-("code", '''fl.svg("figures/fig4_structural.svg",
-       "Figura principal 1 · interrogatorio estructural",
-       "EXP-010", "PREDICTED",
-       "coordenadas atomicas reales proyectadas por PCA, los tres puentes de hidrogeno con "
-       "sus distancias medidas, y el perfil de pLDDT. El residuo esta enterrado (RSA 16,2 %) "
-       "en un entorno hidrofobico, y su cadena lateral grapa la conformacion local.",
-       "que la sustitucion desestabilice. Todo lo medido es sobre el modelo SILVESTRE; el "
-       "mutante NO se ha modelado. El argumento esterico y el de carga enterrada quedaron "
-       "DEBILITADOS: hay sitio y hay salida al solvente. Lo que sobrevive es la perdida "
-       "rotamero-independiente de un puente ACEPTOR, que ningun rotamero puede rescatar.",
-       generator="src/make_fig4.py")'''),
-
-("md", """## Resultado primario 2 · conservación ortóloga
+("md", """## Resultado primario 3 · conservación ortóloga
 
 Un porcentaje de identidad suelto es ininterpretable. Hacen falta tres controles: **línea base
-interna**, **cobertura comparable** y **desglose por clado** — porque 120 ortólogos no son 120
+interna**, **cobertura comparable** y **desglose por clado**, porque 120 ortólogos no son 120
 observaciones independientes."""),
 
 ("code", '''c = json.load(io.open("work/conservation/conservation_full.json", encoding="utf-8"))
@@ -107,9 +163,88 @@ for r in c["by_clade"]:
     acc = f"{r['acceptor_pct']:.0f} %" if r["acceptor_pct"] is not None else "  —"
     print(f"    {r['clade']:<26} {r['n_aligned']:>3}/{r['n_species']:<3} alinean · aceptor {acc}")'''),
 
+("md", """### Figura principal 3 · logo de secuencia sobre el alineamiento ortólogo real
+
+Un percentil es un número. Un **logo de secuencia** enseña la restricción residuo a residuo:
+qué se ve realmente en cada columna del alineamiento y con qué frecuencia. Se construye sobre
+los mismos ortólogos `one2one` de Ensembl, sin ningún alineamiento nuevo."""),
+
+("code", '''import logomaker
+from src.structure.ortholog_conservation import _one2one, per_position
+
+HOM = _one2one("work/conservation/orthologs.json")
+human, aligned, ident, observed = per_position(HOM)
+WIN = 12
+cols = [p for p in range(TGT - WIN, TGT + WIN + 1) if p in observed]
+
+AAS = sorted({a for p in cols for a in observed[p] if a.isalpha()})
+M = np.zeros((len(cols), len(AAS)))
+for i, p in enumerate(cols):
+    n = sum(v for k, v in observed[p].items() if k.isalpha())
+    for j, a in enumerate(AAS):
+        M[i, j] = observed[p].get(a, 0) / n if n else 0.0
+
+# Contenido de informacion en bits: escala estandar de un logo de secuencia.
+BG = 1.0 / 20
+Hmax = np.log2(20)
+info = np.array([Hmax + sum(q * np.log2(q) for q in row if q > 0) for row in M])
+IM = M * info[:, None]
+
+import pandas as pd
+df = pd.DataFrame(IM, index=[p - TGT for p in cols], columns=AAS)
+print(f"  ortologos one2one usados            : {len(HOM)}")
+print(f"  ventana                             : {min(df.index):+d} .. {max(df.index):+d} aa")
+print(f"  ortologos alineados en el candidato : {aligned[TGT]}")
+print(f"  informacion en el candidato         : {info[list(df.index).index(0)]:.2f} bits "
+      f"de un maximo de {Hmax:.2f}")'''),
+
+("code", '''fig, (axL, axK) = plt.subplots(2, 1, figsize=(12.4, 5.0),
+                              gridspec_kw={"height_ratios": [2.1, 1], "hspace": 0.42})
+
+logomaker.Logo(df, ax=axL, color_scheme="chemistry", vpad=0.02, width=0.92,
+               font_name="DejaVu Sans")
+axL.axvspan(-0.5, 0.5, color=fl.OPEN, alpha=0.13, lw=0, zorder=0)
+axL.set_ylabel("informacion (bits)")
+axL.set_xlabel("posicion relativa al residuo candidato (aa)")
+axL.set_xticks([p - TGT for p in cols][::2])
+axL.set_title(f"A. Logo de secuencia sobre {len(HOM)} ortologos one2one de Ensembl, "
+              f"altura = informacion, no frecuencia", fontsize=10.4, fontweight="bold",
+              loc="left")
+axL.grid(False)
+axL.text(0, -Hmax * 0.14, "candidato", ha="center", fontsize=7.6, color=fl.OPEN,
+         fontweight="bold")
+
+# --- B · cobertura y conservacion de identidad, columna a columna -----------
+xr = [p - TGT for p in cols]
+idp = [100 * ident[p] / aligned[p] if aligned[p] else 0 for p in cols]
+axK.bar(xr, idp, color=[fl.OPEN if p == TGT else fl.FLOW for p in cols], alpha=0.85, width=0.72)
+axK.plot(xr, [aligned[p] / max(aligned.values()) * 100 for p in cols], color=fl.SOFT,
+         lw=1.2, ls="--", label="cobertura relativa del alineamiento")
+axK.set_ylim(0, 105); axK.set_xticks(xr[::2])
+axK.set_ylabel("% identico"); axK.set_xlabel("posicion relativa (aa)")
+axK.set_title("B · identidad por columna, la cobertura NO es constante, y por eso el "
+              "percentil se calcula contra posiciones de cobertura comparable", fontsize=9.4)
+axK.legend(fontsize=7.4, frameon=False, loc="lower right")
+
+i0 = list(df.index).index(0)
+fl.done(fig, "Figura principal 3 · logo de conservacion sobre el alineamiento ortologo",
+        "EXP-011", "EXTERNAL+DERIVED", "DATA",
+        f"la restriccion evolutiva columna a columna alrededor del candidato, sobre "
+        f"{len(HOM)} ortologos one2one. La columna del candidato lleva "
+        f"{info[i0]:.2f} bits de {Hmax:.2f} posibles y esta identica en "
+        f"{100*ident[TGT]/aligned[TGT]:.0f} % de los {aligned[TGT]} ortologos alineados ahi. "
+        f"El panel B enseña ademas por que hay que normalizar: la cobertura del alineamiento "
+        f"cambia de columna a columna dentro de la MISMA ventana.",
+        "que la conservacion sea independiente. Los ortologos comparten ancestro: 238 "
+        "secuencias NO son 238 observaciones independientes, y el desglose por clado deja el "
+        "numero efectivo en ~5-6. Tampoco dice nada sobre el efecto de la sustitucion: una "
+        "posicion conservada puede tolerar el cambio concreto que tiene este caso.",
+        source="work/conservation/orthologs.json · " + str(len(HOM)) + " ortologos one2one",
+        lib="logomaker")'''),
+
 ("code", '''fl.svg("figures/fig7_conservation.svg",
-       "Figura principal 2 · conservacion ortologa con sus tres controles",
-       "EXP-011", "EXTERNAL+DERIVED",
+       "Figura principal 4 · conservacion ortologa con sus tres controles",
+       "EXP-011", "EXTERNAL+DERIVED", "DATA",
        f"la posicion esta en el percentil {cc['candidate_percentile']} de su PROPIA proteina "
        f"entre posiciones de cobertura comparable. La restriccion es quimica antes que de "
        f"identidad: {cand['acceptor_pct']} % de los ortologos alineados conservan una cadena "
@@ -132,43 +267,12 @@ anotación, y **la discrepancia con REVEL queda sin explicar y es más llamativa
 
 El missense no se mueve por más predictores. Solo por dos cosas."""),
 
-("code", '''PATHS = [
-    ("Otro predictor in silico",        0.0, "REVEL tuvo su turno preregistrado", fl.DEAD),
-    ("Conservacion ortologa",           0.0, "historia mecanistica, NO clasificacion", fl.DEAD),
-    ("Analisis estructural",            0.0, "sobre el modelo silvestre; mutante no modelado", fl.DEAD),
-    ("DDG explicito (FoldX)",           0.3, "bloqueado por licencia manual", fl.OPEN),
-    ("FASE resuelta (padres/long-read)", 1.0, "desbloquea PM3", fl.ALIVE),
-    ("Ensayo de abundancia/recambio",   1.0, "habilitaria PS3", fl.ALIVE),
-]
-fig, ax = plt.subplots(figsize=(9.2, 3.4))
-names = [p[0] for p in PATHS][::-1]
-vals = [p[1] for p in PATHS][::-1]
-notes = [p[2] for p in PATHS][::-1]
-cols = [p[3] for p in PATHS][::-1]
-ax.barh(range(len(names)), vals, color=cols, alpha=0.9, height=0.6)
-ax.set_yticks(range(len(names))); ax.set_yticklabels(names, fontsize=9)
-ax.set_xlim(0, 1.55); ax.set_xticks([])
-for i, n in enumerate(notes):
-    ax.text(max(vals[i], 0.02) + 0.03, i, n, va="center", fontsize=8.2, color=fl.SOFT)
-ax.set_title("Que puede mover este alelo fuera de VUS — y que no")
-ax.grid(False)
-
-fl.done(fig, "Figura de robustez · los unicos dos caminos que quedan", "EXP-007 · EXP-011b",
-        "DERIVED",
-        "acumular mas evidencia in silico no cambia la clasificacion: el techo con PM1+PM5 "
-        "son 5 puntos y VUS llega hasta 5. Solo la FASE (via PM3) o EVIDENCIA FUNCIONAL "
-        "(via PS3) mueven este alelo.",
-        "que esos dos caminos vayan a resolverlo a favor. Un ensayo de abundancia que salga "
-        "plano mataria la rama, y ese es exactamente el trato: se aceptaria igual que se "
-        "acepto REVEL indeterminado.",
-        prov="marco bayesiano de ClinGen aplicado en EXP-007")'''),
-
 ("md", """## Decisión
 
 | | |
 |---|---|
 | **Estructura** | Residuo enterrado en región de alta confianza; pérdida rotámero-independiente de un puente aceptor. **Estructuralmente preocupante** |
-| **Conservación** | **SURVIVES** — percentil 93, restricción química al 99,2 %, clase entrante en 0 de 120 |
+| **Conservación** | **SURVIVES**, percentil 93, restricción química al 99,2 %, clase entrante en 0 de 120 |
 | **Clasificación** | **Sin cambios: VUS** |
 | **Efecto en ACMG** | **Ninguno** |
 
@@ -178,7 +282,7 @@ destabilization has not been demonstrated.*
 ### Qué NO demuestra
 
 No demuestra desestabilización · no restaura `PP3` · no establece patogenicidad · el bolsillo
-es hidrofóbico conservado pero **la «jaula de cuatro aromáticos» no lo está** — uno de los
+es hidrofóbico conservado pero **la «jaula de cuatro aromáticos» no lo está**, uno de los
 cuatro no se conserva ni en identidad ni en clase.
 
 ### Falsificador
@@ -195,4 +299,4 @@ reduciría más la incertidumbre."""),
 ]
 
 if __name__ == "__main__":
-    run(OUT, CELLS, min_figs=4)
+    run(OUT, CELLS, min_sci=1)
