@@ -58,6 +58,11 @@ FIGURES = [
      "CURATED_EVIDENCE", "EXTERNAL+DERIVED",
      "Bridge 7 is the translational gap and bridge 8 the safety gap: 61 of 80 evidence "
      "cells are empty and no overall score is computed."),
+    ("fig08_portfolio", "fig08_track2_portfolio", "07_TRACK2_SAFE_RESCUE",
+     "CURATED_EVIDENCE", "EXTERNAL+DERIVED",
+     "Three interventions in three different roles, not a ranking: azithromycin is the only "
+     "allele-directed arm, arimoclomol is informative by failing, and sirolimus exists to "
+     "probe the safety boundary. None is proposed for administration."),
 ]
 
 EXTRA = [("fig04_tracks", "fig04S_alphagenome_accessibility_tf",

@@ -67,7 +67,7 @@
 
 | id | Formulación canónica | Evidencia | Clase | Confianza | Sustituye a | Formulación PROHIBIDA |
 |---|---|---|---|---|---|---|
-| **C23** | **NO hay fármaco nominado.** La compuerta exige cinco condiciones y ninguna candidata las reúne | EXP-016 | — | — | «Arimoclomol. La nominación…» | nominar antes de cerrar los puentes 7 y 8 |
+| **C23** | Se nomina una **cartera experimental**: dos hipótesis farmacológicas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), para **discriminación preclínica**. **No** se nomina un ganador terapéutico ni se recomienda administrar ningún compuesto. La compuerta terapéutica exige cinco condiciones y ninguna candidata las reúne | EXP-016 | `CURATED_EVIDENCE` | media | «NO hay fármaco nominado», que confundía *no nominar un ganador* con *no responder al entregable*; y «Arimoclomol. La nominación…» | presentar cualquiera de los tres como candidato terapéutico, o nominar un ganador antes de cerrar los puentes 7 y 8 |
 | **C24** | La modulación de proteostasis y chaperonas es la **clase superviviente principal entre las seis evaluadas** | EXP-016 | `EXTERNAL` | media | «la única que sobrevive» | implicar barrido exhaustivo del espacio terapéutico |
 | **C25** | **T2-A (aguas arriba) y T2-B (aguas abajo) son rutas distintas** con consecuencias oncológicas potencialmente opuestas. No se agrupan bajo «proteostasis» | EXP-016 | `DERIVED` | alta | agrupación única | usar evidencia de una para respaldar la otra |
 | **C26** | **Puente 3 `UNRESOLVED`:** que inhibir HSP90 hunda al mutante demuestra dependencia basal, **no** que aumentar chaperonas lo suba | EXP-016 | `EXTERNAL` | alta | — | inferir la dirección inversa |

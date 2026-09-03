@@ -10,7 +10,11 @@ SANEADO: solo mecanismo y evidencia publicada. Ningun dato del paciente.
 """
 import io
 
-W, H = 1440, 1290
+# ALTURA COMPACTADA. Con el paso de carril a 300 px para cajas de 96 px, y el
+# corredor en y=990, la figura arrastraba ~308 px de blanco puro (24 % del
+# alto) repartidos en dos huecos: entre el carril A y el B, y entre el carril
+# B y el corredor. Nada ocupaba ese espacio. Paso 215 y corredor en 810.
+W, H = 1440, 1100
 
 # (n, texto, ruta, fuerza) — fuerza: 'ok' evidencia, 'weak' inferencia, 'gap' hueco
 BRIDGES = [
@@ -35,7 +39,7 @@ for lane, route, title, sub in ((0, "A", "T2-A · rescate AGUAS ARRIBA",
                                  "menos celulas aneuploides NUEVAS"),
                                 (1, "B", "T2-B · tolerancia AGUAS ABAJO",
                                  "las que ya existen viven mejor")):
-    y = AY + lane * 300
+    y = AY + lane * 215
     items = [b for b in BRIDGES if b[2] == route]
     a += (f'<text x="70" y="{y - 44}" class="big">{title}</text>'
           f'<text x="70" y="{y - 24}" class="mono">{sub}</text>')
@@ -54,7 +58,7 @@ for lane, route, title, sub in ((0, "A", "T2-A · rescate AGUAS ARRIBA",
                   f'stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#ar)"/>')
 
 # ---------------- B · el corredor ----------------
-CY, CX, CW, CH = 990, 380, 620, 160
+CY, CX, CW, CH = 810, 380, 620, 160
 b = (f'<rect x="{CX}" y="{CY - CH}" width="{CW / 2}" height="{CH}" '
      f'fill="var(--alive)" opacity="0.13"/>'
      f'<rect x="{CX + CW / 2}" y="{CY}" width="{CW / 2}" height="{CH}" '
@@ -95,7 +99,7 @@ svg = (
     '<text x="70" y="52" class="ttl">Track 2 — dos rutas con consecuencias oncologicas opuestas</text>\n'
     '<text x="70" y="78" class="sub">EXTERNAL: evidencia publicada, tabla verificada del brief. '
     'DERIVED: la asignacion de cada evidencia a su puente.</text>\n'
-    '<text x="70" y="93" class="sub">NO hay nominacion de farmaco. La figura ensena DONDE esta '
+    '<text x="70" y="93" class="sub">Se nominan BRAZOS farmacologicos para discriminacion preclinica, no un ganador terapeutico. La figura ensena DONDE esta '
     'rota la cadena.</text>\n'
     f'<line x1="70" y1="112" x2="{W - 70}" y2="112" stroke="var(--rule)"/>\n'
     f'<text x="70" y="146" class="big">A - los ocho puentes, y cuales estan vacios</text>\n'

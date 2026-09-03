@@ -373,12 +373,22 @@ Escribir siempre: *"se intentó faseo respaldado por lecturas / estadístico; la
 
 ## §10. Hipótesis farmacológica y su colisión con la oncología
 
-### §10.1 La clase mecanística candidata: **sin nominación de fármaco**
+### §10.1 La clase mecanística candidata, y qué se nomina exactamente
 
-> **Estado a 2026-08-31: NO hay fármaco nominado.** La compuerta exige cinco condiciones
-> (aprobado · proximidad mecanística a un puente nombrado · evidencia **de ese** puente ·
-> predicción de rescate falsable · contra-test explícito de CIN/tumor) y **ninguna candidata las
-> reúne**. Ver `docs/TRACK2_MECHANISM_MAP.md`.
+> **Estado a 2026-09-02.** Se nomina una **cartera experimental**: dos hipótesis farmacológicas
+> (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), para **discriminación
+> preclínica**. **No** se nomina un ganador terapéutico ni se recomienda administrar ningún
+> compuesto.
+>
+> La compuerta **terapéutica** exige cinco condiciones (aprobado · proximidad mecanística a un
+> puente nombrado · evidencia **de ese** puente · predicción de rescate falsable · contra-test
+> explícito de CIN/tumor) y **ninguna candidata las reúne**, así que ninguna asciende de brazo
+> experimental a candidato terapéutico. Ver `docs/TRACK2_MECHANISM_MAP.md` y
+> `research/track2_candidates.tsv`.
+>
+> El estado anterior, a 2026-08-31, decía «NO hay fármaco nominado». Se corrigió porque
+> confundía *no nominar un ganador* con *no responder al entregable*: la cartera sí es una
+> nominación, de brazos experimentales.
 
 La clase candidata es **modulación de proteostasis y chaperonas**, y lo es por mecanismo, no por enriquecimiento de vías: en el trabajo de aneuploidía-p62 (`Nat Commun` 16:5328, 2025), **la sobreexpresión de proteínas de choque térmico mitigó la agregación proteica y redujo la colocalización de p62 con TOMM20**, es decir, subir HSPs revierte precisamente la lesión que MitoRead propone medir.
 

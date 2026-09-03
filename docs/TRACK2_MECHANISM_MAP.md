@@ -1,6 +1,6 @@
 # EXP-016 · Track 2 — dos rutas, ocho puentes, y el corredor de rescate seguro
 
-> **NO HAY NOMINACIÓN DE FÁRMACO, Y ES DELIBERADO.**
+> Se nomina una **cartera experimental**: dos hipótesis farmacológicas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), para **discriminación preclínica**. **No se nomina un ganador terapéutico ni se recomienda administrar ningún compuesto.**
 >
 > **`EXTERNAL`** — toda la evidencia citada procede de la tabla verificada del brief §11.
 > Ningún identificador bibliográfico se escribe aquí sin estar ya verificado en el proyecto.

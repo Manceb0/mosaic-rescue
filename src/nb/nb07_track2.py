@@ -9,9 +9,19 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/07_TRACK2_SAFE_RESCUE.ipynb"
 
 CELLS = [
-("md", """# 07. Track 2: el corredor de rescate seguro
+("md", """# 07 · Diseño de rescate con barrera de seguridad
 
-> **NO HAY NOMINACIÓN DE FÁRMACO EN ESTE NOTEBOOK, Y ES DELIBERADO.**
+> **Lugar en el argumento:** Track 2. Convierte una idea terapéutica en una cadena auditable:
+> qué debe ser cierto, qué evidencia existe y qué medición puede matar la hipótesis.
+>
+> **Salida principal:** matriz de ocho puentes × diez dimensiones y diseño del siguiente
+> experimento. No es eficacia clínica, recomendación ni prueba de seguridad.
+
+> Se nomina una **cartera experimental**: dos hipótesis farmacológicas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), para **discriminación preclínica**. **No se nomina un ganador terapéutico ni se recomienda administrar ningún compuesto.**
+>
+> Una versión anterior de esta cabecera decía «NO HAY NOMINACIÓN DE FÁRMACO», y luego el
+> propio notebook nominaba tres brazos. Las dos frases podían pasar por prudentes por
+> separado; juntas eran una contradicción.
 >
 > Toda la evidencia citada tiene identificador **verificado en el proyecto**. Donde falta
 > evidencia se escribe *hueco*, no una cita plausible.
@@ -184,21 +194,82 @@ supervivencia clonogénica de células genómicamente inestables."""),
 | Genético ≈ farmacológico | **PMID 34481829**: el genético rescató, el farmacológico no, y no indujo HSP70 |
 | El rescate genético es universal | Dependió del **cariotipo**; una línea aneuploide no respondió |
 | Ayudar a la célula aneuploide es bueno | **Es la definición oncológica de un paso temprano de tumorigénesis** |
+"""),
 
-## Decisión
+("md", """## Resultado primario 4 · la cartera experimental, no un ganador
+
+Hasta aquí el notebook ha dicho qué evidencia **falta**. Esta sección dice qué se **haría con
+eso**, que es lo que pide el entregable oficial de Track 2: proponer fármaco o fármacos
+aprobados sustentados por el mecanismo.
+
+La respuesta honesta no es un nombre. Es una **cartera de tres brazos con tres papeles
+distintos**, más tres controles, formalizada en `research/track2_candidates.tsv` y validada
+por `src/verify.py`. No lleva puntuación global, ranking ni ganador, por la misma razón que
+no lo lleva la matriz de puentes: combinar evidencia heterogénea en un número exige un método
+preregistrado que no existe."""),
+
+("code", '''from src.figures import fig08_portfolio as FP
+
+_rows = FP.read()
+fig, _pt = FP.build(_rows)
+_cells = len(_rows) * len(FP.CLAIMS)
+fl.pub(fig, "Figura principal 3 · cartera experimental de Track 2",
+       "EXP-016 · EXP-016b", "EXTERNAL", "CURATED_EVIDENCE",
+       f"que los tres brazos no compiten por un primer puesto: ocupan papeles distintos y "
+       f"cada uno informa AL FALLAR. De las {_cells} celdas de afirmacion, {_pt['cited']} "
+       f"llevan identificador publicado y el resto son ausencias o huecos DECLARADOS. "
+       f"Azitromicina es el unico brazo dirigido al alelo truncante de ESTE paciente y no "
+       f"tiene ninguna evidencia directa. Arimoclomol es el unico con contraevidencia "
+       f"verificada, y por eso vale como centinela. Sirolimus es el unico con evidencia "
+       f"farmacologica directa, y esa evidencia es PARCIALMENTE NEGATIVA en el desenlace "
+       f"que importa.",
+       "que ninguno de los tres sirva, ni que alguno deba administrarse. NO es una "
+       "nominacion terapeutica: es el instrumento para decidir cual seria el PRIMER "
+       "experimento preclinico. Ningun candidato de esta tabla se propone para "
+       "administracion a ningun paciente, y este proyecto no emite recomendaciones clinicas.",
+       source="research/track2_candidates.tsv · 6 filas versionadas, cada afirmacion con "
+              "identificador o hueco declarado",
+       lib="matplotlib", slug="fig08_track2_portfolio")'''),
+
+("md", """### Los tres papeles, y por qué el fallo de cada uno enseña algo distinto
+
+| Brazo | Papel | Por qué está | Qué muere si falla |
+|---|---|---|---|
+| **azitromicina** | `ALLELE` · dirigido al alelo | Es el **único** brazo que ataca el alelo truncante de este paciente, por lectura a través del codón de parada prematuro. El contexto tira en dos direcciones: la parada es **UGA**, en general permisiva, pero lleva **A en +4**, menos favorable que C o U. Y lo decisivo: el **contexto extendido** impide predecir la respuesta sin medirla (DOI 10.1038/s41467-024-46703-z) | La hipótesis de readthrough **para este alelo**. No toca el resto de Track 2 |
+| **arimoclomol** | `SENTINEL` · centinela de falsación | Es el único con **contraevidencia verificada**: en fibroblastos NPC1 el rescate genético funcionó y él no, sin llegar a inducir HSP70 (PMID 34481829). Está para **resolver el puente 7**, no para ganar | La traducción farmacológica *arimoclomol → coinducción de HSP* **en ese sistema**. **NO** cae el brazo de chaperonas: la vía HSP90 sigue abierta en el mismo trabajo que lo descarta |
+| **sirolimus** | `ADVERSARIAL` · comparador de seguridad | Es el único con evidencia farmacológica **directa** (rapamicina a 40 µM en larvas, DOI 10.1038/s41467-026-70521-0), y esa evidencia ya enseña el problema: rescató el número de neuroblastos aneuploides **sin** restaurar células Pros+ ni el tamaño cerebral | Nada, y ese es justo el punto. **Como comparador adversarial su fallo es el resultado**: prueba el límite del Safe Rescue Corridor |
+
+Y los tres controles, que no son decorativos:
+
+| Control | Qué separa |
+|---|---|
+| **vehículo** | El cero real de cada lectura. Es el **único control negativo verdadero**; ningún compuesto activo lo es |
+| **ca-HSF1** | Control positivo **contextual**, en células aneuploides isogénicas humanas. Sin él, un negativo de arimoclomol es ininterpretable: no se sabría si falló el fármaco o la biología. **Su rescate dependió del cariotipo**, y eso se declara |
+| **HSP70 sobreexpresión** | Comparador mecanístico secundario. **No** es el control positivo contextual: su evidencia viene de fibroblastos NPC1, no de células aneuploides |"""),
+
+("md", """## Decisión
 
 | | |
 |---|---|
 | **Clase superviviente principal** | Modulación de proteostasis y chaperonas, entre las seis evaluadas |
 | **T2-A, aguas arriba** | `UNRESOLVED`, bloqueada por los puentes 1 y 3 |
 | **T2-B, aguas abajo** | `UNRESOLVED`, bloqueada por los puentes 7 y 8 |
-| **Nominación de fármaco** | **NINGUNA** |
+| **Propuesta de Track 2** | **Una cartera de 3 intervenciones y 3 controles para un primer experimento preclínico**, con el papel de cada brazo declarado y su regla de descarte escrita por adelantado |
+| **Lo que SÍ se nomina** | **Tres brazos farmacológicos para discriminación preclínica**: dos hipótesis candidatas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), cada uno con su regla de descarte escrita por adelantado |
+| **Lo que NO se nomina** | Un ganador terapéutico, y ninguna recomendación clínica. Ninguno de los tres reúne las cinco condiciones de la compuerta, y el puente 8 está vacío para los tres |
 | Proteasoma · poda clonal | **NEGATIVE** |
 | Estabilización por acetilación · senolíticos | **PARKED** |
 
-**La compuerta del fármaco exige las cinco:** estatus aprobado · proximidad mecanística a un
-puente nombrado · evidencia **de ese** puente · predicción de rescate falsable · contra-test
-explícito de CIN/tumor. **Hoy ninguna candidata las reúne.**
+**La distinción que sostiene todo lo anterior.** Nominamos **brazos farmacológicos para
+discriminación preclínica**, no un ganador terapéutico ni una recomendación clínica.
+Proponer un experimento no es nominar un tratamiento. La compuerta del fármaco exige las cinco: estatus aprobado · proximidad
+mecanística a un puente nombrado · evidencia **de ese** puente · predicción de rescate
+falsable · contra-test explícito de CIN/tumor. **Hoy ninguna candidata las reúne**, y la
+cartera existe precisamente para averiguar cuál podría.
+
+> **Ninguno de estos compuestos se propone para administración a ningún paciente.** Este
+> proyecto produce una hipótesis falsable para investigación preclínica y **no emite
+> recomendaciones clínicas** (`CLAUDE.md`, Regla Dura 3).
 
 ### Qué NO demuestra este notebook
 
@@ -208,15 +279,16 @@ elegidas desde la cadena mecanística del caso**.
 
 ### Falsificador
 
-El experimento de arriba, con sus cuatro desenlaces preescritos. Dos de los cuatro **matan la
-hipótesis**, y eso es lo que la hace falsable.
+El experimento de abajo, con sus desenlaces preescritos, y las tres reglas de descarte de la
+cartera. Cada brazo lleva escrito **por adelantado** qué resultado lo mata, y dos de los
+cuatro desenlaces del experimento matan la hipótesis. Eso es lo que la hace falsable.
 
 ### Next Best Experiment
 
 Par isogénico aneuploide/euploide ± coinductor candidato, con **control positivo genético**
 (HSF1 constitutivamente activo) y **lectura obligatoria de si el fármaco induce HSP**, porque
-el contraejemplo enseña que puede **no** inducir, y sin medirlo no se sabe si falló el fármaco
-o la hipótesis. Midiendo a la vez CIN y supervivencia clonogénica."""),
+el contraejemplo enseña que puede **no** inducir, y sin medirlo no se sabe si falló el
+fármaco o la hipótesis. Midiendo a la vez CIN y supervivencia clonogénica."""),
 ]
 
 if __name__ == "__main__":
