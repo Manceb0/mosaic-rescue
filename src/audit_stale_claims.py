@@ -73,8 +73,27 @@ STALE = [
      "con n=1 bulk son dos observaciones compatibles, no una regresion",
      "consistency check"),
     (r"\*\*Arimoclomol\.\*\*\s*La nominaci|nominacion.{0,20}arimoclomol|arimoclomol.{0,20}nominad",
-     "no hay nominacion de farmaco; la compuerta exige cinco condiciones y ninguna candidata las reune",
-     "clase mecanistica candidata; sin nominacion"),
+     "arimoclomol NO es un candidato terapeutico nominado: es un brazo centinela nominado para "
+     "discriminacion preclinica, y la compuerta exige cinco condiciones que ninguna candidata reune",
+     "brazo centinela para discriminacion preclinica; sin candidato terapeutico nominado"),
+    # Este guardia se anadio porque la contradiccion se le escapo a verify.py:
+    # el notebook 07 abria con "NO HAY NOMINACION DE FARMACO" y mas abajo
+    # nominaba tres brazos. Las dos frases pasaban por prudentes POR SEPARADO,
+    # y ningun control miraba si eran coherentes ENTRE SI.
+    (r"NO HAY NOMINACI[OÓ]N DE F[AÁ]RMACO|no hay f[aá]rmaco nominado|"
+     r"\*\*Sin nominaci[oó]n\*\*|sin nominacion de farmaco|"
+     # La variante INGLESA. El guardia solo miraba el espanol, y por eso dejo
+     # pasar "not a nomination" en la tabla de notebooks del README raiz.
+     r"not a nomination|no drug is nominated|no candidate is nominated|"
+     r"without nominating a drug|"
+     # SIN NEGRITA. El patron exigia "**Sin nominacion**" entre asteriscos, y el
+     # residuo canonico de EXPERIMENT_REGISTRY estaba en texto plano: el escaner
+     # devolvia 0 coincidencias sobre un documento declarado CANONICO.
+     r"Sin nominaci[oó]n|No hay f[aá]rmaco nominado|No hay nominaci[oó]n",
+     "se nomina una cartera experimental: dos hipotesis farmacologicas y un comparador "
+     "adversarial, para discriminacion preclinica. Lo que NO se nomina es un ganador "
+     "terapeutico, y no se recomienda administrar ningun compuesto",
+     "cartera nominada para discriminacion preclinica; sin ganador terapeutico"),
     (r"muy buena hipotesis farmacologica|buena hipotesis de farmaco|strong drug hypothesis",
      "el puente 7 esta UNRESOLVED con contraevidencia en otro sistema",
      "hipotesis mecanistica con el puente farmacologico sin resolver"),
