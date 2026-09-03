@@ -42,7 +42,7 @@ Una de ellas es literalmente la corrección tachada de «#1 en los 15».
 
 | Dónde | Afirmación obsoleta | Sustituida por |
 |---|---|---|
-| brief §10.1 | «**Arimoclomol.** La nominación…» | **No hay fármaco nominado**, con la compuerta de cinco condiciones |
+| brief §10.1 | «**Arimoclomol.** La nominación…» | **Se nomina una cartera experimental de tres brazos para discriminación preclínica, no un ganador terapéutico**, y la compuerta de cinco condiciones sigue sin cerrarse |
 | brief §10.2 | «muy buena hipótesis farmacológica» | «hipótesis mecanística con el puente farmacológico **sin resolver**», con la contraevidencia |
 | brief §10.3 · plan §306 | «lo que mantiene la hipótesis viva: dependiente de estrés» | La **tensión** en tabla: el mismo rasgo es razón y pasivo |
 | arquitectura · contrato visual | «mtDNA-CN del paciente» | «estimación mtDNA-equivalente (prototipo)» |
@@ -221,7 +221,7 @@ Ordenadas por ganancia de información esperada.
 | El bug del cruce de alelos: **el pipeline encontró un error que favorecía a nuestro candidato, lo corrigió, `BUB1B` bajó, y aun así sobrevivió** | Detalle de la reconciliación de conteos |
 | La **cancelación de BAF** reproducida en simulación: potencia 0,000 al 20 % | El índice de dispersión como detector — `UNRESOLVED` |
 | Los **ocho puentes** de Track 2 y el corredor de rescate seguro | El mapa completo de las seis clases |
-| **No hay fármaco nominado, y por qué** | Prototipo de MitoRead |
+| **Se nominan brazos para discriminación preclínica, no un ganador terapéutico — y por qué** | Prototipo de MitoRead |
 | Convergencia metodológica con Exomiser, **declarada como tal** | Auditoría de `FANCD2` |
 | Conservación ortóloga: 0 de 120 ortólogos con la clase entrante | Desglose por clado |
 

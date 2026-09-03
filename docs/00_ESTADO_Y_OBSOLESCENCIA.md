@@ -62,7 +62,7 @@ separado. Que coincidan es la razón para actuar sobre ellos.
 | `docs/status_board.md` | Los Issues #1-#10 se estructuraron sobre la arquitectura anterior |
 | `notebooks/README.md` | La secuencia de 16 notebooks incluye 03-09 no ejecutables |
 | `notebooks/00_data_inventory.ipynb` | Su función ya la cumplió el brief §1. Conservable como registro |
-| `README.md` | Describe la arquitectura retirada. **Pendiente de reescritura** |
+| ~~`README.md`~~ | **Ya reescrito** (commit `9d58e8e`). El README raíz es hoy un inventario de lo que existe, no el plan aspiracional de 16 notebooks. La versión superada se conserva en `docs/history/README_SUPERSEDED_plan_16_notebooks.md` |
 | `research/crazy_ideas.md` | CI-01, CI-02, CI-04, CI-06 y CI-09 dependen de datos inexistentes |
 
 ### Issues de GitHub afectados

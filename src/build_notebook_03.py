@@ -1,5 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# =============================================================================
+# SUPERSEDED - CODIGO MUERTO. NO EJECUTAR. NO CITAR SUS NUMEROS.
+#
+#   Genera `notebooks/03_TRACK1_GENOME_WIDE.ipynb`, un fichero que YA NO EXISTE:
+#   el notebook de Track 1 es hoy `notebooks/01_TRACK1_GENOME_WIDE.ipynb` y lo
+#   construye `src/nb/nb01_track1.py`. Ningun fichero del repositorio importa ni
+#   invoca este modulo; se comprobo con una busqueda en todo el arbol.
+#
+#   POR QUE SIGUE AQUI Y NO SE BORRA
+#     Conserva el recorrido de la primera pasada de Track 1 y sirve de registro
+#     de como cambio el metodo. Borrarlo es una decision del mantenedor, no del
+#     agente; queda propuesta y sin ejecutar.
+#
+#   POR QUE ESTA CABECERA ES NECESARIA
+#     El texto de abajo contiene numeros y formulaciones SUPERADOS:
+#       - dice `6 322` genes (cinco veces). El numero canonico es **6 321**: el
+#         `6 322` quedo obsoleto al arreglar el cruce de alelos. Ver
+#         `docs/DECISIONS.md` y `research/EXPERIMENT_REGISTRY.md`.
+#       - contiene la formulacion «gano sin fenotipo y sin ClinVar», que este
+#         proyecto tiene PROHIBIDA: en el `A0` congelado `BUB1B` sale **#4**, no
+#         primero. Los dos numeros (`A0` #4 y `A0-FREQFIX` #1) se reportan
+#         siempre juntos (`CLAUDE.md`).
+#
+#     El auditor de afirmaciones superadas lo clasifica `OTRO` y por eso no
+#     bloqueaba. Un fichero que no bloquea igualmente enganya a quien lo lee.
+# =============================================================================
 """Construye y EJECUTA notebooks/03_TRACK1_GENOME_WIDE.ipynb.
 
 POR QUE UN GENERADOR Y NO UN .ipynb ESCRITO A MANO
