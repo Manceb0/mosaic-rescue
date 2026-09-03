@@ -103,8 +103,11 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
     S.head(axD, "Detection power against cell fraction, at a fixed false-positive rate",
            size=S.BASE + 0.5)
     S.grid(axD)
-    axD.legend(ncol=2, loc="lower center", bbox_to_anchor=(0.5, 1.02),
-               fontsize=S.BASE - 1.0)
+    # La leyenda va ENCIMA del titulo del panel, no sobre el. Antes se anclaba a
+    # 1.02, que es justo donde S.head escribe el encabezado, y los dos textos se
+    # pisaban.
+    axD.legend(ncol=2, loc="lower center", bbox_to_anchor=(0.5, 1.115),
+               fontsize=S.BASE - 1.0, columnspacing=2.4)
     axD.text(0.985, 0.06, "Baseline is a site-wise unphased BAF statistic,\nnot MoChA: no long-range phasing",
              transform=axD.transAxes, ha="right", va="bottom",
              fontsize=S.BASE - 0.5, color=S.VERM, fontweight="bold",
@@ -112,7 +115,13 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
 
     pv = [r["power_baf"] for r in sim["results"] if r["mode"] == "variegated"]
     n_sites = len(bafs[SCEN[0][0]])
-    fig.tight_layout(rect=(0, 0.062, 1, 1))
+    # NOTA: aqui habia un fig.tight_layout(rect=...) que no hacia nada. El
+    # gridspec lleva hspace/wspace explicitos, lo que lo marca como
+    # 'localmente modificado'; tight_layout entonces descarta esos ejes,
+    # avisa de que 'el resultado puede ser incorrecto' y sale sin tocar ni
+    # las posiciones ni el rect. Comprobado midiendo gridspec y
+    # get_position() antes y despues: identicos. El hueco inferior para la
+    # tira de procedencia lo da el bottom por defecto, no el rect.
     S.note(fig,
            f"Simulation, no patient data. Seed {sim['seed']} (preregistered)  ·  "
            f"{sim['n_rep']} replicates per cell  ·  depth {sim['depth']}×  ·  "

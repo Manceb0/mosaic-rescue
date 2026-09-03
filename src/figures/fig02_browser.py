@@ -149,7 +149,13 @@ def build(tx: dict, clinvar: dict, marks: dict):
     S.panel(axH, "D")
     S.grid(axH)
 
-    fig.tight_layout(rect=(0, 0.040, 1, 1), h_pad=1.0)
+    # NOTA: aqui habia un fig.tight_layout(rect=...) que no hacia nada. El
+    # gridspec lleva hspace/wspace explicitos, lo que lo marca como
+    # 'localmente modificado'; tight_layout entonces descarta esos ejes,
+    # avisa de que 'el resultado puede ser incorrecto' y sale sin tocar ni
+    # las posiciones ni el rect. Comprobado midiendo gridspec y
+    # get_position() antes y despues: identicos. El hueco inferior para la
+    # tira de procedencia lo da el bottom por defecto, no el rect.
     S.note(fig, f"Exons and domains: Ensembl REST release {tx['release']}, request carries the "
                 f"gene symbol only.  ·  Variation: ClinVar, {S.thousands(n_rec)} missense "
                 f"records ({100 * totals['VUS'] / sum(totals.values()):.0f} % VUS, "

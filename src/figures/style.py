@@ -29,7 +29,7 @@ What this module does not do
     interpolates or infers a value.
 """
 from __future__ import annotations
-import os
+import io, os
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -81,6 +81,14 @@ RC = {
     "lines.linewidth": 1.1, "lines.markersize": 3.4,
     "figure.dpi": 110, "savefig.dpi": 300, "savefig.bbox": "standard",
     "svg.fonttype": "none",          # text stays text in the SVG, never outlines
+    # SVG DETERMINISTA. Sin esto, matplotlib deriva los id= de los elementos
+    # (clipPath, gradientes, glifos) de un salt aleatorio por proceso, y dos
+    # renderizados del MISMO codigo con los MISMOS datos producen ficheros
+    # distintos. El PNG no sufre esto, asi que el problema pasa desapercibido
+    # hasta que alguien mira `git diff` y ve nueve SVG cambiados sin motivo.
+    # Un diff que cambia sin que cambie nada destruye la unica senal util del
+    # control de versiones sobre las figuras.
+    "svg.hashsalt": "mosaic-rescue",
     "pdf.fonttype": 42,
     # Los trazos densos se marcan rasterized=True en su figura; esto solo evita
     # emitir puntos que caen en el mismo pixel.
@@ -165,6 +173,21 @@ FULL_DIR = "figures/pub"
 THUMB_DIR = "figures/pub/thumb"
 
 
+def _strip_trailing_ws(path: str):
+    """Quita espacios al final de linea del SVG que escribe matplotlib.
+
+    El backend emite lineas con espacio final dentro de los bloques <style> y
+    en algunos atributos partidos. `git diff --check` los marca, y un fichero
+    generado no deberia introducir avisos que un humano no puede arreglar
+    editando el codigo fuente.
+    """
+    NL = chr(10)
+    with io.open(path, encoding="utf-8") as fh:
+        lines = [ln.rstrip() for ln in fh.read().split(NL)]
+    with io.open(path, "w", encoding="utf-8", newline=NL) as fh:
+        fh.write(NL.join(lines))
+
+
 def export(fig, slug: str, fig_class: str, origin: str, thumb_width: float = 5.4):
     """Write FULL (SVG + PNG 300 dpi) and a SEPARATE thumbnail render.
 
@@ -180,10 +203,16 @@ def export(fig, slug: str, fig_class: str, origin: str, thumb_width: float = 5.4
     svg = os.path.join(FULL_DIR, slug + ".svg")
     png = os.path.join(FULL_DIR, slug + ".png")
     thumb = os.path.join(THUMB_DIR, slug + ".png")
-    fig.savefig(svg, format="svg", dpi=300)   # dpi manda sobre lo rasterizado
+    # metadata Date=None: matplotlib escribe la fecha de creacion dentro del
+    # SVG. Es el segundo motivo por el que un re-render "identico" produce un
+    # fichero distinto. Junto con svg.hashsalt, el SVG queda byte a byte
+    # reproducible y `git diff` vuelve a significar algo.
+    fig.savefig(svg, format="svg", dpi=300,   # dpi manda sobre lo rasterizado
+                metadata={"Date": None})
     fig.savefig(png, dpi=300)
     w = fig.get_size_inches()[0]
     fig.savefig(thumb, dpi=max(40.0, 96.0 * thumb_width / max(w, 0.1)))
+    _strip_trailing_ws(svg)
     return {"svg": svg, "png": png, "thumb": thumb,
             "figure_class": fig_class, "evidence_origin": origin,
             "size_in": tuple(round(float(v), 2) for v in fig.get_size_inches())}

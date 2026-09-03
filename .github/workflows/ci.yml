@@ -1,0 +1,64 @@
+name: verify
+
+# WHAT THIS CI CAN AND CANNOT CHECK
+#
+#   Can:    the locked environment installs from PyPI, the unit tests pass,
+#           every figure and notebook module imports, both Track 2 matrices
+#           parse and are internally consistent, and the two project controls
+#           run.
+#   Cannot: rebuild figures or notebooks. Those need the patient dataset, which
+#           is not in this repository and never will be.
+#
+#   One caveat worth stating plainly: the privacy scanner loads its list of
+#   forbidden values from work/sanitize/forbidden.txt, which is gitignored, so
+#   in CI it runs with an empty list. A green run here means the scanner
+#   executes and finds no structural pattern (coordinates, HGVS, genotypes,
+#   local user paths). It does NOT mean the case-specific values were checked.
+#   That check only has meaning on a machine that has the list.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install locked environment
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify (tests, imports, both matrices, both audits)
+        run: python src/verify.py
+
+      # QUE COMPRUEBA ESTE PASO, Y QUE NO.
+      #
+      #   NO comprueba que las figuras publicadas coincidan con el codigo que
+      #   las genera. Sobre un clon recien hecho `git diff -- figures/` esta
+      #   limpio POR CONSTRUCCION, haga lo que haga el codigo. Una version
+      #   anterior de este fichero afirmaba que detectaba SVG editados a mano.
+      #   Era falso: un control que no puede fallar no es un control.
+      #
+      #   SI comprueba que instalar el entorno y ejecutar verify.py no deja el
+      #   arbol de trabajo modificado, y que no hay errores de espacios.
+      #
+      #   La comprobacion de verdad, regenerar las nueve figuras y compararlas
+      #   con las publicadas, EXIGE el dataset del paciente y por eso solo se
+      #   puede correr en local:
+      #       python src/figures/render_all.py && git diff --stat -- figures/
+      #   Lo que si vive en el CI es tests/test_export_determinism.py, que
+      #   demuestra que el exportador es determinista sobre datos sinteticos.
+      - name: The run leaves the working tree clean
+        run: |
+          git diff --exit-code
+          git diff --check

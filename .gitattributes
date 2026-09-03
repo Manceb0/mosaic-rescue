@@ -1,0 +1,23 @@
+# Normalizacion de finales de linea.
+#
+# POR QUE ESTE FICHERO EXISTE
+#   El analisis se produce en Windows (core.autocrlf=true) y el CI corre en
+#   Linux. Sin este fichero, el mismo `render_all.py` escribe LF en un sitio y
+#   CRLF en el otro, y una comparacion byte a byte de las figuras falla por el
+#   final de linea en vez de por el contenido. Un control que falla por algo
+#   que no es lo que mide, no mide nada.
+* text=auto eol=lf
+
+# Figuras vectoriales: texto, LF, comparables entre plataformas.
+*.svg text eol=lf
+
+# Binarios: git no los toca.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ttf binary
+*.woff2 binary
+
+# Los notebooks son JSON: texto, pero un merge automatico produce un fichero
+# que no abre. Se marca para que git no lo intente.
+*.ipynb text eol=lf merge=binary

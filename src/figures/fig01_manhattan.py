@@ -175,7 +175,13 @@ def build(d: dict, n_labels: int = 4):
     S.head(axl, f"Density of the {S.thousands(d['n_universe'])}-gene HIGH/MODERATE universe",
            size=S.BASE)
 
-    fig.tight_layout(rect=(0, 0.058, 1, 1))
+    # NOTA: aqui habia un fig.tight_layout(rect=...) que no hacia nada. El
+    # gridspec lleva hspace/wspace explicitos, lo que lo marca como
+    # 'localmente modificado'; tight_layout entonces descarta esos ejes,
+    # avisa de que 'el resultado puede ser incorrecto' y sale sin tocar ni
+    # las posiciones ni el rect. Comprobado midiendo gridspec y
+    # get_position() antes y despues: identicos. El hueco inferior para la
+    # tira de procedencia lo da el bottom por defecto, no el rect.
     S.note(fig, "Score axis is a weighted sum of preregistered terms: NOT a p-value, no null "
                 "distribution, and no significance threshold is drawn.\n"
                 "A0 shown FROZEN as preregistered; the later A0-FREQFIX sensitivity ranks "

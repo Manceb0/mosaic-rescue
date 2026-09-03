@@ -1,0 +1,60 @@
+# MOSAIC RESCUE, locked environment.
+#
+# Versions are the ones this analysis actually ran on, read from the working
+# environment rather than written by hand. Python 3.12.5.
+#
+# Reproduce with:
+#     python -m venv .venv
+#     .venv/Scripts/activate        (Windows)   or   source .venv/bin/activate
+#     pip install -r requirements.txt
+#
+# WHY matplotlib IS 3.8.4 AND NOT 3.7.2
+#     The figures were originally rendered with matplotlib 3.7.2, which has no
+#     cp312 wheel on any platform: the copy on the production machine carries a
+#     cp312-win_amd64 tag, so it did not come from PyPI and could not be
+#     installed by anyone else. That made the whole environment
+#     unreproducible, which is a real defect and not a formatting detail.
+#
+#     Resolved by moving to matplotlib 3.8.4, which does publish cp312 wheels
+#     for Linux, macOS and Windows, and then re-rendering all nine publication
+#     figures and comparing them pixel by pixel against the 3.7.2 originals:
+#
+#         9 of 9 figures, 0 differing pixels, maximum channel deviation 0
+#
+#     The swap is therefore visually a no-op, verified rather than assumed.
+#     Reproduce that check with `python src/verify.py` plus
+#     `python src/figures/render_all.py` on a machine holding the dataset.
+#
+# WHY numpy IS PINNED BELOW 2.0
+#     The matplotlib wheels used here are compiled against the NumPy 1.x ABI.
+#     Installing NumPy 2.x breaks the whole plotting stack with
+#     "numpy.core.multiarray failed to import". This is not a preference; the
+#     figures do not render without it. Verified the hard way during this
+#     project when an unrelated install pulled NumPy up to 2.5.2.
+numpy==1.26.4
+matplotlib==3.8.4
+pandas==3.0.5
+
+# Figure modules
+logomaker==0.8.7
+dna_features_viewer==3.1.5
+py3Dmol==2.5.5
+
+# Notebook build and execution
+nbformat==5.10.4
+nbclient==0.10.0
+ipython==8.24.0
+ipykernel==6.29.4
+
+# Configuration and tests
+PyYAML==6.0.1
+pytest==7.4.3
+pillow==12.1.0          # comparacion pixel a pixel de figuras en tests
+
+# NOT INSTALLED HERE, ON PURPOSE
+#     alphagenome runs in its own virtual environment under work/venv-ag/,
+#     which is gitignored. It was the only step that sent any patient-derived
+#     value outside this machine (a variant shortlist, never the VCF), and it is
+#     isolated so that no ordinary run of this repository can reach it. See
+#     docs/03_ALPHAGENOME_ASSESSMENT.md. Its outputs are cached under work/ and
+#     the notebooks read the cache; the call is not repeated on a normal build.
