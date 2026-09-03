@@ -134,7 +134,10 @@ than C or U; and the extended context makes the response unpredictable without a
 **Exposure, now quantified rather than assumed.** Paediatric serum Cmax is 0.216 µg/mL at ages
 1–5 and 0.383 µg/mL at 5–15 on 10 mg/kg day 1 then 5 mg/kg days 2–5, and 0.5 ± 0.4 µg/mL on
 12 mg/kg/day for five days in children weighing ≤41.7 kg (FDA ZITHROMAX label). At
-C38H72N2O12 = 749.0 g/mol that is **0.29, 0.51 and 0.67 µM**. Terminal half-life is 68–72 h.
+C38H72N2O12 = 749.0 g/mol that is **0.29, 0.51 and 0.67 µM**. The 68–72 h terminal
+half-life quoted on the same label comes from the **adult** pharmacokinetic studies; the
+paediatric tables give Cmax and AUC, not a paediatric half-life, and the distinction is
+kept because a half-life is not transferable across age groups by assumption.
 
 **That number alone does not settle the arm, and it matters to say why.** Two quantities decide
 it and neither could be verified here:
@@ -147,15 +150,28 @@ it and neither could be verified here:
    serum figure, because the ribosome is intracellular. The label documents extensive tissue
    distribution but states no fold-difference, and no specific factor was verified here.
 
-Without both, the exposure-to-potency ratio cannot be computed. **Serum exposure below 1 µM is
-low for a readthrough agent**; whether intracellular accumulation closes that gap is precisely
-what a first experiment would measure.
+Without both, the exposure-to-potency ratio cannot be computed. **Paediatric serum Cmax is
+submicromolar. Whether that is sufficient for readthrough cannot currently be determined**,
+because neither the relevant intracellular exposure nor an experimentally anchored potency
+threshold for this sequence context is available.
 
-**A second safety collision, of the same kind as arimoclomol's.** The label warns in section
-5.4 of QT prolongation and torsades de pointes with macrolides including azithromycin, and
-names **uncorrected hypokalaemia or hypomagnesaemia** among the conditions that raise that
-risk. Nephrocalcinosis is a renal phenotype, and tubular disorders run with exactly those
-electrolyte disturbances. The paediatric profile is otherwise well characterised (diarrhoea
+An earlier draft of this report wrote that submicromolar exposure is "low for a readthrough
+agent". That was an overclaim: it asserts a potency threshold that the cited evidence does not
+establish. Measuring both quantities is precisely what a first experiment would do.
+
+**A second safety consideration, and it is conditional, not established.** The label warns in
+section 5.4 of QT prolongation and torsades de pointes with macrolides including azithromycin,
+and names **uncorrected hypokalaemia or hypomagnesaemia** among the factors that raise that
+risk.
+
+**Nephrocalcinosis alone does not establish either electrolyte abnormality, nor a renal
+tubulopathy.** It is a heterogeneous finding: it occurs with tubular disorders, but also with
+idiopathic hypercalciuria, hyperoxaluria, metabolic disturbances and iatrogenic causes. This
+becomes a patient-specific concern **only if** clinical evaluation demonstrates electrolyte
+wasting or an associated tubular disorder. An earlier draft presented the collision as if the
+phenotype established it; it does not.
+
+The paediatric profile is otherwise well characterised (diarrhoea
 1.8–5.8 %, vomiting 1.1–5.6 %, abdominal pain 1.2–3.4 %), with infantile hypertrophic pyloric
 stenosis reported in neonates treated up to 42 days of life. **No clinical recommendation
 follows from any of this.**
