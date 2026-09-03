@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+message: >-
+  If you use MOSAIC RESCUE, or reuse its methods, please cite it as below.
+title: "MOSAIC RESCUE: a falsification-first analysis of one paediatric genome with suspected mosaic variegated aneuploidy"
+abstract: >-
+  Research-first genomic analysis of a single paediatric patient with suspected
+  mosaic variegated aneuploidy, produced for the Rare Disease, Real Kid: MVA
+  Hackathon 2026. Track 1 establishes a causal hypothesis through a panel-free
+  genome-wide search and ACMG-style curation of both alleles, reporting the
+  frozen preregistered ranking alongside a later sensitivity analysis. Track 2
+  decomposes the therapeutic chain into eight evidence bridges audited across
+  ten dimensions, and stops at a falsifiable preclinical experiment rather than
+  a drug recommendation. Also reports a simulation showing that the standard
+  B-allele-frequency statistic loses power as a variegated aneuploidy event
+  grows, because contributions from different lineages cancel.
+type: software
+authors:
+  - given-names: Manuel
+    family-names: Mancebo
+    alias: Manceb0
+version: "1.0.0"
+date-released: "2026-09-02"
+# Code is DUAL-licensed, MIT OR CC-BY-4.0 (LICENSE); documentation, notebooks
+# and figures are CC BY 4.0 (LICENSE-DOCS).
+#
+# Why both: the hackathon rules place submissions, code included, under CC BY,
+# so MIT alone would not comply. Creative Commons in turn advises against CC
+# licences for software. Offering both satisfies each requirement without
+# weakening either, and the recipient chooses.
+#
+# CFF takes a single SPDX identifier per entry, so the two are listed.
+license:
+  - MIT
+  - CC-BY-4.0
+repository-code: "https://github.com/Manceb0/mosaic-rescue"
+keywords:
+  - mosaic variegated aneuploidy
+  - BUB1B
+  - rare disease
+  - whole genome sequencing
+  - variant prioritization
+  - ACMG curation
+  - drug repurposing
+  - chromosomal instability
+  - falsifiability
+references:
+  - type: data
+    title: "Rare Disease, Real Kid: MVA Hackathon 2026 patient dataset"
+    notes: >-
+      Not redistributed. Not included in this repository. Provided under the
+      terms of the challenge; the family consented to their story being shared.

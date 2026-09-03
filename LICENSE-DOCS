@@ -1,0 +1,48 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+SPDX-License-Identifier: CC-BY-4.0
+
+Copyright (c) 2026 the MOSAIC RESCUE contributors.
+
+SCOPE
+
+  This licence covers the documentation, notebooks and figures in this
+  repository: docs/, notebooks/, research/, figures/, reports/, and the
+  Markdown files at the repository root.
+
+  The software in src/ and tests/ is DUAL-licensed and is also available under
+  CC BY 4.0, at the recipient's choice, alongside the MIT licence. See LICENSE
+  for why both are offered.
+
+  The practical consequence: every part of this repository is available under
+  CC BY 4.0, which is what the Rare Disease, Real Kid: MVA Hackathon 2026
+  rules require of a submission.
+
+TERMS
+
+  You are free to share and adapt this material for any purpose, including
+  commercially, provided you give appropriate credit, link to the licence, and
+  indicate whether changes were made.
+
+  Full legal text:  https://creativecommons.org/licenses/by/4.0/legalcode
+  Summary:  https://creativecommons.org/licenses/by/4.0/
+
+WHAT THIS LICENCE DOES NOT COVER
+
+  Patient data. No FASTQ, BAM, CRAM, VCF, variant coordinate, genotype or
+  sample identifier is present in this repository, and none is licensed here.
+  The underlying genomic and clinical data belong to the patient and their
+  family, were provided under the terms of the Rare Disease, Real Kid: MVA
+  Hackathon 2026, and are explicitly not for redistribution.
+
+  Nothing here licenses anyone to re-identify the data subject or their
+  family, by any means, including combination with material that is already
+  public.
+
+  Third-party data. Records retrieved from ClinVar, Ensembl, the Human
+  Phenotype Ontology, gnomAD and AlphaFold keep the terms of their respective
+  sources. Model outputs from AlphaGenome are subject to that model's terms.
+
+WHAT THIS REPOSITORY IS NOT
+
+  This project produces computational and preclinical research hypotheses. It
+  does not diagnose, prescribe, recommend administration, or claim a cure.

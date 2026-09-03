@@ -1,0 +1,72 @@
+MOSAIC RESCUE — licensing
+
+READ THIS FIRST: THE CODE IS DUAL-LICENSED
+
+  The software in this repository (src/, tests/, and the build configuration)
+  is available under EITHER of:
+
+      MIT License                                    (full text below)
+      Creative Commons Attribution 4.0 International  (see LICENSE-DOCS)
+
+  You may choose either one. SPDX: MIT OR CC-BY-4.0
+
+  Documentation, notebooks and figures are licensed under CC BY 4.0 alone.
+  See LICENSE-DOCS.
+
+WHY DUAL, AND NOT JUST ONE
+
+  Two requirements pull in opposite directions, and both are legitimate.
+
+  The Rare Disease, Real Kid: MVA Hackathon 2026 rules place submissions,
+  including code and reports, under a CC BY licence, with the author's name
+  shared as part of the open-access attribution. A repository whose code was
+  MIT-only would not satisfy that, so an earlier version of this file was
+  non-compliant.
+
+  Creative Commons, for its part, explicitly recommends against applying its
+  licences to software, because they do not address source-code distribution
+  or patent rights:
+  https://creativecommons.org/faq/#can-i-apply-a-creative-commons-license-to-software
+
+  Offering both resolves it without weakening either. Everything in this
+  repository is available under CC BY 4.0, which is what the hackathon
+  requires; and anyone who wants to reuse the code in software gets MIT, which
+  is what a software licence is actually built for. The recipient picks.
+
+----------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 the MOSAIC RESCUE contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+----------------------------------------------------------------------------
+
+WHAT NEITHER LICENCE COVERS
+
+  Patient data. No FASTQ, BAM, CRAM, VCF, variant coordinate, genotype or
+  sample identifier is present in this repository, and none is licensed here.
+  The underlying genomic and clinical data belong to the patient and their
+  family, were provided under the terms of the hackathon, and are explicitly
+  not for redistribution.
+
+  Third-party data. Records retrieved from ClinVar, Ensembl, the Human
+  Phenotype Ontology, gnomAD and AlphaFold keep the terms of their respective
+  sources. Model outputs from AlphaGenome are subject to that model's terms.
