@@ -131,6 +131,35 @@ one has tested this gene. UGA is generally readthrough-permissive; the +4 A is l
 than C or U; and the extended context makes the response unpredictable without an assay
 (DOI 10.1038/s41467-024-46703-z).
 
+**Exposure, now quantified rather than assumed.** Paediatric serum Cmax is 0.216 µg/mL at ages
+1–5 and 0.383 µg/mL at 5–15 on 10 mg/kg day 1 then 5 mg/kg days 2–5, and 0.5 ± 0.4 µg/mL on
+12 mg/kg/day for five days in children weighing ≤41.7 kg (FDA ZITHROMAX label). At
+C38H72N2O12 = 749.0 g/mol that is **0.29, 0.51 and 0.67 µM**. Terminal half-life is 68–72 h.
+
+**That number alone does not settle the arm, and it matters to say why.** Two quantities decide
+it and neither could be verified here:
+
+1. **The readthrough EC50 for azithromycin is not published in a form we could verify.** The
+   literature gives the relative claim — active at a concentration 100-fold lower than earlier
+   compounds (PMID 26620677) — without the absolute value, and three reviews repeat the ratio
+   without the number.
+2. **The magnitude of intracellular accumulation is unverified**, and it matters more than the
+   serum figure, because the ribosome is intracellular. The label documents extensive tissue
+   distribution but states no fold-difference, and no specific factor was verified here.
+
+Without both, the exposure-to-potency ratio cannot be computed. **Serum exposure below 1 µM is
+low for a readthrough agent**; whether intracellular accumulation closes that gap is precisely
+what a first experiment would measure.
+
+**A second safety collision, of the same kind as arimoclomol's.** The label warns in section
+5.4 of QT prolongation and torsades de pointes with macrolides including azithromycin, and
+names **uncorrected hypokalaemia or hypomagnesaemia** among the conditions that raise that
+risk. Nephrocalcinosis is a renal phenotype, and tubular disorders run with exactly those
+electrolyte disturbances. The paediatric profile is otherwise well characterised (diarrhoea
+1.8–5.8 %, vomiting 1.1–5.6 %, abdominal pain 1.2–3.4 %), with infantile hypertrophic pyloric
+stenosis reported in neonates treated up to 42 days of life. **No clinical recommendation
+follows from any of this.**
+
 *Discarded if* PTC transcript abundance is too low to permit detectable rescue at attainable
 exposure, if readthrough does not exceed noise at attainable exposure, or if the inserted
 amino acid does not restore BUBR1 function. Note that NMD and readthrough **compete**: this is
@@ -343,6 +372,7 @@ document or in the repository. No attempt was made to locate the family.
 | Heat-shock response impaired to 50–60 % in human aneuploid cells | PMID 25205676 |
 | HSP90 inhibition collapses missense BUBR1 mutants | PMID 20516114 |
 | Arimoclomol paediatric exposure, safety profile, OCT2 inhibition, mechanism in NPC unknown | MIPLYFFA label |
+| Azithromycin paediatric Cmax, half-life, adverse reactions, neonatal IHPS, and the section 5.4 QT / torsades warning naming uncorrected hypokalaemia and hypomagnesaemia | FDA ZITHROMAX label |
 
 No identifier appears in this report that was not verified. Where a fact could not be verified,
 it is written as a declared gap rather than cited.

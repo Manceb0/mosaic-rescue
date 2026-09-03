@@ -84,8 +84,10 @@ def test_06_la_cabecera_no_puede_contradecir_a_las_filas():
 
 # ─────────── 7-9 · toda afirmacion lleva procedencia ───────────
 
-PROCEDENCIA = ("DOI ", "PMID ", "PMC", "etiqueta MIPLYFFA",
-               "notebooks/", "track2_evidence.tsv", "no verificado")
+PROCEDENCIA = ("DOI ", "PMID ", "PMC",
+               "etiqueta MIPLYFFA", "prospecto FDA",      # etiquetas regulatorias
+               "notebooks/", "track2_evidence.tsv",       # artefacto interno
+               "no verificado")                           # hueco DECLARADO
 VACIO = ("n/a", "no aplica", "")
 
 

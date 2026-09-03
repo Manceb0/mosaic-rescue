@@ -139,6 +139,7 @@ def candidate_matrix():
     # declarar un hueco, pero no dejarlo implicito. O citas, o dices que no lo
     # has verificado; lo que no puedes es afirmar sin ninguna de las dos cosas.
     ID = ("DOI ", "PMID ", "PMC", "etiqueta MIPLYFFA",     # literatura y etiqueta
+          "prospecto FDA",                                 # etiqueta regulatoria
           "notebooks/", "track2_evidence.tsv",             # artefacto interno
           "no verificado")                                 # hueco DECLARADO
     # Vocabulario cerrado de "aqui no hay nada que citar". Cualquier otra cosa

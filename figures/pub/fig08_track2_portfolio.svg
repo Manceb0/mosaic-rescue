@@ -155,7 +155,7 @@ L 549.231428 108.840384
 L 549.231428 161.289216
 L 476.092128 161.289216
 z
-" clip-path="url(#p32adf01ac7)" style="fill: #e69f00; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
+" clip-path="url(#p32adf01ac7)" style="fill: #009e73; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 158.09517 165.849984
@@ -370,7 +370,7 @@ z
     <text style="fill: #ffffff; font: 700 6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="433.162538" y="136.720425" transform="rotate(-0 433.162538 136.720425)">unverified</text>
    </g>
    <g id="text_16">
-    <text style="fill: #ffffff; font: 700 6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="512.661778" y="136.720425" transform="rotate(-0 512.661778 136.720425)">unverified</text>
+    <text style="fill: #ffffff; font: 700 6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="512.661778" y="136.720425" transform="rotate(-0 512.661778 136.720425)">cited</text>
    </g>
    <g id="text_17">
     <text style="fill: #ffffff; font: 700 6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="194.66482" y="193.730025" transform="rotate(-0 194.66482 193.730025)">none</text>
@@ -565,7 +565,7 @@ z
    <text style="fill: #5b6670; font: 8px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="5.7024" y="43.37475" transform="rotate(-0 5.7024 43.37475)">No overall score, no winner. Each intervention is informative by failing, and a different hypothesis dies in each case.</text>
   </g>
   <g id="text_53">
-   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.7024 514.083997)">Built from research/track2_candidates.tsv: 3 interventions, 3 controls, 30 claim cells, 11 carrying a published identifier.</text>
+   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.7024 514.083997)">Built from research/track2_candidates.tsv: 3 interventions, 3 controls, 30 claim cells, 12 carrying a published identifier.</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.7024 521.772875)">Colour encodes PROVENANCE, not efficacy or support: a green cell means the claim carries a published identifier, not that it favours the arm.</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.7024 529.275409)">Vehicle is the only true negative control; sirolimus is an adversarial comparator, not a negative control.  ·  NONE of these is proposed for administration.</text>
   </g>

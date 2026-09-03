@@ -82,7 +82,8 @@ def classify(v: str) -> str:
         return DECLARED
     if "no verificado" in low:
         return UNVERIFIED
-    if any(k in t for k in ("DOI ", "PMID ", "PMC", "etiqueta MIPLYFFA")):
+    if any(k in t for k in ("DOI ", "PMID ", "PMC", "etiqueta MIPLYFFA",
+                            "prospecto FDA")):
         return CITED
     if "notebooks/" in t or "track2_evidence.tsv" in t:
         return INTERNAL
