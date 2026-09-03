@@ -9,7 +9,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/02_BUB1B_ALLELE_CURATION.ipynb"
 
 CELLS = [
-("md", """# 02 · Los dos alelos de `BUB1B`, curación estilo ACMG
+("md", """# 02 · Evidencia de los dos alelos de `BUB1B`
+
+> **Lugar en el argumento:** Track 1, curación. El ranking propone un gen; este notebook
+> comprueba por separado qué evidencia sostiene cada alelo y qué impide cerrar el par.
+>
+> **Salida principal:** QC de las llamadas, curación estilo ACMG y geometría de NMD/fase. No
+> convierte una VUS en patogénica ni una fase desconocida en *trans*.
 
 > **Saneado:** sin posición, sin identidad de aminoácidos, sin coordenadas. Los alelos se
 > nombran por su papel (`truncante`, `missense`), que es lo que importa para la curación.

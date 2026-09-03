@@ -22,7 +22,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/01_TRACK1_GENOME_WIDE.ipynb"
 
 CELLS = [
-("md", """# 01. Track 1: ranking genome-wide sin panel
+("md", """# 01 · Búsqueda causal en todo el genoma codificante
+
+> **Lugar en el argumento:** Track 1, descubrimiento. Comprueba si la hipótesis `BUB1B`
+> sobrevive cuando compite contra todos los genes y no contra un panel elegido a mano.
+>
+> **Salida principal:** ranking genome-wide, estabilidad frente a perturbaciones y comparación
+> metodológica con Exomiser. No clasifica variantes ni demuestra causalidad.
 
 > **Reproduce el experimento desde las entradas.** No muestra resultados guardados: reejecuta
 > el pipeline importando `src/`, que es la fuente de verdad.
@@ -190,7 +196,12 @@ STAGES = [
 for n, v in STAGES:
     print(f"  {n:<36} {v:>10,}")'''),
 
-("md", """### Figura principal 1 · el funnel, con la aritmética a la vista"""),
+("md", """### Figura principal 1 · las etapas de procesamiento, con la aritmética a la vista
+
+No se llama *embudo*, y el motivo importa: **una de las etapas crece**. Al pasar de **posiciones**
+con consecuencia HIGH o MODERATE a **alelos únicos con genotipo**, el recuento sube, porque una
+posición multialélica aporta más de un alelo. Dibujarlo como un embudo insinuaba una reducción
+que ahí no ocurre. La etapa que expande va marcada en la figura."""),
 
 ("code", '''fig, ax = plt.subplots(figsize=(9.6, 5.0))
 names = [s[0] for s in STAGES]
@@ -203,16 +214,30 @@ for i, (n, v, lg) in enumerate(zip(names, vals, logs)):
             alpha=0.35 + 0.55 * (i / len(STAGES)))
     ax.text(wid + 0.012, len(STAGES) - i - 1, f"{v:,}", va="center",
             fontsize=9.6, fontweight="bold", color=fl.INK)
+# La etapa que EXPANDE se marca. Un grafico que se llama embudo y sube en un
+# paso enganya aunque los numeros sean correctos.
+for i in range(1, len(vals)):
+    if vals[i] > vals[i - 1]:
+        y = len(STAGES) - i - 1
+        ax.annotate("+" + format(vals[i] - vals[i - 1], ",") + " : ESTA ETAPA EXPANDE, no filtra"
+                    + chr(10) + "una posicion multialelica aporta mas de un alelo",
+                    xy=(logs[i] / ymax, y), xytext=(0.36, y - 0.62),
+                    fontsize=8.2, color=fl.DEAD,
+                    fontweight="bold", va="center",
+                    arrowprops=dict(arrowstyle="-|>", lw=0.9, color=fl.DEAD))
 ax.set_yticks(range(len(STAGES)))
 ax.set_yticklabels(names[::-1], fontsize=9.4)
 ax.set_xticks([]); ax.set_xlim(0, 1.22); ax.grid(False)
-ax.set_title("Funnel genome-wide · ancho proporcional a log10(n)")
-ax.text(0.0, -0.9, "sin panel: el unico filtro es consecuencia funcional",
+ax.set_title("Etapas de procesamiento genome-wide · ancho proporcional a log10(n)")
+ax.text(0.0, -0.9, "sin panel: el unico filtro es consecuencia funcional. NO es un embudo: "
+        "una etapa expande",
         fontsize=8.4, color=fl.SOFT)
 
-fl.done(fig, "Figura principal 1 · funnel genome-wide", "EXP-006", "MEASURED+DERIVED", "DATA",
+fl.done(fig, "Figura principal 1 · etapas de procesamiento genome-wide", "EXP-006",
+        "MEASURED+DERIVED", "DATA",
         "el descenso real de 5,0 M variantes a los genes que compiten con un modelo de "
-        "herencia. Ninguna etapa es un panel: el unico filtro es consecuencia funcional.",
+        "herencia. Ninguna etapa es un panel: el unico filtro es consecuencia funcional. "
+        "OJO: la etapa marcada NO reduce, EXPANDE, al pasar de posiciones a alelos unicos.",
         "que las etapas evaluen lo que no evaluan. No cubre variantes estructurales, "
         "reguladoras ni intronicas profundas fuera del filtro de consecuencia, y no resuelve "
         "la fase.",
@@ -403,7 +428,7 @@ print(f"  frecuencias reparadas: {len(freq)} sitios · {patched} filas")
 print(f"  A0 CONGELADO  : BUB1B puesto {rk_f}")
 print(f"  A0-FREQFIX    : BUB1B puesto {rk_x}")'''),
 
-("code", '''fig, axes = plt.subplots(1, 2, figsize=(11.0, 4.4), sharey=True)
+("code", '''fig, axes = plt.subplots(1, 2, figsize=(11.0, 4.4), sharey=False)
 for ax, data, title, sub in (
         (axes[0], a0_frozen, "A0 CONGELADO (preregistrado)", "resultado que manda"),
         (axes[1], a0_fix, "A0-FREQFIX (sensibilidad POST-HOC)", "repara los 33 alelos sin MAX_AF")):
@@ -417,8 +442,11 @@ for ax, data, title, sub in (
     ax.set_title(title, fontsize=11)
     ax.text(0.02, -1.35, sub, fontsize=8.2, color=fl.SOFT, transform=ax.get_yaxis_transform(),
             clip_on=False)
-axes[0].text(13.05, 4.0, f"BUB1B  #{rk_f}", fontsize=10, color=fl.ALIVE, fontweight="bold")
-axes[1].text(13.05, 7.0, f"BUB1B  #{rk_x}", fontsize=10, color=fl.ALIVE, fontweight="bold")
+    bi = names.index("BUB1B")
+    bs = scores[bi]
+    rank_label = rk_f if ax is axes[0] else rk_x
+    ax.text(bs + 0.08, bi, f"BUB1B  #{rank_label}", va="center", fontsize=9.4,
+            color=fl.ALIVE, fontweight="bold")
 
 fl.done(fig, "Figura principal 4 · A0 congelado frente a A0-FREQFIX", "EXP-006 · EXP-021b",
         "DERIVED", "DATA",
@@ -455,19 +483,27 @@ print(f"  genes en el top-25 de alguno de los dos: {len(shared)}")'''),
 xs = [our_rank[g] for g in shared]
 ys = [ext_rank[g] for g in shared]
 ax.scatter(xs, ys, s=44, color=fl.FLOW, alpha=0.55, edgecolor="none")
-for g in shared:
-    if g in ("BUB1B", "SERPINA1", "LZTR1", "ADAMTS1", "HLA-DRB1", "FANCD2"):
-        c = fl.ALIVE if g == "BUB1B" else (fl.DEAD if g in ("SERPINA1", "HLA-DRB1", "FANCD2") else fl.OPEN)
-        ax.scatter([our_rank[g]], [ext_rank[g]], s=110, color=c, zorder=3)
-        ax.annotate(g, (our_rank[g], ext_rank[g]), fontsize=8.6, color=c,
-                    xytext=(7, 5), textcoords="offset points", fontweight="bold")
+# Solo se rotulan los dos puntos que el texto interpreta. Etiquetar seis genes
+# en la esquina superior derecha hacia ilegible precisamente la convergencia.
+# Los dos puntos caen casi sobre la diagonal, BUB1B arriba a la derecha y
+# SERPINA1 abajo a su izquierda. Los desplazamientos anteriores apuntaban uno
+# HACIA el otro y las etiquetas se tocaban. Ahora salen PERPENDICULARES a la
+# recta que los une, cada una hacia un lado.
+for g, c, off, ha in (("BUB1B", fl.ALIVE, (-16, 16), "right"),
+                      ("SERPINA1", fl.DEAD, (16, -16), "left")):
+    if g not in shared:
+        continue
+    ax.scatter([our_rank[g]], [ext_rank[g]], s=110, color=c, zorder=3)
+    ax.annotate(g, (our_rank[g], ext_rank[g]), fontsize=8.6, color=c,
+                xytext=off, textcoords="offset points", ha=ha, fontweight="bold",
+                arrowprops=dict(arrowstyle="-", color=c, lw=0.8))
 lim = max(max(xs), max(ys)) + 4
 ax.plot([0, lim], [0, lim], color=fl.RULE, ls="--", lw=1.2, zorder=0)
 ax.set_xlim(0, lim); ax.set_ylim(0, lim)
 ax.invert_xaxis(); ax.invert_yaxis()
 ax.set_xlabel("nuestro puesto  (B0_FULL_PROBAND)")
 ax.set_ylabel("puesto de Exomiser")
-ax.set_title("Metodo independiente · MISMO VCF del paciente")
+ax.set_title("Método independiente · MISMO VCF del paciente")
 
 fl.done(fig, "Figura principal 5 · nuestro ranking frente a Exomiser", "EXP-006b",
         "EXTERNAL+DERIVED", "MODEL_OUTPUT",

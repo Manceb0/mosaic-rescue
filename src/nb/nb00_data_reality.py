@@ -14,7 +14,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/00_DATA_REALITY.ipynb"
 
 CELLS = [
-("md", """# 00 · Realidad de los datos
+("md", """# 00 · Qué datos tenemos y qué pueden sostener
+
+> **Lugar en el argumento:** punto de partida. Antes de interpretar variantes, este notebook
+> separa las preguntas contestables de las que requieren una modalidad que no existe.
+>
+> **Salida principal:** QC de secuenciación medido + inventario de modalidades disponibles y
+> ausentes. No intenta priorizar genes.
 
 > **Saneado:** ninguna ruta local, ningún identificador de muestra, ninguna coordenada.
 >

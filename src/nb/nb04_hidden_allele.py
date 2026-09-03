@@ -9,7 +9,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/04_HIDDEN_SECOND_ALLELE.ipynb"
 
 CELLS = [
-("md", """# 04 · El segundo alelo ausente
+("md", """# 04 · Búsqueda del segundo alelo oculto
+
+> **Lugar en el argumento:** Track 1, explicación alternativa. Intenta encontrar la parte de
+> un modelo bialélico que el filtro codificante podría haber dejado fuera.
+>
+> **Salida principal:** funnel del locus + predicciones regulatorias REF/ALT. Un negativo aquí
+> se limita a SNV/indel en la ventana evaluada; no excluye SV/CNV.
 
 > **Saneado:** sin coordenadas ni identidad de variantes. El locus se describe por tamaño y
 > por posición relativa.

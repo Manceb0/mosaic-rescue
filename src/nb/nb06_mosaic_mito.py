@@ -9,7 +9,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/06_MOSAIC_AND_MITOREAD.ipynb"
 
 CELLS = [
-("md", """# 06 · Mosaicismo y MitoRead
+("md", """# 06 · Mosaicismo: señal BAF y prototipo MitoRead
+
+> **Lugar en el argumento:** extensión metodológica. Explica un modo de fallo de la señal BAF
+> cuando la aneuploidía es variegada y separa esa simulación de un piloto técnico de MitoRead.
+>
+> **Salida principal:** simulación preregistrada + prueba de factibilidad técnica. Ninguna de
+> las dos es una medición funcional del paciente.
 
 > **Este notebook tiene dos partes y NO se mezclan.**
 >
@@ -205,18 +211,22 @@ axes[0].set_title("PROTOTIPO, no es una medida")
 axes[0].text(0, est * 1.55, "incertidumbre\\nNO cuantificada", ha="center", fontsize=8.4,
              color=fl.DEAD, fontweight="bold")
 
-SRC = [("NUMT no excluidos (sesgo AL ALZA)", 1.0),
-       ("un solo carril, no profundidad completa", 0.8),
-       ("sin alineamiento al genoma completo", 0.8),
-       ("sin controles con pipeline identico", 0.9),
-       ("plaquetas (mitocondrias sin nucleo)", 0.85),
-       ("formula leucocitaria", 0.7),
-       ("tipo de libreria sin confirmar", 0.5)]
-axes[1].barh(range(len(SRC)), [s[1] for s in SRC][::-1], color=fl.DEAD, alpha=0.8, height=0.6)
+SRC = ["NUMT no excluidos (sesgo AL ALZA)",
+       "un solo carril, no profundidad completa",
+       "sin alineamiento al genoma completo",
+       "sin controles con pipeline identico",
+       "plaquetas (mitocondrias sin nucleo)",
+       "formula leucocitaria",
+       "tipo de libreria sin confirmar"]
+# Ninguna longitud: estas fuentes no estan cuantificadas ni ordenadas. Las barras
+# antiguas tenian valores decorativos y sugerian una jerarquia inexistente.
+axes[1].scatter(np.zeros(len(SRC)), range(len(SRC)), marker="s", s=68,
+                color=fl.DEAD, alpha=0.85)
 axes[1].set_yticks(range(len(SRC)))
-axes[1].set_yticklabels([s[0] for s in SRC][::-1], fontsize=8.4)
-axes[1].set_xticks([]); axes[1].set_xlim(0, 1.05); axes[1].grid(False)
-axes[1].set_title("Fuentes de incertidumbre, ninguna cuantificada")
+axes[1].set_yticklabels(SRC, fontsize=8.4)
+axes[1].invert_yaxis()
+axes[1].set_xticks([]); axes[1].set_xlim(-0.08, 0.08); axes[1].grid(False)
+axes[1].set_title("Fuentes de incertidumbre (sin orden ni magnitud)")
 
 fl.done(fig, "Figura B · el prototipo y su incertidumbre, juntos", "EXP-014a", "DERIVED",
         "SYNTHESIS",

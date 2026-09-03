@@ -11,6 +11,12 @@ OUT = "notebooks/05_RESIDUAL_PHENOTYPE.ipynb"
 CELLS = [
 ("md", """# 05 · Fenotipo residual, ¿hay un segundo diagnóstico?
 
+> **Lugar en el argumento:** Track 1, comprobación clínica. Separa un rasgo realmente residual
+> de un hueco de anotación antes de proponer un segundo diagnóstico.
+>
+> **Salida principal:** matriz término × enfermedad y barrido del panel renal. No demuestra
+> que un rasgo sin respaldo publicado sea incompatible con MVA.
+
 ## Pregunta biológica
 
 **¿Qué rasgos del paciente NO explica MVA, y alguno exige un segundo diagnóstico?**
@@ -163,16 +169,20 @@ labels = [p[1] for p in PROBAND][::-1]
 ann = [1 if p[0] in terms else 0 for p in PROBAND][::-1]
 lit = [LITOK[p[0]] for p in PROBAND][::-1]
 y = np.arange(len(labels))
-ax.barh(y - 0.19, ann, 0.34, color=[fl.ALIVE if a else fl.DEAD for a in ann],
-        alpha=0.9, label="anotado en el modelo HPO")
-ax.barh(y + 0.19, lit, 0.34, color=[fl.ALIVE if l == 1 else (fl.OPEN if l else fl.DEAD)
-                                     for l in lit], alpha=0.9, label="respaldado por literatura MVA1")
+status_color = lambda v: fl.ALIVE if v == 1 else (fl.OPEN if v == 0.5 else fl.DEAD)
+ax.scatter(ann, y - 0.17, marker="o", s=72, color=[status_color(v) for v in ann],
+           edgecolor="white", linewidth=0.8, zorder=3)
+ax.scatter(lit, y + 0.17, marker="s", s=72, color=[status_color(v) for v in lit],
+           edgecolor="white", linewidth=0.8, zorder=3)
 ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=9.4)
 ax.set_xticks([0, 0.5, 1]); ax.set_xticklabels(["no", "sin dato", "si"])
 ax.set_xlim(0, 1.15)
-ax.legend(fontsize=8.2, frameon=False, loc="lower right")
+ax.scatter([], [], marker="o", s=60, color=fl.SOFT, label="modelo HPO")
+ax.scatter([], [], marker="s", s=60, color=fl.SOFT, label="literatura MVA1")
+ax.legend(fontsize=8.2, frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5))
 ax.set_title("Residual solo si falla las DOS comprobaciones")
-ax.annotate("unico residual\\nen los dos sentidos", xy=(0.04, 0), xytext=(0.42, 0.55),
+ax.axhspan(-0.42, 0.42, color=fl.DEAD, alpha=0.06, zorder=0)
+ax.annotate("unico residual\\nen los dos sentidos", xy=(0.02, 0), xytext=(0.38, 0.62),
             fontsize=8.6, color=fl.DEAD, fontweight="bold",
             arrowprops=dict(arrowstyle="->", color=fl.DEAD, lw=1.3))
 

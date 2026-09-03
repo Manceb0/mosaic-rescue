@@ -9,7 +9,13 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/03_BUBR1_MECHANISM.ipynb"
 
 CELLS = [
-("md", """# 03 · Mecanismo del alelo missense, estructura y conservación
+("md", """# 03 · ¿Puede el alelo missense alterar BUBR1?
+
+> **Lugar en el argumento:** Track 1, mecanismo. La VUS no se reclasifica aquí; se pregunta si
+> estructura y conservación justifican el experimento funcional que resolvería la duda.
+>
+> **Salida principal:** geometría local del modelo, confianza y conservación ortóloga. No es
+> una medición de abundancia, estabilidad ni función en células del paciente.
 
 > **Saneado:** sin posición ni identidad de aminoácidos. El residuo se nombra por su papel.
 >
@@ -205,14 +211,12 @@ logomaker.Logo(df, ax=axL, color_scheme="chemistry", vpad=0.02, width=0.92,
                font_name="DejaVu Sans")
 axL.axvspan(-0.5, 0.5, color=fl.OPEN, alpha=0.13, lw=0, zorder=0)
 axL.set_ylabel("informacion (bits)")
-axL.set_xlabel("posicion relativa al residuo candidato (aa)")
+axL.set_xlabel("")
 axL.set_xticks([p - TGT for p in cols][::2])
 axL.set_title(f"A. Logo de secuencia sobre {len(HOM)} ortologos one2one de Ensembl, "
               f"altura = informacion, no frecuencia", fontsize=10.4, fontweight="bold",
               loc="left")
 axL.grid(False)
-axL.text(0, -Hmax * 0.14, "candidato", ha="center", fontsize=7.6, color=fl.OPEN,
-         fontweight="bold")
 
 # --- B · cobertura y conservacion de identidad, columna a columna -----------
 xr = [p - TGT for p in cols]
