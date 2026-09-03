@@ -151,7 +151,7 @@ La rama 5 pasa de **EN CURSO** a **CERRADO**:
 |---|---|---|
 | `CTU2`, `PEX5`, `SLC22A1` | `A0` #1–#3 | **NEGATIVE** — polimorfismos comunes con rsID (EXP-021) |
 | `FANCD2` | Exomiser #6 | **NEGATIVE** — alelos al ~47 %, todos heterocigotos (EXP-020) |
-| `LZTR1` | `B0` #4 | **NEGATIVE** como causa del MVA — recesivo imposible con un alelo; el LoF heterocigoto da schwannomatosis de inicio adulto, no aneuploidía. **Hallazgo secundario registrado** |
+| `LZTR1` | `B0` #4 | **NEGATIVE** como causa del MVA — recesivo imposible con un alelo; el LoF heterocigoto da schwannomatosis de inicio adulto, no aneuploidía. **Candidato secundario/incidental de investigación**: exigiría confirmación clínica independiente y un procedimiento de devolución de resultados. **No** es un hallazgo clínico devolvible |
 | `IGBP1` | `B0` #6 | **NEGATIVE** — mecanismo distinto del reportado, asociación de una sola familia, y frecuencia fuertemente inconsistente con un modelo penetrante. Los tres juntos, no uno solo |
 
 **Ningún competidor sobrevive.** `BUB1B` es la hipótesis causal en pie, con sus dos números

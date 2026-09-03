@@ -52,7 +52,7 @@ jobs:
       #   SI comprueba que instalar el entorno y ejecutar verify.py no deja el
       #   arbol de trabajo modificado, y que no hay errores de espacios.
       #
-      #   La comprobacion de verdad, regenerar las nueve figuras y compararlas
+      #   La comprobacion de verdad, regenerar las diez figuras y compararlas
       #   con las publicadas, EXIGE el dataset del paciente y por eso solo se
       #   puede correr en local:
       #       python src/figures/render_all.py && git diff --stat -- figures/
