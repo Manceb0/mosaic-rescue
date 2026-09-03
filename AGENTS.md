@@ -49,8 +49,8 @@ Do not upgrade evidence levels because a result is exciting.
 ## Where findings go
 
 - New hypothesis → `hypotheses/`
-- Evidence → `research/evidence_registry.md`
-- Contradiction → `research/contradictions.md`
+- Evidence → `research/track2_evidence.tsv` y `research/track2_candidates.tsv` (validados por `src/verify.py`). `research/evidence_registry.md` es el **índice** que dice cuál usar, no un almacén
+- Contradiction → `research/contradictions.md` (**13 contradicciones aceptadas**, con gravedad y decisión)
 - Open uncertainty → `research/open_questions.md`
 - Weird but promising transfer idea → `research/crazy_ideas.md`
 - Agent-specific report → `research/agent_findings/`

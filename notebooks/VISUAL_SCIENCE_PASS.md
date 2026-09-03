@@ -1,5 +1,30 @@
 # Pasada visual-científica: qué se ve en cada notebook
 
+## Tercera pasada: legibilidad para un lector que llega sin contexto
+
+Esta pasada no cambió conclusiones científicas. Cambió la **entrada al argumento** y corrigió
+cinco visualizaciones internas que podían inducir una lectura equivocada:
+
+- El README raíz abre ahora con el caso en 30 segundos y una ruta de lectura con títulos
+  humanos y enlaces directos, antes del inventario técnico.
+- La primera celda de cada notebook declara su lugar en el argumento, su salida principal y
+  lo que esa salida no establece.
+- La comparación `A0` / `A0-FREQFIX` dejó de compartir el eje Y: como los dos top-8 no son
+  iguales, el eje compartido hacía que el panel izquierdo heredara los nombres del derecho y
+  asociara `BUB1B #4` con la barra equivocada.
+- La comparación con Exomiser rotula solo los dos puntos que el texto interpreta; las seis
+  etiquetas anteriores se superponían en la esquina de rangos altos.
+- El logo de conservación conserva la columna candidata resaltada, pero elimina una segunda
+  etiqueta que competía con el título sin añadir información.
+- El cruce HPO / literatura usa posición y forma, no dos barras cuya leyenda tomaba el color
+  del primer rasgo y hacía parecer iguales ambas fuentes.
+- Las fuentes de incertidumbre de MitoRead son ahora marcadores iguales. Las longitudes
+  anteriores eran decorativas pese a que el propio panel decía que ninguna incertidumbre
+  estaba cuantificada.
+
+Resultado de reconstrucción: **8/8 notebooks ejecutados, 28 figuras embebidas, 0 errores y
+saneado limpio**.
+
 > **Segunda pasada, `PUBLICATION-GRADE`.** El código de cada figura principal salió de los
 > generadores de notebook y vive ahora en `src/figures/`, un módulo por figura. El notebook y
 > la figura de publicación **son literalmente el mismo código**: ya no pueden divergir.
@@ -66,6 +91,7 @@ el notebook llama a **esa misma función**.
 | **05_RESIDUAL_PHENOTYPE** | Matriz término HPO × modelo de enfermedad en bits de Resnik, con nombres de enfermedad reales y el soporte de literatura como **anillo**, nunca como número | `src/figures/fig05_hpo.py` | matplotlib | `DATA` | `fig05_hpo_disease_matrix` |
 | **06_MOSAIC_AND_MITOREAD** | Distribuciones de BAF con escala idéntica en los tres escenarios + curva de potencia, con el comparador nombrado por lo que es | `src/figures/fig06_baf.py` | matplotlib | `SIMULATION` | `fig06_baf_cancellation` |
 | **07_TRACK2_SAFE_RESCUE** | Matriz de evidencia curada: 8 puentes × 10 dimensiones, 80 celdas, cada una con fuente y sin ninguna puntuación global | `src/figures/fig07_evidence.py` | matplotlib | `CURATED_EVIDENCE` | `fig07_track2_evidence_matrix` |
+| **07_TRACK2_SAFE_RESCUE** *(segunda)* | Cartera experimental: 3 brazos farmacológicos en 3 papeles distintos y 3 controles, con la procedencia de cada afirmación y la regla de descarte de cada brazo. Sin puntuación, sin ranking y sin ganador | `src/figures/fig08_portfolio.py` | matplotlib | `CURATED_EVIDENCE` | `fig08_track2_portfolio` |
 
 Renderizado completo: `python src/figures/render_all.py`.
 Índice: `python src/nb/contact_sheet.py` → `work/nbrender/CONTACT_SHEET.png`.
@@ -91,10 +117,10 @@ procedencia**, o (b) **no contiene dato** y su contenido ya está escrito en la 
 | «la tensión del puente 7» | 07 | (a) esa clasificación está ahora en la matriz, celda a celda y con fuente |
 | «los cuatro desenlaces de Try to Kill It» | 07 | (b) cuatro cajas de texto |
 
-**De 36 figuras a 27; de ellas 22 científicas y 5 de síntesis.** Las retiradas siguen en
+**De 36 figuras a 28; de ellas 23 científicas y 5 de síntesis.** Las retiradas siguen en
 `figures/` y en el historial: lo que se retira es su sitio en el recorrido del notebook.
 
-La cuenta subió de 26 a 27 porque las nueve pistas de AlphaGenome pasaron a **dos** figuras.
+La cuenta subió de 26 a 27 porque las nueve pistas de AlphaGenome pasaron a **dos** figuras, y de 27 a 28 al añadir la cartera experimental de Track 2 (`fig08`).
 Meterlas en una sola las hacía ilegibles, y la legibilidad manda sobre el recuento.
 
 ---

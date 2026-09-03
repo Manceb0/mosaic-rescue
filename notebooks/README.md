@@ -1,6 +1,6 @@
 # Los notebooks: la investigación, ejecutable y visible
 
-> **Ocho notebooks, ejecutados, con 27 figuras embebidas, 22 de ellas científicas.** No son un
+> **Ocho notebooks, ejecutados, con 28 figuras embebidas, 23 de ellas científicas.** No son un
 > registro de que algo ocurrió: son la investigación, y se leen de arriba abajo sin salir de
 > ellos.
 >
@@ -71,7 +71,7 @@ alineamiento, BAF, un heatmap o cobertura, la respuesta es sí. Si ve «SURVIVES
 | **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | Navegador REF/ALT/Δ de las nueve pistas congeladas, en dos figuras por modalidad | 4 · 4 |
 | **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | Matriz término HPO × modelo de enfermedad, en bits de Resnik | 3 · 2 |
 | **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | Distribuciones de BAF simuladas + curva de potencia | 3 · 1 |
-| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | Matriz 8 puentes × 10 dimensiones de evidencia curada | 2 · 1 |
+| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | Matriz 8 puentes × 10 dimensiones de evidencia curada, más la cartera experimental de tres brazos | 3 · 2 |
 
 ## Cómo reconstruirlos
 
