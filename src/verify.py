@@ -229,6 +229,23 @@ def contradiction_count():
     return True, f"{n} contradictions, and every document that states a count agrees"
 
 
+def figure_qa_cards():
+    """Toda figura de publicacion tiene ficha en PUBLICATION_FIGURE_QA.md.
+
+    El documento promete "una fila por figura de publicacion" y fig08 entro sin
+    ficha: nadie lo noto porque ningun control comparaba la carpeta con el
+    documento. Una promesa que no verifica nadie deja de cumplirse sola.
+    """
+    import glob
+    slugs = sorted({os.path.basename(p)[:-4]
+                    for p in glob.glob(os.path.join(ROOT, "figures/pub/*.svg"))})
+    qa = io.open(os.path.join(ROOT, "PUBLICATION_FIGURE_QA.md"), encoding="utf-8").read()
+    faltan = [s for s in slugs if s not in qa]
+    if faltan:
+        return False, f"figuras de publicacion sin ficha QA: {faltan}"
+    return True, f"{len(slugs)} publication figures, all with a QA card"
+
+
 def privacy_scan():
     code, out = run([sys.executable, "src/sanitize_scan.py"])
     has_list = "valores prohibidos cargados   : 0" not in out
@@ -249,6 +266,7 @@ CHECKS = [("unit tests", tests),
           ("Track 2 evidence matrix", evidence_matrix),
           ("Track 2 candidate matrix", candidate_matrix),
           ("contradiction count", contradiction_count),
+          ("figure QA cards", figure_qa_cards),
           ("privacy scan", privacy_scan),
           ("superseded-claim audit", stale_claims)]
 

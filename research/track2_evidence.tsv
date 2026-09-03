@@ -10,6 +10,17 @@
 #	  NEAR           evidencia adyacente; NO se admite como sustituto
 #	  GENETIC        existe, pero solo por perturbacion genetica
 #	  CONTRADICTORY  evidencia verificada que apunta en contra
+#
+#	UNA RECLASIFICACION QUE NOS FAVORECE, Y POR ESO SE DECLARA AQUI
+#	  Las dos celdas del puente 3 apoyadas en PMID 20516114 estaban como
+#	  CONTRADICTORY. Era un error logico NUESTRO. Que inhibir HSP90 desplome el
+#	  mutante missense de BUBR1 establece DEPENDENCIA BASAL: la MISMA direccion de
+#	  dependencia, no la contraria. No mide que pasa al ANADIR capacidad, que
+#	  podria estar saturada. La propia nota de la celda ya decia 'que quitar el
+#	  soporte hunda NO implica que anadirlo suba': la clase contradecia a su nota.
+#	  Pasan a NEAR y el puente 3 queda SIN RESOLVER, no contradicho. El cambio
+#	  retira una marca en contra de T2-A, que es nuestra ruta preferida, asi que
+#	  se hace explicito en vez de quedar enterrado en el diff.
 #	  ABSENT         no hay
 #
 #	REGLA DURA: ninguna fila con `clase` distinta de ABSENT puede quedarse sin
@@ -46,8 +57,8 @@ puente	titulo	ruta	dimension	clase	sistema	fuerza	fuente	nota
 3	subir chaperonas -> subir BUBR1	T2-A	celulas_aneuploides	ABSENT
 3	subir chaperonas -> subir BUBR1	T2-A	otro_contexto	ABSENT
 3	subir chaperonas -> subir BUBR1	T2-A	perturbacion_genetica	ABSENT
-3	subir chaperonas -> subir BUBR1	T2-A	perturbacion_farmacologica	CONTRADICTORY	celulas	L4	PMID 20516114	INHIBIR HSP90 desploma mutantes missense de BUBR1: dependencia basal. Que quitar el soporte hunda NO implica que anadirlo suba
-3	subir chaperonas -> subir BUBR1	T2-A	abundancia_bubr1	CONTRADICTORY	celulas	L4	PMID 20516114	la evidencia disponible va en la direccion contraria a la que el puente necesita
+3	subir chaperonas -> subir BUBR1	T2-A	perturbacion_farmacologica	NEAR	celulas	L4	PMID 20516114	INHIBIR HSP90 desploma mutantes missense de BUBR1. Eso establece DEPENDENCIA BASAL de chaperonas, que es la MISMA direccion de dependencia, no la contraria. NO mide que ocurre al ANADIR capacidad, que podria estar saturada. Es evidencia de direccion necesaria, no contraevidencia: el puente queda SIN RESOLVER
+3	subir chaperonas -> subir BUBR1	T2-A	abundancia_bubr1	NEAR	celulas	L4	PMID 20516114	La abundancia del mutante depende de HSP90, luego la capacidad de chaperonas es load-bearing para esta proteina. Lo que falta es la direccion de GANANCIA: nadie ha medido si aumentarla sube BUBR1. Reclasificado desde CONTRADICTORY, que era un error logico nuestro: ausencia de evidencia en la direccion de ganancia no es evidencia en contra
 3	subir chaperonas -> subir BUBR1	T2-A	proteostasis	ABSENT
 3	subir chaperonas -> subir BUBR1	T2-A	cin	ABSENT
 3	subir chaperonas -> subir BUBR1	T2-A	supervivencia_clonogenica	ABSENT

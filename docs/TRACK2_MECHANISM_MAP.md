@@ -245,7 +245,7 @@ Hoy **ningún candidato reúne las cinco**, porque los puentes 7 y 8 están vac�
 
 | | Estado | Puente que la bloquea |
 |---|---|---|
-| **T2-A · rescate aguas arriba** | **ABIERTA · la más deseable** | **Puente 3** — la evidencia va en dirección contraria. Y el puente 1 la ancla a este paciente |
+| **T2-A · rescate aguas arriba** | **ABIERTA · la más deseable** | **Puente 3** — sin resolver: solo hay evidencia de dependencia basal, nadie ha medido la dirección de ganancia. Y el puente 1 la ancla a este paciente |
 | **T2-B · tolerancia aguas abajo** | **ABIERTA · clase mecanística superviviente principal de las evaluadas** | **Puentes 7 y 8** — el hueco farmacológico y el contra-test que nadie hizo |
 | Modulación del proteasoma | **NEGATIVE** | Sin fármaco aprobado con perfil aceptable; tolerancia dependiente de cariotipo |
 | Poda clonal | **NEGATIVE** — cerrado en brief §13 | Sin inhibidor aprobado; antimitóticos inaceptables en un niño |

@@ -216,6 +216,29 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 
 ---
 
+## Fig 9 · Track 2 experimental portfolio: `fig08_track2_portfolio`
+
+> **Read the class before the colours.** This is a DECISION instrument, not an evidence
+> figure. It records what the project proposes to test and why, not what has been shown.
+
+| | |
+|---|---|
+| **notebook** | `07_TRACK2_SAFE_RESCUE` |
+| **source data** | `research/track2_candidates.tsv`, versioned, one row per arm |
+| **n** | 6 rows (3 interventions + 3 controls) × 5 claim columns = 30 claim cells · 12 carrying a published identifier |
+| **axes / units** | categorical × categorical. **No numeric axis, no score, no ranking.** |
+| **statistic represented** | none. Panel A is a five-value provenance vocabulary: `cited` `internal` `unverified` `none` `n/a`. Panel B is prose: the discard rule each arm carries, written in advance. |
+| **FIGURE CLASS** | `CURATED_EVIDENCE` |
+| **EVIDENCE ORIGIN** | `EXTERNAL+DERIVED`, regulatory labels and published literature, plus the project's own role assignment |
+| **uncertainty represented?** | structurally: an orange cell is a declared gap, and azithromycin's exposure cell stays orange on purpose |
+| **uncertainty quantified?** | **no.** No probability, no weight, no total |
+| **possible misleading interpretation** | **that green means the evidence favours the arm.** It does not: green means the claim carries a published identifier. A green *counter-evidence* cell means the contrary evidence is well sourced, which is the opposite of favourable. Second risk: that `ALLELE-DIRECTED`, `FALSIFICATION SENTINEL` and `ADVERSARIAL COMPARATOR` are established categories; they are **roles this project assigned**. Third: that panel B contains results; it contains discard rules we wrote. Fourth: that the figure shows how far each experiment sits from this patient; it does not, and the transfer distances are large — other genetic contexts for readthrough, NPC1 fibroblasts for arimoclomol, a *Drosophila* CIN model for sirolimus. |
+| **correction applied** | the title says `three roles, not a ranking`; the subtitle says there is no overall score and no winner; the provenance strip states in its own line that **colour encodes provenance, not efficacy or support**, and that none of these is proposed for administration. The transfer-distance table lives in `reports/TRACK2_REPORT.md` §5, where each arm's system, dose and measured outcome are named. |
+| **full-size render checked?** | yes |
+| **fit for the 3-minute video?** | **no, not at full size.** Too much small text. `docs/JUDGE_PATH.md` records that a reduced version keeping only the three roles and the killing question is what the pitch would use, and that it is not built yet. |
+
+---
+
 ## Figures classified as synthesis or narrative
 
 These are legitimate and stay in the notebooks. What they may **not** do is count as a
@@ -266,12 +289,16 @@ arrows instead: the bias is not bounded, and that is the only true statement ava
 
 ## Sanitisation verdict
 
-`python src/sanitize_scan.py` → **CLEAN**, 181 files (tracked + new-and-unignored).
+`python src/sanitize_scan.py` → **CLEAN**. The file count is **whatever that command prints
+today**, and it is deliberately not frozen here: it was 181 when this section was written and
+206 at the time of writing this correction, because the repository keeps growing. A static
+number in a QA document goes stale silently, which is the exact failure this document exists
+to catch.
 
-The scanner was fixed during this pass: it listed only `git ls-files`, so **new, unignored
-files were never examined** and reported clean without being read. It now also lists
-`git ls-files --others --exclude-standard`, which is what a commit would actually add, 156
-files before, 181 after.
+The scanner was fixed during the visual-science pass: it listed only `git ls-files`, so **new,
+unignored files were never examined** and reported clean without being read. It now also lists
+`git ls-files --others --exclude-standard`, which is what a commit would actually add — 156
+files before that fix, 181 immediately after.
 
 Manual check of the SVG text on top of the scanner: no residue number, no HGVS, no genomic
 coordinate. The only long numeric tokens are public cell-line ontology identifiers in the

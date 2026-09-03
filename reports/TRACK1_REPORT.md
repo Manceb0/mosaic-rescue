@@ -201,8 +201,8 @@ Required by the submission rules.
 | **Provider** | Anthropic |
 | **Interface** | Claude Code |
 | **Model** | Claude Opus 5 |
-| **Plan / tier** | *To be completed by the maintainer before submission — see note below* |
-| **Data-handling setting** | *To be completed by the maintainer before submission — see note below* |
+| **Plan / tier** | *To be completed by the maintainer* |
+| **Data-handling setting** | *To be completed by the maintainer* |
 
 **What the assistant did:** wrote and refactored the analysis code, figure modules and
 notebooks; drafted documentation; performed literature searches; audited the repository for
@@ -222,10 +222,10 @@ cached, and the call is not repeated on a normal build. This is documented in
 `docs/03_ALPHAGENOME_ASSESSMENT.md`.
 
 > **Note on the two blank fields.** The plan or tier and the account's data-handling
-> configuration are properties of the maintainer's account. They are deliberately left blank
-> rather than guessed: this project's rules forbid writing an unverified identifier or fact,
-> and an invented compliance statement would be worse than an incomplete one. **They must be
-> filled in before submission.**
+> configuration are properties of the maintainer's own account. They are deliberately left blank
+> rather than guessed: this project's rules forbid writing an unverified fact, and an invented
+> compliance statement would be worse than an incomplete one. **They must be filled in before
+> submission.**
 
 ## 11 · Acknowledgements and data citation
 
@@ -237,6 +237,8 @@ This work was carried out for the Rare Disease, Real Kid: MVA Hackathon 2026, or
 > dataset to be cited using the reference provided on the hackathon Synapse page. That
 > reference was not retrieved in this session and is therefore not transcribed here, per the
 > project's rule against writing unverified identifiers.
+
+**Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The **formal citation is not reproduced here**: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
 
 **Privacy.** This report contains no information that could re-identify the data subject or
 their family. No variant coordinate, HGVS string, genotype or sample identifier appears in

@@ -74,7 +74,8 @@ and `PS3` needs a functional assay this project does not run. So the correct sta
 audited against ten dimensions of evidence. Of 80 cells, **61 are empty**. Bridge 7, whether
 pharmacological co-induction reproduces the rescue that genetic overexpression achieves, has
 verified counter-evidence. Bridge 8, whether the same intervention affects chromosome
-instability and clonogenic survival, has never been measured by anyone. No overall score is
+instability and clonogenic survival, turned up no qualifying evidence in our bounded
+literature search. No overall score is
 computed, because combining heterogeneous evidence into one number would need a preregistered
 method that does not exist.
 

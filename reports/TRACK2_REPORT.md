@@ -79,6 +79,12 @@ enforced at build time: **no non-absent cell may exist without a source.**
 
 Result: **80 cells, of which 61 are empty.**
 
+Two things that matrix is not, and both matter. **The 80 cells are not 80 independent pieces of
+evidence** — a single paper fills several of them, and the seven distinct sources are the honest
+denominator. And **an empty cell records that no qualifying evidence was found in our bounded
+literature search**, not that the world has never looked; the search was scoped to the bridges
+named here, and a wider one could fill cells we left empty.
+
 | Bridge | Claim | Status |
 |---|---|---|
 | 1 | This patient's variant destabilises BUBR1 | Only one non-empty cell, and it is `NEAR`, not `DIRECT` |
@@ -88,7 +94,7 @@ Result: **80 cells, of which 61 are empty.**
 | 5 | Aneuploidy causes proteotoxic and mitochondrial stress | Supported |
 | 6 | Raising HSP levels rescues that stress | `GENETIC` only |
 | 7 | **Pharmacological co-induction reproduces the rescue** | **The translational gap.** `CONTRADICTORY` in three dimensions |
-| 8 | **The same intervention affects CIN and clonogenic survival** | **The safety gap. Empty in all ten dimensions — nobody has measured it** |
+| 8 | **The same intervention affects CIN and clonogenic survival** | **The safety gap. Empty in all ten dimensions: no qualifying evidence was found in our bounded literature search** |
 
 The empty cells are the finding. A therapeutic argument that looks strong usually looks that
 way because nobody drew the chain.
@@ -97,10 +103,17 @@ way because nobody drew the chain.
 
 Four verified results that work against the preferred hypothesis.
 
-**Bridge 3 runs backwards.** Inhibiting HSP90 *collapses* missense BUBR1 mutants (PMID
-20516114). That demonstrates **basal dependence** on chaperones. It does not demonstrate that
-*adding* chaperone capacity raises BUBR1. Removing a support and adding one are different
-experiments, and only the first has been done.
+**Bridge 3 is unresolved, not contradicted.** Inhibiting HSP90 *collapses* missense BUBR1
+mutants (PMID 20516114). That demonstrates **basal dependence** on chaperones — the same
+direction of dependence, not the opposite one. It does not demonstrate that *adding* chaperone
+capacity raises BUBR1, because capacity may already be saturated. Removing a support and adding
+one are different experiments, and only the first has been done.
+
+An earlier version of the matrix classified these two cells as `CONTRADICTORY`. That was our
+own logical error: absence of evidence in the gain direction is not evidence against. They are
+now `NEAR` — necessary-direction evidence — and bridge 3 is **unresolved**. The correction
+removes a mark against our own preferred route, which is why it is stated here rather than left
+in a diff.
 
 **Bridge 7 has a direct counterexample.** In NPC1 I1061T fibroblasts (PMID 34481829, DOI 10.1016/j.jlr.2021.100114),
 HSP70 overexpression **did** reduce cholesterol storage, but **arimoclomol did not reproduce
@@ -118,6 +131,20 @@ perturbation. And even that **depended on the karyotype**: one aneuploid line di
 The positive control is not universal, and that is declared.
 
 ## 5 · The three arms, and what each one falsifies
+
+**Before the arguments, the distances.** Every one of these results comes from a system that is
+not this patient, and the gap is the single most important thing to see. A figure that shows
+role and provenance does not show transfer distance, so it is written out here.
+
+| Arm | System actually studied | Intervention / dose | Outcome measured | What it supports | What it does **not** show |
+|---|---|---|---|---|---|
+| **Azithromycin** | Patient-derived lines in *other* genetic contexts (`ATM`, `MECP2`, `SMN`, `APC`) | Absolute active concentration **not published in verifiable form**; the claim is "100-fold lower than earlier compounds" | Readthrough of a premature stop | Mechanistic plausibility of macrolide-induced readthrough | Readthrough **in `BUB1B`**, at any concentration, in any cell |
+| **Arimoclomol** | Human NPC1 I1061T fibroblasts (PMID 34481829) | Up to 500 µM, 72–120 h | HSP70 induction and cholesterol storage | A **verified pharmacological counterexample**: the genetic rescue worked and the drug did not | Anything in MVA, in aneuploid cells, or about BUBR1 |
+| **Sirolimus** | *Drosophila* CIN/MVA model, larvae | Rapamycin 40 µM | Aneuploid neuroblast number; Pros+ cells; brain size | Partial rescue of the stem-cell compartment | Restoration of the tissue outcome, human relevance, or any safety claim |
+| **ca-HSF1** *(control)* | Isogenic human aneuploid cells | Genetic, constitutively active HSF1 | Aggregates, p62–TOMM20 colocalisation | That the proteostasis biology can work in aneuploid cells | That it works in every karyotype — the rescue **depended on karyotype** |
+
+**None of these systems is a `BUB1B` patient cell.** That is not a hedge, it is the reason the
+portfolio exists: the first experiment is what would close the distance.
 
 ### Azithromycin — the only arm aimed at this patient's own allele
 
@@ -288,12 +315,16 @@ lack a source, turns "the mechanism is plausible" into a map with 61 measurable 
 **Roles instead of a ranking.** `ALLELE` / `SENTINEL` / `ADVERSARIAL` / `CONTROL` replaces the
 wrong question ("which is best?") with the useful one ("what dies if each fails?").
 
-**A quantified failure mode of a standard statistic.** A preregistered simulation shows that in
-*variegated* aneuploidy the site-wise unphased B-allele-frequency statistic loses power as the
-event grows, because contributions from different lineages cancel — power falls to 0.000 at
-20 % cell fraction, while a coverage-dispersion index retains 1.000. **The comparator used is
-not MoChA**, and superiority over a properly phased method is **not demonstrated**; that
-branch is marked `UNVALIDATED · PARKED`.
+**A quantified failure mode of the site-wise unphased BAF baseline used here.** Under a
+preregistered simulation, in *variegated* aneuploidy that baseline loses power as the event
+grows, because contributions from different lineages cancel — power falls to 0.000 at 20 % cell
+fraction, while a coverage-dispersion index retains 1.000.
+
+Three limits travel with that sentence and none is optional. The cancellation was reproduced
+**under simulation**, not observed in patient data. **The comparator is not MoChA** and carries
+no long-range phasing. And **no superiority over a phased method is demonstrated**; that branch
+is marked `UNVALIDATED · PARKED`. It is a failure mode of *this* baseline, not a general claim
+about every standard method.
 
 ## 10 · Scalability
 
@@ -342,8 +373,8 @@ Required by the submission rules.
 | **Provider** | Anthropic |
 | **Interface** | Claude Code |
 | **Model** | Claude Opus 5 |
-| **Plan / tier** | *To be completed by the maintainer before submission — see note below* |
-| **Data-handling setting** | *To be completed by the maintainer before submission — see note below* |
+| **Plan / tier** | *To be completed by the maintainer* |
+| **Data-handling setting** | *To be completed by the maintainer* |
 
 **What the assistant did:** wrote and refactored analysis code, figure modules and notebooks;
 drafted documentation; performed literature searches; audited the repository for internal
@@ -360,8 +391,8 @@ the VCF. It runs in an isolated virtual environment, its outputs are cached, and
 not repeated on a normal build. See `docs/03_ALPHAGENOME_ASSESSMENT.md`.
 
 > **Note on the two blank fields.** The plan or tier and the account's data-handling
-> configuration are properties of the maintainer's account. They are left blank rather than
-> guessed, because this project's rules forbid writing an unverified fact and an invented
+> configuration are properties of the maintainer's own account. They are deliberately left blank
+> rather than guessed: this project's rules forbid writing an unverified fact, and an invented
 > compliance statement would be worse than an incomplete one. **They must be filled in before
 > submission.**
 
@@ -373,6 +404,8 @@ Bionetworks**, the **MVA Society**, **Hugging Face**, **BEACON**, **AWS** and **
 > **Dataset citation: to be completed before submission**, using the reference provided on the
 > hackathon Synapse page. It was not retrieved in this session and is therefore not
 > transcribed here, per the project's rule against unverified identifiers.
+
+**Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The **formal citation is not reproduced here**: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
 
 **Privacy.** No variant coordinate, HGVS string, genotype or sample identifier appears in this
 document or in the repository. No attempt was made to locate the family.

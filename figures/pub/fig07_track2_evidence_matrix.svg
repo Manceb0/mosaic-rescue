@@ -364,7 +364,7 @@ L 579.557376 124.1604
 L 579.557376 148.9176
 L 534.196224 148.9176
 z
-" clip-path="url(#pec795d6437)" style="fill: #d55e00; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
+" clip-path="url(#pec795d6437)" style="fill: #e69f00; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
    </g>
    <g id="patch_29">
     <path d="M 583.501824 124.1604
@@ -372,7 +372,7 @@ L 628.862976 124.1604
 L 628.862976 148.9176
 L 583.501824 148.9176
 z
-" clip-path="url(#pec795d6437)" style="fill: #d55e00; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
+" clip-path="url(#pec795d6437)" style="fill: #e69f00; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: miter"/>
    </g>
    <g id="patch_30">
     <path d="M 632.807424 124.1604
@@ -808,10 +808,10 @@ z
     <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="606.1824" y="111.395" transform="rotate(-0 606.1824 111.395)">direct</text>
    </g>
    <g id="text_22">
-    <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="556.8768" y="138.305" transform="rotate(-0 556.8768 138.305)">contra.</text>
+    <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="556.8768" y="138.305" transform="rotate(-0 556.8768 138.305)">near</text>
    </g>
    <g id="text_23">
-    <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="606.1824" y="138.305" transform="rotate(-0 606.1824 138.305)">contra.</text>
+    <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="606.1824" y="138.305" transform="rotate(-0 606.1824 138.305)">near</text>
    </g>
    <g id="text_24">
     <text style="fill: #ffffff; font: 700 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="408.96" y="165.215" transform="rotate(-0 408.96 165.215)">near</text>
@@ -966,7 +966,7 @@ z
   </g>
   <g id="text_54">
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 341.312528)">Every cell is a versioned row in research/track2_evidence.tsv: 80 cells, 7 distinct sources; no cell other than an absent one may lack a source (checked at build time).</text>
-   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 349.001406)">61 cells are empty, 9 hold evidence of the exact kind the bridge needs, 5 point against it. Bridge 8 is empty in all ten dimensions</text>
+   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 349.001406)">61 cells are empty, 9 hold evidence of the exact kind the bridge needs, 3 point against it. Bridge 8 is empty in all ten dimensions</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 356.503941)">(confirmed). Bridge 1, the only one tied to this patient, has 1 non-empty cell and it is near, not direct. Bridge 7 is contradictory in 3 dimensions.</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 364.006475)">No overall score, weight or ranking is computed. Combining heterogeneous evidence into one number would need a preregistered method, and none exists. An absent cell means nobody measured it, not that the claim is false.</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 371.509009)">Sources: DOI 10.1007/s00439-008-0572-y  ·  DOI 10.1038/s41467-025-60857-4  ·  PMID 20516114  ·  PMID 34481829  ·  docs/EVIDENCE.md  ·  src/structure/ (EXP-010, EXP-011)</text>

@@ -10,9 +10,11 @@ abstract: >-
   frozen preregistered ranking alongside a later sensitivity analysis. Track 2
   decomposes the therapeutic chain into eight evidence bridges audited across
   ten dimensions, and stops at a falsifiable preclinical experiment rather than
-  a drug recommendation. Also reports a simulation showing that the standard
-  B-allele-frequency statistic loses power as a variegated aneuploidy event
-  grows, because contributions from different lineages cancel.
+  a drug recommendation. Also reports a preregistered simulation in which a
+  site-wise unphased B-allele-frequency baseline loses power as a variegated
+  aneuploidy event grows, because contributions from different lineages cancel.
+  That baseline is not MoChA, the result is simulated rather than observed in
+  patient data, and no superiority over a phased method is claimed.
 type: software
 authors:
   - given-names: Manuel

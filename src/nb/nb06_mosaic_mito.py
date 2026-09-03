@@ -138,7 +138,7 @@ ax.set_title("Las cuatro predicciones preregistradas")
 
 fl.done(fig, "Figura de robustez A · marcador de las predicciones", "EXP-015a", "SIMULATED",
         "SYNTHESIS",
-        "la #2 y la #3 confirman el mecanismo: la cancelacion es un modo de fallo real y la "
+        "la #2 y la #3 confirman el mecanismo BAJO LA SIMULACION PREREGISTRADA: la cancelacion se reproduce en el comparador SITIO-A-SITIO y SIN FASE que se usa aqui, que NO es MoChA, y esto no demuestra superioridad frente a un metodo CON fase. La "
         "dispersion sobrevive a el. La #4 fallo, y eso REVELA que la linea base de BAF usada "
         "es debil, no que nuestro estadistico sea superior.",
         "nada sobre el paciente. Y la potencia simulada es OPTIMISTA: el modelo no incluye "
