@@ -323,9 +323,10 @@ homolog direction is mixed, and matching the depth does not move it.
 
 We first published a second, stronger claim: that the power collapse of the **site-wise absolute**
 statistic `|BAF − 0.5|` was caused by that same cancellation. **Our own adversarial audit falsified
-it.** An absolute statistic is blind to sign, so cancellation cannot move it; the 2×2 ablation
-(EXP-015c) shows direction changing nothing — 0.520 against 0.505 at matched depth — while depth
-changes everything. The collapse *below* alpha came from comparing a depth-sensitive statistic
+it.** An absolute statistic is blind to sign, so cancellation cannot move it; a **post-hoc
+diagnostic ablation** (EXP-015c, designed *after* the audit found the problem, so not
+preregistered) shows **no evidence of a direction effect** — 0.520 and 0.505 at matched depth,
+which at 200 replicates is the same result — while depth changes everything. The collapse *below* alpha came from comparing a depth-sensitive statistic
 against a null at a different depth, because the extra copy raises coverage to (2+f)/2. That is a
 confound between homolog-direction mixing and copy-number-dependent depth, not a coding slip: more
 copies really do produce more reads.
@@ -334,15 +335,24 @@ Four limits travel with what is left, and none is optional. The recentering was 
 simulation**, not observed in patient data. **The comparator is not MoChA** and carries no
 long-range phasing. **No superiority over a phased method is demonstrated**; that branch stays
 `UNVALIDATED · PARKED`. And the depth-normalised statistic that removes the confound in simulation
-is **not** a validated detector — it shows the confound existed, nothing more.
+is **not** a validated detector. The depth-normalised statistic removes the depth sensitivity
+observed for the absolute-deviation statistic *in this simulation*; what supports the revised
+reading is the ablation's combined pattern, not that statistic on its own.
 
 ## 10 · Scalability
 
-Measured, not asserted: **30 of 67 modules in `src/`, 4 395 of 12 666 lines (35 %), contain no
-reference to this case at all** (`python src/scalability_census.py`). That is a floor, since the
-measure is textual and many of the remaining modules name the case only in figure titles. These
-five numbers are recomputed by `src/verify.py`, which fails if this report and the census drift
-apart — a hand-written number under the words *measured, not asserted* goes stale in silence.
+Measured, not asserted: **30 of 68 modules in `src/`, 4 410 of 12 845 lines (34 %), contain no
+reference to this case at all** (`python src/scalability_census.py`).
+
+**Read that number for what it is.** It says *34 % of the current codebase is case-agnostic
+under a conservative lexical census*. It does **not** say the project is 34 % scalable. Real
+scalability also asks which inputs can be substituted, how many modules depend on `BUB1B` or on
+the MVA phenotype specifically, and which parts reuse generic HPO and VCF machinery — none of
+which a text search can answer. Treat it as a **technical proxy**, not a measure of scalability.
+It is a floor rather than a ceiling, since the measure is textual and many of the remaining
+modules name the case only in figure titles. These five numbers are recomputed by
+`src/verify.py`, which fails if this report and the census drift apart — a hand-written number
+under the words *measured, not asserted* goes stale in silence.
 
 What transfers is the **method**: the frozen preregistered ranking that is never rewritten, the
 bridge matrix, the role-based portfolio, the cheap-falsifier competitor audit

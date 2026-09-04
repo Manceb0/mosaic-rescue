@@ -102,7 +102,8 @@ fl.pub(fig, "Figura principal A · distribuciones de BAF y potencia",
        f"marcados; y el variegado, con la misma fraccion celular de aneuploidia, VUELVE a "
        f"centrarse en 0,5. El panel D cuantifica el estadistico ABSOLUTO, cuya potencia en "
        f"variegado cae de {_pv[0]:.3f} a {_pv[-1]:.3f}. ATENCION: esa caida NO la produce la "
-       f"cancelacion. EXP-015c lo falso -- un valor absoluto es ciego al signo -- y la produce "
+       f"cancelacion. Una ablacion POST-HOC, EXP-015c, disenada DESPUES de la auditoria y por "
+       f"tanto NO preregistrada, lo falso -- un valor absoluto es ciego al signo -- y la produce "
        f"la profundidad dependiente del numero de copia. Lo que la cancelacion SI mueve es el "
        f"estadistico CON SIGNO, de 0,980 a 0,050.",
        "nada sobre el paciente: no hay ni un dato suyo. Y no demuestra superioridad sobre el "
@@ -121,7 +122,8 @@ Dos se confirmaron y **dos fallaron**. La #4 falló de una forma que obliga a re
 conclusión, y por eso las dos hipótesis se separan.
 
 > **Y la #2 hubo que partirla en dos.** Se marcó como confirmada leyéndola sobre el estadístico
-> **absoluto**, y ahí la caída no la produce la cancelación sino la profundidad (EXP-015c). Sobre
+> **absoluto**, y ahí la caída no la produce la cancelación sino la profundidad (EXP-015c, una
+> ablación diagnóstica **post-hoc**, no preregistrada). Sobre
 > el estadístico **con signo**, que es al que la cancelación puede afectar, la predicción se
 > cumple: 0,980 → 0,050. El marcador de abajo conserva la lectura original; la corrección va
 > aquí, al lado, porque el preregistro no se reescribe."""),

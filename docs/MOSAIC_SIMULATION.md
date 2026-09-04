@@ -56,7 +56,12 @@ estaba a la vista desde el principio y nadie la leyó: **la potencia caía a 0,0
 alpha = 0,05**. Un mecanismo que solo puede *añadir* dispersión nunca baja del azar. El propio
 preregistro había escrito *«potencia próxima al azar»*, no cero.
 
-**EXP-015c · la ablación 2×2.** Cruzando los dos factores que estaban confundidos, con el mismo
+**EXP-015c · ablación diagnóstica POST-HOC.** Nació **después** de que la auditoría detectara
+el problema, así que **no es un experimento preregistrado** y no puede leerse como una
+confirmación: es una **auditoría de mecanismo**, y su resultado *apoya la interpretación
+revisada*. La distinción importa porque si apareciera junto a los experimentos preregistrados
+con el mismo marcador, un juez podría entender que la hipótesis estaba fijada antes de mirar
+el resultado. No lo estaba. Cruzando los dos factores que estaban confundidos, con el mismo
 generador, la misma semilla y el mismo nulo euploide a 44× (`src/mosaic/ablation_baf.py`):
 
 | dirección del homólogo | profundidad | `signed` | `absdev` | `disp` | `znorm` |
@@ -65,8 +70,8 @@ generador, la misma semilla y el mismo nulo euploide a 44× (`src/mosaic/ablatio
 | fija | igualada al nulo | **0,975** | **0,520** | 0,435 | 0,540 |
 | mezclada | escalada por nº de copia | **0,050** | 0,010 | 0,005 | 0,520 |
 | mezclada | igualada al nulo | **0,040** | **0,505** | 0,565 | 0,495 |
-| *referencia clonal* · fija, todos los sitios | escalada | 1,000 | **1,000** | 0,000 | 1,000 |
-| *referencia clonal* · fija, todos los sitios | igualada | 1,000 | **1,000** | 0,030 | 1,000 |
+| *control diagnóstico post-hoc* · clonal, fija, todos los sitios | escalada | 1,000 | **1,000** | 0,000 | 1,000 |
+| *control diagnóstico post-hoc* · clonal, fija, todos los sitios | igualada | 1,000 | **1,000** | 0,030 | 1,000 |
 
 Potencia con alpha = 0,05, fracción celular del 20 %, 200 repeticiones, 3 cromosomas afectados,
 400 sitios cada uno. `signed` = |media por sitio de (BAF − 0,5)| · `absdev` = media de
@@ -78,7 +83,9 @@ varianza binomial esperada a la profundidad observada**.
 Las cuatro primeras filas viven dentro del modelo **variegado**, donde la perturbación alcanza a
 una fracción `f` de los sitios y **lo único que cambia entre celdas es el signo**. Las dos
 últimas son la referencia **clonal**, donde se desplazan todos los sitios; están para que la
-tabla se pueda situar y no se lean como si contradijeran el 1,000 clonal publicado.
+tabla se pueda situar y no se lean como si contradijeran el 1,000 clonal publicado. Esas dos
+filas se añadieron **después** de ver la primera ablación, así que son un **control diagnóstico
+post-hoc**, no parte del diseño original. Decirlo lo hace más fuerte, no más débil.
 
 **Lo que se lee en la tabla, en tres frases.**
 
@@ -86,10 +93,11 @@ tabla se pueda situar y no se lean como si contradijeran el 1,000 clonal publica
    dirección fija a 0,050 con dirección mezclada —exactamente el azar— y la profundidad no lo
    mueve (0,980 → 0,975; 0,050 → 0,040). Esto **sobrevive**, y es la predicción #2 leída
    literalmente.
-2. **La atribución publicada queda falsada.** Sobre `absdev`, la dirección **no hace nada**:
-   0,520 frente a 0,505 con profundidad igualada, 0,010 frente a 0,010 con profundidad escalada.
-   Lo que decide es la profundidad. El desplome por debajo de alpha aparece **con las dos
-   direcciones**, así que no puede ser la cancelación.
+2. **La atribución publicada queda falsada.** Sobre `absdev` **no hay evidencia de efecto de la
+   dirección**: 0,520 y 0,505 con profundidad igualada, 0,010 y 0,010 con profundidad escalada.
+   Con 200 repeticiones, 0,520 y 0,505 son el mismo resultado y no deben leerse como una
+   diferencia. Lo que decide es la profundidad. El desplome por debajo de alpha aparece **con
+   las dos direcciones**, así que no puede ser la cancelación.
 3. **El resultado clonal no era un artefacto de profundidad.** La referencia da 1,000 con las
    dos profundidades. La pregunta obvia que sigue a este hallazgo tiene respuesta, y es que no.
 
@@ -99,11 +107,13 @@ copias producen más lecturas: escalar la cobertura por (2+f)/2 es lo correcto. 
 profundidad**, y después adjudicar esa diferencia a la cancelación. El confundido es entre
 dirección de homólogo y profundidad dependiente del número de copia.
 
-**Lo que `znorm` sí muestra, y lo que no.** Normalizar por la varianza binomial esperada elimina
-el confundido por construcción: la potencia queda en 0,49–0,54 en las cuatro celdas, con y sin
-escalado de cobertura. Eso demuestra **que el confundido existía**. No demuestra que exista un
-detector clínicamente útil: `znorm` no se ha comparado con ningún método con fase, no se ha
-aplicado a datos reales, y `EXP-015b` sigue `UNVALIDATED · PARKED`.
+**Lo que `znorm` sí muestra, y lo que no.** El estadístico normalizado por la profundidad
+**elimina la sensibilidad a la profundidad que se observa en el estadístico de desviación
+absoluta, en esta simulación**: la potencia queda en 0,49–0,54 en las cuatro celdas, con y sin
+escalado de cobertura. `znorm` por sí solo no demuestra nada; lo que sostiene la lectura es **el
+patrón conjunto de la ablación**, en el que cada factor mueve un estadístico distinto. Y no
+demuestra que exista un detector clínicamente útil: `znorm` no se ha comparado con ningún método
+con fase, no se ha aplicado a datos reales, y `EXP-015b` sigue `UNVALIDATED · PARKED`.
 
 ### La #4 falló, y eso obliga a rebajar la conclusión
 
@@ -147,7 +157,7 @@ fracciones clonales por debajo del 1 % sobre datos reales, y mi proxy no pasa de
 | | |
 |---|---|
 | **EXP-015a · mecanismo de cancelación** | **PARCIALMENTE FALSADA por EXP-015c.** Sobrevive: las mezclas balanceadas recentran el BAF agregado **con signo**. Falsada: la atribución de la caída del estadístico **absoluto** a la cancelación |
-| **EXP-015c · ablación 2×2** | **SURVIVES** — dirección de homólogo y profundidad por número de copia separadas, con el estadístico normalizado como control |
+| **EXP-015c · ablación 2×2** | **`POST-HOC DIAGNOSTIC ABLATION` · auditoría de mecanismo, no preregistrada.** Separa dirección de homólogo y profundidad por número de copia, con el estadístico normalizado como control. El resultado **apoya la interpretación revisada**; no la confirma en el sentido preregistrado |
 | **EXP-015b · el índice como DETECTOR** | **UNVALIDATED · PARKED** — el comparador no es MoChA |
 | Incertidumbre reducida | Qué mecanismo explica cada señal. El estadístico **con signo** se cancela; el **absoluto** no se cancelaba, cambiaba de profundidad |
 | Qué desbloquea | Que el estadístico se pueda usar **si** aparecen controles. No desbloquea aplicarlo hoy |

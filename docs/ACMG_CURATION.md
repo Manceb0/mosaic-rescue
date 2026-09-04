@@ -231,8 +231,30 @@ En el residuo candidato, ClinVar tiene **dos** entradas, ninguna de ellas nuestr
 | Un tercero | sinónimo | Likely benign |
 
 - **`PS1`: no aplica.** Exige que el mismo cambio aminoacídico esté ya establecido como
-  `P`/`LP`. Está, pero como **VUS**.
-- **`PM5`: no aplica.** No hay ninguna `P`/`LP` en el residuo.
+  patogénico. Está, pero como **VUS**.
+- **`PM5`: no aplica.** No hay ninguna `P`/`LP` en el residuo, de ninguna consecuencia.
+
+> **Corrección de la definición, posterior a la primera redacción.** Este documento decía
+> *«otra variante `P`/`LP` en el mismo residuo»* y la implementación hacía exactamente eso,
+> sin filtrar por consecuencia. **Es incorrecto:** `PS1` y `PM5` comparan cambios de
+> **aminoácido** entre variantes **missense**. Un `stop_gained` o un `frameshift` patogénico
+> en el mismo residuo **no** es soporte de `PM5` — no es una sustitución, es la pérdida del
+> resto de la proteína, y no dice nada sobre la tolerancia de ese residuo a un cambio de
+> aminoácido. No era un riesgo teórico: **de las 84 `P`/`LP` de ClinVar en `BUB1B`, 83 no son
+> missense**, así que el defecto habría disparado en cuanto el residuo hubiera tenido una.
+>
+> Segunda corrección: la implementación fundía `Pathogenic` con `Likely pathogenic` en un
+> único cubo. La formulación clásica de `PM5` exige que la otra variante esté **establecida
+> como patogénica**. Aceptar `Likely pathogenic` con la misma fuerza es una decisión de
+> **especificación**, no un valor por defecto, y para `BUB1B` **no existe hoy ninguna
+> especificación VCEP** que la autorice. Los candidatos `LP` se reportan aparte y no otorgan
+> el criterio.
+>
+> **El veredicto del caso no cambia**, ni antes ni después: en el residuo candidato ClinVar
+> no tiene ninguna `P`/`LP` de ninguna consecuencia. Lo que cambia es que la implementación
+> ya coincide con lo que este documento afirma. La lógica vive aislada en
+> `src/annotation/ps1_pm5.py` y la cubren 17 tests, incluidos los casos que antes pasaban:
+> truncante patogénico en el mismo residuo → `PM5` falso.
 
 > **Dato relevante aunque no dé criterio:** un *submitter* independiente, con criterios,
 > evaluó **el mismo cambio de aminoácido** llegando por otra ruta nucleotídica y lo dejó en
@@ -383,9 +405,15 @@ mezcla, `PM1` no se aplica y el escenario de 7 puntos no ocurre.
 
 ### `PM5` — posibilidad que el mapa de ClinVar puede revelar
 
-Si existe **otra variante `P`/`LP` en el mismo residuo** con una sustitución distinta,
-aplica `PM5` (Moderado, 2 puntos). Es un criterio que no habíamos considerado y que sale
-del mismo VCF de ClinVar que hace falta para `PM1`.
+Si existe **otra variante MISSENSE, ya establecida como patogénica, en el mismo residuo**
+y con una sustitución de aminoácido distinta, aplica `PM5` (Moderado, 2 puntos). Es un
+criterio que no habíamos considerado y que sale del mismo VCF de ClinVar que hace falta
+para `PM1`.
+
+Las tres condiciones son acumulativas y ninguna es decorativa: **missense** (un truncante
+patogénico en el residuo no sirve), **patogénica establecida** (`Likely pathogenic` solo
+contaría bajo una especificación explícita, que en `BUB1B` no existe) y **sustitución
+distinta** (si es la misma, la vía es `PS1`, no `PM5`).
 
 ### Lo que sigue siendo insustituible
 

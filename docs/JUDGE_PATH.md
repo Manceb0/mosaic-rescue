@@ -41,9 +41,10 @@ genoma vuelve a centrarse en 0,5 **con la aneuploidía presente**.
 
 **Lo que ya no se dice, y por qué.** La versión anterior atribuía a esa cancelación el desplome
 a 0,000 de un estadístico **absoluto**. Una auditoría propia lo falsó: `|BAF−0,5|` es ciego al
-signo, así que la cancelación no puede moverlo, y la ablación 2×2 de EXP-015c lo confirma
-—0,520 frente a 0,505 con la profundidad igualada—. Ese desplome lo producía comparar contra un
-nulo de otra profundidad. La corrección está en `docs/MOSAIC_SIMULATION.md`.
+signo, así que la cancelación no puede moverlo, y una **ablación diagnóstica post-hoc**
+(EXP-015c, diseñada *después* de la auditoría, **no preregistrada**) no encuentra evidencia de
+efecto de la dirección —0,520 y 0,505 con la profundidad igualada, que a 200 repeticiones es el
+mismo resultado—. Ese desplome lo producía comparar contra un nulo de otra profundidad. La corrección está en `docs/MOSAIC_SIMULATION.md`.
 
 **Por qué esta.** Sigue siendo el resultado más general del proyecto, y ahora viene con su
 propia falsación al lado, que es la parte que un jurado no espera ver.

@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""EXP-015c · ablacion 2x2: que mecanismo explica cada senal del BAF.
+"""EXP-015c · POST-HOC DIAGNOSTIC ABLATION: que mecanismo explica cada senal del BAF.
+
+ESTATUS EPISTEMOLOGICO, ANTES QUE NADA. Esta ablacion se diseno DESPUES de que
+una auditoria adversarial encontrara el confundido. NO esta preregistrada y no
+debe leerse como una confirmacion: es una auditoria de mecanismo cuyo resultado
+APOYA la interpretacion revisada. Si apareciera junto a los experimentos
+preregistrados con el mismo marcador, un lector podria entender que la hipotesis
+estaba fijada antes de mirar el resultado. No lo estaba. La referencia clonal
+(scope="all") se anadio ademas despues de ver la primera ablacion: es un CONTROL
+DIAGNOSTICO POST-HOC.
 
 POR QUE EXISTE ESTE FICHERO. EXP-015a publico esta afirmacion:
 
@@ -43,7 +52,12 @@ la dispersion "gane". La unica pregunta es que mecanismo explica cada senal.
 `znorm` es la version normalizada por la varianza binomial esperada A LA
 PROFUNDIDAD OBSERVADA. Bajo p = 0,5 cada z es aproximadamente normal tipificada
 sea cual sea dp, asi que el estadistico es invariante a la profundidad por
-construccion. Es el control que EXP-015a no tenia.
+construccion. Es el control que EXP-015a no tenia. OJO CON LA FORMULACION:
+`znorm` ELIMINA la sensibilidad a la profundidad que se observa en `absdev` EN
+ESTA SIMULACION. No "demuestra" el confundido por si solo; lo sostiene el patron
+conjunto de las cuatro celdas, donde cada factor mueve un estadistico distinto.
+Y diferencias pequenas a 200 repeticiones (0,520 frente a 0,505) NO son un
+efecto: son el mismo resultado.
 
 LA PROFUNDIDAD NO ES UN BUG ARTIFICIAL. Si hay una ganancia cromosomica real,
 mas copias producen mas lecturas: escalar la cobertura por (2+f)/2 es correcto.

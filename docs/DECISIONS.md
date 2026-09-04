@@ -665,8 +665,10 @@ cancela, **no aporta nada** y se abandona.
 > absoluto** se debe a la cancelación entre linajes.
 > **Resultado: FALSADA.** El estadístico es `abs(alt/dp − 0,5)`, un valor absoluto, y es
 > **ciego al signo**: la aleatorización de homólogo no puede moverlo. La ablación 2×2 de
-> `src/mosaic/ablation_baf.py` lo confirma — con la profundidad igualada, la potencia es 0,520
-> con dirección fija y 0,505 con dirección mezclada. Lo que produce el desplome es que el brazo
+> `src/mosaic/ablation_baf.py` —una ablación **diagnóstica post-hoc**, diseñada después de que
+> la auditoría encontrara el problema y por tanto **no preregistrada**— no encuentra evidencia
+> de efecto de la dirección: 0,520 y 0,505 con la profundidad igualada, que a 200 repeticiones
+> es el mismo resultado. Lo que produce el desplome es que el brazo
 > aneuploide se simula a mayor profundidad, porque la copia extra sube la cobertura a (2+f)/2 y
 > `|BAF−0,5|` encoge con la profundidad. La pista estaba en el propio número: **0,000 está por
 > debajo de alpha = 0,05**, y la predicción #2 de arriba había escrito *«potencia próxima al
@@ -680,7 +682,9 @@ cancela, **no aporta nada** y se abandona.
 > **Lo que sigue sin resolver:** si un detector de WGS bulk clínicamente útil puede explotar la
 > dispersión residual o una señal con fase en MVA. `EXP-015b` sigue **`UNVALIDATED · PARKED`**.
 > El estadístico normalizado por la varianza binomial esperada elimina el confundido *en
-> simulación*; eso demuestra que el confundido existía, no que haya detector.
+> simulación*: elimina la sensibilidad a la profundidad que se observa en el estadístico de
+> desviación absoluta. Lo que sostiene la lectura es el patrón conjunto de la ablación, no ese
+> estadístico por sí solo, y nada de esto es un detector.
 >
 > **La profundidad no era un fallo de codificación.** Con una ganancia cromosómica real, más
 > copias producen más lecturas. El error fue comparar contra un nulo de otra profundidad un

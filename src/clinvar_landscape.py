@@ -3,8 +3,10 @@
 """Cruza las variantes de ClinVar en BUB1B con su posicion proteica y evalua
 PS1, PM5 y la base empirica de PM1 para un residuo candidato.
 
-PS1: mismo cambio aminoacidico, distinto cambio nucleotidico, ya P/LP.
-PM5: distinto cambio aminoacidico en el mismo residuo, P/LP.
+PS1: mismo cambio aminoacidico, distinto cambio nucleotidico, ya patogenico.
+PM5: OTRA MISSENSE en el mismo residuo, con sustitucion distinta, ya patogenica.
+     Un truncante P/LP en el residuo NO es soporte de PM5: no es un cambio de
+     aminoacido. La logica vive en src/annotation/ps1_pm5.py, con tests.
 PM1: exige enriquecimiento real de P/LP y escasez de B/LB en la region.
 
 Salida agregada mas un fichero para la figura. No imprime el genotipo del
@@ -12,7 +14,10 @@ paciente: solo la posicion del residuo candidato, que es dato de la curacion.
 
 Uso: python src/clinvar_landscape.py RESIDUO AA_REF AA_ALT
 """
-import io, sys, collections, json
+import io, os, sys, collections, json
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.annotation.ps1_pm5 import evaluate as evaluate_ps1_pm5
 
 RES = int(sys.argv[1]) if len(sys.argv) > 1 else None
 AAREF = sys.argv[2] if len(sys.argv) > 2 else None
@@ -84,11 +89,21 @@ if RES:
     else:
         print(f"  {len(same)} variante(s) de ClinVar en este residuo:")
         for r in same:
-            print(f"    {r['aa']:<10} {r['cls']:<12} {r['sig'][:44]}")
-        ps1 = [r for r in same if r["cls"] == "P/LP" and r["aa"].replace("/", "") == f"{AAREF}{AAALT}"]
-        pm5 = [r for r in same if r["cls"] == "P/LP" and r["aa"].replace("/", "") != f"{AAREF}{AAALT}"]
-        print(f"\n  PS1 (mismo cambio aa, ya P/LP) : {'SI — ' + str(len(ps1)) if ps1 else 'no'}")
-        print(f"  PM5 (otro cambio aa, P/LP)     : {'SI — ' + str(len(pm5)) if pm5 else 'no'}")
+            print(f"    {r['aa']:<10} {r['cls']:<12} {r['con'][:28]:<28} {r['sig'][:34]}")
+        ev = evaluate_ps1_pm5(same, AAREF, AAALT)
+        if not ev["applicable"]:
+            print(f"\n  PS1 / PM5: NO APLICABLES — {ev['reason']}")
+        else:
+            print(f"\n  PM5 (otra MISSENSE patogenica, sustitucion distinta) : "
+                  f"{'SI — ' + str(len(ev['pm5'])) if ev['pm5'] else 'no'}")
+            print(f"  PS1 (mismo cambio aa, patogenico)                     : "
+                  f"{'candidatos ' + str(len(ev['ps1_pending_nucleotide_check'])) + ', pendiente comprobar el cambio de nucleotido' if ev['ps1_pending_nucleotide_check'] else 'no'}")
+            if ev["pm5_lp_candidates"]:
+                print(f"  ... {len(ev['pm5_lp_candidates'])} candidato(s) solo `Likely pathogenic`: "
+                      "NO otorgan PM5 sin una especificacion VCEP declarada para este gen")
+            if ev["excluded_not_missense"]:
+                print(f"  ... {len(ev['excluded_not_missense'])} P/LP EXCLUIDA(S) del residuo por no ser "
+                      "missense: un truncante no es un cambio de aminoacido")
 
 # --- base empirica de PM1: distribucion por ventanas ---
 print(f"\n{'='*66}\nPM1 — distribucion por ventanas de 100 residuos\n{'='*66}")
