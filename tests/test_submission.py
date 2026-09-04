@@ -141,3 +141,69 @@ def test_el_generador_no_lleva_coordenadas_escritas():
 
 def test_la_salida_vive_fuera_del_arbol_versionado():
     assert T.OUT.startswith("work/"), "el CSV lleva coordenadas reales"
+
+# ------------------------------------ el identificador de la PLATAFORMA -------
+def test_el_proband_id_es_el_que_acepta_la_plataforma():
+    """El generador escribia el nombre de MUESTRA del VCF en esta columna. La
+    plataforma keyea su ground truth por otro identificador y responde
+    `Unknown proband_id ... Only PROBAND01 is accepted in this challenge`.
+    El fallo no habria dado un error de formato sino cero puntos: peor."""
+    assert T.SUBMISSION_PROBAND_ID == "PROBAND01"
+
+
+def test_el_generador_no_alimenta_el_proband_id_desde_el_vcf():
+    """Nombre de muestra e identificador de submission son objetos distintos.
+    La funcion que lee el VCF se conserva como comprobacion cruzada, pero no
+    puede volver a alimentar la columna."""
+    assert "pid = SUBMISSION_PROBAND_ID" in FUENTE
+    assert "pid = proband_id()" not in FUENTE
+
+
+def test_el_csv_en_disco_lleva_el_proband_id_correcto():
+    for fila in _csv_rows()[1:]:
+        assert fila[0] == T.SUBMISSION_PROBAND_ID
+
+
+def test_todas_las_filas_comparten_proband_id():
+    assert len({f[0] for f in _csv_rows()[1:]}) == 1
+
+
+# ----------------------------------- lo que el evaluador oficial exige --------
+def test_como_maximo_diez_filas():
+    """`Proband {pid} has {n} rows; max is 10` en el evaluador oficial."""
+    assert len(_csv_rows()) - 1 <= 10
+
+
+def test_el_cromosoma_lleva_prefijo_chr():
+    """El evaluador NO anade ni quita el prefijo: compara la cadena tal cual,
+    y el ground truth usa `chrN`. Sin prefijo no habria error, habria cero."""
+    for fila in _csv_rows()[1:]:
+        assert fila[1].startswith("chr")
+        if fila[5].strip():
+            assert fila[5].startswith("chr")
+
+
+def test_las_posiciones_son_enteros():
+    """`int(pos)` en el evaluador: cualquier cosa que no sea digito revienta."""
+    for fila in _csv_rows()[1:]:
+        assert fila[2].isdigit()
+        if fila[6].strip():
+            assert fila[6].isdigit()
+
+
+def test_los_alelos_van_en_mayusculas():
+    """El evaluador normaliza con `.upper()`; enviarlo ya normalizado evita
+    depender de esa cortesia."""
+    for fila in _csv_rows()[1:]:
+        for i in (3, 4, 7, 8):
+            if fila[i].strip():
+                assert fila[i] == fila[i].upper()
+
+
+def test_el_segundo_alelo_esta_completo_o_completamente_vacio():
+    """Media pareja no es un compuesto heterocigoto: el evaluador devuelve
+    None si falta chrom o pos, y la fila valdria como variante unica sin que
+    nadie lo hubiera decidido."""
+    for fila in _csv_rows()[1:]:
+        segundo = [fila[i].strip() for i in (5, 6, 7, 8)]
+        assert all(segundo) or not any(segundo)

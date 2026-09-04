@@ -341,7 +341,7 @@ reading is the ablation's combined pattern, not that statistic on its own.
 
 ## 10 · Scalability
 
-Measured, not asserted: **30 of 68 modules in `src/`, 4 410 of 12 845 lines (34 %), contain no
+Measured, not asserted: **30 of 68 modules in `src/`, 4 410 of 12 882 lines (34 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
 **Read that number for what it is.** It says *34 % of the current codebase is case-agnostic

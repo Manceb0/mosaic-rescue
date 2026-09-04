@@ -45,6 +45,26 @@ sys.path.insert(0, ".")
 from src.prioritization.genome_wide import load                        # noqa: E402
 from src.paths import patient_vcf                                      # noqa: E402
 
+# ---------------------------------------------------------------------------
+# EL IDENTIFICADOR DE LA PLATAFORMA, QUE NO ES EL NOMBRE DE MUESTRA DEL VCF.
+#
+# Este generador leia el nombre de muestra de la cabecera del VCF y lo escribia
+# en la columna `proband_id`. Es lo natural para una herramienta general y aqui
+# esta MAL: el nombre de muestra viene de los ficheros genomicos oficiales,
+# mientras la plataforma keyea su ground truth por OTRO identificador y rechaza
+# cualquier otro valor. El mensaje del evaluador es explicito:
+#
+#     Unknown proband_id '{...}'. Only PROBAND01 is accepted in this challenge.
+#
+# Verificado el 2026-09-04 en el codigo publicado del Space
+# SageBio/rare-disease-real-kid-mva-hackathon-2026: `groundtruth.py` keyea el
+# ground truth por "PROBAND01" y `tabs/submit_track1.py` emite ese error.
+#
+# Nombre de muestra e identificador de submission son OBJETOS DISTINTOS.
+# Confundirlos cuesta uno de los seis intentos, y el fallo no habria dado un
+# error de formato sino cero puntos silenciosos, que es peor.
+SUBMISSION_PROBAND_ID = "PROBAND01"
+
 OUT_DIR = "work/submission"
 OUT = os.path.join(OUT_DIR, "track1_predictions.csv")
 ANN = "work/gw/highmod_ann.tsv"
@@ -101,8 +121,15 @@ NOTES = {
 }
 
 
-def proband_id() -> str:
-    """El identificador de muestra, leido de la cabecera del VCF."""
+def vcf_sample_name() -> str:
+    """El nombre de MUESTRA de la cabecera del VCF.
+
+    NO es lo que va en la columna `proband_id` del CSV: ese campo lo define la
+    plataforma y solo acepta SUBMISSION_PROBAND_ID. Esta funcion se conserva
+    porque el nombre de muestra sirve de comprobacion cruzada al operador -- si
+    algun dia no coincide con el fichero que se cree estar usando, es que se
+    esta generando la submission desde otro VCF.
+    """
     with gzip.open(patient_vcf(), "rt", errors="replace") as f:
         for line in f:
             if line.startswith("#CHROM"):
@@ -150,7 +177,7 @@ def chrom(c: str) -> str:
 
 def main() -> int:
     rows = load(ANN, patient_vcf())
-    pid = proband_id()
+    pid = SUBMISSION_PROBAND_ID
     bub, lz = pick(rows, "BUB1B"), pick(rows, "LZTR1")
 
     assert len(bub) == 2, f"se esperaban 2 alelos de BUB1B, hay {len(bub)}"
@@ -194,6 +221,9 @@ def main() -> int:
           f"{a.gt + ' + ' + b.gt:<10}{a.consequence} + {b.consequence}")
     print(f"  {'LZTR1':<10}{'secondary':<12}{EPCR_RATIONALE['LZTR1'][0]:>6}  "
           f"{c.gt:<10}{c.consequence}")
+    print()
+    print(f"  proband_id enviado : {SUBMISSION_PROBAND_ID}   <- lo exige la plataforma")
+    print(f"  nombre de muestra  : {vcf_sample_name()}   <- del VCF, NO se envia")
     print()
     print("  El CSV lleva coordenadas y alelos reales y por eso vive en work/,")
     print("  que esta en .gitignore. NO se commitea. Se sube a mano.")

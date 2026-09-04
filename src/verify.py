@@ -435,6 +435,9 @@ def submission_artifacts():
         return False, f"esquema alterado: {T.COLUMNS}"
 
     fallos = []
+    # el identificador de la plataforma, que no es el nombre de muestra del VCF
+    if getattr(T, "SUBMISSION_PROBAND_ID", None) != "PROBAND01":
+        fallos.append("SUBMISSION_PROBAND_ID no es el que acepta la plataforma")
     for gen, (epcr, _r) in T.EPCR_RATIONALE.items():
         if not (0 < epcr <= 1):
             fallos.append(f"{gen}: epcr {epcr} fuera de (0, 1]")
@@ -465,6 +468,10 @@ def submission_artifacts():
                 fallos.append(f"epcr fuera de rango en el CSV: {ep}")
             if "470" in campos[11]:
                 fallos.append("el CSV en disco lleva el denominador 470: hay que regenerarlo")
+            if campos[0] != T.SUBMISSION_PROBAND_ID:
+                fallos.append(f"el CSV en disco lleva proband_id {campos[0]!r} y la "
+                              f"plataforma solo acepta {T.SUBMISSION_PROBAND_ID!r}: "
+                              "hay que regenerarlo")
         estado = f"CSV en disco con {len(lineas)-1} filas, validado"
     else:
         estado = "CSV no generado (necesita el dataset local); contrato del generador validado"
