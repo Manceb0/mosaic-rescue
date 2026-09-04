@@ -116,7 +116,7 @@ Corregido lo más importante: **el deterioro de HSF1 es razón Y pasivo**, no un
 |---|---|
 | 1 · variante de este paciente → inestabilidad | **UNRESOLVED** — solo inferencia estructural |
 | 2 · inestabilidad → menos proteína | evidencia, **de otros alelos** |
-| 3 · subir chaperonas → subir BUBR1 | **UNRESOLVED** — la evidencia va en dirección contraria |
+| 3 · subir chaperonas → subir BUBR1 | **UNRESOLVED** — dependencia basal demostrada; la dirección de ganancia sigue sin medir |
 | 4 · más BUBR1 → menos CIN | evidencia (`L4`) |
 | 5 · aneuploidía → estrés proteotóxico | evidencia (`L4`) |
 | 6 · subir HSP → rescate | evidencia (`L4`), **pero dependiente del cariotipo** |

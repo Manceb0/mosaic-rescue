@@ -109,8 +109,9 @@ fl.pub(fig, "Figura principal 1 · matriz de evidencia curada de Track 2",
        f"es NEAR, no DIRECT. El puente 7 es el hueco TRASLACIONAL.",
        "que Track 2 sea valido ni invalido. Es un inventario de evidencia curada (literatura "
        "externa mas evidencia del proyecto), no observaciones experimentales del paciente, y "
-       "por eso no se etiqueta simplemente DATA. Una celda ABSENT dice que nadie lo ha "
-       "medido, no que sea falso. Y NO se calcula ninguna puntuacion global: combinar "
+       "por eso no se etiqueta simplemente DATA. Una celda ABSENT dice que NUESTRA "
+       "busqueda acotada no encontro evidencia que cualifique, no que sea falso ni que "
+       "nadie lo haya mirado nunca. Y NO se calcula ninguna puntuacion global: combinar "
        "evidencia heterogenea en un numero exigiria un metodo preregistrado que no existe.",
        source="research/track2_evidence.tsv · 80 celdas versionadas, cada una con fuente",
        lib="matplotlib", slug="fig07_track2_evidence_matrix")'''),
@@ -125,8 +126,8 @@ otro."""),
      "solo inferencia estructural y conservacion"),
  (2, "inestabilidad -> menos proteina", "T2-A", "ok",
      "niveles bajos en pacientes, incluso con missense, pero de otros alelos"),
- (3, "subir chaperonas -> SUBIR BUBR1", "T2-A", "contra",
-     "la evidencia va en direccion CONTRARIA: inhibir HSP90 lo hunde"),
+ (3, "subir chaperonas -> SUBIR BUBR1", "T2-A", "hueco",
+     "SIN RESOLVER: dependencia basal, la ganancia sin medir"),
  (4, "mas BUBR1 -> menos CIN", "T2-A", "ok",
      "gradiente 8,5-77 %; aneuploidia clara < ~50 % (DOI 10.1007/s00439-008-0572-y)"),
  (5, "aneuploidia -> estres proteotoxico", "T2-B", "ok",
@@ -136,7 +137,7 @@ otro."""),
  (7, "coinduccion FARMACOLOGICA\\n-> el mismo rescate", "T2-B", "contra",
      "cero evidencia directa; contraejemplo verificado (PMID 34481829)"),
  (8, "la intervencion -> efecto sobre CIN\\ny supervivencia clonogenica", "ambas", "vacio",
-     "NUNCA MEDIDO en ninguna direccion"),
+     "SIN EVIDENCIA QUE CUALIFIQUE en ninguna direccion"),
 ]
 COL = {"ok": fl.ALIVE, "parcial": fl.OPEN, "hueco": fl.DEAD, "contra": fl.DEAD,
        "vacio": fl.VOID}

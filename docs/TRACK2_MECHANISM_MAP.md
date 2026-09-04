@@ -43,12 +43,12 @@ puente **no vale** para otro.
 |---|---|---|---|---|---|
 | **1** | variante concreta de este paciente → inestabilidad de BUBR1 | T2-A | **HUECO** — solo inferencia estructural y conservación | *in silico* | **L0–L1** |
 | **2** | inestabilidad de BUBR1 → menos proteína | T2-A | Niveles muy bajos en pacientes con mutaciones en BUBR1, incluso missense, por inestabilidad | pacientes | `L5`, **de otros alelos** |
-| **3** | subir capacidad de chaperonas → **subir** abundancia de BUBR1 | T2-A | **HUECO CRÍTICO — la evidencia va en la dirección CONTRARIA.** Ver abajo | células | **L0** |
+| **3** | subir capacidad de chaperonas → **subir** abundancia de BUBR1 | T2-A | **HUECO CRÍTICO — `NEAR`, sin resolver.** Está demostrada la dependencia basal; la dirección de **ganancia** no se ha medido. No es contraevidencia. Ver abajo | células | **L0** |
 | **4** | más abundancia de BUBR1 → menos CIN | T2-A | Gradiente 8,5–77 % de proteína residual; aneuploidía clara por debajo del ~50 % (`Hum Genet` 2008, DOI 10.1007/s00439-008-0572-y) | HeLa shRNA | `L4` |
 | **5** | aneuploidía → estrés proteotóxico y mitocondrial | T2-B | p62 citosólico con precursores mitocondriales, importación deficiente, ADNmt bajo, ROS alto (`Nat Commun` 16:5328, DOI 10.1038/s41467-025-60857-4) | células isogénicas | `L4` |
 | **6** | subir HSP → rescate de ese estrés | T2-B | La **sobreexpresión genética** (HSP27, HSP90α, HSF1 WT y constitutivamente activo) redujo agregados y colocalización p62–TOMM20 — **pero el rescate dependió del cariotipo: una línea aneuploide no respondió igual** | células isogénicas | `L4`, **no universal** |
 | **7** | coinducción **farmacológica** → el mismo rescate | T2-B | **UNRESOLVED.** Cero evidencia DIRECT; contraevidencia en otro sistema; **tensión mecanística no resuelta** | — | **L0** |
-| **8** | la misma intervención → efecto sobre CIN y supervivencia clonogénica | ambas | **NUNCA MEDIDO** | — | **ausente** |
+| **8** | la misma intervención → efecto sobre CIN y supervivencia clonogénica | ambas | **SIN EVIDENCIA QUE CUALIFIQUE** en nuestra búsqueda bibliográfica acotada | — | **ausente** |
 
 ### El puente 3 es el hallazgo de esta auditoría
 
@@ -152,7 +152,7 @@ Esa es una pregunta mucho mejor que «¿funciona arimoclomol?».
 
 ### El puente 8 no existe en ninguna dirección
 
-Nadie ha medido qué le hace ninguna de estas intervenciones a la CIN o a la supervivencia
+Nuestra búsqueda acotada no encontró evidencia que cualifique sobre qué le hace ninguna de estas intervenciones a la CIN o a la supervivencia
 clonogénica de células aneuploides frente a euploides isogénicas. **Ese es el puente de
 seguridad, y está vacío.**
 
@@ -245,7 +245,7 @@ Hoy **ningún candidato reúne las cinco**, porque los puentes 7 y 8 están vac�
 
 | | Estado | Puente que la bloquea |
 |---|---|---|
-| **T2-A · rescate aguas arriba** | **ABIERTA · la más deseable** | **Puente 3** — sin resolver: solo hay evidencia de dependencia basal, nadie ha medido la dirección de ganancia. Y el puente 1 la ancla a este paciente |
+| **T2-A · rescate aguas arriba** | **ABIERTA · la más deseable** | **Puente 3** — sin resolver: solo hay evidencia de dependencia basal, y la dirección de ganancia sigue sin medir. Y el puente 1 la ancla a este paciente |
 | **T2-B · tolerancia aguas abajo** | **ABIERTA · clase mecanística superviviente principal de las evaluadas** | **Puentes 7 y 8** — el hueco farmacológico y el contra-test que nadie hizo |
 | Modulación del proteasoma | **NEGATIVE** | Sin fármaco aprobado con perfil aceptable; tolerancia dependiente de cariotipo |
 | Poda clonal | **NEGATIVE** — cerrado en brief §13 | Sin inhibidor aprobado; antimitóticos inaceptables en un niño |

@@ -2,7 +2,10 @@
 #
 #	QUE ES Y QUE NO ES
 #	  Es el instrumento para decidir cual seria el PRIMER experimento preclinico.
-#	  No es una nominacion. No lleva puntuacion global, ranking ni ganador, por
+#	  NO es una nominacion TERAPEUTICA ni de un ganador. SI es una nominacion de
+#	  BRAZOS para discriminacion preclinica: los tres estan propuestos para
+#	  ejecutarse. La distincion importa y el README la usa igual. No lleva
+#	  puntuacion global, ranking ni ganador, por
 #	  la misma razon que no lo lleva track2_evidence.tsv: combinar evidencia
 #	  heterogenea en un numero exige un metodo preregistrado que no existe.
 #	  Ningun candidato de esta tabla se propone para administracion.

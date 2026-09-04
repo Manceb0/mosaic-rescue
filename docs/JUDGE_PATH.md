@@ -56,13 +56,16 @@ exageración que este proyecto documenta haber evitado.
 descompone en **8 puentes × 10 dimensiones = 80 celdas**. **61 están vacías.** El puente 7 es
 el hueco **traduccional**, con contraevidencia verificada. El puente 8, si la intervención
 mueve a la vez inestabilidad cromosómica y supervivencia clonogénica, está **vacío en las diez
-dimensiones: nadie lo ha medido nunca**.
+dimensiones: nuestra búsqueda acotada no encontró evidencia que cualifique**.
 
 **Por qué esta.** Las celdas vacías **son** el resultado. Un argumento terapéutico parece
 fuerte casi siempre porque nadie dibujó la cadena.
 
 **Lo que NO se puede decir.** Que una celda `ABSENT` signifique que la afirmación es falsa.
-Significa que **nadie lo ha medido**. Y no hay puntuación global, a propósito.
+Significa que **nuestra búsqueda acotada no encontró evidencia que cualifique**, no que el
+mundo no haya mirado nunca. Tampoco que las 80 celdas sean 80 evidencias independientes:
+un mismo artículo llena varias, y las 7 fuentes distintas son el denominador honesto. Y no
+hay puntuación global, a propósito.
 
 **Criterio oficial:** impacto potencial (25 %) e innovación.
 

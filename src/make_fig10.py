@@ -30,7 +30,7 @@ BRIDGES = [
 COL = {"ok": "var(--alive)", "weak": "var(--open)", "gap": "var(--dead)",
        "against": "var(--dead)", "empty": "var(--void)"}
 LBL = {"ok": "evidencia publicada", "weak": "inferencia", "gap": "HUECO",
-       "against": "CONTRAEVIDENCIA", "empty": "NUNCA MEDIDO"}
+       "against": "CONTRAEVIDENCIA", "empty": "SIN EVIDENCIA QUE CUALIFIQUE"}
 
 # ---------------- A · los ocho puentes ----------------
 AY, BW, BH, GAP = 240, 250, 96, 34
@@ -112,7 +112,7 @@ svg = (
     f'<text x="70" y="{CY - CH}" class="mono">la tolerancia clonal de celulas aneuploides</text>\n'
     f'{b}\n'
     f'<text x="70" y="{H - 46}" class="lbl" fill="var(--void)">El puente 8 no esta debil: esta VACIO.</text>\n'
-    f'<text x="70" y="{H - 28}" class="mono">Nadie ha medido que le hace ninguna de estas '
+    f'<text x="70" y="{H - 28}" class="mono">Nuestra busqueda acotada no encontro evidencia que cualifique sobre que le hace ninguna de estas '
     'intervenciones a la CIN ni a la supervivencia clonogenica de celulas aneuploides frente a '
     'euploides isogenicas.</text>\n'
     f'<text x="70" y="{H - 14}" class="mono">Es el puente que decide si la hipotesis entra en el '

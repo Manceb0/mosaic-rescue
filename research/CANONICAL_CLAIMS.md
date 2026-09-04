@@ -72,7 +72,7 @@
 | **C25** | **T2-A (aguas arriba) y T2-B (aguas abajo) son rutas distintas** con consecuencias oncológicas potencialmente opuestas. No se agrupan bajo «proteostasis» | EXP-016 | `DERIVED` | alta | agrupación única | usar evidencia de una para respaldar la otra |
 | **C26** | **Puente 3 `UNRESOLVED`:** que inhibir HSP90 hunda al mutante demuestra dependencia basal, **no** que aumentar chaperonas lo suba | EXP-016 | `EXTERNAL` | alta | — | inferir la dirección inversa |
 | **C27** | **Puente 7 `UNRESOLVED`:** cero evidencia DIRECT. Contraevidencia en otro sistema humano (E18) y **tensión mecanística** (E19): el deterioro de HSF1 hace la vía **relevante Y la farmacología incierta** | EXP-016b | `EXTERNAL` | alta | «prior mecanístico en contra» | `NEGATIVE`; «el coinductor fallará» |
-| **C28** | **Puente 8 `NO DIRECT SAFETY DATA`:** nadie ha medido el efecto de ninguna de estas intervenciones sobre CIN o supervivencia clonogénica | EXP-016 | — | — | — | presentar rescate como beneficio neto |
+| **C28** | **Puente 8 `NO DIRECT SAFETY DATA`:** nuestra búsqueda bibliográfica **acotada** no encontró evidencia que cualifique sobre el efecto de ninguna de estas intervenciones en CIN o supervivencia clonogénica. La búsqueda se acotó a los puentes nombrados aquí; una más amplia podría llenar celdas que dejamos vacías | EXP-016 | — | — | — | presentar rescate como beneficio neto |
 | **C29** | Ni siquiera el rescate **genético** es universal: dependió del cariotipo, y una línea aneuploide no respondió igual | E1 | `EXTERNAL` | media | «subir HSP rescata la aneuploidía» | generalizar el rescate genético |
 
 ## Datos disponibles — realidad, no supuesto

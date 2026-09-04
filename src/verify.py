@@ -246,6 +246,90 @@ def figure_qa_cards():
     return True, f"{len(slugs)} publication figures, all with a QA card"
 
 
+def bridge_coherence():
+    """Lo que los documentos DICEN de cada puente coincide con lo que el TSV TIENE.
+
+    POR QUE EXISTE
+        Al reclasificar el puente 3 de CONTRADICTORY a NEAR, cinco documentos y
+        dos generadores de figura siguieron afirmando la clase vieja. Los nueve
+        controles anteriores pasaron en verde: comprueban estructura, conteos y
+        procedencia, pero ninguno leia lo que la PROSA afirma sobre la matriz.
+        Un repositorio puede estar estructuralmente perfecto y decir dos cosas
+        contradictorias sobre el mismo hecho.
+
+    QUE COMPRUEBA
+        1. Ningun documento canonico atribuye a un puente una clase que ese
+           puente no tiene en research/track2_evidence.tsv.
+        2. Ningun documento canonico usa una formulacion ABSOLUTA de ausencia
+           ("nadie lo ha medido", "nunca medido", "nobody has measured"). Una
+           celda vacia significa que NUESTRA busqueda acotada no encontro
+           evidencia que cualifique, no que el mundo no haya mirado.
+    """
+    import re
+    sys.path.insert(0, ROOT)
+    from src.figures.fig07_evidence import read as read_ev
+
+    ev = read_ev(os.path.join(ROOT, "research/track2_evidence.tsv"))
+    tiene = {}
+    for e in ev:
+        tiene.setdefault(int(e["puente"]), set()).add(e["clase"])
+
+    CANONICOS = ("README.md", "reports/TRACK1_REPORT.md", "reports/TRACK2_REPORT.md",
+                 "docs/TRACK2_MECHANISM_MAP.md", "research/CANONICAL_CLAIMS.md",
+                 "docs/JUDGE_PATH.md", "research/contradictions.md",
+                 "research/EXPERIMENT_REGISTRY.md", "research/SCIENTIFIC_CRITICAL_PATH.md",
+                 "src/nb/nb07_track2.py", "src/make_fig10.py",
+                 "research/track2_candidates.tsv")
+    CLASES = ("DIRECT", "NEAR", "GENETIC", "CONTRADICTORY")
+
+    # Una frase que NIEGA o corrige no cuenta: "paso de CONTRADICTORY a NEAR"
+    # es historia, no afirmacion vigente.
+    NIEGA = ("no contradicho", "pasan de", "paso de", "reclasific", "era un error",
+             "antes dec", "una version anterior", "superad", "reclassified",
+             "an earlier version", "not contradicted")
+
+    malos, absolutos = [], []
+    ABS = re.compile(r"nunca medido|nadie (?:lo )?ha medido|nobody has measured|"
+                     r"never been measured", re.I)
+
+    for doc in CANONICOS:
+        p = os.path.join(ROOT, doc)
+        if not os.path.exists(p):
+            continue
+        for n, linea in enumerate(io.open(p, encoding="utf-8", errors="replace"), 1):
+            if any(k in linea.lower() for k in NIEGA):
+                continue
+            for m in re.finditer(r"(?:puente|bridge)\s*(\d)", linea, re.I):
+                b = int(m.group(1))
+                if b not in tiene:
+                    continue
+                ventana = linea[m.start():m.start() + 220]
+                for c in CLASES:
+                    if c not in ventana or c in tiene[b]:
+                        continue
+                    # "cero evidencia DIRECT" y "NO DIRECT SAFETY DATA" AFIRMAN
+                    # la ausencia de esa clase, que es justo lo que el TSV dice.
+                    # Sin esto el control confunde negar una clase con
+                    # atribuirla, y castiga al documento por ser preciso.
+                    j = ventana.find(c)
+                    antes = ventana[max(0, j - 34):j].lower()
+                    if any(k in antes for k in ("cero", "sin ", "no ", "ningun",
+                                                "zero", "without", "0 ")):
+                        continue
+                    malos.append(f"{doc}:{n} dice {c} del puente {b}, "
+                                 f"que tiene {sorted(tiene[b] - {'ABSENT'}) or 'solo ABSENT'}")
+            if ABS.search(linea):
+                absolutos.append(f"{doc}:{n}")
+
+    if malos:
+        return False, f"clase que el TSV no respalda: {malos[:4]}"
+    if absolutos:
+        return False, ("formulacion absoluta de ausencia (usa la busqueda ACOTADA): "
+                       f"{absolutos[:6]}")
+    return True, (f"{len(tiene)} bridges: no document claims a class the matrix lacks, "
+                  "and no absolute absence wording survives")
+
+
 def privacy_scan():
     code, out = run([sys.executable, "src/sanitize_scan.py"])
     has_list = "valores prohibidos cargados   : 0" not in out
@@ -267,6 +351,7 @@ CHECKS = [("unit tests", tests),
           ("Track 2 candidate matrix", candidate_matrix),
           ("contradiction count", contradiction_count),
           ("figure QA cards", figure_qa_cards),
+          ("bridge coherence", bridge_coherence),
           ("privacy scan", privacy_scan),
           ("superseded-claim audit", stale_claims)]
 

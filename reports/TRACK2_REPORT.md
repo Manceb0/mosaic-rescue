@@ -89,7 +89,7 @@ named here, and a wider one could fill cells we left empty.
 |---|---|---|
 | 1 | This patient's variant destabilises BUBR1 | Only one non-empty cell, and it is `NEAR`, not `DIRECT` |
 | 2 | Destabilised BUBR1 lowers protein level | Supported, but from other alleles |
-| 3 | Raising chaperone capacity raises BUBR1 | **`CONTRADICTORY` in two dimensions** |
+| 3 | Raising chaperone capacity raises BUBR1 | **`NEAR` in two dimensions; bridge unresolved.** Basal dependence is established; the gain direction is unmeasured |
 | 4 | More BUBR1 means less chromosome instability | Partial |
 | 5 | Aneuploidy causes proteotoxic and mitochondrial stress | Supported |
 | 6 | Raising HSP levels rescues that stress | `GENETIC` only |
@@ -101,7 +101,7 @@ way because nobody drew the chain.
 
 ## 4 · The counter-evidence, stated first
 
-Four verified results that work against the preferred hypothesis.
+Verified findings that constrain the preferred hypothesis. They are not all counter-evidence: bridge 3 was reclassified from `CONTRADICTORY` to `NEAR` because necessary-direction evidence is not evidence against.
 
 **Bridge 3 is unresolved, not contradicted.** Inhibiting HSP90 *collapses* missense BUBR1
 mutants (PMID 20516114). That demonstrates **basal dependence** on chaperones — the same
@@ -273,7 +273,7 @@ predisposition syndrome.
 
 So any candidate must be shown to move the system toward a corridor in which chromosome
 instability falls *and* clonogenic survival does not rise. Bridge 8 asks exactly this, and it
-is **empty in all ten dimensions**. Nobody has measured it, for any of these compounds, in any
+is **empty in all ten dimensions**. In our bounded literature search, no qualifying evidence was found it, for any of these compounds, in any
 system.
 
 ## 7 · The experiment
