@@ -97,11 +97,14 @@ fig = FBAF.build(sim, BAFS_PUB, F)
 _pv = [r["power_baf"] for r in sim["results"] if r["mode"] == "variegated"]
 fl.pub(fig, "Figura principal A · distribuciones de BAF y potencia",
        "EXP-015a", "SIMULATED", "SIMULATION",
-       f"la cancelacion, vista donde ocurre y con la MISMA escala en los tres paneles: el "
+       f"el recentrado, visto donde ocurre y con la MISMA escala en los tres paneles: el "
        f"euploide se centra en 0,5; el clonal se desplaza hacia los dos modos esperados, "
        f"marcados; y el variegado, con la misma fraccion celular de aneuploidia, VUELVE a "
-       f"centrarse en 0,5. El panel D lo cuantifica: la potencia del BAF en variegado cae de "
-       f"{_pv[0]:.3f} a {_pv[-1]:.3f} segun CRECE el evento.",
+       f"centrarse en 0,5. El panel D cuantifica el estadistico ABSOLUTO, cuya potencia en "
+       f"variegado cae de {_pv[0]:.3f} a {_pv[-1]:.3f}. ATENCION: esa caida NO la produce la "
+       f"cancelacion. EXP-015c lo falso -- un valor absoluto es ciego al signo -- y la produce "
+       f"la profundidad dependiente del numero de copia. Lo que la cancelacion SI mueve es el "
+       f"estadistico CON SIGNO, de 0,980 a 0,050.",
        "nada sobre el paciente: no hay ni un dato suyo. Y no demuestra superioridad sobre el "
        "metodo estandar: el comparador es una desviacion de BAF por sitio y sin fase, que no es "
        "MoChA, y eso esta escrito dentro del panel para que sobreviva a un recorte. La "
@@ -115,7 +118,13 @@ fl.pub(fig, "Figura principal A · distribuciones de BAF y potencia",
 ("md", """### Robustez · las cuatro predicciones, con el marcador
 
 Dos se confirmaron y **dos fallaron**. La #4 falló de una forma que obliga a rebajar la
-conclusión, y por eso las dos hipótesis se separan."""),
+conclusión, y por eso las dos hipótesis se separan.
+
+> **Y la #2 hubo que partirla en dos.** Se marcó como confirmada leyéndola sobre el estadístico
+> **absoluto**, y ahí la caída no la produce la cancelación sino la profundidad (EXP-015c). Sobre
+> el estadístico **con signo**, que es al que la cancelación puede afectar, la predicción se
+> cumple: 0,980 → 0,050. El marcador de abajo conserva la lectura original; la corrección va
+> aquí, al lado, porque el preregistro no se reescribe."""),
 
 ("code", '''PRED = [
  ("#1 el BAF detecta clonal desde\\nfracciones bajas",      0, "solo 0,28 al 10 %"),

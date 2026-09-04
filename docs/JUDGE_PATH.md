@@ -34,14 +34,19 @@ Manhattan, hay que corregirlo en el momento.
 
 ## 2 · `fig06_baf_cancellation` — la innovación
 
-**Qué se dice.** En aneuploidía **variegada**, el estadístico BAF sitio a sitio **pierde
-potencia según crece el evento**, porque las contribuciones de linajes distintos se cancelan:
-la potencia cae a **0,000** al 20 % de fracción celular, mientras un índice de dispersión de
-cobertura conserva **1,000**. El genoma vuelve a centrarse en 0,5 **con la aneuploidía
-presente**.
+**Qué se dice.** En aneuploidía **variegada** simulada, las ganancias balanceadas de
+homólogos **recentran el BAF agregado con signo** hacia 0,5: la potencia del estadístico con
+signo cae de **0,980** a **0,050** —el azar— solo con mezclar la dirección del homólogo. El
+genoma vuelve a centrarse en 0,5 **con la aneuploidía presente**.
 
-**Por qué esta.** Es el único resultado del proyecto que es un hallazgo metodológico general,
-no una observación sobre este paciente. Es lo más citable.
+**Lo que ya no se dice, y por qué.** La versión anterior atribuía a esa cancelación el desplome
+a 0,000 de un estadístico **absoluto**. Una auditoría propia lo falsó: `|BAF−0,5|` es ciego al
+signo, así que la cancelación no puede moverlo, y la ablación 2×2 de EXP-015c lo confirma
+—0,520 frente a 0,505 con la profundidad igualada—. Ese desplome lo producía comparar contra un
+nulo de otra profundidad. La corrección está en `docs/MOSAIC_SIMULATION.md`.
+
+**Por qué esta.** Sigue siendo el resultado más general del proyecto, y ahora viene con su
+propia falsación al lado, que es la parte que un jurado no espera ver.
 
 **Lo que NO se puede decir.** Que superamos a MoChA. **El comparador no es MoChA**: carece de
 fase de largo alcance. Esa rama está marcada `UNVALIDATED · PARKED` y la propia figura lo lleva
@@ -64,7 +69,8 @@ fuerte casi siempre porque nadie dibujó la cadena.
 **Lo que NO se puede decir.** Que una celda `ABSENT` signifique que la afirmación es falsa.
 Significa que **nuestra búsqueda acotada no encontró evidencia que cualifique**, no que el
 mundo no haya mirado nunca. Tampoco que las 80 celdas sean 80 evidencias independientes:
-un mismo artículo llena varias, y las 7 fuentes distintas son el denominador honesto. Y no
+un mismo artículo llena varias, y el denominador honesto son **4 publicaciones distintas más 2
+artefactos internos** del proyecto. Y no
 hay puntuación global, a propósito.
 
 **Criterio oficial:** impacto potencial (25 %) e innovación.

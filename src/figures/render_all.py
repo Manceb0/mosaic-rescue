@@ -36,7 +36,7 @@ FIGURES = [
      "The y axis is a prioritization score, not a p-value."),
     ("fig02_browser", "fig02_gene_browser", "02_BUB1B_ALLELE_CURATION",
      "DATA", "EXTERNAL+MEASURED",
-     "No demonstrable hotspot anywhere in the gene: 1,497 ClinVar missense, 98 % VUS, "
+     "No demonstrable hotspot anywhere in the gene: 1,497 ClinVar missense, 95.3 % VUS, "
      "one P/LP, so PM1 does not apply here or anywhere else."),
     ("fig03_pocket", "fig03_pocket_and_conservation", "03_BUBR1_MECHANISM",
      "MODEL_OUTPUT", "PREDICTED+EXTERNAL",

@@ -19,7 +19,7 @@ La evidencia está, por tanto, en ficheros **parseables y validados por `src/ver
 
 | Artefacto | Qué contiene | Validado por |
 |---|---|---|
-| [`research/track2_evidence.tsv`](track2_evidence.tsv) | 8 puentes × 10 dimensiones = **80 celdas**. Vocabulario cerrado `DIRECT/NEAR/GENETIC/CONTRADICTORY/ABSENT`. **61 vacías**, 9 `DIRECT`, 5 `CONTRADICTORY`, 7 fuentes distintas | `verify.py`: ninguna celda no-`ABSENT` puede quedarse sin fuente |
+| [`research/track2_evidence.tsv`](track2_evidence.tsv) | 8 puentes × 10 dimensiones = **80 celdas**. Vocabulario cerrado `DIRECT/NEAR/GENETIC/CONTRADICTORY/ABSENT`. **61 vacías**, 9 `DIRECT`, 5 `NEAR`, 3 `CONTRADICTORY`, 2 `GENETIC`, sobre 4 publicaciones distintas + 2 artefactos internos | `verify.py`: ninguna celda no-`ABSENT` puede quedarse sin fuente |
 | [`research/track2_candidates.tsv`](track2_candidates.tsv) | **3 intervenciones y 3 controles**, con evidencia directa, indirecta, contraria, exposición, seguridad y regla de descarte | `verify.py`: roles cerrados y todo lo afirmado lleva identificador |
 | [`research/contradictions.md`](contradictions.md) | **13 contradicciones aceptadas** contra nuestras propias ideas preferidas, con su gravedad y la decisión que provocaron | revisión humana |
 | [`docs/EVIDENCE.md`](../docs/EVIDENCE.md) | Referencias verificadas en sesión contra PubMed, con nivel `L0`–`L5`, limitación y falsador | revisión humana |

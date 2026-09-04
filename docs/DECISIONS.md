@@ -656,6 +656,39 @@ cobertura** (2 + f₁ − f₂).
 **La #3 es la que decide.** Si el índice de dispersión no conserva potencia donde el BAF se
 cancela, **no aporta nada** y se abandona.
 
+> ### ⟵ CORRECCIÓN POSTERIOR · EXP-015c · el preregistro de arriba NO se ha tocado
+>
+> Todo lo anterior queda tal como se escribió, antes de ver los datos. Lo que sigue es el
+> estado **actual**, y contradice en parte cómo se explicó el resultado.
+>
+> **Afirmación original:** el desplome de potencia del estadístico de BAF **sitio a sitio y
+> absoluto** se debe a la cancelación entre linajes.
+> **Resultado: FALSADA.** El estadístico es `abs(alt/dp − 0,5)`, un valor absoluto, y es
+> **ciego al signo**: la aleatorización de homólogo no puede moverlo. La ablación 2×2 de
+> `src/mosaic/ablation_baf.py` lo confirma — con la profundidad igualada, la potencia es 0,520
+> con dirección fija y 0,505 con dirección mezclada. Lo que produce el desplome es que el brazo
+> aneuploide se simula a mayor profundidad, porque la copia extra sube la cobertura a (2+f)/2 y
+> `|BAF−0,5|` encoge con la profundidad. La pista estaba en el propio número: **0,000 está por
+> debajo de alpha = 0,05**, y la predicción #2 de arriba había escrito *«potencia próxima al
+> azar»*, no cero.
+>
+> **Lo que sobrevive:** las mezclas balanceadas de homólogos **sí** recentran el BAF agregado
+> **con signo** hacia 0,5. Sobre el estadístico con signo la potencia cae de **0,980 a 0,050**
+> al mezclar la dirección, y la profundidad no lo mueve. La predicción #2, leída sobre el
+> estadístico correcto, se cumple.
+>
+> **Lo que sigue sin resolver:** si un detector de WGS bulk clínicamente útil puede explotar la
+> dispersión residual o una señal con fase en MVA. `EXP-015b` sigue **`UNVALIDATED · PARKED`**.
+> El estadístico normalizado por la varianza binomial esperada elimina el confundido *en
+> simulación*; eso demuestra que el confundido existía, no que haya detector.
+>
+> **La profundidad no era un fallo de codificación.** Con una ganancia cromosómica real, más
+> copias producen más lecturas. El error fue comparar contra un nulo de otra profundidad un
+> estadístico cuya varianza depende de ella. El confundido es entre **dirección de homólogo** y
+> **profundidad dependiente del número de copia**.
+>
+> Detalle completo en `docs/MOSAIC_SIMULATION.md`.
+
 ### Regla de decisión, fijada ahora
 
 | Resultado | Qué se hace |

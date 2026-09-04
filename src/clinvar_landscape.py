@@ -108,13 +108,37 @@ for w in sorted(win):
     print(f"  {w:>4}-{w+99:<9}{p_:>6}{b_:>7}{v_:>7}{x_:>8}   {ratio:>8}{marca}")
 
 # --- datos para la figura ---
-out = []
-for r in coding:
+# El fichero que consumen fig02, make_fig2b, make_landscape_figure y el
+# notebook 02 es landscape_missense.json, y hasta esta correccion NO lo escribia
+# ningun fichero versionado del repositorio: existia solo en work/. El que si se
+# generaba, landscape.json, no lo leia nadie y se anunciaba como "datos de la
+# figura". Ahora se emiten los dos y cada uno dice lo que es.
+#
+# `totals` cuenta TODAS las clases que aparecen en `variants`, no un subconjunto.
+# La version anterior declaraba solo P/LP, B/LB y VUS: sumaba 1 462 mientras el
+# rotulo de la figura decia 1 497, porque CONFLICTIVA y "otra" desaparecian sin
+# dejar rastro. Un reparto que no cubre su propio denominador es la clase de
+# descuadre que un revisor usa para dudar del resto de las cifras.
+def _pos_of(r):
     try:
-        pos = int(str(r["pp"]).split("-")[0].split("/")[0])
+        return int(str(r["pp"]).split("-")[0].split("/")[0])
     except ValueError:
-        continue
-    out.append({"pos": pos, "cls": r["cls"]})
-io.open("work/clinvar/landscape.json", "w", encoding="utf-8").write(
-    json.dumps({"variants": out, "candidate": RES}, ensure_ascii=False))
-print(f"\n  datos de la figura -> work/clinvar/landscape.json ({len(out)} puntos)")
+        return None
+
+
+def _dump(rows_subset, path, etiqueta):
+    variants = [{"pos": _pos_of(r), "cls": r["cls"]}
+                for r in rows_subset if _pos_of(r) is not None]
+    totals = collections.Counter(v["cls"] for v in variants)
+    assert sum(totals.values()) == len(variants), "el reparto no cubre el denominador"
+    io.open(path, "w", encoding="utf-8").write(json.dumps(
+        {"variants": variants, "totals": dict(totals), "candidate": RES},
+        ensure_ascii=False))
+    reparto = "  ".join(f"{k} {v:,}" for k, v in totals.most_common())
+    print(f"  {etiqueta:<24} -> {path} ({len(variants):,} registros: {reparto})")
+
+
+missense = [r for r in coding if "missense_variant" in r["con"]]
+print(f"\n{'='*66}\nDATOS PARA LAS FIGURAS\n{'='*66}")
+_dump(missense, "work/clinvar/landscape_missense.json", "solo missense")
+_dump(coding, "work/clinvar/landscape.json", "todo lo codificante")

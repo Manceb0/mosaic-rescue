@@ -27,8 +27,16 @@ from matplotlib.patches import Patch
 sys.path.insert(0, ".")
 from src.figures import style as S                                     # noqa: E402
 
-CLASS_COL = {"P/LP": S.VERM, "B/LB": S.BLUE, "VUS": "#B9C0C6"}
-CLASS_MARK = {"P/LP": "D", "B/LB": "s", "VUS": "o"}
+# Cinco clases, no tres. Dibujar solo P/LP, B/LB y VUS borraba del panel los
+# 28 registros CONFLICTIVA y los 7 sin clasificar, mientras la cabecera seguia
+# diciendo "all 1 497, one mark per record". La clase silenciada era ademas la
+# unica que puede contener missense con submisiones P/LP en disputa: quitarla
+# presentaba el paisaje como una dicotomia limpia VUS/benigno que no existe.
+CLASS_COL = {"P/LP": S.VERM, "B/LB": S.BLUE, "VUS": "#B9C0C6",
+             "CONFLICTIVA": S.ORANGE, "otra": S.MUTED}
+CLASS_MARK = {"P/LP": "D", "B/LB": "s", "VUS": "o",
+              "CONFLICTIVA": "^", "otra": "x"}
+CLASS_ORDER = ("VUS", "B/LB", "CONFLICTIVA", "otra", "P/LP")
 BIN_AA = 25
 
 
@@ -96,10 +104,10 @@ def build(tx: dict, clinvar: dict, marks: dict):
     for k, dm in enumerate(domains):                 # domains carried down
         axC.axvspan(dm["start"], dm["end"], color=dcol[k % len(dcol)], alpha=0.06,
                     lw=0, zorder=0)
-    zo = {"VUS": 2, "B/LB": 4, "P/LP": 6}
+    zo = {"VUS": 2, "B/LB": 4, "otra": 5, "CONFLICTIVA": 6, "P/LP": 8}
     for pos in sorted(per):
         base = 0
-        for cls in ("VUS", "B/LB", "P/LP"):
+        for cls in CLASS_ORDER:
             n = per[pos][cls]
             if not n:
                 continue
@@ -114,14 +122,19 @@ def build(tx: dict, clinvar: dict, marks: dict):
     axC.set_ylim(0, hi + 3.0)
     axC.set_ylabel("ClinVar records at residue")
     S.panel(axC, "C")
+    n_drawn = sum(sum(c.values()) for c in per.values())
+    assert n_drawn == n_rec, (
+        f"la cabecera dice 'all {n_rec}' y el panel dibuja {n_drawn}. "
+        "Una cabecera que reclama completitud tiene que poder demostrarla.")
     S.head(axC, f"ClinVar missense records: all {S.thousands(n_rec)}, "
                 f"one mark per record, at {S.thousands(len(per))} distinct residues")
     S.grid(axC)
     axC.legend(handles=[Line2D([], [], color=CLASS_COL[k], marker=CLASS_MARK[k],
                                lw=1.4, ms=4.2,
                                label=f"{k}  n = {S.thousands(totals.get(k, 0))}")
-                        for k in ("P/LP", "B/LB", "VUS")],
-               loc="upper left", ncol=3, fontsize=S.BASE - 1.0,
+                        for k in ("P/LP", "B/LB", "VUS", "CONFLICTIVA", "otra")
+                        if totals.get(k, 0)],
+               loc="upper left", ncol=5, fontsize=S.BASE - 1.0,
                bbox_to_anchor=(0.0, 1.0))
 
     # Case alleles: a full-height guide through the variation tracks, labelled
@@ -158,8 +171,11 @@ def build(tx: dict, clinvar: dict, marks: dict):
     # tira de procedencia lo da el bottom por defecto, no el rect.
     S.note(fig, f"Exons and domains: Ensembl REST release {tx['release']}, request carries the "
                 f"gene symbol only.  ·  Variation: ClinVar, {S.thousands(n_rec)} missense "
-                f"records ({100 * totals['VUS'] / sum(totals.values()):.0f} % VUS, "
-                f"{totals.get('P/LP', 0)} P/LP in the whole gene).\n"
+                f"records: {S.thousands(totals['VUS'])} VUS "
+                f"({100 * totals['VUS'] / n_rec:.1f} % of all records), "
+                f"{totals.get('B/LB', 0)} B/LB, {totals.get('CONFLICTIVA', 0)} conflicting, "
+                f"{totals.get('otra', 0)} unclassified, and "
+                f"{totals.get('P/LP', 0)} P/LP in the whole gene.\n"
                 "Case alleles are marked by position and are deliberately unlabelled; their "
                 "residue numbers appear nowhere in this figure or its SVG text.")
     return fig

@@ -80,7 +80,8 @@ enforced at build time: **no non-absent cell may exist without a source.**
 Result: **80 cells, of which 61 are empty.**
 
 Two things that matrix is not, and both matter. **The 80 cells are not 80 independent pieces of
-evidence** — a single paper fills several of them, and the seven distinct sources are the honest
+evidence** — a single paper fills several of them, and **4 distinct publications plus 2 internal
+project artefacts** are the honest
 denominator. And **an empty cell records that no qualifying evidence was found in our bounded
 literature search**, not that the world has never looked; the search was scoped to the bridges
 named here, and a wider one could fill cells we left empty.
@@ -315,22 +316,33 @@ lack a source, turns "the mechanism is plausible" into a map with 61 measurable 
 **Roles instead of a ranking.** `ALLELE` / `SENTINEL` / `ADVERSARIAL` / `CONTROL` replaces the
 wrong question ("which is best?") with the useful one ("what dies if each fails?").
 
-**A quantified failure mode of the site-wise unphased BAF baseline used here.** Under a
-preregistered simulation, in *variegated* aneuploidy that baseline loses power as the event
-grows, because contributions from different lineages cancel — power falls to 0.000 at 20 % cell
-fraction, while a coverage-dispersion index retains 1.000.
+**A preregistered simulation, and our own falsification of how we first explained it.**
+Under simulation, balanced variegated homolog gains **recenter the signed aggregate BAF** toward
+0.5: the power of the signed statistic falls from **0.980** to **0.050** — chance — when the
+homolog direction is mixed, and matching the depth does not move it.
 
-Three limits travel with that sentence and none is optional. The cancellation was reproduced
-**under simulation**, not observed in patient data. **The comparator is not MoChA** and carries
-no long-range phasing. And **no superiority over a phased method is demonstrated**; that branch
-is marked `UNVALIDATED · PARKED`. It is a failure mode of *this* baseline, not a general claim
-about every standard method.
+We first published a second, stronger claim: that the power collapse of the **site-wise absolute**
+statistic `|BAF − 0.5|` was caused by that same cancellation. **Our own adversarial audit falsified
+it.** An absolute statistic is blind to sign, so cancellation cannot move it; the 2×2 ablation
+(EXP-015c) shows direction changing nothing — 0.520 against 0.505 at matched depth — while depth
+changes everything. The collapse *below* alpha came from comparing a depth-sensitive statistic
+against a null at a different depth, because the extra copy raises coverage to (2+f)/2. That is a
+confound between homolog-direction mixing and copy-number-dependent depth, not a coding slip: more
+copies really do produce more reads.
+
+Four limits travel with what is left, and none is optional. The recentering was reproduced **under
+simulation**, not observed in patient data. **The comparator is not MoChA** and carries no
+long-range phasing. **No superiority over a phased method is demonstrated**; that branch stays
+`UNVALIDATED · PARKED`. And the depth-normalised statistic that removes the confound in simulation
+is **not** a validated detector — it shows the confound existed, nothing more.
 
 ## 10 · Scalability
 
-Measured, not asserted: **29 of 65 modules in `src/`, 4 214 of 11 818 lines (36 %), contain no
+Measured, not asserted: **30 of 67 modules in `src/`, 4 395 of 12 666 lines (35 %), contain no
 reference to this case at all** (`python src/scalability_census.py`). That is a floor, since the
-measure is textual and many of the remaining modules name the case only in figure titles.
+measure is textual and many of the remaining modules name the case only in figure titles. These
+five numbers are recomputed by `src/verify.py`, which fails if this report and the census drift
+apart — a hand-written number under the words *measured, not asserted* goes stale in silence.
 
 What transfers is the **method**: the frozen preregistered ranking that is never rewritten, the
 bridge matrix, the role-based portfolio, the cheap-falsifier competitor audit

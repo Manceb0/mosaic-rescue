@@ -183,7 +183,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | | |
 |---|---|
 | **notebook** | `06_MOSAIC_AND_MITOREAD` |
-| **source data** | `src/mosaic/simulate_dispersion.py`, seed 42 (preregistered) |
+| **source data** | `src/mosaic/simulate_dispersion.py`, seed 42 (preregistered), plus the 2x2 ablation `src/mosaic/ablation_baf.py` (EXP-015c) |
 | **n** | 200 replicates per cell · 400 sites/chromosome · 3 affected chromosomes · 1 200 sites per panel · depth 44× |
 | **axes / units** | A–C: BAF (fraction) × density, identical scales · D: cell fraction (%) × power at fixed FPR 0.05 |
 | **statistic represented** | site-level BAF distributions; power against a fixed false-positive rate |
@@ -191,8 +191,8 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | **EVIDENCE ORIGIN** | `SIMULATED`, not one value from the case |
 | **uncertainty represented?** | yes, the distributions *are* the uncertainty; power is estimated from 200 replicates |
 | **uncertainty quantified?** | sampling yes; **model misspecification no**, and that is the dominant term |
-| **possible misleading interpretation** | **that the dispersion index beats the standard method.** The comparator is a site-wise *unphased* BAF statistic; MoChA gets its power from long-range phasing and is not reproduced here. Second risk: reading simulated power as achievable power. |
-| **correction applied** | the comparator is named `site-wise unphased BAF statistic` in the legend, and a boxed note inside the panel reads "NOT MoChA: no long-range phasing" so it survives a crop; the provenance strip states the power is optimistic, no GC bias, no mappability, no reference-allele bias |
+| **possible misleading interpretation** | **that the power collapse of panel D is caused by lineage cancellation.** It is not, and this document certified the wrong explanation for months. `\|BAF-0.5\|` is an *absolute* statistic and therefore blind to the sign randomisation; the collapse is driven by copy-number-dependent depth, since the extra copy raises coverage to (2+f)/2 while the null stays at 44x. The 2x2 ablation of EXP-015c separates the two: direction changes nothing (0.520 against 0.505 at matched depth) and depth changes everything. What cancellation *does* move is the **signed** statistic, 0.980 to 0.050. Second risk: **that the dispersion index beats the standard method.** The comparator is a site-wise *unphased* BAF statistic; MoChA gets its power from long-range phasing and is not reproduced here. Third: reading simulated power as achievable power. |
+| **correction applied** | the provenance strip now names the statistic as ABSOLUTE, states that the project's own audit falsified its first explanation, and gives both numbers; the comparator is named `site-wise unphased BAF statistic` in the legend, and a boxed note inside the panel reads "NOT MoChA: no long-range phasing" so it survives a crop; the strip states the power is optimistic, no GC bias, no mappability, no reference-allele bias. The correction is written next to the untouched preregistration in `docs/DECISIONS.md`. |
 | **full-size render checked?** | yes |
 
 ---
@@ -203,7 +203,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 |---|---|
 | **notebook** | `07_TRACK2_SAFE_RESCUE` |
 | **source data** | `research/track2_evidence.tsv`, versioned, one row per cell |
-| **n** | 8 bridges × 10 dimensions = 80 cells · 7 distinct sources |
+| **n** | 8 bridges × 10 dimensions = 80 cells · 4 distinct publications + 2 internal artefacts |
 | **axes / units** | categorical × categorical. **No numeric axis, on purpose.** |
 | **statistic represented** | none. It is an inventory with a five-value closed vocabulary: `DIRECT` `GENETIC` `NEAR` `CONTRADICTORY` `ABSENT`. |
 | **FIGURE CLASS** | `CURATED_EVIDENCE` |
@@ -211,7 +211,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | **uncertainty represented?** | structurally: 61 of 80 cells are empty and that emptiness is the message |
 | **uncertainty quantified?** | **no**, and it must not be, see below |
 | **possible misleading interpretation** | **that these 80 cells are experimental observations of the patient.** Calling it plain "data" would invite exactly that, which is why the class is written out in full in the title and the stamp. Second risk: that the coloured cells can be added up into a score or a winner. |
-| **correction applied** | title reads `CURATED EVIDENCE MATRIX (external literature + project evidence, not patient observations)`; the provenance strip states that no overall score, weight or ranking is computed and why, combining heterogeneous evidence needs a preregistered method and none exists; it also states that ABSENT means nobody measured it, not that the claim is false. Build-time assertion: no cell other than ABSENT may lack a source. |
+| **correction applied** | title reads `CURATED EVIDENCE MATRIX (external literature + project evidence, not patient observations)`; the provenance strip states that no overall score, weight or ranking is computed and why, combining heterogeneous evidence needs a preregistered method and none exists; it also states that ABSENT means **no qualifying evidence was identified in our scoped literature search** — not that the claim is false, and not that nobody has ever looked. That last clause is a correction: this card previously certified the absolute wording *nobody measured it*, which is a claim about the world rather than about the scope of our search, and it travelled inside the published SVG. The `bridge coherence` check now reads `src/figures/` too, because the one text a judge actually sees was the one text that check did not read. Build-time assertion: no cell other than ABSENT may lack a source. |
 | **full-size render checked?** | yes |
 
 ---

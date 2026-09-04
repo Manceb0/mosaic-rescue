@@ -62,5 +62,5 @@ paciente. Retirada con su arquitectura.
 
 | # | Pregunta | Respuesta | Estado |
 |---|---|---|---|
-| 27 | ¿Qué haría este proyecto verdaderamente novedoso? | Dos candidatos: **(a)** el modo de fallo del BAF en aneuploidía variegada, cuantificado (EXP-015a); **(b)** el mapa de puentes que localiza el hueco traduccional en vez de saltárselo | **resuelta** |
+| 27 | ¿Qué haría este proyecto verdaderamente novedoso? | Dos candidatos: **(a)** el recentrado del BAF con signo en aneuploidía variegada, cuantificado (EXP-015a) **y la falsación por nosotros mismos de nuestra primera explicación de él** (EXP-015c), que es la parte que un jurado no espera ver; **(b)** el mapa de puentes que localiza el hueco traduccional en vez de saltárselo | **resuelta** |
 | 28 | ¿Cuál es el experimento más fuerte que podría demostrar que nos equivocamos? | Un ensayo de abundancia de BUBR1 **específico de variante** en células del paciente, con brazo genético y farmacológico en la misma placa. Si `ca-HSF1` sube BUBR1 y arimoclomol no, cae la traducción farmacológica. Si **ninguno** sube BUBR1, cae la ruta T2-A entera | **resuelta** |

@@ -27,7 +27,7 @@ WHAT THIS CHECKS, AND WHAT IT CANNOT
     The report below says which of the two happened.
 """
 from __future__ import annotations
-import io, os, subprocess, sys, time
+import csv, io, os, subprocess, sys, time
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -94,8 +94,13 @@ def evidence_matrix():
               if e["clase"] != "ABSENT" and not e["fuente"].strip()]
     if orphan:
         return False, f"cells without a source: {orphan}"
-    sources = len({e["fuente"] for e in ev if e["fuente"].strip()})
-    return True, (f"{len(ev)} cells over {len(bridges)} bridges, {sources} sources, "
+    # una publicacion citada con y sin su DOI es UNA publicacion. Contar
+    # cadenas daba 7 donde la figura enumeraba 6, y ese numero es el
+    # denominador de honestidad de toda la matriz.
+    from src.figures.fig07_evidence import publications
+    pubs, internos = publications([e["fuente"] for e in ev])
+    return True, (f"{len(ev)} cells over {len(bridges)} bridges, {len(pubs)} distinct "
+                  f"publications + {len(internos)} internal artefacts, "
                   "every non-absent cell sourced")
 
 
@@ -279,7 +284,12 @@ def bridge_coherence():
                  "docs/JUDGE_PATH.md", "research/contradictions.md",
                  "research/EXPERIMENT_REGISTRY.md", "research/SCIENTIFIC_CRITICAL_PATH.md",
                  "src/nb/nb07_track2.py", "src/make_fig10.py",
-                 "research/track2_candidates.tsv")
+                 "research/track2_candidates.tsv",
+                 # el BLOCKER vivia en un modulo de figura, y la lista no
+                 # incluia ninguno: el unico texto que el jurado ve era el
+                 # unico que este control no leia
+                 "src/figures/fig07_evidence.py", "src/figures/fig08_portfolio.py",
+                 "src/figures/fig06_baf.py", "src/make_fig9.py", "CITATION.cff")
     CLASES = ("DIRECT", "NEAR", "GENETIC", "CONTRADICTORY")
 
     # Una frase que NIEGA o corrige no cuenta: "paso de CONTRADICTORY a NEAR"
@@ -289,8 +299,13 @@ def bridge_coherence():
              "an earlier version", "not contradicted")
 
     malos, absolutos = [], []
-    ABS = re.compile(r"nunca medido|nadie (?:lo )?ha medido|nobody has measured|"
-                     r"never been measured", re.I)
+    # la regex anterior exigia "nobody HAS measured" y el artefacto escribia
+    # "nobody measured it"; y pedia "never BEEN measured" mientras el
+    # docstring decia "never measured". Un control que solo reconoce una
+    # conjugacion no cubre el idioma.
+    ABS = re.compile(r"nunca medido|nadie (?:lo )?ha medido|nadie lo ha mirado|"
+                     r"nobody (?:has )?measured|never (?:been )?measured|"
+                     r"has never been measured|no one has measured", re.I)
 
     for doc in CANONICOS:
         p = os.path.join(ROOT, doc)
@@ -330,6 +345,145 @@ def bridge_coherence():
                   "and no absolute absence wording survives")
 
 
+def scalability_numbers():
+    """Las cifras de escalabilidad publicadas coinciden con el censo de HOY.
+
+    POR QUE EXISTE. docs/SCALABILITY.md y el informe de Track 2 publicaban cinco
+    numeros bajo el encabezado "Measured, not asserted", y ninguno cuadraba con
+    la salida del comando que la propia frase invita a ejecutar. Es el error mas
+    barato de detectar de toda la submission: el jurado copia el comando.
+
+    Un numero que un script recalcula y que nadie compara se queda obsoleto en
+    silencio. Este control lo compara.
+    """
+    import re
+    sys.path.insert(0, ROOT)
+    from src.scalability_census import census
+    rows = census("src")
+    gen = [r for r in rows if r[2] == 0]
+    spec = [r for r in rows if r[2] > 0]
+    lg, ls = sum(r[1] for r in gen), sum(r[1] for r in spec)
+    real = {"gen_mod": len(gen), "gen_lin": lg, "spec_mod": len(spec),
+            "tot_mod": len(rows), "tot_lin": lg + ls,
+            "pct": round(100.0 * lg / max(lg + ls, 1))}
+
+    def num(t):
+        return int(t.replace("\u202f", "").replace("\xa0", "").replace(" ", "").replace(",", ""))
+
+    fallos = []
+    sc = io.open(os.path.join(ROOT, "docs/SCALABILITY.md"), encoding="utf-8").read()
+    m = re.search(r"\|\s*\*\*Sin ninguna menci[^|]*\|\s*\*\*([\d\s\u202f\xa0]+)\*\*\s*\|"
+                  r"\s*\*\*([\d\s\u202f\xa0]+)\*\*\s*\|", sc)
+    if not m:
+        return False, "docs/SCALABILITY.md: no encuentro la fila de transferibles"
+    if num(m.group(1)) != real["gen_mod"] or num(m.group(2)) != real["gen_lin"]:
+        fallos.append(f"SCALABILITY transferibles {num(m.group(1))}/{num(m.group(2))} "
+                      f"!= censo {real['gen_mod']}/{real['gen_lin']}")
+    m = re.search(r"\|\s*Total\s*\|\s*([\d\s\u202f\xa0]+)\|\s*([\d\s\u202f\xa0]+)\|", sc)
+    if m and (num(m.group(1)) != real["tot_mod"] or num(m.group(2)) != real["tot_lin"]):
+        fallos.append(f"SCALABILITY total {num(m.group(1))}/{num(m.group(2))} "
+                      f"!= censo {real['tot_mod']}/{real['tot_lin']}")
+    m = re.search(r"\*\*El (\d+) % de las l[ií]neas", sc)
+    if m and int(m.group(1)) != real["pct"]:
+        fallos.append(f"SCALABILITY {m.group(1)} % != censo {real['pct']} %")
+
+    rep = io.open(os.path.join(ROOT, "reports/TRACK2_REPORT.md"), encoding="utf-8").read()
+    m = re.search(r"\*\*(\d+) of (\d+) modules in `src/`, ([\d\s\u202f\xa0]+) of "
+                  r"([\d\s\u202f\xa0]+) lines \((\d+) %\)", rep)
+    if not m:
+        return False, "reports/TRACK2_REPORT.md: no encuentro la frase de escalabilidad"
+    got = (int(m.group(1)), int(m.group(2)), num(m.group(3)), num(m.group(4)), int(m.group(5)))
+    want = (real["gen_mod"], real["tot_mod"], real["gen_lin"], real["tot_lin"], real["pct"])
+    if got != want:
+        fallos.append(f"TRACK2_REPORT {got} != censo {want}")
+
+    if fallos:
+        return False, "; ".join(fallos)
+    return True, (f"{real['gen_mod']} of {real['tot_mod']} modules, {real['gen_lin']:,} of "
+                  f"{real['tot_lin']:,} lines ({real['pct']} %), docs match the census")
+
+
+# Placeholders que el mantenedor TIENE que rellenar y que este control NO
+# convierte en fallo: son datos de sus propias cuentas y de la sesion
+# autorizada de Synapse, y este proyecto prohibe escribir un dato no
+# verificado. El control los ENUMERA para que no se olviden, y falla si
+# aparece un placeholder que no este en esta lista.
+PLACEHOLDERS_ESPERADOS = ("To be completed by the maintainer",)
+
+
+def submission_artifacts():
+    """El unico fichero que se sube estaba fuera de todos los controles.
+
+    POR QUE EXISTE. tests/, verify.py, el Makefile y CI no mencionaban
+    src/submission. No es casualidad que el unico error de contenido del
+    entregable -- un denominador de Exomiser que el resto del repositorio
+    clasifica como error de conteo -- viviera justo ahi: era la superficie sin
+    control. Un repositorio con 71 tests y diez comprobaciones no puede dejar
+    fuera el artefacto que de verdad viaja al jurado.
+
+    No necesita el dataset: comprueba el CONTRATO del generador, y ademas el
+    CSV en disco si existe.
+    """
+    import csv, re
+    sys.path.insert(0, ROOT)
+    from src.submission import track1_csv as T
+
+    OFICIAL = ["proband_id", "chrom_1", "pos_1", "ref_1", "alt_1",
+               "chrom_2", "pos_2", "ref_2", "alt_2",
+               "epcr", "finding_type", "notes"]
+    if T.COLUMNS != OFICIAL:
+        return False, f"esquema alterado: {T.COLUMNS}"
+
+    fallos = []
+    for gen, (epcr, _r) in T.EPCR_RATIONALE.items():
+        if not (0 < epcr <= 1):
+            fallos.append(f"{gen}: epcr {epcr} fuera de (0, 1]")
+
+    fuente = io.open(os.path.join(ROOT, "src/submission/track1_csv.py"),
+                     encoding="utf-8").read()
+    # denominadores que el repositorio declara erroneos en todos los demas sitios
+    for malo, porque in (("470,", "470 son filas gen x modelo, no genes distintos"),
+                         ("#2/470", "470 son filas gen x modelo, no genes distintos"),
+                         ("6 322", "conteo superado"), ("6,322", "conteo superado")):
+        if malo in fuente:
+            fallos.append(f"denominador superado en el generador: {malo!r} ({porque})")
+    for necesario in ("398", "primary", "secondary"):
+        if necesario not in fuente:
+            fallos.append(f"falta {necesario!r} en el generador")
+
+    csv_path = os.path.join(ROOT, T.OUT)
+    if os.path.exists(csv_path):
+        lineas = [l for l in io.open(csv_path, encoding="utf-8").read().splitlines() if l.strip()]
+        if lineas[0].split(",") != OFICIAL:
+            fallos.append("la cabecera del CSV en disco no es el esquema oficial")
+        for l in lineas[1:]:
+            campos = next(csv.reader([l]))
+            ft, ep = campos[10], campos[9]
+            if ft not in ("primary", "secondary"):
+                fallos.append(f"finding_type invalido: {ft!r}")
+            if not (0 < float(ep) <= 1):
+                fallos.append(f"epcr fuera de rango en el CSV: {ep}")
+            if "470" in campos[11]:
+                fallos.append("el CSV en disco lleva el denominador 470: hay que regenerarlo")
+        estado = f"CSV en disco con {len(lineas)-1} filas, validado"
+    else:
+        estado = "CSV no generado (necesita el dataset local); contrato del generador validado"
+
+    # placeholders: se enumeran, y solo fallan los que no estan declarados
+    pend = []
+    for rel in ("reports/TRACK1_REPORT.md", "reports/TRACK2_REPORT.md"):
+        t = io.open(os.path.join(ROOT, rel), encoding="utf-8").read()
+        for m in re.finditer(r"\*To be completed[^*]*\*|<[A-Z_]{4,}>|TODO:", t):
+            frag = m.group(0)[:60]
+            if not any(e in frag for e in PLACEHOLDERS_ESPERADOS):
+                fallos.append(f"{rel}: placeholder no declarado {frag!r}")
+            else:
+                pend.append(rel)
+    if fallos:
+        return False, "; ".join(fallos[:5])
+    return True, f"{estado}; {len(pend)} campos pendientes del mantenedor, declarados"
+
+
 def privacy_scan():
     code, out = run([sys.executable, "src/sanitize_scan.py"])
     has_list = "valores prohibidos cargados   : 0" not in out
@@ -352,6 +506,8 @@ CHECKS = [("unit tests", tests),
           ("contradiction count", contradiction_count),
           ("figure QA cards", figure_qa_cards),
           ("bridge coherence", bridge_coherence),
+          ("scalability numbers", scalability_numbers),
+          ("submission artifacts", submission_artifacts),
           ("privacy scan", privacy_scan),
           ("superseded-claim audit", stale_claims)]
 

@@ -15,14 +15,20 @@ nefrocalcinosis, los tres compuestos, `HSF1`, OMIM 257300):
 
 | | módulos | líneas |
 |---|---:|---:|
-| **Sin ninguna mención al caso** — se transfieren tal cual | **29** | **4 214** |
-| Con menciones al caso — hay que adaptarlos | 36 | 7 604 |
-| Total | 65 | 11 818 |
+| **Sin ninguna mención al caso** — se transfieren tal cual | **30** | **4 395** |
+| Con menciones al caso — hay que adaptarlos | 37 | 8 271 |
+| Total | 67 | 12 666 |
 
-**El 36 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
-el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 36
+**El 35 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
+el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 37
 módulos restantes solo nombra el caso en títulos de figura y cadenas de texto, no en la
-lógica. Si duda, el censo cuenta como específico, para que el número de genéricos no se
+lógica.
+
+> **Estas cinco cifras las recalcula `src/verify.py`** y el control falla si este documento y el
+> censo dejan de coincidir. La versión anterior publicaba 29 de 65, 4 214 de 11 818 y 36 % bajo
+> el encabezado *«medido, no afirmado»*, y llevaba meses sin cuadrar con el comando que la propia
+> frase invitaba a ejecutar. Un número escrito a mano en un documento que dice «medido» se queda
+> obsoleto en silencio. Si duda, el censo cuenta como específico, para que el número de genéricos no se
 infle.
 
 Reproducir el recuento:

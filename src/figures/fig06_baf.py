@@ -128,9 +128,12 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
            f"{sim['n_sites']} heterozygous sites per chromosome  ·  "
            f"{n_chrom_affected} affected chromosomes  ·  panels A–C at "
            f"{fraction * 100:.0f} % cell fraction, {S.thousands(n_sites)} sites each.\n"
-           f"Variegated BAF power falls from {pv[0]:.3f} to {pv[-1]:.3f} as the event grows: "
-           "the statistic becomes anti-informative. No superiority over the standard method "
-           "is claimed: the comparator is unphased and MoChA is not reproduced here.\n"
+           f"Variegated power of this site-wise ABSOLUTE statistic falls from {pv[0]:.3f} to "
+           f"{pv[-1]:.3f}. The project first attributed that to lineage cancellation and its own "
+           "audit falsified it: an absolute statistic is blind to sign, and the 2x2 ablation "
+           "(EXP-015c) shows the fall is driven by copy-number-dependent depth. What cancellation "
+           "does move is the SIGNED statistic, 0.980 to 0.050. No superiority over the standard "
+           "method is claimed: the comparator is unphased and MoChA is not reproduced here.\n"
            "Simulated power is optimistic: no GC bias, no mappability, no reference-allele "
            "bias, which at this depth are the real limiting factors.", y=0.005)
     return fig

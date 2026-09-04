@@ -138,7 +138,8 @@ fl.pub(fig, "Figura principal 1 · navegador del gen, exones, dominios y ClinVar
        f"la anatomia real del transcrito canonico ({T['n_exons']} exones, {L} aa), los "
        f"dominios que Ensembl anota sobre la traduccion, y las {len(cv['variants']):,} "
        f"missense que ClinVar tiene registradas en el gen, una por registro. "
-       f"{100*tot['VUS']/sum(tot.values()):.0f} % son VUS y hay UNA sola P/LP en todo el gen: "
+       f"{100*tot['VUS']/sum(tot.values()):.1f} % son VUS, {tot.get('CONFLICTIVA',0)} estan "
+       f"EN CONFLICTO y hay UNA sola P/LP en todo el gen: "
        f"no existe hotspot demostrable en ninguna parte, y por eso PM1 no aplica aqui ni en "
        f"ningun otro punto. El panel D convierte los 1 497 registros en una distribucion "
        f"legible; las dos guias verticales situan los alelos del caso en esa anatomia.",
@@ -160,7 +161,8 @@ print("  ClinVar sobre TODO el gen, solo missense:")
 for k, v in tot.items():
     print(f"    {k:<14}{v:>6}")
 print()
-print(f"  -> {100*tot.get('VUS',0)/sum(tot.values()):.0f} % son VUS. Ningun punto del gen")
+print(f"  -> {100*tot.get('VUS',0)/sum(tot.values()):.1f} % son VUS sobre los "
+      f"{sum(tot.values()):,} registros. Ningun punto del gen")
 print("     tiene hotspot demostrable, asi que PM1 no aplica en NINGUNA parte.")'''),
 
 ("md", """## Resultado primario 3 · geometría de NMD y de la fase

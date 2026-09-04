@@ -87,7 +87,11 @@ for k in ("DIRECT", "GENETIC", "NEAR", "CONTRADICTORY", "ABSENT"):
     print(f"    {k:<16}{cnt.get(k,0):>4}  ({100*cnt.get(k,0)/len(EV):.0f} %)")
 print()
 fuentes = sorted({e["fuente"] for e in EV if e["fuente"].strip()})
-print(f"  fuentes distintas citadas: {len(fuentes)}")
+from src.figures.fig07_evidence import publications as _pubs
+_p, _i = _pubs(fuentes)
+print(f"  publicaciones distintas citadas: {len(_p)}  ·  artefactos internos: {len(_i)}")
+print(f"  (cadenas de texto distintas: {len(fuentes)} -- un articulo citado con y sin su")
+print(f"   DOI son la MISMA publicacion, y contarlas dos veces inflaba el denominador)")
 for f in fuentes:
     print(f"    {f}")'''),
 
@@ -103,8 +107,10 @@ fl.pub(fig, "Figura principal 1 · matriz de evidencia curada de Track 2",
        "EXP-016 · EXP-016b", "EXTERNAL", "CURATED_EVIDENCE",
        f"que evidencia existe de verdad para cada puente. De las {len(EV)} celdas, "
        f"{_n_abs} estan vacias, {_n_dir} tienen evidencia del tipo exacto que el puente "
-       f"necesita y {_n_con} apuntan EN CONTRA, sobre {len(_st['sources'])} fuentes "
-       f"distintas. La fila 8 esta vacia en las diez dimensiones, que es el hueco de seguridad, y "
+       f"necesita y {_n_con} apuntan EN CONTRA, sobre {len(_pubs(_st['sources'])[0])} "
+       f"publicaciones distintas mas {len(_pubs(_st['sources'])[1])} artefactos internos "
+       f"-- un articulo citado con y sin su DOI es UNA publicacion, y contarlo dos veces "
+       f"inflaba el denominador. La fila 8 esta vacia en las diez dimensiones, que es el hueco de seguridad, y "
        f"la fila 1, la unica que conecta con este paciente, solo tiene una celda no vacia y "
        f"es NEAR, no DIRECT. El puente 7 es el hueco TRASLACIONAL.",
        "que Track 2 sea valido ni invalido. Es un inventario de evidencia curada (literatura "

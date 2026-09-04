@@ -194,15 +194,22 @@ MANE.
 
 Rehecho **solo con missense** (n = 1 497 en el gen):
 
-| Ventana | P/LP | B/LB | VUS |
-|---|---:|---:|---:|
-| 400–499 | **1** | 4 | 141 |
-| 900–999 | 0 | 2 | 124 |
-| **1000–1099** | **0** | **4** | 78 |
-| **Todo el gen** | **1** | **35** | **1 426** |
+| Ventana | P/LP | B/LB | VUS | en conflicto | sin clasificar |
+|---|---:|---:|---:|---:|---:|
+| 400–499 | **1** | 4 | 141 | — | — |
+| 900–999 | 0 | 2 | 124 | — | — |
+| **1000–1099** | **0** | **4** | 78 | — | — |
+| **Todo el gen** | **1** | **35** | **1 426** | **28** | **7** |
 
-**En todo `BUB1B` hay exactamente UNA missense clasificada `P`/`LP`, y el 95 % de las
-missense del gen son VUS.**
+> **La fila del gen suma 1 497, y antes no.** Publicaba tres clases que sumaban 1 462 bajo un
+> encabezado que decía 1 497: desaparecían sin dejar rastro los 28 registros en conflicto y los
+> 7 sin clasificar. La clase silenciada era además la única que puede contener missense con
+> submisiones `P`/`LP` **en disputa**, así que el paisaje se presentaba como una dicotomía
+> limpia VUS/benigno que no existe. Decir en voz alta que hay 28 missense en conflicto **refuerza**
+> el argumento de que el gen está sin resolver, no lo debilita.
+
+**En todo `BUB1B` hay exactamente UNA missense clasificada `P`/`LP`, y el 95,3 % de los 1 497
+registros missense del gen son VUS.**
 
 Eso cambia la conclusión. No es que la región del candidato esté empobrecida de patogénicas
 **respecto a otras regiones**: es que **ninguna región de este gen tiene un hotspot de

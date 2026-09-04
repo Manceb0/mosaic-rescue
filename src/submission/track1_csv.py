@@ -58,8 +58,10 @@ EPCR_RATIONALE = {
       - #1 en 14 de los 15 analisis de priorizacion; en el A0 CONGELADO queda #4,
         y los tres que lo superaban se resolvieron como polimorfismos comunes con
         rsID (EXP-021). En la sensibilidad A0-FREQFIX vuelve al #1.
-      - linea base EXTERNA e independiente (Exomiser) lo situa #2 de 470, modelo
-        autosomico recesivo, en las dos corridas.
+      - linea base EXTERNA e independiente (Exomiser) lo situa #2 de 398 GENES
+        DISTINTOS, modelo autosomico recesivo, en las dos corridas. Las 470 filas
+        de la salida son pares gen x modelo de herencia, no genes: contar 470
+        inflaba el denominador un 18 % y contaba BUB1B dos veces.
       - mecanismo y herencia compatibles con MVA1 (OMIM 257300).
       - los cuatro competidores restantes auditados y NEGATIVE (EXP-020, EXP-022).
       - el alelo truncante alcanza Likely Pathogenic en curacion de investigacion.
@@ -86,8 +88,8 @@ NOTES = {
               "allele + missense. Phase UNRESOLVED, no parental samples, so PM3 is blocked "
               "and biallelic configuration is candidate, not demonstrated. Panel-free "
               "genome-wide search; frozen preregistered ranking A0 places it #4 and the "
-              "A0-FREQFIX sensitivity #1, both reported. External baseline Exomiser #2/470, "
-              "AR model."),
+              "A0-FREQFIX sensitivity #1, both reported. External baseline Exomiser ranks "
+              "it #2 of 398 distinct genes, AR model."),
     "LZTR1": ("Research secondary/incidental candidate, NOT proposed as the cause of the "
               "reported phenotype and NOT a returnable clinical finding. Heterozygous "
               "nonsense on the MANE transcript, ClinVar pathogenic/likely pathogenic. "

@@ -1,5 +1,10 @@
 # EXP-015a · Simulación de la cancelación de BAF y del índice de dispersión
 
+> **Corregido por EXP-015c.** La atribución causal que este documento publicó —que el desplome
+> de potencia del estadístico **absoluto** se debía a la cancelación entre linajes— quedó
+> **falsada por una auditoría del propio proyecto**. Lo que sobrevive, lo que cae y por qué,
+> en la sección «La #2 era el resultado real». El preregistro no se ha tocado.
+
 > **`DERIVED`** — simulación. **No usa ningún dato del paciente**: cómputo puro, con la
 > profundidad real (44×) como único parámetro tomado del caso.
 >
@@ -33,15 +38,72 @@
 | 3 | En variegado, la dispersión **conserva potencia** | **CONFIRMADA** |
 | 4 | La dispersión **no** supera al BAF en clonal | **FALLADA** — lo supera también ahí |
 
-### La #2 es el resultado real, y es fuerte
+### La #2 era el resultado real, y una auditoría propia la partió en dos
 
-En el escenario variegado la potencia del BAF **cae al 0,000 en la fracción del 20 %** — es
-decir, cuanto mayor es el evento, **peor** detecta. La cancelación no es una preocupación
-teórica: es un modo de fallo activo. El estadístico se vuelve *anti*-informativo.
+> **Corrección, EXP-015c.** Lo que sigue reemplaza a la lectura original de la predicción #2.
+> El preregistro de `docs/DECISIONS.md` §EXP-015a **no se reescribe**: la predicción se escribió
+> antes de ver los datos y se queda como está. Lo que cambia es qué explica el resultado.
 
-La dispersión de cobertura, en cambio, se comporta **igual en variegado que en clonal**
-(0,96 frente a 0,975 al 10 %). Eso es exactamente lo que predice el mecanismo: la cobertura
-no se cancela porque no depende de qué homólogo se ganó.
+La afirmación publicada era: *en escenario variegado el estadístico de BAF pierde potencia
+según crece el evento **porque las contribuciones de linajes distintos se cancelan***. Una
+auditoría adversarial del propio repositorio la falsó, y el argumento es de una línea:
+
+El estadístico que EXP-015a mide es `abs(alt/dp - 0,5)`, un **valor absoluto**. La
+aleatorización de signo por sitio —que el código llamaba literalmente *«el mecanismo de
+cancelación»*— **le es invisible**, porque `Binomial(dp, 0,5+d)` y `Binomial(dp, 0,5−d)` son
+imágenes especulares y `|BAF−0,5|` tiene la misma distribución en las dos. La señal de alarma
+estaba a la vista desde el principio y nadie la leyó: **la potencia caía a 0,000, por debajo de
+alpha = 0,05**. Un mecanismo que solo puede *añadir* dispersión nunca baja del azar. El propio
+preregistro había escrito *«potencia próxima al azar»*, no cero.
+
+**EXP-015c · la ablación 2×2.** Cruzando los dos factores que estaban confundidos, con el mismo
+generador, la misma semilla y el mismo nulo euploide a 44× (`src/mosaic/ablation_baf.py`):
+
+| dirección del homólogo | profundidad | `signed` | `absdev` | `disp` | `znorm` |
+|---|---|---:|---:|---:|---:|
+| fija | escalada por nº de copia | **0,980** | 0,010 | 0,000 | 0,510 |
+| fija | igualada al nulo | **0,975** | **0,520** | 0,435 | 0,540 |
+| mezclada | escalada por nº de copia | **0,050** | 0,010 | 0,005 | 0,520 |
+| mezclada | igualada al nulo | **0,040** | **0,505** | 0,565 | 0,495 |
+| *referencia clonal* · fija, todos los sitios | escalada | 1,000 | **1,000** | 0,000 | 1,000 |
+| *referencia clonal* · fija, todos los sitios | igualada | 1,000 | **1,000** | 0,030 | 1,000 |
+
+Potencia con alpha = 0,05, fracción celular del 20 %, 200 repeticiones, 3 cromosomas afectados,
+400 sitios cada uno. `signed` = |media por sitio de (BAF − 0,5)| · `absdev` = media de
+|BAF − 0,5|, que es **el que usó EXP-015a** · `disp` = varianza por sitio del BAF, que **no es**
+el índice de dispersión de *cobertura* de EXP-015b — mismo apodo, otro objeto — · `znorm` =
+media de |z| con `z = (alt − dp/2)/√(dp/4)`, es decir el mismo estadístico **normalizado por la
+varianza binomial esperada a la profundidad observada**.
+
+Las cuatro primeras filas viven dentro del modelo **variegado**, donde la perturbación alcanza a
+una fracción `f` de los sitios y **lo único que cambia entre celdas es el signo**. Las dos
+últimas son la referencia **clonal**, donde se desplazan todos los sitios; están para que la
+tabla se pueda situar y no se lean como si contradijeran el 1,000 clonal publicado.
+
+**Lo que se lee en la tabla, en tres frases.**
+
+1. **La cancelación es real, y cae sobre el estadístico con signo.** `signed` pasa de 0,980 con
+   dirección fija a 0,050 con dirección mezclada —exactamente el azar— y la profundidad no lo
+   mueve (0,980 → 0,975; 0,050 → 0,040). Esto **sobrevive**, y es la predicción #2 leída
+   literalmente.
+2. **La atribución publicada queda falsada.** Sobre `absdev`, la dirección **no hace nada**:
+   0,520 frente a 0,505 con profundidad igualada, 0,010 frente a 0,010 con profundidad escalada.
+   Lo que decide es la profundidad. El desplome por debajo de alpha aparece **con las dos
+   direcciones**, así que no puede ser la cancelación.
+3. **El resultado clonal no era un artefacto de profundidad.** La referencia da 1,000 con las
+   dos profundidades. La pregunta obvia que sigue a este hallazgo tiene respuesta, y es que no.
+
+**La profundidad no es un fallo de codificación.** Si hay una ganancia cromosómica real, más
+copias producen más lecturas: escalar la cobertura por (2+f)/2 es lo correcto. El error fue
+**comparar contra un nulo de otra profundidad un estadístico cuya varianza depende de la
+profundidad**, y después adjudicar esa diferencia a la cancelación. El confundido es entre
+dirección de homólogo y profundidad dependiente del número de copia.
+
+**Lo que `znorm` sí muestra, y lo que no.** Normalizar por la varianza binomial esperada elimina
+el confundido por construcción: la potencia queda en 0,49–0,54 en las cuatro celdas, con y sin
+escalado de cobertura. Eso demuestra **que el confundido existía**. No demuestra que exista un
+detector clínicamente útil: `znorm` no se ha comparado con ningún método con fase, no se ha
+aplicado a datos reales, y `EXP-015b` sigue `UNVALIDATED · PARKED`.
 
 ### La #4 falló, y eso obliga a rebajar la conclusión
 
@@ -60,7 +122,9 @@ fracciones clonales por debajo del 1 % sobre datos reales, y mi proxy no pasa de
 
 | Afirmación | Antes | Ahora |
 |---|---|---|
-| «La cancelación de BAF hace fallar a los métodos clonales en MVA» | `L1`, argumento algebraico | **Sostenida por simulación** — modo de fallo reproducido y cuantificado |
+| «Las mezclas balanceadas de homólogos recentran el BAF **agregado con signo** hacia 0,5» | `L1`, argumento algebraico | **Sostenida por simulación** (EXP-015c): la potencia del estadístico con signo cae de 0,980 a 0,050 al mezclar la dirección |
+| «La caída de potencia del estadístico **absoluto** se debe a la cancelación» | publicada como resultado | **FALSADA** (EXP-015c): la dirección no la mueve; la produce la profundidad dependiente del número de copia |
+| «La cancelación de BAF hace fallar a **los métodos clonales** en MVA» | `L1`, argumento algebraico | **Sigue en `L1`.** Se simuló **un** estadístico, no una clase de métodos |
 | «El índice de dispersión sobrevive a la cancelación» | `L1` | **Sostenida por simulación** |
 | «El índice de dispersión es más potente que el método estándar» | `L1` | **Sigue en `L1`.** No demostrada, y esta simulación **no** la demuestra |
 | «Enormemente más potente» | prohibida | **sigue prohibida** |
@@ -82,9 +146,10 @@ fracciones clonales por debajo del 1 % sobre datos reales, y mi proxy no pasa de
 
 | | |
 |---|---|
-| **EXP-015a · mecanismo de cancelación** | **SURVIVES** — modo de fallo reproducido y cuantificado |
+| **EXP-015a · mecanismo de cancelación** | **PARCIALMENTE FALSADA por EXP-015c.** Sobrevive: las mezclas balanceadas recentran el BAF agregado **con signo**. Falsada: la atribución de la caída del estadístico **absoluto** a la cancelación |
+| **EXP-015c · ablación 2×2** | **SURVIVES** — dirección de homólogo y profundidad por número de copia separadas, con el estadístico normalizado como control |
 | **EXP-015b · el índice como DETECTOR** | **UNVALIDATED · PARKED** — el comparador no es MoChA |
-| Incertidumbre reducida | Si merecía la pena mantener el índice de dispersión. **Sí**: sobrevive donde el estándar se cancela |
+| Incertidumbre reducida | Qué mecanismo explica cada señal. El estadístico **con signo** se cancela; el **absoluto** no se cancelaba, cambiaba de profundidad |
 | Qué desbloquea | Que el estadístico se pueda usar **si** aparecen controles. No desbloquea aplicarlo hoy |
 | Qué NO se puede decir | Que sea más potente que MoChA. Ni comparado |
 | Siguiente | Comparación honesta contra un método **con fase**; y controles, que es el bloqueo real |

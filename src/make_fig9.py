@@ -3,7 +3,9 @@
 """Figura 9 — la cancelacion de BAF, reproducida en simulacion.
 
 El punto de la figura no es "nuestro estadistico gana". Es que en el escenario
-VARIEGADO el estadistico de BAF se vuelve ANTI-informativo: cuanto mayor es el
+VARIEGADO el estadistico de BAF con SIGNO se recentra en 0,5. OJO: la version
+anterior decia que el estadistico ABSOLUTO se volvia anti-informativo por la
+cancelacion, y EXP-015c lo falso -- eso lo producia la profundidad. Cuanto mayor es el
 evento, peor detecta. Eso es un modo de fallo, y es lo que hay que ensenar.
 
 La figura declara en el propio panel que la linea base de BAF NO es MoChA.

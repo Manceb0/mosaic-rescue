@@ -219,7 +219,7 @@ Ordenadas por ganancia de información esperada.
 | Al pitch | Al apéndice |
 |---|---|
 | El bug del cruce de alelos: **el pipeline encontró un error que favorecía a nuestro candidato, lo corrigió, `BUB1B` bajó, y aun así sobrevivió** | Detalle de la reconciliación de conteos |
-| La **cancelación de BAF** reproducida en simulación: potencia 0,000 al 20 % | El índice de dispersión como detector — `UNRESOLVED` |
+| El **recentrado del BAF agregado con signo** reproducido en simulación: potencia 0,980 → 0,050 al mezclar la dirección (EXP-015c) | El índice de dispersión como detector — `UNRESOLVED`. Y la atribución del 0,000 del estadístico **absoluto** a la cancelación quedó **falsada**: era profundidad |
 | Los **ocho puentes** de Track 2 y el corredor de rescate seguro | El mapa completo de las seis clases |
 | **Se nominan brazos para discriminación preclínica, no un ganador terapéutico — y por qué** | Prototipo de MitoRead |
 | Convergencia metodológica con Exomiser, **declarada como tal** | Auditoría de `FANCD2` |

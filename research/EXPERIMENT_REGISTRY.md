@@ -34,7 +34,8 @@
 | **EXP-014a** | MitoRead · prototipo sobre L001 | **UNRESOLVED**, *naive mtDNA-equivalent estimate* ≈259 bajo los supuestos del piloto. **No calibrado, no interpretable** | `src/mito/pilot_l001.py` |
 | **EXP-014a-v2** | MitoRead · piloto **con alineamiento** para excluir NUMT | **PARKED**, sin alineador instalable (`mappy` no compila sin toolchain de C) y descargar binarios ejecutables está prohibido por política. El prototipo ya demostró factibilidad | — |
 | **EXP-014b** | MitoRead · **interpretación biológica** | **BLOCKED**, exige profundidad completa comparable, controles con pipeline idéntico, y hemograma (plaquetas + fórmula) | — |
-| **EXP-015a** | **Mecanismo de cancelación de BAF** | **SURVIVES**, modo de fallo reproducido y cuantificado | `src/mosaic/simulate_dispersion.py` |
+| **EXP-015a** | **Mecanismo de cancelación de BAF** | **PARCIALMENTE FALSADO por EXP-015c.** Sobrevive el recentrado del BAF agregado **con signo**; se falsa la atribución de la caída del estadístico **absoluto** a la cancelación | `src/mosaic/simulate_dispersion.py` |
+| **EXP-015c** | **Ablación 2×2 · dirección de homólogo × profundidad** | **SURVIVES**, los dos factores separados y un estadístico normalizado por la varianza binomial esperada como control | `src/mosaic/ablation_baf.py` |
 | **EXP-015b** | **Índice de dispersión como detector** | **UNVALIDATED · PARKED**, el comparador usado no es MoChA y no reproduce su ventaja de BAF faseado de largo alcance | — |
 | **EXP-015** | Huella de mosaicismo aplicada | **BLOCKED**, faltan controles con pipeline idéntico | — |
 | **EXP-016** | **Track 2 · dos rutas, ocho puentes** | **UNRESOLVED**, con T2-A y T2-B separadas. Puentes 1 y 3 huecos; **puente 7 `UNRESOLVED` con contraevidencia verificada (E18, E19)**; puente 8 **vacío**. Sin **ganador terapéutico** nominado; sí se nomina una cartera experimental de tres brazos para discriminación preclínica | `docs/TRACK2_MECHANISM_MAP.md` → `src/make_fig10.py` |

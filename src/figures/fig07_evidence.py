@@ -14,7 +14,8 @@ No overall score, and that is deliberate
     and no such method exists here. The value of the matrix is in the GAPS:
         bridge 7 is the translational gap (pharmacological co-induction unproven,
                                         with verified counter-evidence)
-        bridge 8 is the safety gap (never measured, in any dimension)
+        bridge 8 is the safety gap (no qualifying evidence in our scoped
+                                    search, in any dimension)
 
 The corridor lives elsewhere
     The Safe Rescue Corridor is a scientific synthesis and lives in its own
@@ -22,6 +23,58 @@ The corridor lives elsewhere
 """
 from __future__ import annotations
 import collections, io, sys
+import re
+
+_BIBID = re.compile(r"(?:PMID\s+\d+|DOI\s+[^\s·]+)", re.I)
+
+
+def publications(sources):
+    """Agrupa cadenas de `fuente` que comparten un identificador bibliografico.
+
+    POR QUE EXISTE. `PMID 34481829` y `PMID 34481829 · DOI 10.1016/j.jlr.2021.100114`
+    son EL MISMO articulo escrito de dos formas. Contar cadenas daba 7 "fuentes
+    distintas" mientras el pie de la propia figura enumeraba 6, cuatro lineas mas
+    abajo. Ese numero no es decorativo: es el denominador con el que el proyecto
+    pide al lector que NO lea las 80 celdas como 80 evidencias. Un denominador de
+    honestidad inflado es peor que no darlo.
+
+    Devuelve (publicaciones, artefactos_internos), ya deduplicadas y ordenadas.
+    Un articulo citado dos veces cuenta UNA. Una fuente sin identificador
+    bibliografico -- `docs/EVIDENCE.md`, `src/structure/` -- no es literatura y
+    se cuenta aparte, porque mezclarlas infla el respaldo externo.
+    """
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    limpio = sorted({s.strip() for s in sources if s and s.strip() and s.strip() != "-"})
+    ids_de = {}
+    for s in limpio:
+        ids = [i.strip().rstrip(".,;") for i in _BIBID.findall(s)]
+        ids_de[s] = ids
+        for i in ids:
+            union(s, i)
+
+    grupos = {}
+    for s in limpio:
+        grupos.setdefault(find(s), []).append(s)
+
+    pubs, internos = [], []
+    for miembros in grupos.values():
+        ids = sorted({i for m in miembros for i in ids_de[m]}, key=len)
+        (pubs if ids else internos).append(ids[0] if ids else miembros[0])
+    return sorted(pubs), sorted(internos)
+
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -136,13 +189,14 @@ def build(ev):
                  "(external literature + project evidence, not patient observations)",
                  x=0.006, y=0.988, ha="left", fontsize=S.BASE + 1.6,
                  fontweight="bold", color=S.INK)
-    compact = sorted({t.split(" · ")[0] for t in srcs})
+    pubs, internos = publications(srcs)
+    compact = pubs + internos
     S.note(fig,
-           f"Every cell is a versioned row in {TSV}: {len(ev)} cells, {len(srcs)} distinct sources; no cell other than an absent one may lack a source (checked at build time)." + NL +
+           f"Every cell is a versioned row in {TSV}: {len(ev)} cells drawn from {len(pubs)} distinct publications and {len(internos)} internal project artefacts; no cell other than an absent one may lack a source (checked at build time)." + NL +
            f"{cnt['ABSENT']} cells are empty, {cnt['DIRECT']} hold evidence of the exact kind the bridge needs, {cnt['CONTRADICTORY']} point against it. Bridge 8 is empty in all ten dimensions" + NL +
            f"({'confirmed' if b8_all_absent else 'checked'}). Bridge 1, the only one tied to this patient, has {len(b1_non_absent)} non-empty cell and it is near, not direct. Bridge 7 is contradictory in {len(b7_contra)} dimensions." + NL +
-           "No overall score, weight or ranking is computed. Combining heterogeneous evidence into one number would need a preregistered method, and none exists. An absent cell means nobody measured it, not that the claim is false." + NL +
-           "Sources: " + "  ·  ".join(compact), y=0.004)
+           "No overall score, weight or ranking is computed. Combining heterogeneous evidence into one number would need a preregistered method, and none exists. An absent cell means no qualifying evidence was identified in our scoped literature search, not that the claim is false and not that nobody has ever looked." + NL +
+           f"Sources ({len(pubs)} published, {len(internos)} internal): " + "  ·  ".join(compact), y=0.004)
 
     return fig, {"counts": dict(cnt), "sources": srcs}
 

@@ -95,7 +95,7 @@ Research-grade ACMG/AMP curation, Bayesian points.
 data in front of us:
 
 - **`PM1` does not apply.** The intuition that the residue sits in a hot domain does not
-  survive the data: **1 497 ClinVar missense variants across `BUB1B`, 98 % of them VUS, and a
+  survive the data: **1 497 ClinVar missense records across `BUB1B`, 95.3 % of them VUS, and a
   single P/LP.** There is no demonstrable hotspot anywhere in the gene.
 - **`PM3` is blocked** by unresolved phase.
 - **`PS3` needs a functional assay** that does not exist for this variant.
