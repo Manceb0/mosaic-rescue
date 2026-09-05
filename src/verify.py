@@ -491,6 +491,106 @@ def submission_artifacts():
     return True, f"{estado}; {len(pend)} campos pendientes del mantenedor, declarados"
 
 
+def a0_provenance():
+    """La anotacion de la que sale `A0` es LA MISMA, no solo una equivalente.
+
+    POR QUE EXISTE. `src/prioritization/extract_genomewide.py` apunta a un
+    fichero con marca de tiempo, `pass1_20260830T043708Z.tsv`. Eso NO es un
+    descuido: es un PIN DE PROCEDENCIA. Ata el ranking congelado `A0` a una
+    corrida concreta de VEP. Sustituirlo por un patron `pass1_*.tsv` dejaria que
+    `A0` se regenerase desde otra anotacion sin que nadie se enterara, que es
+    justo lo que `A0` existe para impedir.
+
+    Al replicar el proyecto en una segunda maquina se rehizo la pasada 1 de VEP
+    y se dejo un ENLACE DURO con el nombre antiguo apuntando al fichero nuevo.
+    Es la decision correcta -- conserva el pin y no toca el modulo -- pero
+    traslada la garantia a una nota escrita: la nota AFIRMA la equivalencia.
+    Este control la COMPRUEBA.
+
+    El riesgo que cierra no es el nombre del fichero. Es que alguien regenere
+    `pass1` mas adelante SIN repetir la comparacion, y el enlace acabe apuntando
+    a algo que ya no produce el mismo intermedio. Entonces `A0` seguiria
+    llamandose `A0` sin serlo.
+
+    Si los ficheros no estan (clon reciente, sin `work/`), lo dice en voz alta
+    en vez de pasar en verde sin haber mirado nada.
+    """
+    import hashlib
+
+    # Identidad registrada en la maquina original, 2026-09-05. Un sha256 es un
+    # digest de una via: no revela ninguna coordenada, asi que puede vivir en el
+    # arbol versionado sin romper la regla dura 1.
+    # VINCULANTES: de estos depende A0 directamente. Si cambian, A0 cambio.
+    VINCULANTES = {
+        "work/gw/highmod.vcf":
+            ("7dbe3451d499cd3dbeffdd853c96803bbf147d60cb3bd81126bcc7f27c53e614", 3377351),
+        "work/gw/highmod_ann.tsv":
+            ("6bb5d13907efa9d576115e5877603321c49eb523cff7c7d7dfbfd3bdba6f5ce2", 5979256),
+    }
+    # INFORMATIVO: la salida cruda de VEP lleva la marca de la corrida en su
+    # cabecera, asi que una REPLICA legitima produce otro sha256 aunque el
+    # subconjunto derivado sea identico. Diferir aqui NO es un fallo; lo que no
+    # puede diferir es lo de arriba. Confundir las dos cosas haria que este
+    # control se pusiera rojo en cualquier maquina replicada, y un control que
+    # da falsos rojos se acaba ignorando, que es peor que no tenerlo.
+    INFORMATIVO = {
+        "work/pass1/pass1_20260830T043708Z.tsv":
+            ("82a46d99acfd28559c56f21310dd82f67c220426c98cba3358139126f8901de3", 1117259678),
+    }
+    N_VARIANTES = 13794
+
+    def _sha(path):
+        h = hashlib.sha256()
+        with io.open(path, "rb") as f:
+            for bloque in iter(lambda: f.read(1 << 20), b""):
+                h.update(bloque)
+        return h.hexdigest()
+
+    faltan, malos, ok, replica = [], [], [], []
+    for grupo, vinculante in ((VINCULANTES, True), (INFORMATIVO, False)):
+        for rel, (sha_esp, size_esp) in grupo.items():
+            p = os.path.join(ROOT, rel)
+            if not os.path.exists(p):
+                faltan.append(rel)
+                continue
+            got = _sha(p)
+            if got == sha_esp:
+                ok.append(rel)
+            elif vinculante:
+                malos.append(f"{rel}: sha256 {got[:12]}... != {sha_esp[:12]}... "
+                             f"({os.path.getsize(p):,} bytes frente a {size_esp:,})")
+            else:
+                replica.append(rel)
+
+    if malos:
+        return False, ("la anotacion de la que sale A0 NO es la registrada. Si es una "
+                       "regeneracion legitima, hay que rehacer la comparacion y "
+                       "actualizar el registro a proposito, no en silencio: "
+                       + "; ".join(malos))
+
+    if all(r in faltan for r in VINCULANTES):
+        return True, ("sin work/ local: no se puede comprobar la procedencia de A0 "
+                      f"({len(faltan)} ficheros ausentes). Con el dataset presente, "
+                      "este control verifica los tres sha256")
+
+    # el invariante que de verdad importa, cuando el intermedio esta
+    vcf = os.path.join(ROOT, "work/gw/highmod.vcf")
+    if os.path.exists(vcf):
+        n = sum(1 for l in io.open(vcf, encoding="utf-8", errors="replace")
+                if l.strip() and not l.startswith("#"))
+        if n != N_VARIANTES:
+            return False, f"el intermedio tiene {n:,} variantes y A0 se congelo sobre {N_VARIANTES:,}"
+
+    detalle = []
+    if replica:
+        detalle.append(f"{len(replica)} regenerado(s) en replica, derivados identicos")
+    if faltan:
+        detalle.append(f"{len(faltan)} ausente(s)")
+    cola = " (" + "; ".join(detalle) + ")" if detalle else ""
+    return True, (f"{len(ok)}/{len(VINCULANTES) + len(INFORMATIVO)} con la identidad "
+                  f"registrada, {N_VARIANTES:,} variantes HIGH/MODERATE{cola}")
+
+
 def privacy_scan():
     code, out = run([sys.executable, "src/sanitize_scan.py"])
     has_list = "valores prohibidos cargados   : 0" not in out
@@ -515,6 +615,7 @@ CHECKS = [("unit tests", tests),
           ("bridge coherence", bridge_coherence),
           ("scalability numbers", scalability_numbers),
           ("submission artifacts", submission_artifacts),
+          ("A0 provenance", a0_provenance),
           ("privacy scan", privacy_scan),
           ("superseded-claim audit", stale_claims)]
 
