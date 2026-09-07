@@ -186,6 +186,7 @@ outputs*) checks that every artefact cites that manifest.
 | **correction applied** | PREDICTED and *model attribution only* in the provenance strip; the reading rule is quoted on the figure and was fixed in the manifest before the prediction; the candidate is outlined and its ranks printed so a reader sees it is *not* at the maximum; reference bases are marked so alternative and reference cells cannot be confused; the manifest hash chain is enforced by `verify.py` |
 | **changes frozen science?** | **NO** |
 | **full-size render checked?** | yes |
+| **reading rule status** | the top-5 % rule is an **internal decision rule**, pre-declared to prevent cherry-picking; not a literature-validated threshold and not a significance level. Empirical calibration against a matched null is EXP-024 |
 
 ---
 
@@ -211,6 +212,7 @@ outputs*) checks that every artefact cites that manifest.
 | **correction applied** | *not Hi-C, not patient chromatin, not any tissue* in the first line of the provenance strip; the log transform is identical for REF and ALT and declared, and nothing is clipped; ALT − REF is linear and never transformed; the biosample choice and its reason live in the manifest, sealed before the run; panel D shows the whole distribution so the reader can see the choice was not an outlier hunt |
 | **changes frozen science?** | **NO** |
 | **full-size render checked?** | yes |
+| **reading rule status** | the 5 % of max REF rule is an **internal decision rule**, pre-declared; the official `ContactMapScorer` summarises disruption around the variant's bin, and its calibration against a matched null is EXP-024 |
 
 ---
 

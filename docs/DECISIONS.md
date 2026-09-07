@@ -940,3 +940,116 @@ predicción en evidencia del paciente. Lenguaje obligatorio: *AlphaGenome predic
 lectura predeclarada…*. `src/verify.py` (control *AlphaGenome model outputs*) y
 `tests/test_alphagenome_model_outputs.py` atan figura → JSON → corrida → manifest, y fallan si
 alguien cambia scorer, ontología, ventana o ensamblado sin volver a sellar a propósito.
+
+---
+
+## EXP-024 · Preregistro: calibración del score de AlphaGenome y panel tejido × modalidad
+
+**Fecha:** 2026-09-07. **Estado:** **PREREGISTRADO, NO EJECUTADO.** Ninguna variante del null,
+ningún control y ninguna celda del panel se ha puntuado todavía. Este bloque se sella antes de la
+primera llamada y se ejecuta sólo tras revisión del mantenedor.
+
+### P0 · aclaración sobre EXP-023, sin reescribirlo
+
+Las dos reglas de lectura de EXP-023 —«5 % superior de posiciones» en la ISM y
+«max |ALT − REF| ≥ 5 % del máximo de REF» en contactos— son **reglas de decisión internas,
+predeclaradas para impedir el cherry-picking**. No son umbrales validados por la literatura ni
+niveles de significación, y no se convertirán en un «p < 0,05» implícito. Se conservan tal cual
+por su valor histórico; EXP-024 añade la calibración empírica que les faltaba.
+
+### Qué responde EXP-024 que EXP-023 no responde
+
+EXP-023: *¿cae el candidato donde el modelo es localmente sensible?* → no.
+EXP-024: *¿cuán inusual es el score del candidato frente a SNV comparables puntuadas con el
+mismo sistema?* Y, en el panel: *¿el efecto predicho está restringido a un tejido o es
+uniformemente débil?* Todo ello es **calibración del modelo, no calibración clínica**.
+
+### Conjuntos congelados (sha256 registrados; el detalle vive en `work/`, gitignored, porque lleva coordenadas)
+
+| Conjunto | Definición | n | sha256 del manifest |
+|---|---|---|---|
+| **NULL-A** | SNV sintéticas en los intrones profundos del **mismo transcrito** (MANE, Ensembl 116), ≥ 1 000 pb de cualquier borde de exón, fuera de la ventana ISM del candidato, **transiciones** (la clase del candidato), REF leída del FASTA GRCh38 local; muestreo sin reemplazo con **semilla 42**, el único paso aleatorio | **300** de 27 062 posiciones elegibles | `ed8e1f16e18fe5d2…` |
+| **CTRL-POS** | las cuatro posiciones canónicas de splicing de cada intrón (donante +1/+2, aceptor −2/−1), mutadas a su transición: control de **potencia** de la lectura de splicing | **88** (22 intrones) | mismo manifest |
+| **PANEL** | seis biosamples por criterio × seis modalidades con el scorer recomendado oficial, 1 Mb | 6 × 6, con las celdas ausentes declaradas | `6673fa40edb340fe…` |
+
+El candidato no está en ningún conjunto (se comprueba). Por geometría del gen, todas las
+posiciones del null quedan aguas arriba del candidato; se declara en vez de disimularse.
+
+**Panel, con la razón previa de cada fila:** músculo psoas (atrofia muscular) · riñón
+(nefrocalcinosis) · fibroblasto de prepucio (célula de los estudios funcionales de MVA; el de piel
+sólo existe en contactos) · progenitor mieloide CD34+ (la pista DNase ya congelada) · célula
+mononuclear de sangre periférica · **hígado, como contexto sin relación, para ver cómo es «nada»**.
+Modalidades: RNA-seq, uso de sitios de splicing, junciones, DNase, ATAC, histonas (H3K27ac y
+H3K4me3). Celdas sin pista: *not available*, nunca imputadas.
+
+### Qué se puntúa, idéntico para candidato, null y controles
+
+- **16 kb:** los dos scorers de la ISM de EXP-023, para que el escalar del candidato sea **el
+  mismo objeto** ya congelado.
+- **1 Mb:** `ContactMapScorer` oficial en las 28 pistas (la predeclarada `CL:0002620` es la que
+  cuenta) y los scorers recomendados del panel.
+
+### Estadística y reglas de lectura, fijadas antes de mirar
+
+percentil = 100·#{|S_null| < |S_cand|}/N · p_emp = (1 + #{|S_null| ≥ |S_cand|})/(N+1) ·
+z robusto = (S_cand − mediana)/(1,4826·MAD) · familia {splice, DNase, contacto} → **q de
+Benjamini-Hochberg sólo sobre esa familia** · potencia = fracción de CTRL-POS con p_emp < 0,05 en
+splicing.
+
+| Resultado | Lectura obligatoria |
+|---|---|
+| q ≥ 0,05 | *unremarkable relative to the matched computational null* |
+| q < 0,05 | *extreme relative to the matched computational null*: se registra como **contradicción concreta** para que el mantenedor la adjudique; **no cambia por sí sola** clasificación, ranking ni rama |
+| potencia < 0,5 | la lectura no es sensible en este gen: **el negativo del candidato se declara no informativo** |
+| panel: max \|score\| ≥ 3 × mediana \|score\| en una modalidad | *tissue-restricted* |
+| panel: otro caso | *broadly consistent (weak or no predicted effect)* |
+| siempre | percentil, p y z **no son** probabilidad de patogenicidad ni evidencia ACMG |
+
+### Figuras que entrarían, con los nueve campos
+
+**fig04Q · calibración (nueva; principal diagnóstica del bloque AlphaGenome)**
+QUESTION: ¿cuán extremo es el score del candidato frente a NULL-A? · INPUT: `raw_scores.json.gz`
+(candidato + 300 null + 88 controles) · METHOD: ECDF/violín por lectura, candidato marcado,
+controles como segunda distribución, percentil y p_emp/q impresos · RESULT: pendiente ·
+SUPPORTED CLAIM: extremidad del score dentro de un conjunto computacional de referencia ·
+FORBIDDEN: patogenicidad, penetrancia, fuerza ACMG, efecto en el paciente · PROVENANCE:
+`metadata.json` con hashes de los tres manifests · COMMAND: `python src/figures/fig04_calibration.py`
+· TEST: p_emp y q se recalculan desde los scores crudos y tienen que coincidir con el metadata.
+
+**fig04L · zoom ISM con logo de secuencia (nueva; suplementaria)**
+QUESTION: ¿cómo se lee la ISM a ±20 pb del candidato? · INPUT: la matriz ISM **ya congelada**
+de EXP-023, sin volver a llamar al modelo · METHOD: heatmap local + logo de letras desde la misma
+matriz · RESULT: se deriva de EXP-023 · SUPPORTED: segunda representación del mismo objeto ·
+FORBIDDEN: cualquier lectura nueva · PROVENANCE: hash de la matriz madre · COMMAND:
+`python src/figures/fig04_ism_logo.py` · TEST: `logo == slice de la matriz madre`, o no se genera.
+
+**fig04T · matriz tejido × modalidad (nueva; suplementaria)**
+QUESTION: ¿el efecto predicho es tejido-específico o uniformemente débil? · INPUT: `raw_scores`
+del candidato en el panel + percentiles frente al null · METHOD: heatmap con signo, celdas
+ausentes marcadas, percentil en cada celda · RESULT: pendiente · SUPPORTED: perfil de
+predicción de un modelo a través de un panel fijado de antemano · FORBIDDEN: expresión o
+cromatina medida en el paciente; tejidos elegidos por efecto · PROVENANCE: `panel_manifest`
+sellado · COMMAND: `python src/figures/fig04_tissue_matrix.py` · TEST: filas == panel congelado.
+
+**fig04C · contactos (existente): se le añade un panel E** con el `ContactMapScorer` del
+candidato frente a NULL-A (percentil y p_emp), manteniendo intactos A–D y el umbral histórico
+del 5 % descrito como regla interna.
+
+### Fuera de esta fase, y por qué
+
+- **Hi-C/Micro-C experimental externo:** sólo con un biosample defendible elegido antes de mirar
+  y con accession, ensamblado, resolución, normalización y sha256 registrados; sería
+  `EXTERNAL+MEASURED` y **nunca** validación de ALT − REF. Pendiente de curación; no se descarga
+  nada hasta que se apruebe.
+- **Enhancer → promotor:** gate de cuatro condiciones (elemento definido, actividad relevante,
+  contacto independiente o método formal tipo ABC, sin elegir el target después). Si falla,
+  `NOT RUN — prerequisites not met`.
+- **Folds locales de AlphaGenome:** la GPU disponible es una RTX 4060 de 8 GB; se evalúa, no se
+  bloquea la entrega por ello. Queda registrado que la API no expone la build servida.
+- **Enformer/DeepSEA:** sólo como benchmark ortogonal suplementario, nunca «consenso de IA».
+- **Mosaico celular del paciente:** no se fabrica; no hay datos que lo sostengan.
+
+### Lo que no cambia
+
+No se reabre `BUB1B`, no se reclasifica la VUS, no se toca `A0`, no se busca fármaco, no se
+cambia Track 2. Esta fase es disciplina de medida y validación de modelo.
