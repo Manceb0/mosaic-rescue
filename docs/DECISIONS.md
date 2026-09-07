@@ -1230,7 +1230,10 @@ Herramientas fijadas por digest (tabla al final): **xTea 0.1.9** como llamador p
 Illumina y **SCRAMble 1.0.2** como llamador ortogonal por clusters de lecturas recortadas; sus
 recursos (bibliotecas de repeticiones) se descargan con el GO y se registran con hash.
 Alcance, en este orden: genoma completo → locus extendido de BUB1B → genes de MVA y segregación
-cromosómica → genes del fenotipo residual. **Un negativo NO excluye todas las inserciones
+cromosómica → genes del fenotipo residual. Contrato de adjudicación: *Caller concordance increases technical support but is not required for
+candidate retention. Discordant MEI calls are adjudicated using caller-specific QC, split/discordant-read
+evidence and local alignment inspection.* Los dos llamadores se usan sólo si pasan sus gates de
+compatibilidad de entrada y build. **Un negativo combinado NO excluye todas las inserciones
 complejas**; algunas sólo se resuelven con análisis específico o lecturas largas.
 
 ### 3 · Adjudicación basada en lecturas de los dos alelos prioritarios de BUB1B
@@ -1248,8 +1251,10 @@ sobrevive, se reporta igual y con la misma visibilidad.
 
 En PCS/MVA ya ocurrió lo que este caso tiene: un solo alelo de BUB1B visible y, más tarde, una
 variante intergénica ~44 kb aguas arriba que reducía BUB1B y reproducía PCS/MVA experimentalmente
-(Ochiai et al., 2014; PMID: no verificado en esta sesión, reportado por la auditoría PubMed del
-líder). Fila preregistrada, fuera del filtro genoma completo: la coordenada exacta se toma del
+(Ochiai H et al., *Proc Natl Acad Sci USA* 2014;111(4):1461-6, **PMID 24344301**, verificado en
+esta sesión vía NCBI E-utilities el 2026-09-07). **No se escribe aquí ninguna coordenada GRCh38**:
+durante la ejecución se recupera el build y la coordenada original del artículo, se documenta el
+liftover si hace falta, se comprueba REF y sólo entonces se clasifica. Fila preregistrada, fuera del filtro genoma completo: la coordenada exacta se toma del
 texto del artículo en el momento de ejecutar, se convierte a GRCh38 con liftover documentado, y se
 interroga (a) la variante publicada y (b) toda variante rara, SV o MEI en la misma región
 reguladora aguas arriba (ventana ±50 kb del inicio del gen), con estados permitidos:
@@ -1269,9 +1274,12 @@ de identidad.
 ### 6 · Expansiones de repeticiones (P1, nunca P0)
 
 `ExpansionHunter` 5.0.0 sobre su catálogo de loci patogénicos establecidos como **cribado**, pero
-**sólo se interpretan loci con conexión fenotípica preregistrada**: `DMPK` y `CNBP` (distrofias
-miotónicas: atrofia y debilidad muscular; forma congénita con problemas de crecimiento). Cualquier
-otra expansión es incidental, no se reinterpreta y no reabre nada. Toda llamada positiva requiere
+**sólo se interpreta el locus con conexión fenotípica preregistrada**: `DMPK` (distrofia miotónica
+tipo 1: tiene formas congénitas e infantiles con hipotonía y debilidad muscular). `CNBP` se excluye
+a propósito: la DM2 no tiene formas congénitas ni de inicio infantil, y «atrofia muscular» sola es
+una conexión demasiado ancha. No se añade ningún otro locus salvo que, **antes de ejecutar**, exista
+un término HPO o antecedente clínico específico que lo justifique. Cualquier otra expansión es
+incidental, no se reinterpreta y no reabre nada. Toda llamada positiva requiere
 QC e inspección visual reproducible y se considera *screening evidence*. Sitio en la jerarquía:
 fenotipo residual / segundo diagnóstico.
 
@@ -1320,4 +1328,6 @@ como evidencia negativa/suplementaria. Su ficha QA rellena los nueve campos o no
 
 Tras v5 se commitea el preregistro completo, todavía sin descargas, sin alineamiento y sin puntuar
 EXP-024. Con el GO: descarga de referencia y contenedores → `reference_prepare` → seis gates →
-STOP y reporte → GO explícito del alineamiento. No se añaden ramas nuevas salvo evidencia nueva.
+STOP y reporte → GO explícito del alineamiento. No se añaden ramas nuevas salvo evidencia nueva. **Este commit cierra el preregistro científico del
+WGS de lecturas cortas**: a partir de aquí no se agregan herramientas, genes, llamadores, scores ni
+figuras porque aparezca otro artículo interesante. La siguiente fase es ejecución.

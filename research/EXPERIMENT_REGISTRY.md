@@ -36,7 +36,7 @@
 | **EXP-012b** | Inserciones de elementos móviles (MEI): genoma completo → BUB1B → genes MVA → fenotipo residual | **PREREGISTERED (v5)**, xTea + SCRAMble fijados por digest; un negativo no excluye inserciones complejas | `docs/DECISIONS.md` § v5 |
 | **EXP-012c** | Alelo regulador histórico aguas arriba de `BUB1B` (precedente publicado en PCS/MVA) | **PREREGISTERED (v5)**, estados `PRESENT / ABSENT / TECHNICALLY UNRESOLVED` | `docs/DECISIONS.md` § v5 |
 | **EXP-025** | Adjudicación basada en lecturas de los dos alelos de `BUB1B` + integridad BAM↔VCF | **PREREGISTERED (v5)**; replicación técnica con `bcftools`, nunca evidencia independiente | `docs/DECISIONS.md` § v5 |
-| **EXP-026** | Expansiones de repeticiones, P1, loci con conexión fenotípica preregistrada (`DMPK`, `CNBP`) | **PREREGISTERED (v5)**, cribado; toda positiva exige inspección visual | `docs/DECISIONS.md` § v5 |
+| **EXP-026** | Expansiones de repeticiones, P1, único locus con conexión fenotípica preregistrada (`DMPK`; `CNBP` excluido a propósito) | **PREREGISTERED (v5)**, cribado; toda positiva exige inspección visual | `docs/DECISIONS.md` § v5 |
 | **EXP-013** | Fase parental | **BLOCKED**, muestras de los padres | — |
 | **EXP-014a** | MitoRead · prototipo sobre L001 | **UNRESOLVED**, *naive mtDNA-equivalent estimate* ≈259 bajo los supuestos del piloto. **No calibrado, no interpretable** | `src/mito/pilot_l001.py` |
 | **EXP-014a-v2** | MitoRead · piloto **con alineamiento** para excluir NUMT | **PARKED**, sin alineador instalable (`mappy` no compila sin toolchain de C) y descargar binarios ejecutables está prohibido por política. El prototipo ya demostró factibilidad | — |
