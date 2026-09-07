@@ -1071,37 +1071,64 @@ Track 2. La clave de la API no se rota hasta que el mantenedor lo indique.
 NOT EXECUTED.** Los ocho FASTQ de las cuatro lanes están en la máquina replicada; nada se ha
 descargado ni alineado. Se ejecuta una vez, con estos parámetros, tras el GO explícito.
 
-### Referencia: la canónica, sin modificar
+### Referencia: dos objetos, con procedencia separada
 
 El VCF del proveedor declara `GCA_000001405.15_GRCh38_no_alt_analysis_set_plus_hs38d1_maskedGRC_exclusions_v2_no_chr`
 y sus contigs lo confirman: 1–22, X, Y, M, contigs `_random`, `Un_*_decoy` (hs38d1), `EBV`, sin
 prefijo `chr`. Fuente primaria: el conjunto canónico de NCBI
 `GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz` (md5 publicado
-`a056c57649f3c9964c68aead3849bbf8`). **No se enmascara, no se modifica y no se reconstruye la
-secuencia.** `GRC_exclusions.bed` no es una instrucción para alterar el FASTA: aplicarlo a un FASTA
-ya preparado de otra manera podría producir una referencia distinta de la que generó el VCF. La
-única transformación es de **nombre**: quitar el prefijo `chr` de las cabeceras para que BAM y VCF
-compartan contigs; la secuencia queda byte a byte igual y el gate 4 lo demuestra.
+`a056c57649f3c9964c68aead3849bbf8`). **No se enmascara ni se reconstruye la secuencia.**
+`GRC_exclusions.bed` no es una instrucción para alterar el FASTA.
+
+| Objeto | Qué es | Procedencia |
+|---|---|---|
+| `source_reference_fasta` | el FASTA de NCBI **preservado byte a byte** | sha256 y md5 propios; el md5 se compara con el publicado |
+| `runtime_reference_fasta` | una **copia** con los identificadores de contig renombrados (`chr1 → 1`, `chrM → M`, `chrEBV → EBV`, `chrUn_*_decoy → Un_*_decoy`) para coincidir con el VCF | sha256 y md5 propios, `.fai` construido por `src/wgs/reference_prepare.py`, mapa explícito de cabeceras, `sequence_content_changed = false` (comprobado con un sha256 por contig de la secuencia en ambos ficheros), `header_names_changed = true` |
+
+*The NCBI source FASTA is preserved byte-for-byte. A separate runtime FASTA changes contig
+identifiers only; nucleotide sequence is unchanged.* El runtime **no** se describe como «sin
+modificar»: cambia como fichero, no como secuencia, y los dos checksums se registran para que nadie
+tenga que preguntar cuál se usó para alinear (el runtime).
 
 ### Gates de referencia, antes de alinear una sola lectura (`src/wgs/reference_gate.py`)
 
-| Gate | Comprobación | Si falla |
+| Gate | Regla exacta | Si falla |
 |---|---|---|
-| 1 | sha256 del FASTA descargado registrado; md5 == el publicado por NCBI | STOP |
-| 2 | nombres de contig == cabecera del VCF | STOP |
-| 3 | longitudes de contig == cabecera del VCF | STOP |
-| 4 | concordancia REF genoma completo: 20 000 variantes PASS muestreadas de todo el VCF con semilla fija, `reference[pos] == REF` en todas | STOP |
+| 1 | procedencia: md5 del *source* == el publicado por NCBI; `sequence_content_changed = false`; sha256 del *runtime* == el del fichero presente | STOP |
+| 2 | **todo contig declarado por el VCF existe en el runtime FASTA**; contigs adicionales del FASTA se permiten **sólo si están predeclarados** (lista `PREDECLARED_EXTRA_CONTIGS`, hoy vacía); cualquier otro extra es fallo | STOP |
+| 3 | cada contig del VCF tiene **longitud idéntica** en el runtime | STOP |
+| 4 | concordancia REF genoma completo: 20 000 variantes PASS muestreadas de todo el VCF con semilla 42, `reference[pos] == REF` en **todas** | STOP |
 | 5 | concordancia REF en BUB1B ± 1 Mb: **todas** las variantes PASS | STOP |
 | 6 | decoys hs38d1 y EBV presentes, como espera el VCF | STOP |
 
-Sólo con los seis en PASS: ALIGNMENT GO. El resultado del gate se guarda en `work/align/` y merece
-una celda en el notebook 00.
+*Every VCF-declared contig must exist in the runtime FASTA with identical length. Additional
+predeclared reference contigs are permitted.* Contig ausente, longitud distinta o REF distinta =
+STOP. Con los seis en PASS el gate se **reporta y se detiene**: el alineamiento no arranca solo,
+espera el GO explícito del mantenedor. Es un checkpoint separado: preregistro → referencia
+validada → alineamiento.
+
+### Contenedores: tag + digest inmutable + versión reportada
+
+El identificador reproducible es el **digest** (un tag puede cambiar de contenido en el registro).
+Resueltos desde el registro sin descargar capas (`src/wgs/container_manifest.py resolve`); la
+versión que reporta cada herramienta se registra tras la descarga (`versions`) en
+`work/align/containers.json`.
+
+| Herramienta | Registro / repositorio | Tag | Digest linux/amd64 |
+|---|---|---|---|
+| bwa | `quay.io/biocontainers/bwa` | `0.7.18--he4a0461_0` | `sha256:a8ea7d74457b…` |
+| samtools | `quay.io/biocontainers/samtools` | `1.21--h50ea8bc_0` | `sha256:783c6646029a…` |
+| manta | `quay.io/biocontainers/manta` | `1.6.0--h9ee0642_2` | `sha256:021aabe5f731…` |
+| delly | `quay.io/biocontainers/delly` | `1.3.3--h4d20210_1` | `sha256:67ea846395b2…` |
+| cnvpytor | `quay.io/biocontainers/cnvpytor` | `1.3.2--pyhdfd78af_0` | `sha256:614b22c8fc1f…` |
+| mosdepth | `quay.io/biocontainers/mosdepth` | `0.3.10--h4e814b3_1` | `sha256:94b54a6a5610…` |
+| bedtools | `quay.io/biocontainers/bedtools` | `2.31.1--hf5e1c6e_2` | `sha256:38756b5ac5d0…` |
 
 ### Alineador
 
 **BWA-MEM 0.7.18 was selected as the short-read aligner because its memory requirements fit the
 available system (62 GB host, 32 GB for Docker; the bwa-mem2 human index needs ~86 GB). No
-bitwise-identity claim with bwa-mem2 is made.** Contenedor `quay.io/biocontainers/bwa:0.7.18--he4a0461_0`.
+bitwise-identity claim with bwa-mem2 is made.** Contenedor y digest en la tabla anterior.
 Parámetros fijados: `-t 22 -K 100000000 -Y`, un read group por lane (`ID={flowcell}.{lane}`,
 `PL=ILLUMINA`, `PU={flowcell}.{lane}.{índice}`, `SM` y `LB` = identificador de muestra; flowcell e
 identificador viven en `work/`, nunca aquí). Después: `samtools fixmate -m`, `sort`, `markdup`,

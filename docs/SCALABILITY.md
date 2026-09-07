@@ -22,11 +22,11 @@ nefrocalcinosis, los tres compuestos, `HSF1`, OMIM 257300):
 
 | | módulos | líneas |
 |---|---:|---:|
-| **Sin ninguna mención al caso** — se transfieren tal cual | **36** | **5 758** |
+| **Sin ninguna mención al caso** — se transfieren tal cual | **38** | **5 984** |
 | Con menciones al caso — hay que adaptarlos | 38 | 8 573 |
-| Total | 77 | 15 191 |
+| Total | 79 | 15 433 |
 
-**El 38 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
+**El 39 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
 el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 38
 módulos restantes solo nombra el caso en títulos de figura y cadenas de texto, no en la
 lógica.
