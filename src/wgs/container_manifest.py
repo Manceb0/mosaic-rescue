@@ -31,6 +31,12 @@ IMAGES = [
     ("cnvpytor",  "quay.io/biocontainers/cnvpytor",  "1.3.2--pyhdfd78af_0",  ["cnvpytor", "-version"]),
     ("mosdepth",  "quay.io/biocontainers/mosdepth",  "0.3.10--h4e814b3_1",   ["mosdepth", "--version"]),
     ("bedtools",  "quay.io/biocontainers/bedtools",  "2.31.1--hf5e1c6e_2",   ["bedtools", "--version"]),
+    # v5: alcance cientifico WGS
+    ("bcftools",  "quay.io/biocontainers/bcftools",  "1.21--h8b25389_0",     ["bcftools", "--version"]),
+    ("verifybamid2", "quay.io/biocontainers/verifybamid2", "2.0.3--hc004090_0", ["verifybamid2", "--help"]),
+    ("expansionhunter", "quay.io/biocontainers/expansionhunter", "5.0.0--hf366f20_1", ["ExpansionHunter", "--version"]),
+    ("xtea",      "quay.io/biocontainers/xtea",      "0.1.9--hdfd78af_0",    ["xtea", "--help"]),
+    ("scramble",  "quay.io/biocontainers/scramble",  "1.0.2--hec16e2b_0",    ["cluster_identifier", "--help"]),
 ]
 
 

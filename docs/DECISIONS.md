@@ -1201,3 +1201,123 @@ Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen 
 sin sobreinterpretar; QC de MitoRead; y qué ramas pasan de BLOCKED a EXECUTED y cuáles siguen
 abiertas. Nada del alineamiento ni de los intermedios genómicos entra en el repositorio. No se
 modifica Track 1, la clasificación de variantes ni Track 2 hasta que esos resultados se adjudiquen.
+
+---
+
+## v5 · Alcance científico del WGS de profundidad completa: qué clases de variación se interrogan y qué significará cada resultado
+
+**Fecha:** 2026-09-07, tras la tercera revisión del mantenedor. **Estado:** **PREREGISTERED, NOT
+EXECUTED.** Ésta es la **última ampliación del preregistro antes de ejecutar**: después de v5 no se
+añaden ramas nuevas salvo que aparezca evidencia nueva. v4 respondía «¿podemos reproducir
+exactamente el pipeline?»; v5 responde «¿estamos interrogando las clases correctas de variación y
+sabemos de antemano qué significará cada resultado?».
+
+### 1 · CNVpytor = análisis bidimensional RD + BAF
+
+`CNVpytor` no se limita a profundidad: combina profundidad de lectura (RD) con la frecuencia del
+alelo B (BAF) de los SNP heterocigotos, y puede señalar desequilibrio alélico y LOH neutra en copia.
+Salidas preespecificadas: RD normalizada, distribución de BAF, estado de copia (CN), desequilibrio
+alélico, y LOH neutra en copia si el soporte lo permite. Interrogación primaria: BUB1B ± 1 Mb.
+La pila de evidencia en el locus queda: RD normalizada + BAF de SNP heterocigotos + breakpoints de
+Manta + breakpoints de DELLY + estado de CNVpytor.
+
+### 2 · Rama de inserciones de elementos móviles (MEI)
+
+Los retroelementos intrónicos son una clase mendeliana conocida que el SV calling estándar puede
+no ver y que puede ser, literalmente, el alelo que falta en una enfermedad recesiva. No decirlo
+sería dejar una clase fuera de «search for hidden second allele» sin declararlo.
+Herramientas fijadas por digest (tabla al final): **xTea 0.1.9** como llamador primario para WGS
+Illumina y **SCRAMble 1.0.2** como llamador ortogonal por clusters de lecturas recortadas; sus
+recursos (bibliotecas de repeticiones) se descargan con el GO y se registran con hash.
+Alcance, en este orden: genoma completo → locus extendido de BUB1B → genes de MVA y segregación
+cromosómica → genes del fenotipo residual. **Un negativo NO excluye todas las inserciones
+complejas**; algunas sólo se resuelven con análisis específico o lecturas largas.
+
+### 3 · Adjudicación basada en lecturas de los dos alelos prioritarios de BUB1B
+
+Con el BAM, los dos candidatos dejan de depender sólo del VCF del proveedor. Para cada uno se
+preregistran: DP, AD de referencia y alterno, balance alélico, MAPQ, calidad de base, soporte
+directo/reverso, recorte blando (soft clipping) y complejidad local (repeticiones e indels
+cercanos). Un segundo llamador de variantes pequeñas (`bcftools` 1.21, mpileup/call) se ejecuta
+sobre el mismo BAM y se etiqueta **`TECHNICAL REPLICATION FROM THE SAME READS`**, nunca evidencia
+independiente. Frase máxima si sobreviven: *Both prioritized BUB1B variants were independently
+recovered from the reconstructed full-depth alignment and survived read-level QC.* Si uno no
+sobrevive, se reporta igual y con la misma visibilidad.
+
+### 4 · Comprobación explícita del alelo regulador histórico de BUB1B
+
+En PCS/MVA ya ocurrió lo que este caso tiene: un solo alelo de BUB1B visible y, más tarde, una
+variante intergénica ~44 kb aguas arriba que reducía BUB1B y reproducía PCS/MVA experimentalmente
+(Ochiai et al., 2014; PMID: no verificado en esta sesión, reportado por la auditoría PubMed del
+líder). Fila preregistrada, fuera del filtro genoma completo: la coordenada exacta se toma del
+texto del artículo en el momento de ejecutar, se convierte a GRCh38 con liftover documentado, y se
+interroga (a) la variante publicada y (b) toda variante rara, SV o MEI en la misma región
+reguladora aguas arriba (ventana ±50 kb del inicio del gen), con estados permitidos:
+**`PRESENT / ABSENT / TECHNICALLY UNRESOLVED`** (este último si la cobertura MAPQ ≥ 20 en la región
+es < 20×).
+
+### 5 · Integridad de la muestra y del alineamiento
+
+El QC del BAM incluye: concordancia de genotipos BAM↔VCF (`bcftools` sobre 20 000 sitios PASS
+muestreados con semilla 42), estimación de contaminación (`VerifyBamID2` 2.0.3), tasa de mapeo,
+fracción de pares propiamente apareados, fracción de duplicados, distribución de tamaño de
+inserto, **los cuatro read groups esperados**, uniformidad de cobertura autosómica, profundidad
+X/autosomas e Y/autosomas, heterocigosidad de chrX fuera de las PAR. **Claim máximo:** *The
+reconstructed alignment is technically concordant with the supplied variant dataset.* No es prueba
+de identidad.
+
+### 6 · Expansiones de repeticiones (P1, nunca P0)
+
+`ExpansionHunter` 5.0.0 sobre su catálogo de loci patogénicos establecidos como **cribado**, pero
+**sólo se interpretan loci con conexión fenotípica preregistrada**: `DMPK` y `CNBP` (distrofias
+miotónicas: atrofia y debilidad muscular; forma congénita con problemas de crecimiento). Cualquier
+otra expansión es incidental, no se reinterpreta y no reabre nada. Toda llamada positiva requiere
+QC e inspección visual reproducible y se considera *screening evidence*. Sitio en la jerarquía:
+fenotipo residual / segundo diagnóstico.
+
+### 7 · Gate de escalado a lecturas largas, congelado ahora y no después de un negativo
+
+*If no supported second structural/regulatory allele is detected by short-read WGS, phase remains
+unresolved, and BUB1B remains the leading causal hypothesis, long-molecule phasing / long-read
+sequencing becomes the highest-value next genomic experiment.*
+
+### 8 · Techo de MitoRead
+
+*Without CBC/platelet/cell-composition data, the result is a cell-composition-unadjusted
+WGS-derived blood mtDNA:nuclear ratio.* Con hemograma se puede ajustar e interpretar algo mejor.
+Nunca: *mitochondrial dysfunction demonstrated*.
+
+### 9 · Niveles de priorización genoma completo, fijados antes de llamar
+
+| Tier | Alcance |
+|---|---|
+| 1 | locus extendido de BUB1B |
+| 2 | genes establecidos de MVA y segregación cromosómica |
+| 3 | genes del fenotipo residual / segundo diagnóstico |
+| 4 | SV/CNV/MEI de alto impacto genoma completo |
+
+**Ningún evento de Tier 4 sube a candidato causal sólo por rareza.**
+
+### 10 · Figura preregistrada: BUB1B locus evidence stack
+
+`fig04R_bub1b_locus_evidence_stack`, clase `DATA`, origen `MEASURED+DERIVED`: sobre **el mismo eje
+genómico**, estructura del gen y contexto regulador, candidatos SNV/indel, RD normalizada, estado de
+CNVpytor, BAF, pares discordantes, split reads, llamadas de Manta, de DELLY y de MEI. Se genera
+**sólo** desde los datos ejecutados, nunca desde un mockup; si no aparece ningún evento se publica
+como evidencia negativa/suplementaria. Su ficha QA rellena los nueve campos o no entra.
+
+### Contenedores añadidos en v5 (tag + digest inmutable; versión reportada tras el pull)
+
+| Herramienta | Repositorio | Tag | Digest linux/amd64 |
+|---|---|---|---|
+| bcftools | `quay.io/biocontainers/bcftools` | `1.21--h8b25389_0` | `sha256:969314d56b91…` |
+| verifybamid2 | `quay.io/biocontainers/verifybamid2` | `2.0.3--hc004090_0` | `sha256:7f8b271e644c…` |
+| expansionhunter | `quay.io/biocontainers/expansionhunter` | `5.0.0--hf366f20_1` | `sha256:a3a227b4c765…` |
+| xtea | `quay.io/biocontainers/xtea` | `0.1.9--hdfd78af_0` | `sha256:0855c844a4e6…` |
+| scramble | `quay.io/biocontainers/scramble` | `1.0.2--hec16e2b_0` | `sha256:68d1452fa2ca…` |
+
+### Condición de parada
+
+Tras v5 se commitea el preregistro completo, todavía sin descargas, sin alineamiento y sin puntuar
+EXP-024. Con el GO: descarga de referencia y contenedores → `reference_prepare` → seis gates →
+STOP y reporte → GO explícito del alineamiento. No se añaden ramas nuevas salvo evidencia nueva.
