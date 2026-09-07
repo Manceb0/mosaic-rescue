@@ -42,13 +42,16 @@ from src.model_outputs import alphagenome_common as C                  # noqa: E
 DIR = os.path.join(C.WORK, "tissue_matrix")
 PANEL_MANIFEST = os.path.join(DIR, "panel_manifest.json")
 
+STATUS = "PRE-SPECIFIED EXPLORATORY / DESCRIPTIVE"
+DISCLAIMER = ("External model contexts. No patient transcriptome, epigenome, chromatin profile or "
+              "cell-specific functional assay is available; no cell is a measurement from the patient.")
 BIOSAMPLES = [
-    ("UBERON:0008450", "psoas muscle", "phenotype: skeletal muscle atrophy"),
-    ("UBERON:0002113", "kidney", "phenotype: nephrocalcinosis"),
-    ("CL:1001608", "foreskin fibroblast", "cell type of PCS/MVA functional studies (most modalities)"),
-    ("CL:0001059", "common myeloid progenitor, CD34-positive", "the DNase track already frozen in EXP-023"),
-    ("CL:2000001", "peripheral blood mononuclear cell", "blood"),
-    ("UBERON:0002107", "liver", "no phenotype relevance: negative-relevance context"),
+    ("UBERON:0008450", "psoas muscle", "phenotype-motivated context (skeletal muscle atrophy); not an affected patient tissue"),
+    ("UBERON:0002113", "kidney", "phenotype-motivated context (nephrocalcinosis); not an affected patient tissue"),
+    ("CL:1001608", "foreskin fibroblast", "literature-motivated MVA functional context (the fibroblast with most modalities; skin fibroblast exists only in contact maps)"),
+    ("CL:0001059", "common myeloid progenitor, CD34-positive", "proliferative hematopoietic context; the DNase track already frozen in EXP-023"),
+    ("CL:2000001", "peripheral blood mononuclear cell", "tissue of WGS origin, if applicable"),
+    ("UBERON:0002107", "liver", "predeclared unrelated comparator"),
 ]
 MODALITIES = ["RNA_SEQ", "SPLICE_SITE_USAGE", "SPLICE_JUNCTIONS", "DNASE", "ATAC", "CHIP_HISTONE"]
 HISTONE_MARKS = ["H3K27ac", "H3K4me3"]      # activa / promotor; fijados aqui
@@ -71,8 +74,10 @@ def freeze() -> dict:
         df = getattr(md, m.lower())
         cur = set(df["ontology_curie"].astype(str)) if df is not None and "ontology_curie" in df.columns else set()
         avail[m] = {c: (c in cur) for c, _n, _r in BIOSAMPLES}
-    out = {"experiment": "EXP-024b tissue x modality", "frozen_at_utc": C.now_utc(),
-           "git_commit": C.git_commit(),
+    out = {"experiment": "EXP-024b tissue x modality", "status": STATUS, "disclaimer": DISCLAIMER,
+           "inference": "descriptive only; percentiles per cell are descriptive; no cell becomes a "
+                        "significant result and none is chosen after seeing scores",
+           "frozen_at_utc": C.now_utc(), "git_commit": C.git_commit(),
            "exp023_manifest_sha256": io.open(C.MANIFEST + ".sha256").read().strip(),
            "context_bp": man["contacts"]["sequence_context_bp"],
            "biosamples": [{"ontology_curie": c, "name": n, "reason": r} for c, n, r in BIOSAMPLES],

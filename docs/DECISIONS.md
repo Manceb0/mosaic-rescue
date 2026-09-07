@@ -945,111 +945,186 @@ alguien cambia scorer, ontología, ventana o ensamblado sin volver a sellar a pr
 
 ## EXP-024 · Preregistro: calibración del score de AlphaGenome y panel tejido × modalidad
 
-**Fecha:** 2026-09-07. **Estado:** **PREREGISTRADO, NO EJECUTADO.** Ninguna variante del null,
-ningún control y ninguna celda del panel se ha puntuado todavía. Este bloque se sella antes de la
-primera llamada y se ejecuta sólo tras revisión del mantenedor.
+**Fecha:** 2026-09-07, revisado el mismo día tras la primera revisión del mantenedor.
+**Estado:** **PREREGISTERED, NOT EXECUTED.** Ninguna variante del null, ningún control y ninguna
+celda del panel se ha puntuado. El primer sellado (NULL-A, `ed8e1f16…`) quedó **superado antes de
+puntuar nada** y se conserva en `work/alphagenome/calibration/superseded/` como rastro.
+
+**Orden acordado:** este preregistro se commitea solo (commit A, sin resultados). Después va el
+alineamiento de profundidad completa (EXP-012, EXP-014a-v2). EXP-024 se ejecuta **una sola vez**, en
+un commit B, y sólo si tras esos resultados sigue respondiendo una pregunta relevante.
 
 ### P0 · aclaración sobre EXP-023, sin reescribirlo
 
-Las dos reglas de lectura de EXP-023 —«5 % superior de posiciones» en la ISM y
-«max |ALT − REF| ≥ 5 % del máximo de REF» en contactos— son **reglas de decisión internas,
-predeclaradas para impedir el cherry-picking**. No son umbrales validados por la literatura ni
-niveles de significación, y no se convertirán en un «p < 0,05» implícito. Se conservan tal cual
-por su valor histórico; EXP-024 añade la calibración empírica que les faltaba.
+Las dos reglas de lectura de EXP-023 («5 % superior de posiciones» en la ISM; «max |ALT − REF| ≥ 5 %
+del máximo de REF» en contactos) son **reglas de decisión internas**, predeclaradas para impedir el
+cherry-picking. No son umbrales validados por la literatura ni niveles de significación, y no se
+convertirán en un «p < 0,05» implícito. La correlación 16 kb frente a 100 kb (0,95 y 0,98) se
+describe como *robust to the two tested sequence-context lengths*, nunca como «descarta un
+artefacto de ventana». Los picos de la ISM a −85 y +109/+125 pb se anotan; no hay búsqueda de
+motivos ni análisis post hoc.
 
-### Qué responde EXP-024 que EXP-023 no responde
+### Conjuntos sellados, cada uno con su sha256
 
-EXP-023: *¿cae el candidato donde el modelo es localmente sensible?* → no.
-EXP-024: *¿cuán inusual es el score del candidato frente a SNV comparables puntuadas con el
-mismo sistema?* Y, en el panel: *¿el efecto predicho está restringido a un tejido o es
-uniformemente débil?* Todo ello es **calibración del modelo, no calibración clínica**.
-
-### Conjuntos congelados (sha256 registrados; el detalle vive en `work/`, gitignored, porque lleva coordenadas)
-
-| Conjunto | Definición | n | sha256 del manifest |
+| Conjunto | Definición | n | sha256 |
 |---|---|---|---|
-| **NULL-A** | SNV sintéticas en los intrones profundos del **mismo transcrito** (MANE, Ensembl 116), ≥ 1 000 pb de cualquier borde de exón, fuera de la ventana ISM del candidato, **transiciones** (la clase del candidato), REF leída del FASTA GRCh38 local; muestreo sin reemplazo con **semilla 42**, el único paso aleatorio | **300** de 27 062 posiciones elegibles | `ed8e1f16e18fe5d2…` |
-| **CTRL-POS** | las cuatro posiciones canónicas de splicing de cada intrón (donante +1/+2, aceptor −2/−1), mutadas a su transición: control de **potencia** de la lectura de splicing | **88** (22 intrones) | mismo manifest |
-| **PANEL** | seis biosamples por criterio × seis modalidades con el scorer recomendado oficial, 1 Mb | 6 × 6, con las celdas ausentes declaradas | `6673fa40edb340fe…` |
+| **NULL-LOCAL** | transiciones sintéticas del **mismo entorno del locus**: a ≤ 5 000 pb del candidato, intrónicas, a ≥ 1 000 pb de cualquier borde de exón (la clase «intrónica profunda» del candidato), fuera de la ventana ISM y de CTRL-POS; seleccionadas sólo con rasgos independientes del modelo; semilla 42 | **100** de 1 901 elegibles | `ac572937bde5a324…` |
+| **NULL-TRANSCRIPT** | transiciones intrónicas profundas de **todo el transcrito** (≥ 1 000 pb de exón, fuera de la ventana ISM); misma familia de regla y misma semilla que NULL-A, pero el pool se calcula ahora de forma uniforme y la muestra **no** es idéntica byte a byte a NULL-A | **300** de 27 062 | `4eebb2c20ccfe0e2…` |
+| **CTRL-POS** | las cuatro posiciones canónicas de splicing de cada intrón (donante +1/+2, aceptor −2/−1), mutadas a su transición | **88** (22 intrones) | `73c78821bb5a1e9f…` |
+| **PANEL** | seis contextos externos × seis modalidades, scorers recomendados oficiales, 1 Mb | 6 × 6 | `05f5aaa3eb5691fc…` |
+| índice del preregistro | contrato de puntuación, familias, estadística y reglas de lectura | — | `c9d2c946ba2582cc…` |
 
-El candidato no está en ningún conjunto (se comprueba). Por geometría del gen, todas las
-posiciones del null quedan aguas arriba del candidato; se declara en vez de disimularse.
+**Rasgos del candidato, independientes del modelo:** transición A>G, intrón 20 de 22, a 1 026 pb
+del exón más cercano, GC del entorno de 101 pb = 0,26.
 
-**Panel, con la razón previa de cada fila:** músculo psoas (atrofia muscular) · riñón
-(nefrocalcinosis) · fibroblasto de prepucio (célula de los estudios funcionales de MVA; el de piel
-sólo existe en contactos) · progenitor mieloide CD34+ (la pista DNase ya congelada) · célula
-mononuclear de sangre periférica · **hígado, como contexto sin relación, para ver cómo es «nada»**.
-Modalidades: RNA-seq, uso de sitios de splicing, junciones, DNase, ATAC, histonas (H3K27ac y
-H3K4me3). Celdas sin pista: *not available*, nunca imputadas.
+**NULL-LOCAL no es «fully matched», y se dice.** Emparejado: clase de sustitución, intrónico,
+intrónico profundo, mismo entorno (≤ 5 kb). No emparejado: distancia exacta al exón (el pool va
+de 1 016 a 2 004 pb), lado de la hebra (las 100 posiciones quedan aguas arriba, por geometría del
+locus) y GC local (se reporta, no se empareja).
 
-### Qué se puntúa, idéntico para candidato, null y controles
+### Sensibilidad, por lectura
 
-- **16 kb:** los dos scorers de la ISM de EXP-023, para que el escalar del candidato sea **el
-  mismo objeto** ya congelado.
-- **1 Mb:** `ContactMapScorer` oficial en las 28 pistas (la predeclarada `CL:0002620` es la que
-  cuenta) y los scorers recomendados del panel.
+| Lectura | Calibración de sensibilidad | Lo que un no-significativo puede decir |
+|---|---|---|
+| splice (primaria) | **CTRL-POS** | depende de la potencia medida |
+| DNase (secundaria) | **UNCALIBRATED FOR SENSITIVITY** (no hay conjunto positivo externo defendible sin curación nueva) | sólo *not unusually extreme under the preregistered null* |
+| contacto (global) | **UNCALIBRATED FOR SENSITIVITY** | ídem |
 
-### Estadística y reglas de lectura, fijadas antes de mirar
+La potencia de CTRL-POS **no se propaga** a DNase ni a contactos.
+
+### Familias
+
+**CONFIRMATORY FAMILY = {splice-primary, DNase-secondary, contact-global}.** Exactamente tres
+hipótesis; Benjamini-Hochberg sólo entre ellas, con NULL-LOCAL como null primario y
+NULL-TRANSCRIPT reportado al lado. **La matriz tejido × modalidad es PRE-SPECIFIED EXPLORATORY /
+DESCRIPTIVE**: sus percentiles por celda son descriptivos; ninguna celda se convierte en «significant»
+con el q de la familia de tres; ninguna se elige después de ver los scores.
+
+### Estadística
 
 percentil = 100·#{|S_null| < |S_cand|}/N · p_emp = (1 + #{|S_null| ≥ |S_cand|})/(N+1) ·
-z robusto = (S_cand − mediana)/(1,4826·MAD) · familia {splice, DNase, contacto} → **q de
-Benjamini-Hochberg sólo sobre esa familia** · potencia = fracción de CTRL-POS con p_emp < 0,05 en
-splicing.
+z robusto = (S_cand − mediana)/(1,4826·MAD). **MAD degenerado** (MAD = 0 o MAD < 10⁻⁶·max|S_null|):
+z = *undefined (degenerate null spread)*, se reporta la fracción de nulls exactamente iguales a 0 y
+quedan percentil y p_emp como únicos resúmenes. Potencia = fracción de CTRL-POS con p_emp < 0,05
+en splicing.
 
-| Resultado | Lectura obligatoria |
+### Contrato de puntuación idéntico (invariante)
+
+candidato == null == controles en: longitud de contexto (16 kb para las dos lecturas de la ISM de
+EXP-023, 1 Mb para contactos y panel), scorer, ontología, tratamiento de hebra, máscara central,
+agregación escalar, normalización REF/ALT y manejo de salidas ausentes. Una variante que no cumpla
+el contrato exacto (error de la API tras 3 reintentos, NaN, pista ausente) **se excluye bajo esta
+regla escrita** y se registra el motivo; si las exclusiones superan el 5 % de un conjunto, la corrida
+se marca `INCOMPLETE` y no se interpreta.
+
+### Lecturas obligatorias
+
+| Resultado | Lectura |
 |---|---|
-| q ≥ 0,05 | *unremarkable relative to the matched computational null* |
-| q < 0,05 | *extreme relative to the matched computational null*: se registra como **contradicción concreta** para que el mantenedor la adjudique; **no cambia por sí sola** clasificación, ranking ni rama |
-| potencia < 0,5 | la lectura no es sensible en este gen: **el negativo del candidato se declara no informativo** |
-| panel: max \|score\| ≥ 3 × mediana \|score\| en una modalidad | *tissue-restricted* |
-| panel: otro caso | *broadly consistent (weak or no predicted effect)* |
-| siempre | percentil, p y z **no son** probabilidad de patogenicidad ni evidencia ACMG |
+| q ≥ 0,05 | *not unusually extreme relative to the preregistered null* |
+| q < 0,05 | *unusually extreme relative to the preregistered null*: se registra como **contradicción concreta** para adjudicación; **no cambia por sí sola** clasificación, ranking ni rama |
+| potencia(splice) < 0,5 | la lectura de splicing no es sensible en este gen; el resultado del candidato en esa lectura se declara **no informativo** |
+| panel | descriptivo: *tissue-restricted* si max \|score\| ≥ 3 × mediana \|score\| en la modalidad; en otro caso *broadly consistent (weak or no predicted effect)* |
+| prohibido | *negative*, *benign*, *non-functional*, *no regulatory effect*; y cualquier lectura de percentil, p o z como probabilidad de patogenicidad o evidencia ACMG |
 
-### Figuras que entrarían, con los nueve campos
+**Techo de interpretación.** EXP-024 calibra la salida de AlphaGenome. No calibra patogenicidad,
+no reclasifica la VUS, no demuestra ausencia de segundo alelo, no demuestra que el locus carezca de
+función y no convierte contactos predichos en cromatina del paciente. El resultado de AlphaGenome
+sigue siendo: *The only rare noncoding candidate surviving locus-level filtering was not supported
+by global or track-level AlphaGenome predictions.* EXP-024 sólo puede añadir: *and its
+pre-specified model scores were / were not unusually extreme relative to defined computational
+null distributions.*
 
-**fig04Q · calibración (nueva; principal diagnóstica del bloque AlphaGenome)**
-QUESTION: ¿cuán extremo es el score del candidato frente a NULL-A? · INPUT: `raw_scores.json.gz`
-(candidato + 300 null + 88 controles) · METHOD: ECDF/violín por lectura, candidato marcado,
-controles como segunda distribución, percentil y p_emp/q impresos · RESULT: pendiente ·
-SUPPORTED CLAIM: extremidad del score dentro de un conjunto computacional de referencia ·
-FORBIDDEN: patogenicidad, penetrancia, fuerza ACMG, efecto en el paciente · PROVENANCE:
-`metadata.json` con hashes de los tres manifests · COMMAND: `python src/figures/fig04_calibration.py`
-· TEST: p_emp y q se recalculan desde los scores crudos y tienen que coincidir con el metadata.
+**Panel: contextos externos del modelo.** No patient transcriptome, epigenome, chromatin profile or
+cell-specific functional assay is available. Psoas y riñón son *phenotype-motivated contexts*, no
+tejidos afectados del paciente; fibroblasto es *literature-motivated MVA functional context*;
+CD34+ es *proliferative hematopoietic context*; sangre mononuclear, tejido de origen del WGS si
+aplica; hígado, *predeclared unrelated comparator*.
 
-**fig04L · zoom ISM con logo de secuencia (nueva; suplementaria)**
-QUESTION: ¿cómo se lee la ISM a ±20 pb del candidato? · INPUT: la matriz ISM **ya congelada**
-de EXP-023, sin volver a llamar al modelo · METHOD: heatmap local + logo de letras desde la misma
-matriz · RESULT: se deriva de EXP-023 · SUPPORTED: segunda representación del mismo objeto ·
-FORBIDDEN: cualquier lectura nueva · PROVENANCE: hash de la matriz madre · COMMAND:
-`python src/figures/fig04_ism_logo.py` · TEST: `logo == slice de la matriz madre`, o no se genera.
+### Jerarquía de figuras (ninguna sube por parecer llamativa)
 
-**fig04T · matriz tejido × modalidad (nueva; suplementaria)**
-QUESTION: ¿el efecto predicho es tejido-específico o uniformemente débil? · INPUT: `raw_scores`
-del candidato en el panel + percentiles frente al null · METHOD: heatmap con signo, celdas
-ausentes marcadas, percentil en cada celda · RESULT: pendiente · SUPPORTED: perfil de
-predicción de un modelo a través de un panel fijado de antemano · FORBIDDEN: expresión o
-cromatina medida en el paciente; tejidos elegidos por efecto · PROVENANCE: `panel_manifest`
-sellado · COMMAND: `python src/figures/fig04_tissue_matrix.py` · TEST: filas == panel congelado.
+| Figura | Categoría | Qué es |
+|---|---|---|
+| `fig04Q_alphagenome_calibration` | **MAIN** diagnóstica del bloque AlphaGenome | ECDF/null + candidato + controles, percentil, p y q |
+| `fig04C_alphagenome_contact_maps` + panel E | secundaria / principal mecanística de salida de modelo | A–D intactos; E = `ContactMapScorer` del candidato frente a NULL-LOCAL |
+| `fig04T_alphagenome_tissue_matrix` | **SUPPLEMENTARY**, contexto exploratorio preespecificado | seis contextos × seis modalidades, celdas ausentes visibles |
+| `fig04L_alphagenome_ism_logo` | **SUPPLEMENTARY** | *ISM-derived local sensitivity logo* desde la matriz ya congelada; nunca «motif» |
 
-**fig04C · contactos (existente): se le añade un panel E** con el `ContactMapScorer` del
-candidato frente a NULL-A (percentil y p_emp), manteniendo intactos A–D y el umbral histórico
-del 5 % descrito como regla interna.
-
-### Fuera de esta fase, y por qué
-
-- **Hi-C/Micro-C experimental externo:** sólo con un biosample defendible elegido antes de mirar
-  y con accession, ensamblado, resolución, normalización y sha256 registrados; sería
-  `EXTERNAL+MEASURED` y **nunca** validación de ALT − REF. Pendiente de curación; no se descarga
-  nada hasta que se apruebe.
-- **Enhancer → promotor:** gate de cuatro condiciones (elemento definido, actividad relevante,
-  contacto independiente o método formal tipo ABC, sin elegir el target después). Si falla,
-  `NOT RUN — prerequisites not met`.
-- **Folds locales de AlphaGenome:** la GPU disponible es una RTX 4060 de 8 GB; se evalúa, no se
-  bloquea la entrega por ello. Queda registrado que la API no expone la build servida.
-- **Enformer/DeepSEA:** sólo como benchmark ortogonal suplementario, nunca «consenso de IA».
-- **Mosaico celular del paciente:** no se fabrica; no hay datos que lo sostengan.
+Los nueve campos (QUESTION, INPUT, METHOD, RESULT, SUPPORTED CLAIM, FORBIDDEN CLAIM, PROVENANCE,
+REPRODUCTION COMMAND, TEST) de cada una se rellenan en `PUBLICATION_FIGURE_QA.md` cuando existan;
+una figura que no pueda llenar los nueve no entra.
 
 ### Lo que no cambia
 
-No se reabre `BUB1B`, no se reclasifica la VUS, no se toca `A0`, no se busca fármaco, no se
-cambia Track 2. Esta fase es disciplina de medida y validación de modelo.
+No se reabre `BUB1B`, no se reclasifica la VUS, no se toca `A0`, no se busca fármaco, no se cambia
+Track 2. La clave de la API no se rota hasta que el mantenedor lo indique.
+
+---
+
+## EXP-012 / EXP-014a-v2 · Preregistro del alineamiento de profundidad completa
+
+**Fecha:** 2026-09-07. **Estado:** **PREREGISTERED, NOT EXECUTED.** Los ocho FASTQ de las cuatro
+lanes están en la máquina replicada; el alineamiento se ejecuta una vez, con estos parámetros.
+
+### Referencia
+
+El VCF del proveedor declara `GCA_000001405.15_GRCh38_no_alt_analysis_set_plus_hs38d1_maskedGRC_exclusions_v2_no_chr`
+y sus contigs lo confirman: 1–22, X, Y, M, contigs `_random`, `Un_*_decoy` (hs38d1), `EBV`, sin
+prefijo `chr`. Se reconstruye desde NCBI: `GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz`
+(md5 `a056c57649f3c9964c68aead3849bbf8`) + `GCA_000001405.15_GRCh38_GRC_exclusions.bed` (18 regiones,
+md5 `bf5c011e0342f355422144eb3547b5d0`) enmascarado con `bedtools maskfasta`, y `chr` eliminado de
+las cabeceras. **Gate:** el conjunto {nombre, longitud} de contigs tiene que ser idéntico al de la
+cabecera del VCF, o no se alinea. Se declara que la lista de exclusiones enmascarada puede no
+coincidir con la «v2» exacta del proveedor: afecta sólo a qué regiones llevan N.
+
+### Alineador
+
+`bwa-mem2` produce alineamientos idénticos a `bwa mem` por diseño, pero construir su índice humano
+exige ~86 GB de RAM y la máquina tiene 62 GB (Docker, 32 GB). Se usa **`bwa mem` 0.7.18** en
+contenedor (`quay.io/biocontainers/bwa:0.7.18--he4a0461_0`), que es el mismo algoritmo con la misma
+salida; el motivo queda registrado. Parámetros fijados: `-t 22 -K 100000000 -Y`, un read group por
+lane (`ID={flowcell}.{lane}`, `PL=ILLUMINA`, `PU={flowcell}.{lane}.{índice}`, `SM` y `LB` = identificador
+de muestra; flowcell e identificador viven en `work/`, nunca aquí). Después: `samtools fixmate -m`, `sort`, `markdup`, `index`
+(`samtools` 1.21). Sin recorte de lecturas. Nada se ajusta después de mirar resultados.
+
+### QC que se mide (no se asume)
+
+Profundidad autosómica mediana y distribución; BUB1B ±50 kb y ±1 Mb; calidad de mapeo; fracción de
+duplicados; distribución de tamaño de inserto; profundidad chrX/autosomas y chrY/autosomas;
+heterocigosidad de chrX fuera de las PAR. El sexo se reporta sólo como *genomic sex concordance
+consistent with the declared XY configuration*, nunca como confirmación de identidad. La
+profundidad observada **se verifica**; el ~40× del VCF es la expectativa, no el resultado.
+
+### EXP-012 · alelo estructural oculto
+
+SV calling **genoma completo** con Manta 1.6.0 y DELLY (contenedores fijados), lectura
+independiente de número de copia por profundidad (mosdepth 0.3.10 en ventanas de 1 kb,
+normalizada por la mediana autosómica), y después la interrogación primaria de BUB1B ±1 Mb:
+extracción de todo evento que interseque exones, intrones o región reguladora extendida, con
+soporte a nivel de lectura (split reads, pares discordantes, profundidad normalizada). Revisión
+visual reproducible sólo de candidatos que sobrevivan. **Techo del negativo:** *No supported
+structural/CNV second allele was detected by the specified short-read WGS workflow; classes poorly
+accessible to short reads remain unresolved.* Prohibido: *structural second allele excluded*.
+
+### Fase
+
+**No se ejecuta WhatsHap para unir los dos alelos principales.** Distancia 10 911 pb; el mayor hueco
+entre heterocigotos puente es 6 769 pb; los fragmentos cortos miden ~400–500 pb. Se congela:
+*Current short-read WGS cannot establish trans; parental DNA or a long-molecule phasing assay is
+required.* `unphased ≠ trans` permanece.
+
+### EXP-014a-v2 · MitoRead con alineamiento
+
+*NUMT-aware mtDNA:nuclear coverage estimate*: profundidad de chrM con lecturas MAPQ ≥ 30 (y sin
+filtro, para ver la diferencia), denominador autosómico robusto (mediana) y sensibilidad a
+denominadores alternativos por cromosoma, bootstrap por ventanas de chrM si es viable. Prohibido
+«excluye NUMT»: permitido «reduce, identifica y filtra la contaminación por NUMT». Sigue siendo un
+*orthogonal WGS readout*, no prueba de disfunción mitocondrial, y lleva el caveat de composición
+celular y plaquetas.
+
+### Lo que se devuelve antes de interpretar
+
+Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen de llamadas SV/CNV
+sin sobreinterpretar; QC de MitoRead; y qué ramas pasan de BLOCKED a EXECUTED y cuáles siguen
+abiertas. Nada del alineamiento ni de los intermedios genómicos entra en el repositorio. No se
+modifica Track 1, la clasificación de variantes ni Track 2 hasta que esos resultados se adjudiquen.
