@@ -39,7 +39,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # omitia los ocho generadores src/nb/nb00..nb07, es decir, justo el codigo que
 # construye los notebooks. Un control que afirma cubrir mas de lo que cubre es
 # peor que no tenerlo, porque da permiso para no mirar.
-PKGS = ("src/figures", "src/nb", "src/structure")
+PKGS = ("src/figures", "src/nb", "src/structure", "src/model_outputs")
 
 
 def discover():
@@ -605,6 +605,113 @@ def stale_claims():
     return code == 0, line
 
 
+def model_outputs():
+    """Las dos figuras de AlphaGenome post-congelacion salen de artefactos que
+    cuadran con un manifest congelado, y no de otra cosa.
+
+    POR QUE EXISTE. Una figura de clase MODEL_OUTPUT se convierte en "evidencia"
+    en cuanto nadie puede decir de que corrida salio cada pixel. Este control
+    ata figura -> JSON -> corrida -> manifest: si alguien cambia scorer,
+    ontologia, ventana o ensamblado despues de ver un resultado, el sha256 del
+    manifest deja de coincidir con el que las corridas citan y esto se pone
+    rojo. Y comprueba el invariante que de verdad importa: 768 evaluaciones,
+    256 x 4, matrices de contacto cuadradas, simetricas y con delta exacto.
+
+    Sin work/ local lo dice en voz alta, en vez de pasar en verde sin mirar.
+    Lo versionado (figuras + fichas QA + generadores) se comprueba siempre.
+    """
+    import hashlib, json, re
+    sys.path.insert(0, ROOT)
+    import numpy as np
+
+    W = os.path.join(ROOT, "work/alphagenome")
+    man = os.path.join(W, "run_manifest.json")
+    slugs = ("fig04I_alphagenome_ism", "fig04C_alphagenome_contact_maps")
+
+    # --- siempre: lo versionado -------------------------------------------
+    fallos = []
+    qa = io.open(os.path.join(ROOT, "PUBLICATION_FIGURE_QA.md"), encoding="utf-8").read()
+    for s in slugs:
+        svg = os.path.join(ROOT, "figures/pub", s + ".svg")
+        if not os.path.exists(svg):
+            fallos.append(f"falta figures/pub/{s}.svg")
+            continue
+        t = io.open(svg, encoding="utf-8", errors="replace").read()
+        if "model output" not in t or "predicted" not in t:
+            fallos.append(f"{s}.svg no lleva estampados figure class y evidence origin")
+        if s not in qa:
+            fallos.append(f"{s} sin ficha QA")
+    for rel in ("src/figures/fig04_ism.py", "src/figures/fig04_contacts.py",
+                "src/nb/nb04_hidden_allele.py"):
+        t = io.open(os.path.join(ROOT, rel), encoding="utf-8").read()
+        if re.search(r"AlphaGenome\s+(validates|demonstrates|proves|confirms)", t, re.I):
+            fallos.append(f"{rel} convierte una prediccion en validacion")
+    if fallos:
+        return False, "; ".join(fallos[:4])
+
+    if not os.path.exists(man):
+        return True, ("figuras, fichas y generadores en orden; sin work/alphagenome local no "
+                      "se puede comprobar la cadena figura -> JSON -> corrida -> manifest")
+
+    # --- con work/: la cadena completa --------------------------------------
+    def sha(p):
+        h = hashlib.sha256()
+        with io.open(p, "rb") as f:
+            for b in iter(lambda: f.read(1 << 20), b""):
+                h.update(b)
+        return h.hexdigest()
+
+    want = io.open(man + ".sha256").read().strip()
+    if sha(man) != want:
+        return False, "el manifest congelado cambio despues de congelarse"
+    m = json.load(io.open(man, encoding="utf-8"))
+    if m["assembly_gate"].get("ref_validation") != "PASS" or \
+            m["assembly_gate"].get("source_assembly") != "GRCh38":
+        return False, "el manifest no registra un gate de ensamblado superado"
+
+    ism = json.load(io.open(os.path.join(W, "ism/metadata.json"), encoding="utf-8"))
+    con = json.load(io.open(os.path.join(W, "contacts/metadata.json"), encoding="utf-8"))
+    for name, meta in (("ism", ism), ("contacts", con)):
+        if meta.get("manifest_sha256") != want:
+            return False, f"{name}: corrida sobre otro manifest"
+        if (meta.get("figure_class"), meta.get("evidence_origin")) != ("MODEL_OUTPUT", "PREDICTED"):
+            return False, f"{name}: clase u origen no declarados"
+    declared = {s["role"]: s for s in m["ism"]["scorers"]}
+    n_ok = 0
+    for tag in ("primary", "sensitivity"):
+        run_ = ism[tag]
+        if run_["n_variants"] != m["ism"]["expected_variants"]:
+            return False, f"ism/{tag}: {run_['n_variants']} evaluaciones, esperadas {m['ism']['expected_variants']}"
+        for role, info in run_["roles"].items():
+            if info["scorer"] != declared[role]:
+                return False, f"ism/{tag}/{role}: scorer u ontologia distintos del manifest"
+            z = np.load(os.path.join(W, "ism", info["files"]["npz"]))
+            if z["centered"].shape != (m["ism"]["ism_window_bp"], 4) or not np.isfinite(z["centered"]).all():
+                return False, f"ism/{tag}/{role}: matriz mal formada"
+            for k in ("raw_scores", "matrix", "npz"):
+                if sha(os.path.join(W, "ism", info["files"][k])) != info["files"][k + "_sha256"]:
+                    return False, f"ism/{tag}/{role}: {k} no coincide con su sha256"
+            n_ok += 1
+    z = np.load(os.path.join(W, "contacts/matrices.npz"))
+    ref, alt, delta = z["ref"], z["alt"], z["delta"]
+    if ref.ndim != 2 or ref.shape[0] != ref.shape[1] or ref.shape != alt.shape:
+        return False, "contactos: matrices no cuadradas o de distinta forma"
+    if np.abs(ref - ref.T).max() > 1e-5 or np.abs(alt - alt.T).max() > 1e-5:
+        return False, "contactos: matriz no simetrica"
+    if not np.array_equal(delta, alt - ref):
+        return False, "contactos: delta != ALT - REF"
+    if con["ontology_curie"] != m["contacts"]["ontology_curie"]:
+        return False, "contactos: la pista dibujada no es la predeclarada"
+    for k, f in con["files"].items():
+        if sha(os.path.join(W, "contacts", f["file"])) != f["sha256"]:
+            return False, f"contactos: {f['file']} no coincide con su sha256"
+    return True, (f"manifest congelado {want[:12]}..., {n_ok} matrices ISM de "
+                  f"{m['ism']['ism_window_bp']}x4 sobre {m['ism']['expected_variants']} "
+                  f"evaluaciones, contactos {ref.shape[0]}x{ref.shape[0]} simetricos con delta "
+                  f"exacto; lectura ISM: {ism['interpretation']['reading'][:38]}...; "
+                  f"contactos: {con['interpretation']['reading'][:34]}...")
+
+
 CHECKS = [("unit tests", tests),
           ("module imports", imports),
           ("published counts", published_counts),
@@ -616,6 +723,7 @@ CHECKS = [("unit tests", tests),
           ("scalability numbers", scalability_numbers),
           ("submission artifacts", submission_artifacts),
           ("A0 provenance", a0_provenance),
+          ("AlphaGenome model outputs", model_outputs),
           ("privacy scan", privacy_scan),
           ("superseded-claim audit", stale_claims)]
 

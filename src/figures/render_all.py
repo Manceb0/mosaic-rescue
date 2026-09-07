@@ -46,6 +46,19 @@ FIGURES = [
      "MODEL_OUTPUT", "PREDICTED",
      "ALT tracks REF across every frozen prediction. Splicing, the modality that "
      "decided the hypothesis, shows neither gain nor loss of a site."),
+    # Post-freeze characterisation of the SAME frozen candidate. Both read
+    # work/alphagenome/{ism,contacts}/, written by src/model_outputs/ under a
+    # pre-run manifest; neither re-queries the model.
+    ("fig04_ism", "fig04I_alphagenome_ism", "04_HIDDEN_SECOND_ALLELE",
+     "MODEL_OUTPUT", "PREDICTED",
+     "Under the pre-declared splice-site readout the candidate ranks 62 of 256 positions "
+     "for local sensitivity and the window's most responsive base is 125 bp away. "
+     "Model attribution only: it characterises the frozen negative, it does not add evidence."),
+    ("fig04_contacts", "fig04C_alphagenome_contact_maps", "04_HIDDEN_SECOND_ALLELE",
+     "MODEL_OUTPUT", "PREDICTED",
+     "In the pre-declared skin-fibroblast track, ALT − REF reaches 1.1 % of the REF maximum, "
+     "below the 5 % threshold fixed before the prediction; the track ranks 8 of 28 on the "
+     "official local-disruption score. Predicted contacts, not Hi-C and not the patient."),
     ("fig05_hpo", "fig05_hpo_disease_matrix", "05_RESIDUAL_PHENOTYPE",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
      "Nephrocalcinosis is the one proband term with neither HPO annotation nor MVA1 "

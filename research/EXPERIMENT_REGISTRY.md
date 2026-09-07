@@ -22,6 +22,7 @@
 | **EXP-007** | Curación ACMG de los alelos | **SURVIVES** | `notebooks/02_BUB1B_ALLELE_CURATION.ipynb` |
 | **EXP-008** | Alelo regulador oculto | **NEGATIVE** | `notebooks/04_HIDDEN_SECOND_ALLELE.ipynb` |
 | **EXP-009** | Prueba con AlphaGenome | **NEGATIVE** | `src/alphagenome_*.py` |
+| **EXP-023** | **Caracterización post-congelación con AlphaGenome: mutagénesis in silico y mapas de contacto** | **NEGATIVE**, y **no cambia la ciencia congelada**: bajo lecturas predeclaradas el candidato queda en la posición 62 de 256 por sensibilidad local y ALT − REF alcanza el 1,09 % del máximo de REF (umbral 5 %). Manifest sellado con `sha256` antes de la primera llamada | `src/model_outputs/` → `src/figures/fig04_ism.py`, `src/figures/fig04_contacts.py` → `notebooks/04_HIDDEN_SECOND_ALLELE.ipynb` |
 | **EXP-010** | Estructura de BUBR1 | **UNRESOLVED** | `notebooks/03_BUBR1_MECHANISM.ipynb` |
 | **EXP-011** | Conservación ortóloga | **SURVIVES**, con robustez filogenética | `src/structure/ortholog_conservation.py` + `clades.py` → `src/make_fig7.py` |
 | **EXP-021** | **Tres deleciones homocigotas que superan a `BUB1B` en `A0`** | **NEGATIVE**, polimorfismos comunes con rsID (hasta 313 150 homocigotos en gnomAD); resuelto **localmente** | `src/prioritization/audit_a0_competitors.py` |
@@ -47,7 +48,7 @@
 
 ## Deuda reconocida
 
-**Todos los experimentos completados tienen ya notebook de investigación.** El *Notebook Recovery Sprint* cerró la deuda y la *pasada visual-científica* la refinó: ocho notebooks ejecutados con **28 figuras embebidas, 23 de ellas científicas** (`DATA` / `MODEL_OUTPUT` / `SIMULATION` / `CURATED_EVIDENCE`) y 5 de síntesis. Ver `notebooks/VISUAL_SCIENCE_PASS.md`.
+**Todos los experimentos completados tienen ya notebook de investigación.** El *Notebook Recovery Sprint* cerró la deuda y la *pasada visual-científica* la refinó: ocho notebooks ejecutados con **30 figuras embebidas, 25 de ellas científicas** (`DATA` / `MODEL_OUTPUT` / `SIMULATION` / `CURATED_EVIDENCE`) y 5 de síntesis. Ver `notebooks/VISUAL_SCIENCE_PASS.md`.
 
 Los conteos de este párrafo no se escriben a mano: los produce `src/nb/nbutil.py::verify()`
 leyendo los `.ipynb` ejecutados, y `tests/test_published_counts.py` falla si el documento y

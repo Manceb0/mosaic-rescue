@@ -889,3 +889,54 @@ llevar la afirmación vieja y la corrección debajo — eso parece incoherencia,
 
 **Ninguna de estas ideas era inútil.** Todas eran la mejor lectura con la evidencia de su
 momento, y el proyecto las mejoró. Ese recorrido es parte del entregable — **en este documento**.
+
+---
+
+## EXP-023 · Caracterización post-congelación con AlphaGenome: ISM y mapas de contacto
+
+**Fecha:** 2026-09-07. **Estado de la ciencia:** congelada; esta entrada no la reabre.
+
+### Qué se preregistró, y antes de qué
+
+Antes de la primera llamada al modelo se escribió y selló con `sha256` un manifest
+(`work/alphagenome/run_manifest.json`, gitignored porque lleva el locus) que fija **todo** lo
+que se podría haber elegido después de ver un resultado:
+
+| Parámetro | Valor congelado | Por qué ese y no otro |
+|---|---|---|
+| Candidato | el mismo de EXP-009, resuelto desde la caché congelada, nunca escrito a mano | es el único que el notebook 04 evaluó; ningún otro se busca |
+| Gate de ensamblado | build GRCh38 declarado en `config/paths.yaml`; longitudes de contig del VCF; base REF leída del FASTA GRCh38 local de la caché de VEP; identidad REF/ALT en el VCF | la API acepta un REF sin validar; el gate no |
+| ISM | ventana 256 pb, contexto 16 kb, 768 sustituciones sintéticas | la escala del tutorial oficial; sintéticas: sale el locus, no un genotipo |
+| Lectura primaria | *splice sites*, `CenterMaskScorer` 2 001 pb, `DIFF_MEAN`, escalar = pista de mayor \|score\| de las 4 | la modalidad que decidió EXP-009; el ancho soportado más pequeño que cubre el vecindario |
+| Lectura secundaria | *DNase*, `CenterMaskScorer` 501 pb, `DIFF_MEAN`, pista `CL:0001059` | la pista ya congelada en el bloque suplementario por la regla `base ≥ 0,01` |
+| Chequeo de contexto | 100 kb, mismos scorers | se reporta; nunca sustituye al primario |
+| Regla de lectura ISM | «concentrada» si el candidato queda en el 5 % superior de posiciones por \|efecto\| | escrita antes de mirar |
+| Contactos | 1 Mb, 2 048 pb/bin, biosample **fibroblasto primario de piel** (`CL:0002620`) | el tipo celular de los estudios funcionales de PCS/MVA; no tumoral, no embrionario, no linfoide; elegido de las 28 pistas **antes** de predecir |
+| Regla de lectura contactos | «visible» si max \|ALT − REF\| ≥ 5 % del máximo de REF | escrita antes de mirar |
+| Semilla | `null` | la inferencia no tiene componente aleatorio; escribir 42 sería decorativo |
+
+**Una re-congelación, declarada.** El primer manifest declaró 102 400 pb para el chequeo de
+contexto; el SDK sólo admite 131 072. Se borró y se volvió a sellar con 131 072 **antes** de
+cualquier llamada. Nota en `work/alphagenome/run_manifest.NOTA.txt`.
+
+### Qué salió
+
+| Salida | Resultado observado | Lectura permitida | Lectura prohibida | ¿Cambia la ciencia congelada? |
+|---|---|---|---|---|
+| ISM, primaria (*splice sites*) | candidato en la posición **62 de 256** por \|efecto\|; sustitución **251 de 768**; el máximo de la ventana a **+125 pb** | *no concentrated local ISM sensitivity at the candidate under the pre-specified readout* | «la región no es funcional» · «la variante es benigna» | **NO** |
+| ISM, secundaria (*DNase*) | posición **168 de 256**; sustitución **268 de 768**; máximo a **−109 pb** | idem, en la lectura de accesibilidad | «no hay efecto en ningún tejido» | **NO** |
+| Chequeo de contexto | r(16 kb, 100 kb) = **0,95** (primaria), **0,98** (secundaria) | la atribución **no** depende del contexto | — | **NO** |
+| Contactos, `CL:0002620` | max \|ALT − REF\| = **1,09 %** del máximo de REF (umbral 5 %); matrices 512×512 simétricas, Δ exacto | *no compelling predicted contact effect* | «la cromatina del paciente no cambia» · «no hay bucle enhancer-promotor» | **NO** |
+| Robustez, 28 pistas | la predeclarada ocupa el puesto **8 de 28** con el scorer oficial | la elección no fue un valor atípico | usar la distribución para elegir otra pista | **NO** |
+
+Los dos negativos **se publican** (Regla Dura 6): figuras `fig04I_alphagenome_ism` y
+`fig04C_alphagenome_contact_maps`, clase `MODEL_OUTPUT`, origen `PREDICTED`, con su ficha en
+`PUBLICATION_FIGURE_QA.md`.
+
+### Lo que este bloque NO hace
+
+No sube la VUS, no mueve `A0`, no reabre Track 2, no busca otra variante y no convierte una
+predicción en evidencia del paciente. Lenguaje obligatorio: *AlphaGenome predice…*, *bajo la
+lectura predeclarada…*. `src/verify.py` (control *AlphaGenome model outputs*) y
+`tests/test_alphagenome_model_outputs.py` atan figura → JSON → corrida → manifest, y fallan si
+alguien cambia scorer, ontología, ventana o ensamblado sin volver a sellar a propósito.

@@ -26,8 +26,8 @@ then test causality, alternatives and mechanism, and only then design a rescue e
 
 ## Start with the notebooks
 
-Eight executed notebooks, 28 embedded figures, 23 of them scientific. Every **publication**
-figure, the ten in `figures/pub/`, is regenerated from a module in `src/figures/`, and the
+Eight executed notebooks, 30 embedded figures, 25 of them scientific. Every **publication**
+figure, the twelve in `figures/pub/`, is regenerated from a module in `src/figures/`, and the
 notebooks call that same code, so the publication figure and the notebook figure cannot drift
 apart. The remaining notebook figures come from the older `src/make_fig*.py` generators or
 from code in the notebook itself; they are reproducible too, but they do not pass through the

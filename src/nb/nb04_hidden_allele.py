@@ -157,6 +157,87 @@ for _which, _slug, _tag in (("main", "fig04_alphagenome_rna_splicing", "principa
                   "llamada; el reparto entre figura y suplemento es por MODALIDAD",
            lib="matplotlib", slug=_slug)'''),
 
+("md", """### Caracterización post-congelación · mutagénesis in silico y mapas de contacto
+
+**Esto no es evidencia nueva ni reabre nada.** Cierra una pregunta que el navegador de arriba
+deja abierta: *¿el modelo responde a cambios de secuencia en este vecindario, y el candidato
+cae donde responde?* Y una segunda: *¿la arquitectura de contactos predicha cambia con ALT?*
+
+Las dos salidas se produjeron **sobre el mismo candidato congelado**, con un manifest escrito
+y sellado con `sha256` **antes** de la primera llamada al modelo. Ese manifest fija ventana,
+contexto, scorers, ontología, biosample y la regla de lectura. Los runners rechazan ejecutarse
+si el manifest cambia; `src/verify.py` comprueba que las corridas citan ese mismo hash.
+
+- **ISM:** 256 posiciones × 3 alternativas = 768 sustituciones **sintéticas** de la referencia,
+  puntuadas con dos lecturas que replican el reparto por modalidad del bloque: *splice sites*
+  (primaria, la modalidad que decidió) y *DNase* sobre la pista ya congelada (secundaria).
+  Regla predeclarada: hay «sensibilidad local concentrada» si el candidato queda en el 5 %
+  superior de posiciones por |efecto|. Chequeo de contexto a 100 kb, sólo reportado.
+- **Contactos:** REF, ALT y ALT − REF a 2 048 pb en un biosample elegido por criterio antes de
+  predecir (fibroblasto primario, el tipo celular de los estudios funcionales de MVA). Los 28
+  biosamples disponibles se puntúan con el scorer oficial como contexto, nunca para elegir.
+
+Ninguna de las dos puede subir la VUS, mover el ranking de Track 1 ni convertirse en evidencia
+del paciente. Un negativo aquí es tan reportable como un positivo, y es lo que salió."""),
+
+("code", '''MI = json.load(io.open("work/alphagenome/ism/metadata.json", encoding="utf-8"))
+MC = json.load(io.open("work/alphagenome/contacts/metadata.json", encoding="utf-8"))
+MAN = io.open("work/alphagenome/run_manifest.json.sha256").read().strip()
+assert MI["manifest_sha256"] == MC["manifest_sha256"] == MAN, "corridas sobre manifests distintos"
+print(f"  manifest congelado : sha256 {MAN[:12]}...  (citado por las dos corridas)")
+print(f"  ISM                : {MI['primary']['n_variants']} sustituciones sinteticas, "
+      f"ventana {MI['primary']['ism_window_bp']} pb, contexto {MI['primary']['sequence_context_bp']:,} pb")
+for _r, _i in MI["primary"]["roles"].items():
+    _k = _i["ranks"]
+    print(f"    {_r:<9} {_i['scorer']['output']:<13} candidato: posicion {_k['candidate_position_rank_of_L']:>3} de "
+          f"{MI['primary']['ism_window_bp']} · sustitucion {_k['candidate_substitution_rank_of_all']:>3} de "
+          f"{3 * MI['primary']['ism_window_bp']} · maximo de la ventana en {_k['window_argmax_offset']:+d} pb")
+_ip = MI["interpretation"]
+print(f"    lectura predeclarada: {_ip['reading']}")
+print(f"    contexto r(16 kb, 100 kb): " + ", ".join(f"{k} {v:.2f}" for k, v in _ip["context_pearson_r"].items()))
+_ic = MC["interpretation"]
+print(f"  contactos          : {MC['biosample_name']} ({MC['ontology_curie']}), "
+      f"{MC['n_bins']}x{MC['n_bins']} bins de {MC['output_resolution_bp']} pb")
+print(f"    max |ALT-REF| / max REF = {100 * _ic['ratio']:.2f} % (umbral predeclarado 5 %) -> "
+      f"{_ic['reading']}")
+print(f"    robustez: la pista predeclarada ocupa el puesto {MC['robustness']['chosen_rank_of_n']} de "
+      f"{MC['robustness']['n_tracks']} con el scorer oficial")'''),
+
+("code", '''from src.figures import fig04_ism as FI
+from src.figures import fig04_contacts as FC
+
+_f, _st = FI.load_and_build()
+fl.pub(_f, "Figura principal 2I. Mutagenesis in silico: sensibilidad local del modelo alrededor del candidato",
+       "EXP-023", "PREDICTED", "MODEL_OUTPUT",
+       f"768 sustituciones sinteticas puntuadas con dos lecturas predeclaradas. Bajo la primaria "
+       f"(splice sites) el candidato ocupa la posicion {_st['readouts']['PRIMARY']['rank_pos']} de "
+       f"{_st['L']} por |efecto| y la sustitucion {_st['readouts']['PRIMARY']['rank_sub']} de "
+       f"{3 * _st['L']}; bajo la secundaria (DNase) la posicion {_st['readouts']['SECONDARY']['rank_pos']}. "
+       f"El maximo de la ventana esta a {_st['readouts']['PRIMARY']['argmax_offset']:+d} pb "
+       f"(primaria) y {_st['readouts']['SECONDARY']['argmax_offset']:+d} pb (secundaria). "
+       f"Lectura predeclarada: {_st['reading']}. "
+       f"El chequeo a 100 kb reproduce la matriz (r = {_st['context_r']['PRIMARY']:.2f}).",
+       "que la region sea funcional o no funcional, que la variante sea patogenica o benigna, "
+       "ni ningun mecanismo regulador en el paciente. Es ATRIBUCION de un modelo bajo un scorer y "
+       "un contexto concretos: informa la caracterizacion del negativo ya congelado y no cambia "
+       "ninguna clasificacion ni ranking.",
+       source="work/alphagenome/ism/*.json.gz + metadata.json · manifest sellado antes de la llamada",
+       lib="matplotlib", slug="fig04I_alphagenome_ism")
+
+_f, _st = FC.load_and_build()
+fl.pub(_f, "Figura suplementaria 2C. Mapas de contacto predichos: REF, ALT y ALT - REF",
+       "EXP-023", "PREDICTED", "MODEL_OUTPUT",
+       f"ventana de 1 Mb a {MC['output_resolution_bp']} pb en el biosample predeclarado "
+       f"({MC['biosample_name']}). REF y ALT comparten escala y son indistinguibles a ojo; "
+       f"ALT - REF alcanza el {100 * _st['ratio']:.2f} % del maximo de REF, por debajo del 5 % "
+       f"fijado antes de predecir. La pista ocupa el puesto {_st['chosen_rank']} de "
+       f"{_st['n_tracks']} con el scorer oficial de disrupcion local.",
+       "que la cromatina del paciente sea asi, que exista o no un bucle enhancer-promotor, ni que "
+       "la expresion del gen cambie. No es Hi-C y no es un tejido: es la salida de un modelo "
+       "para un biosample. Una diferencia visible motivaria una hipotesis; no la demostraria.",
+       source="work/alphagenome/contacts/*.json.gz + robustness_scores.json + metadata.json",
+       lib="matplotlib", slug="fig04C_alphagenome_contact_maps")'''),
+
 ("md", """### La figura resumen, que fue la que cerró la rama"""),
 
 ("md", """### Control de robustez · se revisaron las pistas individuales

@@ -58,6 +58,8 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | `fig03_pocket_and_conservation` | `MODEL_OUTPUT` | `PREDICTED+EXTERNAL` |
 | `fig04_alphagenome_rna_splicing` | `MODEL_OUTPUT` | `PREDICTED` |
 | `fig04S_alphagenome_accessibility_tf` | `MODEL_OUTPUT` | `PREDICTED` |
+| `fig04I_alphagenome_ism` | `MODEL_OUTPUT` | `PREDICTED` |
+| `fig04C_alphagenome_contact_maps` | `MODEL_OUTPUT` | `PREDICTED` |
 | `fig05_hpo_disease_matrix` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 | `fig06_baf_cancellation` | `SIMULATION` | `SIMULATED` |
 | `fig07_track2_evidence_matrix` | `CURATED_EVIDENCE` | `EXTERNAL+DERIVED` |
@@ -156,6 +158,59 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | **possible misleading interpretation** | **that these are measured genome-browser tracks.** They look exactly like ENCODE tracks because that is what the model was trained to emit. Second risk: that a flat Δ proves no second allele exists. |
 | **correction applied** | PREDICTED is in the figure title, in the class stamp and in the first line of the provenance strip; the strip states there is no patient tissue and no tissue of any kind behind the tracks; the caption states this is one candidate, not a sweep. Nine tracks were split into two figures rather than compressed, the split is by **modality**, stated on the figure, so it cannot be read as track-picking. |
 | **full-size render checked?** | yes, both |
+
+---
+
+## Fig 5I · AlphaGenome in silico mutagenesis: `fig04I_alphagenome_ism`
+
+**Post-freeze characterisation of the same frozen candidate.** Produced under a pre-run manifest
+(`work/alphagenome/run_manifest.json`, sha256-sealed before the first prediction) that fixes the
+window, context, scorers, ontology and reading rule; `src/verify.py` (control *AlphaGenome model
+outputs*) checks that every artefact cites that manifest.
+
+| | |
+|---|---|
+| **notebook** | `04_HIDDEN_SECOND_ALLELE` |
+| **source data** | `work/alphagenome/ism/primary_*_matrix.json.gz` + `metadata.json`, written by `src/model_outputs/alphagenome_ism.py`; raw per-substitution scores in `*_raw_scores.json.gz` |
+| **regenerate** | `work/venv-ag/Scripts/python src/model_outputs/alphagenome_ism.py` (calls the model) · `python src/figures/fig04_ism.py` (renders from the artefacts, no model call) |
+| **n** | 256 positions × 3 alternatives = 768 synthetic substitutions per readout; 16 kb sequence context; one pre-declared 100 kb context check, reported only |
+| **axes / units** | offset from the candidate (bp), shared by every panel; heatmap rows A/C/G/T; colour and bar height = per-position centred score in the scorer's own units (splice sites: CenterMask 2001 bp diff-mean; DNase: CenterMask 501 bp diff-mean on one pre-declared track) |
+| **statistic represented** | model attribution: score of a substitution minus the mean of the three alternatives at that position, exactly the official `ism_matrix` transform. **Not a measurement.** |
+| **FIGURE CLASS** | `MODEL_OUTPUT` |
+| **EVIDENCE ORIGIN** | `PREDICTED` |
+| **result visible** | candidate at position rank 62 of 256 (primary) and 168 of 256 (secondary); the window's most responsive base is 125 bp away (primary) and 109 bp away (secondary); 16 kb and 100 kb matrices agree, r = 0.95 and 0.98 |
+| **conclusion supported** | *no concentrated local ISM sensitivity at the candidate under the pre-specified readout*, the pre-declared negative reading; consistent with the frozen negative of Fig 5, and adding nothing to it |
+| **uncertainty represented?** | no, the model returns point predictions |
+| **uncertainty quantified?** | **no**; the only robustness shown is the context check, and it is stated as such |
+| **possible misleading interpretation** | **that a hot column proves a functional element, or a cold column proves the region is inert.** Both are model attribution under one scorer. Second risk: reading the DNase readout as tissue evidence; it is one pre-declared track, chosen before the run by a rule, not the tissue of the patient. Third risk: assuming the scorer was picked after seeing the result. |
+| **correction applied** | PREDICTED and *model attribution only* in the provenance strip; the reading rule is quoted on the figure and was fixed in the manifest before the prediction; the candidate is outlined and its ranks printed so a reader sees it is *not* at the maximum; reference bases are marked so alternative and reference cells cannot be confused; the manifest hash chain is enforced by `verify.py` |
+| **changes frozen science?** | **NO** |
+| **full-size render checked?** | yes |
+
+---
+
+## Fig 5C · AlphaGenome predicted contact maps: `fig04C_alphagenome_contact_maps`
+
+**Post-freeze characterisation, same manifest as Fig 5I.**
+
+| | |
+|---|---|
+| **notebook** | `04_HIDDEN_SECOND_ALLELE` |
+| **source data** | `work/alphagenome/contacts/{ref,alt,delta}.json.gz` + `robustness_scores.json` + `metadata.json`, written by `src/model_outputs/alphagenome_contacts.py` |
+| **regenerate** | `work/venv-ag/Scripts/python src/model_outputs/alphagenome_contacts.py` (calls the model) · `python src/figures/fig04_contacts.py` (renders from the artefacts) |
+| **n** | one 1 Mb window, 512 × 512 bins of 2 048 bp, one pre-declared biosample (skin fibroblast, `CL:0002620`); 28 contact tracks scored with the official `ContactMapScorer` for panel D |
+| **axes / units** | offset from the candidate (kb) on both axes of A–C; colour = log10(1 + predicted contact signal), one scale shared by REF and ALT, unclipped (the transform is stated on the figure); ALT − REF in linear model units on its own zero-centred symmetric scale, unclipped; D: local-disruption score (×10⁻³) per track |
+| **statistic represented** | model output per bin pair; D is the official per-track scalar. **Not Hi-C.** |
+| **FIGURE CLASS** | `MODEL_OUTPUT` |
+| **EVIDENCE ORIGIN** | `PREDICTED` |
+| **result visible** | REF and ALT are indistinguishable by eye; max \|ALT − REF\| = 0.0625 against max REF = 5.75 (1.09 %), below the 5 % threshold fixed before the prediction; the pre-declared track ranks 8 of 28 on the official score, inside the bulk of the distribution |
+| **conclusion supported** | *no compelling predicted contact effect* in the pre-declared biosample; consistent with the frozen negative and adding nothing to it |
+| **uncertainty represented?** | only the 28-track spread in D, which is biosample variation of a point prediction, not statistical uncertainty |
+| **uncertainty quantified?** | **no** |
+| **possible misleading interpretation** | **that these are Hi-C maps, or the patient's chromatin.** They look like Hi-C because that is what the model was trained on. Second risk: reading the diagonal speckle of ALT − REF as a structural change; it is 1 % of the REF scale. Third risk: assuming the biosample was chosen for effect. |
+| **correction applied** | *not Hi-C, not patient chromatin, not any tissue* in the first line of the provenance strip; the log transform is identical for REF and ALT and declared, and nothing is clipped; ALT − REF is linear and never transformed; the biosample choice and its reason live in the manifest, sealed before the run; panel D shows the whole distribution so the reader can see the choice was not an outlier hunt |
+| **changes frozen science?** | **NO** |
+| **full-size render checked?** | yes |
 
 ---
 
