@@ -39,7 +39,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # omitia los ocho generadores src/nb/nb00..nb07, es decir, justo el codigo que
 # construye los notebooks. Un control que afirma cubrir mas de lo que cubre es
 # peor que no tenerlo, porque da permiso para no mirar.
-PKGS = ("src/figures", "src/nb", "src/structure", "src/model_outputs")
+PKGS = ("src/figures", "src/nb", "src/structure", "src/model_outputs", "src/wgs")
 
 
 def discover():

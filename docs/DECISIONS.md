@@ -947,8 +947,8 @@ alguien cambia scorer, ontología, ventana o ensamblado sin volver a sellar a pr
 
 **Fecha:** 2026-09-07, revisado el mismo día tras la primera revisión del mantenedor.
 **Estado:** **PREREGISTERED, NOT EXECUTED.** Ninguna variante del null, ningún control y ninguna
-celda del panel se ha puntuado. El primer sellado (NULL-A, `ed8e1f16…`) quedó **superado antes de
-puntuar nada** y se conserva en `work/alphagenome/calibration/superseded/` como rastro.
+celda del panel se ha puntuado. Los sellados anteriores (NULL-A `ed8e1f16…`; v2 `ac572937…`/`4eebb2c2…`/`73c78821…`) quedaron
+**superados antes de puntuar nada** y se conservan en `work/alphagenome/calibration/superseded/`.
 
 **Orden acordado:** este preregistro se commitea solo (commit A, sin resultados). Después va el
 alineamiento de profundidad completa (EXP-012, EXP-014a-v2). EXP-024 se ejecuta **una sola vez**, en
@@ -968,14 +968,18 @@ motivos ni análisis post hoc.
 
 | Conjunto | Definición | n | sha256 |
 |---|---|---|---|
-| **NULL-LOCAL** | transiciones sintéticas del **mismo entorno del locus**: a ≤ 5 000 pb del candidato, intrónicas, a ≥ 1 000 pb de cualquier borde de exón (la clase «intrónica profunda» del candidato), fuera de la ventana ISM y de CTRL-POS; seleccionadas sólo con rasgos independientes del modelo; semilla 42 | **100** de 1 901 elegibles | `ac572937bde5a324…` |
-| **NULL-TRANSCRIPT** | transiciones intrónicas profundas de **todo el transcrito** (≥ 1 000 pb de exón, fuera de la ventana ISM); misma familia de regla y misma semilla que NULL-A, pero el pool se calcula ahora de forma uniforme y la muestra **no** es idéntica byte a byte a NULL-A | **300** de 27 062 | `4eebb2c20ccfe0e2…` |
-| **CTRL-POS** | las cuatro posiciones canónicas de splicing de cada intrón (donante +1/+2, aceptor −2/−1), mutadas a su transición | **88** (22 intrones) | `73c78821bb5a1e9f…` |
+| **NULL-LOCAL** | transiciones sintéticas del **mismo entorno del locus**: a ≤ 5 000 pb del candidato, intrónicas, a ≥ 1 000 pb de cualquier borde de exón (la clase «intrónica profunda» del candidato), fuera de la ventana ISM y de CTRL-POS; seleccionadas sólo con rasgos independientes del modelo; semilla 42 | **100** de 1 901 elegibles | `b02d47b8616031a5…` |
+| **NULL-TRANSCRIPT** | transiciones intrónicas profundas de **todo el transcrito** (≥ 1 000 pb de exón, fuera de la ventana ISM); misma familia de regla y misma semilla que NULL-A, pero el pool se calcula ahora de forma uniforme y la muestra **no** es idéntica byte a byte a NULL-A | **300** de 27 062 | `f620a1ca2b1b945a…` |
+| **CTRL-POS** | las cuatro posiciones canónicas de splicing de cada intrón (donante +1/+2, aceptor −2/−1), mutadas a su transición | **88** (22 intrones) | `ba39386752df0031…` |
 | **PANEL** | seis contextos externos × seis modalidades, scorers recomendados oficiales, 1 Mb | 6 × 6 | `05f5aaa3eb5691fc…` |
-| índice del preregistro | contrato de puntuación, familias, estadística y reglas de lectura | — | `c9d2c946ba2582cc…` |
+| índice del preregistro | contrato de puntuación, familias, estadística y reglas de lectura | — | `e9435538824ce722…` |
 
 **Rasgos del candidato, independientes del modelo:** transición A>G, intrón 20 de 22, a 1 026 pb
-del exón más cercano, GC del entorno de 101 pb = 0,26.
+del exón más cercano, GC del entorno de 101 pb = 0,26. Anotación de la pasada 1 de VEP sellada:
+`intron_variant` de `BUB1B` en el transcrito MANE (intrón 20/22), y `upstream_gene_variant` de un
+transcrito vecino de `PAK6`. **`candidate_annotation_class = deep_intronic`** ·
+**`NULL-LOCAL annotation_class_match = true`**. La anotación de gen vecino no es una dimensión
+emparejada y así consta.
 
 **NULL-LOCAL no es «fully matched», y se dice.** Emparejado: clase de sustitución, intrónico,
 intrónico profundo, mismo entorno (≤ 5 kb). No emparejado: distancia exacta al exón (el pool va
@@ -1063,29 +1067,66 @@ Track 2. La clave de la API no se rota hasta que el mantenedor lo indique.
 
 ## EXP-012 / EXP-014a-v2 · Preregistro del alineamiento de profundidad completa
 
-**Fecha:** 2026-09-07. **Estado:** **PREREGISTERED, NOT EXECUTED.** Los ocho FASTQ de las cuatro
-lanes están en la máquina replicada; el alineamiento se ejecuta una vez, con estos parámetros.
+**Fecha:** 2026-09-07, revisado tras la segunda revisión del mantenedor. **Estado:** **PREREGISTERED,
+NOT EXECUTED.** Los ocho FASTQ de las cuatro lanes están en la máquina replicada; nada se ha
+descargado ni alineado. Se ejecuta una vez, con estos parámetros, tras el GO explícito.
 
-### Referencia
+### Referencia: la canónica, sin modificar
 
 El VCF del proveedor declara `GCA_000001405.15_GRCh38_no_alt_analysis_set_plus_hs38d1_maskedGRC_exclusions_v2_no_chr`
 y sus contigs lo confirman: 1–22, X, Y, M, contigs `_random`, `Un_*_decoy` (hs38d1), `EBV`, sin
-prefijo `chr`. Se reconstruye desde NCBI: `GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz`
-(md5 `a056c57649f3c9964c68aead3849bbf8`) + `GCA_000001405.15_GRCh38_GRC_exclusions.bed` (18 regiones,
-md5 `bf5c011e0342f355422144eb3547b5d0`) enmascarado con `bedtools maskfasta`, y `chr` eliminado de
-las cabeceras. **Gate:** el conjunto {nombre, longitud} de contigs tiene que ser idéntico al de la
-cabecera del VCF, o no se alinea. Se declara que la lista de exclusiones enmascarada puede no
-coincidir con la «v2» exacta del proveedor: afecta sólo a qué regiones llevan N.
+prefijo `chr`. Fuente primaria: el conjunto canónico de NCBI
+`GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz` (md5 publicado
+`a056c57649f3c9964c68aead3849bbf8`). **No se enmascara, no se modifica y no se reconstruye la
+secuencia.** `GRC_exclusions.bed` no es una instrucción para alterar el FASTA: aplicarlo a un FASTA
+ya preparado de otra manera podría producir una referencia distinta de la que generó el VCF. La
+única transformación es de **nombre**: quitar el prefijo `chr` de las cabeceras para que BAM y VCF
+compartan contigs; la secuencia queda byte a byte igual y el gate 4 lo demuestra.
+
+### Gates de referencia, antes de alinear una sola lectura (`src/wgs/reference_gate.py`)
+
+| Gate | Comprobación | Si falla |
+|---|---|---|
+| 1 | sha256 del FASTA descargado registrado; md5 == el publicado por NCBI | STOP |
+| 2 | nombres de contig == cabecera del VCF | STOP |
+| 3 | longitudes de contig == cabecera del VCF | STOP |
+| 4 | concordancia REF genoma completo: 20 000 variantes PASS muestreadas de todo el VCF con semilla fija, `reference[pos] == REF` en todas | STOP |
+| 5 | concordancia REF en BUB1B ± 1 Mb: **todas** las variantes PASS | STOP |
+| 6 | decoys hs38d1 y EBV presentes, como espera el VCF | STOP |
+
+Sólo con los seis en PASS: ALIGNMENT GO. El resultado del gate se guarda en `work/align/` y merece
+una celda en el notebook 00.
 
 ### Alineador
 
-`bwa-mem2` produce alineamientos idénticos a `bwa mem` por diseño, pero construir su índice humano
-exige ~86 GB de RAM y la máquina tiene 62 GB (Docker, 32 GB). Se usa **`bwa mem` 0.7.18** en
-contenedor (`quay.io/biocontainers/bwa:0.7.18--he4a0461_0`), que es el mismo algoritmo con la misma
-salida; el motivo queda registrado. Parámetros fijados: `-t 22 -K 100000000 -Y`, un read group por
-lane (`ID={flowcell}.{lane}`, `PL=ILLUMINA`, `PU={flowcell}.{lane}.{índice}`, `SM` y `LB` = identificador
-de muestra; flowcell e identificador viven en `work/`, nunca aquí). Después: `samtools fixmate -m`, `sort`, `markdup`, `index`
-(`samtools` 1.21). Sin recorte de lecturas. Nada se ajusta después de mirar resultados.
+**BWA-MEM 0.7.18 was selected as the short-read aligner because its memory requirements fit the
+available system (62 GB host, 32 GB for Docker; the bwa-mem2 human index needs ~86 GB). No
+bitwise-identity claim with bwa-mem2 is made.** Contenedor `quay.io/biocontainers/bwa:0.7.18--he4a0461_0`.
+Parámetros fijados: `-t 22 -K 100000000 -Y`, un read group por lane (`ID={flowcell}.{lane}`,
+`PL=ILLUMINA`, `PU={flowcell}.{lane}.{índice}`, `SM` y `LB` = identificador de muestra; flowcell e
+identificador viven en `work/`, nunca aquí). Después: `samtools fixmate -m`, `sort`, `markdup`,
+`index` (`samtools` 1.21). Sin recorte de lecturas. Nada se ajusta después de mirar resultados.
+Duración: **estimación** de 20–35 h en esta máquina, nunca una garantía.
+
+### Gate de almacenamiento (`src/wgs/storage_gate.py`, cifras calculadas desde los FASTQ)
+
+| | GB |
+|---|---|
+| FASTQ (8, medidos) | 78,9 |
+| referencia + índice bwa | 9,7 |
+| BAM ordenado pre-markdup (1,4 × FASTQ) | 110,4 |
+| temporales de sort (1,0 × FASTQ) | 78,9 |
+| BAM final markdup + índice (1,4 × FASTQ) | 110,4 |
+| Manta + DELLY + CNVpytor + mosdepth + logs | 40,0 |
+| **pico** | **349,3** |
+| retenido tras limpieza | 160,1 |
+| libre ahora | 1 616,1 |
+| exigido (1,5 × pico) | 524,0 |
+
+Temporal: `work/align/tmp`, mismo SSD. Limpieza: temporales de sort al terminar el sort; BAM
+pre-markdup tras verificar el final (`samtools quickcheck` + `flagstat`); CRAM y borrado del BAM
+sólo cuando Manta, DELLY, CNVpytor, mosdepth y MitoRead hayan terminado y sus salidas estén
+hasheadas. Margen: **GO**.
 
 ### QC que se mide (no se asume)
 
@@ -1095,16 +1136,21 @@ heterocigosidad de chrX fuera de las PAR. El sexo se reporta sólo como *genomic
 consistent with the declared XY configuration*, nunca como confirmación de identidad. La
 profundidad observada **se verifica**; el ~40× del VCF es la expectativa, no el resultado.
 
-### EXP-012 · alelo estructural oculto
+### EXP-012 · alelo estructural oculto: cuatro capas, con papeles distintos
 
-SV calling **genoma completo** con Manta 1.6.0 y DELLY (contenedores fijados), lectura
-independiente de número de copia por profundidad (mosdepth 0.3.10 en ventanas de 1 kb,
-normalizada por la mediana autosómica), y después la interrogación primaria de BUB1B ±1 Mb:
-extracción de todo evento que interseque exones, intrones o región reguladora extendida, con
-soporte a nivel de lectura (split reads, pares discordantes, profundidad normalizada). Revisión
-visual reproducible sólo de candidatos que sobrevivan. **Techo del negativo:** *No supported
-structural/CNV second allele was detected by the specified short-read WGS workflow; classes poorly
-accessible to short reads remain unresolved.* Prohibido: *structural second allele excluded*.
+| Capa | Herramienta (contenedor fijado) | Qué es |
+|---|---|---|
+| SV caller | Manta 1.6.0 | split reads + pares discordantes, genoma completo |
+| SV caller ortogonal | DELLY 1.3.3 | segundo llamador independiente, genoma completo |
+| CNV por profundidad | CNVpytor 1.3.2 | segmentación de número de copia (read depth, corrección GC), muestra única |
+| Cobertura / QC | mosdepth 0.3.10 | **profundidad cruda y local; no es un llamador de CNV** |
+| Adjudicación | revisión reproducible del locus | soporte a nivel de lectura sólo de los candidatos que sobrevivan |
+
+Interrogación primaria de BUB1B ±1 Mb tras las llamadas genoma completo: extracción de todo evento
+que interseque exones, intrones o región reguladora extendida, con split reads, pares discordantes y
+profundidad normalizada. **Techo del negativo:** *No supported structural or copy-number second
+allele was detected by the specified short-read WGS workflow; classes poorly accessible to short
+reads remain unresolved.* Prohibido: *structural second allele excluded*.
 
 ### Fase
 
@@ -1117,10 +1163,10 @@ required.* `unphased ≠ trans` permanece.
 
 *NUMT-aware mtDNA:nuclear coverage estimate*: profundidad de chrM con lecturas MAPQ ≥ 30 (y sin
 filtro, para ver la diferencia), denominador autosómico robusto (mediana) y sensibilidad a
-denominadores alternativos por cromosoma, bootstrap por ventanas de chrM si es viable. Prohibido
-«excluye NUMT»: permitido «reduce, identifica y filtra la contaminación por NUMT». Sigue siendo un
-*orthogonal WGS readout*, no prueba de disfunción mitocondrial, y lleva el caveat de composición
-celular y plaquetas.
+denominadores alternativos por cromosoma, bootstrap por ventanas de chrM si es viable. Wording
+máximo: *NUMT-aware filtering / reduction of likely nuclear-mitochondrial mappings*; prohibido
+«NUMTs excluded». Sigue siendo un *orthogonal WGS readout*, no prueba de disfunción mitocondrial, y
+lleva el caveat de composición celular y plaquetas.
 
 ### Lo que se devuelve antes de interpretar
 

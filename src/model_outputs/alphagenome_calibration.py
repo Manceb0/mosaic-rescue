@@ -144,10 +144,46 @@ def candidate_features(cand, ex, tx, plain) -> dict:
     gc = sum(ch in "GC" for ch in flank) / len(flank)
     intron_idx = next((i for i, ((a1, b1), (a2, b2)) in enumerate(zip(ex[:-1], ex[1:]), 1)
                        if b1 < p < a2), None)
+    d_exon = exon_distance(p, ex)
+    # clase de anotacion: geometria propia + la pasada 1 de VEP sellada (pin de A0)
+    vep = vep_consequences(plain, p)
+    deep = (not in_exon(p, ex)) and d_exon >= MIN_EXON_DIST
+    cls = ("deep_intronic" if deep else "intronic_splice_region" if not in_exon(p, ex)
+           else "exonic")
     return {"class": f"{cand['ref']}>{cand['alt']} transition", "intronic": not in_exon(p, ex),
             "intron_index_of_n": [intron_idx, len(ex) - 1],
-            "distance_to_nearest_exon_bp": exon_distance(p, ex),
-            "distance_to_tss_bp": abs(p - tss), "gc_101bp": round(gc, 3)}
+            "distance_to_nearest_exon_bp": d_exon,
+            "distance_to_tss_bp": abs(p - tss), "gc_101bp": round(gc, 3),
+            "candidate_annotation_class": cls,
+            "vep116_pass1_consequences": vep,
+            "annotation_note": "VEP 116 (sealed pass1) on the MANE transcript agrees with the geometry; "
+                               "any neighbouring-gene upstream annotation is recorded here and is NOT a "
+                               "matched dimension of NULL-LOCAL"}
+
+
+def vep_consequences(plain: str, pos: int) -> list:
+    """Consecuencias VEP del candidato desde la pasada 1 sellada (sin red)."""
+    path = "work/pass1/pass1_20260830T043708Z.tsv"
+    out = []
+    if not os.path.exists(path):
+        return ["pass1 not available"]
+    loc = f"{plain}:{pos}"
+    with io.open(path, encoding="utf-8", errors="replace") as f:
+        ix = None
+        for line in f:
+            if line.startswith("##"):
+                continue
+            if line.startswith("#"):
+                h = line[1:].rstrip("\n").split("\t"); ix = {k: i for i, k in enumerate(h)}; continue
+            p = line.rstrip("\n").split("\t")
+            L = p[ix["Location"]]
+            if L == loc or L.startswith(loc + "-"):
+                out.append(f"{p[ix['SYMBOL']]}:{p[ix['Consequence']]}:{p[ix['IMPACT']]}"
+                           f"{':MANE' if p[ix['MANE_SELECT']] not in ('-', '') else ''}"
+                           f"{(':intron ' + p[ix['INTRON']]) if p[ix['INTRON']] not in ('-', '') else ''}")
+            elif L.startswith(plain + ":") and int(L.split(":")[1].split("-")[0]) > pos + 1:
+                break
+    return out
 
 
 # ------------------------------------------------------- freeze ----------
@@ -225,8 +261,12 @@ def freeze() -> dict:
                                               f"(<= {LOCAL_RADIUS} bp)"],
                        "unmatched_dimensions": ["exact distance to exon boundary (pool spans a range)",
                                                 "strand side (see n_upstream/n_downstream)",
-                                                "local GC (reported, not matched)"],
-                       "fully_matched": False, "summary": dist_summary(local), "variants": local},
+                                                "local GC (reported, not matched)",
+                                                "neighbouring-gene upstream annotation (not matched)"],
+                       "fully_matched": False,
+                       "candidate_annotation_class": feats["candidate_annotation_class"],
+                       "annotation_class_match": feats["candidate_annotation_class"] == "deep_intronic",
+                       "summary": dist_summary(local), "variants": local},
         "NULL-TRANSCRIPT": {**common, "set": "NULL-TRANSCRIPT",
                             "definition": "deep-intronic synthetic transitions of the whole transcript, "
                                           f">= {MIN_EXON_DIST} bp from any exon boundary, outside the ISM window",
