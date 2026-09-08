@@ -1124,6 +1124,63 @@ versión que reporta cada herramienta se registra tras la descarga (`versions`) 
 | mosdepth | `quay.io/biocontainers/mosdepth` | `0.3.10--h4e814b3_1` | `sha256:94b54a6a5610…` |
 | bedtools | `quay.io/biocontainers/bedtools` | `2.31.1--hf5e1c6e_2` | `sha256:38756b5ac5d0…` |
 
+### Metadata de read group: lo que se lee, y lo que NO se infiere
+
+`SM` sale de la columna 10 del VCF. `PU` es `{flowcell}.{lane}.{índice}`, con el índice mayoritario
+de las primeras 2 000 lecturas de cada lane. **`LB` no se infiere del código de índice**: que las
+cuatro lanes compartan índice demuestra que se demultiplexaron como la misma **muestra**, no que
+vengan de una única preparación de **librería**. Se busca metadata de librería en la cabecera del
+VCF y en los nombres de lectura; no existe (el propio brief tiene abierta la pregunta de si la
+librería es PCR-free). Por tanto el campo `LB` **se omite** del `@RG`, que la especificación SAM
+permite, y se registra *library identity unavailable from supplied metadata*. Consecuencia técnica,
+comprobada: `samtools markdup` **no agrupa por `LB`** (a diferencia de Picard MarkDuplicates), así
+que omitirlo no altera el marcado global de duplicados.
+
+### Marcado de duplicados: alcance global, y la incertidumbre que eso deja abierta
+
+Sin identidad de librería, el marcado global no es neutro y no se disfraza de neutro:
+
+- si las cuatro lanes son de **una misma** preparación de librería, el marcado global es lo correcto;
+- si son **librerías independientes**, el marcado global puede **sobremarcar**, tratando como
+  duplicados fragmentos que vienen de moléculas distintas.
+
+Como la identidad de librería **no está disponible**, la ausencia de metadata no se convierte en la
+certeza implícita de «una sola librería». Se registra en el manifest, literalmente:
+
+| Campo | Valor |
+|---|---|
+| `library_preparation_identity` | `unavailable` |
+| `duplicate_marking_scope` | `global across all four lanes` |
+| `duplicate_marking_assumption` | *lanes treated jointly for duplicate marking because library provenance is unavailable; this may overmark if lanes derive from independent library preparations* |
+
+Y se conservan **los dos objetos**, ambos con su `sha256`: el BAM unido **antes** de marcar y el BAM
+final marcado. El pre-markdup no se borra hasta que GO 2B haya terminado, de modo que siempre se
+puede volver al objeto anterior a esa decisión. **La fracción de duplicados se interpreta como QC del
+pipeline, nunca como una propiedad biológica de la muestra.** El propio manual de `samtools`
+advierte que su estimación de tamaño de librería descansa en supuestos que pueden no cumplirse.
+
+**Regla de objeto para GO 2B, para que esto no se convierta en dos pipelines:** *The globally
+duplicate-marked BAM is the primary downstream alignment object. The pre-markdup BAM is retained
+for technical adjudication only when a critical finding is plausibly sensitive to duplicate
+handling.* Los llamadores **no** se ejecutan dos veces, con y sin marcado. Primario: el marcado.
+Pre-markdup: recurso forense puntual.
+
+### Orden de etapas por lane, explícito
+
+`bwa mem` → `samtools collate -O` (agrupación por nombre **explícita**, sin asumir nada sobre el
+orden de salida del alineador) → `samtools fixmate -m` → *coordinate sort*. Después: `merge` de las
+cuatro lanes → `samtools markdup` **global** → `index`.
+
+> **Corrida descartada y reiniciada a propósito, 2026-09-07.** Una primera ejecución llegó a
+> completar L001 y 50 min de L002 antes de estas dos correcciones. Aplicarlas a mitad de corrida
+> habría dejado lanes con procedencias distintas, así que se descartaron y se reinició la etapa 2
+> con el código corregido y **commiteado antes de generar el BAM**. El preflight y el índice se
+> conservaron porque no dependen de las correcciones. Sobre el L001 descartado se verificó que el
+> 100 % de 2 000 000 de lecturas emparejadas llevaban `MC` y `ms`: `fixmate` había funcionado. El
+> `collate` explícito es una **garantía**, no la corrección de un fallo observado. Aquella corrida
+> consta como **technical pre-commit trial; excluded from all final analyses**, y no se conserva
+> ningún BAM intermedio suyo.
+
 ### Alineador
 
 **BWA-MEM 0.7.18 was selected as the short-read aligner because its memory requirements fit the
@@ -1274,8 +1331,10 @@ de identidad.
 ### 6 · Expansiones de repeticiones (P1, nunca P0)
 
 `ExpansionHunter` 5.0.0 sobre su catálogo de loci patogénicos establecidos como **cribado**, pero
-**sólo se interpreta el locus con conexión fenotípica preregistrada**: `DMPK` (distrofia miotónica
-tipo 1: tiene formas congénitas e infantiles con hipotonía y debilidad muscular). `CNBP` se excluye
+**sólo se interpreta el locus con conexión fenotípica preregistrada**: `DMPK`. *DMPK is retained as a
+phenotype-driven P1 repeat-expansion screen because congenital/childhood DM1 can include hypotonia and
+muscle weakness; this is a residual/second-diagnosis screen, not an MVA-causal hypothesis.* Atrofia
+muscular y problemas de crecimiento por sí solos no hacen plausible la DM1: por eso es cribado P1. `CNBP` se excluye
 a propósito: la DM2 no tiene formas congénitas ni de inicio infantil, y «atrofia muscular» sola es
 una conexión demasiado ancha. No se añade ningún otro locus salvo que, **antes de ejecutar**, exista
 un término HPO o antecedente clínico específico que lo justifique. Cualquier otra expansión es
