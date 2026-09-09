@@ -18,9 +18,10 @@ CONDICIONES DE ACEPTACION (todas, o se rechaza)
     2. sus hashes se calculan y se guardan en el momento de sellar;
     3. si ya habia un sellado previo, los hashes coinciden: nada cambio desde
        entonces;
-    4. el preflight critico de la etapa 0 esta en SUCCESS **bajo este commit**,
-       de modo que BAM, BAI, referencia, contigs y procedencia se han vuelto a
-       comprobar antes de reutilizar nada.
+    4. el preflight critico de la etapa 0 esta en SUCCESS **y el commit que el
+       mismo dejo escrito es el commit del control de flujo actual**, de modo que
+       BAM, BAI, referencia, contigs y procedencia se han vuelto a comprobar de
+       verdad antes de reutilizar nada. La revalidacion se comprueba, no se declara.
 
 Uso:
     python src/wgs/carry_forward.py seal   <etapa> <commit real>   # antes de enmendar
@@ -107,18 +108,39 @@ def accept(stage):
                               ejecucion original si tuvo exito; lo que fallo es
                               la reutilizacion. Solo una NUEVA ejecucion fallida
                               produce FAILED.
-        3  el preflight critico no esta en SUCCESS -> el orquestador ABORTA
+        3  el preflight critico no esta en SUCCESS, o su SUCCESS se sello bajo
+                              otro commit y por tanto la base no se ha revalidado
+                              bajo este -> el orquestador ABORTA
     """
     p = os.path.join(S, f"{stage}.carry.json")
     if not os.path.exists(p):
         print(f"  etapa {stage}: sin procedencia sellada; se repite")
         return 2
     rec = json.load(io.open(p, encoding="utf-8"))
+    # Sellados escritos antes de separar los dos ejes usaban la clave `status`.
+    # Se migra en memoria en vez de romper: el hecho historico es el mismo.
+    if "execution_status" not in rec:
+        rec["execution_status"] = rec.pop("status", "SUCCESS")
+        rec["schema_migrated_from"] = "status -> execution_status"
+    rec.setdefault("carry_forward_validation", "PENDING")
 
+    # El preflight tiene que estar en SUCCESS **y** haberse ejecutado bajo ESTE
+    # commit del control de flujo. No se afirma: se comprueba leyendo el commit
+    # que la propia etapa 0 dejo escrito. El orquestador repite el preflight
+    # cuando el commit cambia, asi que una discrepancia aqui significa que la
+    # base no se revalido y no se puede reutilizar nada sobre ella.
     st = os.path.join(S, "0.status")
-    ok0 = os.path.exists(st) and io.open(st, encoding="utf-8").read().split("\t")[1] == "SUCCESS"
-    if not ok0:
-        print("  el preflight critico no esta en SUCCESS bajo este commit")
+    parts = (io.open(st, encoding="utf-8").read().rstrip("\n").split("\t")
+             if os.path.exists(st) else [])
+    if len(parts) < 2 or parts[1] != "SUCCESS":
+        print("  el preflight critico no esta en SUCCESS")
+        return 3
+    pre_commit = parts[3] if len(parts) > 3 and parts[3] else None
+    head = head_commit()
+    if pre_commit != head:
+        print(f"  el preflight esta en SUCCESS pero se sello bajo "
+              f"'{pre_commit or 'sin registro de commit'}' y el control de flujo es '{head}': "
+              f"no esta revalidado bajo este commit")
         return 3
 
     h, err = _hashes(stage)
@@ -129,8 +151,9 @@ def accept(stage):
                 reason = f"{k} cambio desde el sellado"
                 break
 
-    rec["controlflow_commit"] = head_commit()
-    rec["preflight_revalidated_under_controlflow_commit"] = True
+    rec["controlflow_commit"] = head
+    rec["preflight_commit"] = pre_commit
+    rec["preflight_revalidated_under_controlflow_commit"] = (pre_commit == head)
     rec["evaluated_utc"] = now()
     if reason:
         rec["carry_forward_validation"] = "FAIL"

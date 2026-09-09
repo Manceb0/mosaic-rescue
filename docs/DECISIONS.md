@@ -1291,6 +1291,33 @@ Regla adicional para esta fase: **desde que Manta arranque, ningún fichero ejec
 vuelve a editar hasta el STOP.** Una mejora se anota como deuda para la próxima corrida; un fallo
 real se para primero y se adjudica.
 
+**`PROV-AMD-001` · la procedencia de una etapa **en curso** no era legible, y la revalidación del
+preflight se afirmaba en vez de comprobarse.** Enmienda fechada 2026-09-09, aplicada **antes** de que
+arranque el primer llamador y por tanto antes de que empiece la congelación de ficheros ejecutables.
+
+Dos cosas, ambas de procedencia y ninguna de ciencia:
+
+1. `set_status` sólo escribía estados **terminales**. Mientras una etapa corría no existía ningún
+   registro suyo, así que una etapa en vuelo era indistinguible de una que nunca se intentó, y el
+   commit bajo el que se estaba ejecutando sólo aparecía al acabar. Se añade `RUNNING`, que **no es
+   un quinto estado**: es el estado transitorio que se escribe antes de lanzar la herramienta y que
+   uno de los cuatro terminales sobrescribe al terminar. El fichero de estado gana una cuarta columna
+   con el commit de la etapa. Una etapa que quede en `RUNNING` señala una corrida interrumpida, y sus
+   dependientes la ven como no-`SUCCESS`, que es el comportamiento correcto.
+
+2. El arrastre escribía `preflight_revalidated_under_controlflow_commit = true` **sin comprobarlo**.
+   En una reanudación el preflight se saltaba por su marcador `.done`, de modo que el campo habría
+   afirmado una revalidación que no ocurrió bajo el commit nuevo. Ahora el preflight **se repite
+   siempre que cambia el commit del control de flujo** —cuesta leer la cabecera del BAM— y el campo se
+   **deriva** de comparar el commit que la etapa 0 dejó escrito con el del control de flujo. Si no
+   coinciden, el arrastre devuelve el código 3 y la corrida aborta, en vez de reutilizar salidas sobre
+   una base no revalidada.
+
+Verificado en las tres ramas antes de relanzar: sin commit registrado → aborta; sellado bajo otro
+commit → aborta; sellado bajo el commit actual → `PASS` con `preflight_commit` igual al del control de
+flujo. *Un campo de procedencia que se escribe sin comprobarse es peor que no tenerlo, porque la
+auditoría lo lee como evidencia.*
+
 **`QC-DEF-002` · un paso de QC fallaba en silencio y escribía un fichero vacío.**
 La profundidad en la región de BUB1B no se calculó en la corrida del GO 2A: la mediana se pedía con
 `asort()`, una extensión de GNU awk que el `mawk` del contenedor no tiene, y además el fichero de

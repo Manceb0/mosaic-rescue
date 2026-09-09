@@ -20,6 +20,13 @@
 #   SKIPPED_DEPENDENCY  no se ejecuto porque fallo un prerequisito suyo
 #   NOT_RUN             no se intento, por una razon explicita y escrita
 #
+# RUNNING no es un quinto estado: es el estado TRANSITORIO mientras la etapa esta
+# en vuelo. Se escribe antes de lanzar la herramienta y lo sobrescribe uno de los
+# cuatro terminales al acabar. Existe porque la procedencia de una etapa en curso
+# tambien tiene que ser legible: sin esto, una etapa corriendo es indistinguible
+# de una que nunca se intento. Una etapa que queda en RUNNING indica una corrida
+# interrumpida, y sus dependientes la ven como no-SUCCESS, que es lo correcto.
+#
 # ALCANCE DEL FALLO
 #   critico y compartido (BAM, BAI, referencia, contigs, procedencia) -> ABORTA todo
 #   local de una rama (Manta, DELLY, CNVpytor, xTea, SCRAMble, MitoRead,
@@ -69,11 +76,16 @@ stamp() { date -u +%FT%TZ; }
 log()   { echo "[$(stamp)] $*" | tee -a "$L/callers.log"; }
 done_() { [ -f "$W/.go2b_$1.done" ]; }
 mark()  { echo "$(stamp)" > "$W/.go2b_$1.done"; }
-# set_status <etapa> <SUCCESS|FAILED|SKIPPED_DEPENDENCY|NOT_RUN> [motivo]
+CTRL_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo 'no disponible')"
+# set_status <etapa> <RUNNING|SUCCESS|FAILED|SKIPPED_DEPENDENCY|NOT_RUN> [motivo]
+# La cuarta columna es el commit bajo el que corre esta etapa, de modo que la
+# procedencia queda visible tambien MIENTRAS corre, no solo al terminar.
 set_status() {
-  printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" > "$S/$1.status"
+  printf '%s\t%s\t%s\t%s\n' "$1" "$2" "${3:-}" "$CTRL_COMMIT" > "$S/$1.status"
   log "  etapa $1 → $2${3:+ · $3}"
 }
+# begin <etapa>: marca RUNNING antes de lanzar la herramienta
+begin() { set_status "$1" RUNNING "en curso bajo $CTRL_COMMIT"; }
 # sub_status <etapa> <parte> <estado>: un estado agregado no puede borrar la
 # evidencia valida de una parte que si funciono (p. ej. CNVpytor RD=SUCCESS con
 # BAF=FAILED sigue siendo FAILED en agregado, pero la parte RD se conserva).
@@ -85,8 +97,20 @@ log "GO 2B inicio · objeto primario: BAM con duplicados marcados"
 # =================================================== 0 · preflight critico ===
 # Un fallo aqui es COMPARTIDO: aborta la corrida entera. Ningun caller puede
 # producir un resultado interpretable sobre una base rota.
+#
+# El preflight se REPITE siempre que cambie el commit del control de flujo. Su
+# funcion es revalidar la base compartida (BAM, BAI, referencia, contigs,
+# procedencia) BAJO el codigo que va a invocar a los llamadores, y cuesta solo
+# leer la cabecera del BAM. Saltarlo en una reanudacion y seguir afirmando
+# "preflight revalidado bajo este commit" seria escribir algo que no ocurrio.
+PRE_COMMIT="$( [ -f "$S/0.status" ] && cut -f4 "$S/0.status" || echo '' )"
+if done_ 0 && [ "$PRE_COMMIT" != "$CTRL_COMMIT" ]; then
+  log "0 · el preflight se repite: sellado bajo '${PRE_COMMIT:-sin registro de commit}', control de flujo $CTRL_COMMIT"
+  rm -f "$W/.go2b_0.done"
+fi
 if ! done_ 0; then
   log "0 · preflight critico (compartido): BAM, BAI, referencia, contigs, procedencia"
+  begin 0
   crit_fail=""
   for f in work/align/full_depth.markdup.bam work/align/full_depth.markdup.bam.bai \
            work/ref/runtime.fa work/ref/runtime.fa.fai work/align/reference_gate.json \
@@ -127,11 +151,17 @@ if done_ 1 && [ ! -f "$S/1.status" ]; then
     0) set_status 1 SUCCESS "carried_forward · ver status/1.carry.json" ;;
     2) log "  arrastre no validado: se repite mosdepth (el SUCCESS historico no se reescribe)"
        rm -f "$W/.go2b_1.done" ;;
-    *) log "ABORT: el preflight critico no esta en SUCCESS"; echo "EXIT_CODE=3" > "$W/go2b.exit"; exit 3 ;;
+    3) log "ABORT: el preflight critico no esta en SUCCESS"
+       echo "EXIT_CODE=3" > "$W/go2b.exit"; exit 3 ;;
+    # Cualquier otro codigo es un fallo de la propia comprobacion, no del
+    # preflight. Se dice tal cual en vez de culpar a la etapa equivocada.
+    *) log "ABORT: la comprobacion de arrastre fallo (codigo ${PIPESTATUS[0]}); ver logs/carry_forward.log"
+       echo "EXIT_CODE=4" > "$W/go2b.exit"; exit 4 ;;
   esac
 fi
 if ! done_ 1; then
   log "1 · mosdepth · cobertura en ventanas de 1 kb (QC, no es CNV calling)"
+  begin 1
   if $DK $I_MOS mosdepth -t 4 -n --by 1000 /work/callers/qc/win1kb "$BAM" > "$L/mosdepth.log" 2>&1 \
      && [ -s "$W/qc/win1kb.regions.bed.gz" ]; then
     set_status 1 SUCCESS "ejecutada bajo este commit"; mark 1
@@ -143,6 +173,7 @@ fi
 # ---------------------------------------------------------- 2 · Manta (SV) ---
 if ! done_ 2; then
   log "2 · Manta · SV genoma completo"
+  begin 2
   rm -rf "$W/sv/manta"
   if $DK $I_MANTA configManta.py --bam "$BAM" --referenceFasta "$REF" \
         --runDir /work/callers/sv/manta > "$L/manta_config.log" 2>&1 \
@@ -158,6 +189,7 @@ fi
 # ---------------------------------------------------------- 3 · DELLY (SV) ---
 if ! done_ 3; then
   log "3 · DELLY · SV genoma completo, llamador ortogonal"
+  begin 3
   if $DK -e OMP_NUM_THREADS=$THREADS $I_DELLY \
         delly call -g "$REF" -o /work/callers/sv/delly.bcf "$BAM" > "$L/delly.log" 2>&1 \
      && $DK $I_BCF sh -c "bcftools view /work/callers/sv/delly.bcf -Oz -o /work/callers/sv/delly.vcf.gz && bcftools index -t /work/callers/sv/delly.vcf.gz" >> "$L/delly.log" 2>&1 \
@@ -171,6 +203,7 @@ fi
 # ------------------------------------------------- 4 · CNVpytor (RD + BAF) ---
 if ! done_ 4; then
   log "4 · CNVpytor · profundidad de lectura y frecuencia del alelo B"
+  begin 4
   R=/work/callers/cnv/sample.pytor
   : > "$S/4.sub"
   if $DK $I_CNV cnvpytor -root $R -rd "$BAM" > "$L/cnvpytor.log" 2>&1 \
@@ -206,6 +239,7 @@ fi
 #   SCRAMble = ORTOGONAL
 if ! done_ 5b; then
   log "5b · xTea (PRIMARIO) · inserciones de elementos moviles"
+  begin 5b
   if $DK $I_XTEA sh -c "cd /work/callers/mei && echo '$SM' > sample_id.txt && printf '%s\n' '$BAM' > bam_list.txt && xtea -i sample_id.txt -b bam_list.txt -p /work/callers/mei/xtea -o run_xtea.sh -l /usr/local/lib/rep_lib_prep -r $REF -y 7 -f 5907 -n $THREADS -m 32 -q 1 -t 0-23" > "$L/xtea_prep.log" 2>&1 \
      && [ -d "$W/mei/xtea" ]; then
     set_status 5b SUCCESS "preparacion"; mark 5b
@@ -215,6 +249,7 @@ if ! done_ 5b; then
 fi
 if ! done_ 5a; then
   log "5a · SCRAMble (ORTOGONAL) · inserciones por lecturas recortadas"
+  begin 5a
   if $DK $I_SCR sh -c "cluster_identifier $BAM > /work/callers/mei/clusters.txt" > "$L/scramble_cluster.log" 2>&1 \
      && [ -s "$W/mei/clusters.txt" ] \
      && $DK $I_SCR sh -c "Rscript /usr/local/share/scramble/bin/SCRAMble.R --out-name /work/callers/mei/scramble --cluster-file /work/callers/mei/clusters.txt --install-dir /usr/local/share/scramble/bin --mei-refs /usr/local/share/scramble/resources/MEI_consensus_seqs.fa --ref $REF --eval-meis" > "$L/scramble_eval.log" 2>&1; then
@@ -227,6 +262,7 @@ fi
 # ------------------------------------------- 6 · BUB1B basado en lecturas ----
 if ! done_ 6; then
   log "6 · adjudicacion por lecturas de los dos alelos + replicacion tecnica"
+  begin 6
   py src/wgs/callers_summary.py regions > "$W/bub1b/targets.tsv" 2>> "$L/bub1b.log"
   tr -d '\r' < "$W/bub1b/targets.tsv" > "$W/bub1b/t.tmp" && mv "$W/bub1b/t.tmp" "$W/bub1b/targets.tsv"
   R1="$(head -1 "$W/bub1b/targets.tsv" | cut -f2)"
@@ -242,6 +278,7 @@ fi
 # ---------------------------------------------------------- 7 · MitoRead ----
 if ! done_ 7; then
   log "7 · MitoRead · mtDNA:nuclear consciente de NUMT"
+  begin 7
   if $DK $I_SAM sh -c "samtools depth -a -r M $BAM > /work/callers/mito/chrM_q0.txt" > "$L/mito.log" 2>&1 \
      && $DK $I_SAM sh -c "samtools depth -a -Q 30 -r M $BAM > /work/callers/mito/chrM_q30.txt" >> "$L/mito.log" 2>&1 \
      && py src/wgs/callers_summary.py mito >> "$L/mito.log" 2>&1; then
@@ -256,6 +293,7 @@ fi
 # ni siquiera de forma incidental.
 if ! done_ 8; then
   log "8 · ExpansionHunter · catalogo derivado con DMPK unicamente"
+  begin 8
   # copia del catalogo oficial fuera del contenedor, para poder hashearla y derivar
   $DK $I_EH sh -c "cat /usr/local/share/ExpansionHunter/variant_catalog/grch38/variant_catalog.json" \
     > "$W/repeats/catalog_official_grch38.json" 2>> "$L/dmpk_catalog.log"

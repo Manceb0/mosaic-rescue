@@ -266,7 +266,8 @@ def summary():
         if os.path.exists(p):
             parts = io.open(p, encoding="utf-8").read().rstrip("\n").split("\t")
             stages[k] = {"name": label, "status": parts[1] if len(parts) > 1 else "UNKNOWN",
-                         "detail": parts[2] if len(parts) > 2 and parts[2] else None}
+                         "detail": parts[2] if len(parts) > 2 and parts[2] else None,
+                         "executed_under_commit": parts[3] if len(parts) > 3 and parts[3] else None}
         else:
             stages[k] = {"name": label, "status": "NOT_RUN",
                          "detail": "no se alcanzo esta etapa en esta corrida"}
