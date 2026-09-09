@@ -1254,6 +1254,15 @@ lleva el caveat de composición celular y plaquetas.
 
 ### Deuda técnica declarada durante la corrida
 
+**`QC-DEF-002` · un paso de QC fallaba en silencio y escribía un fichero vacío.**
+La profundidad en la región de BUB1B no se calculó en la corrida del GO 2A: la mediana se pedía con
+`asort()`, una extensión de GNU awk que el `mawk` del contenedor no tiene, y además el fichero de
+regiones llevaba fin de línea de Windows, cuyo retorno de carro entraba dentro de la coordenada. El
+paso devolvía un fichero **vacío sin fallar**, y sólo se detectó porque el campo apareció vacío en el
+resumen final. **Corregido:** la mediana se calcula en Python y la etapa **aborta con ALTO** si el
+fichero sale vacío. *Un paso de QC que falla en silencio es peor que uno que no existe, porque el
+resumen parece completo.*
+
 **`QC-OPT-001` · el QC por grupo de lectura recorre el BAM entero varias veces.**
 *Per-read-group QC currently performs multiple full BAM scans. Future runs should derive per-RG
 statistics in a single traversal, e.g. `samtools stats --split RG` or equivalent validated one-pass

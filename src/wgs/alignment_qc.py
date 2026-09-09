@@ -47,6 +47,25 @@ def regions():
     print(f"BUB1B_pm1Mb\t{chrom}:{max(1, lo - 1000000)}-{hi + 1000000}")
 
 
+def depth():
+    """Resume `samtools depth` de stdin: bases, media y mediana.
+
+    En Python y no en awk: el awk del contenedor es mawk y no tiene asort(),
+    de modo que la primera version escribia un fichero vacio SIN fallar.
+    """
+    name = sys.argv[2] if len(sys.argv) > 2 else "region"
+    vals = []
+    for line in sys.stdin:
+        p = line.rstrip("\n").split("\t")
+        if len(p) >= 3:
+            vals.append(int(p[2]))
+    if not vals:
+        print(f"{name}\t0\t0\t0"); return
+    vals.sort()
+    n = len(vals)
+    print(f"{name}\t{n}\t{sum(vals) / n:.2f}\t{vals[n // 2]}")
+
+
 def sites(n=20000, seed=42):
     from src.paths import patient_vcf
     rng = random.Random(seed); rows = []
@@ -254,4 +273,4 @@ def summary():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "summary"
-    {"regions": regions, "sites": sites, "summary": summary}[cmd]()
+    {"regions": regions, "sites": sites, "depth": depth, "summary": summary}[cmd]()

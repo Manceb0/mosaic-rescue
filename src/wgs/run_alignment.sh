@@ -123,9 +123,16 @@ if ! done_ 4; then
   $DK $IMG_SAM sh -c "samtools idxstats $B > $Q/idxstats.txt"
   $DK $IMG_SAM sh -c "samtools coverage -q 20 -Q 20 $B > $Q/coverage_by_contig.tsv"
   py src/wgs/alignment_qc.py regions > "$W/qc/regions.tsv"
+  # La mediana se calcula en Python, no en awk: el awk del contenedor (mawk) no
+  # tiene asort(), que es una extension de GNU awk. La primera version uso
+  # asort() y la etapa produjo un fichero VACIO sin fallar; el fallo silencioso
+  # solo se vio porque el resumen mostro el campo de profundidad de BUB1B vacio.
+  : > "$W/qc/region_depth.tsv"
   while IFS=$'\t' read -r name region; do
-    $DK $IMG_SAM sh -c "samtools depth -a -q 20 -Q 20 -r $region $B | awk '{n++; s+=\$3; a[n]=\$3} END{asort(a); printf \"$name\t%d\t%.2f\t%d\n\", n, s/n, a[int(n/2)+1]}'" >> "$W/qc/region_depth.tsv"
+    $DK $IMG_SAM sh -c "samtools depth -a -q 20 -Q 20 -r $region $B" \
+      | py src/wgs/alignment_qc.py depth "$name" >> "$W/qc/region_depth.tsv"
   done < "$W/qc/regions.tsv"
+  [ -s "$W/qc/region_depth.tsv" ] || { log "STOP: la profundidad por region salio vacia"; exit 2; }
   mark 4
 fi
 
