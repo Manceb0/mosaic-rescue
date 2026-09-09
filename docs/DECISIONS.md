@@ -1254,13 +1254,38 @@ lleva el caveat de composición celular y plaquetas.
 
 ### Deuda técnica declarada durante la corrida
 
+**Gate de sexo del GO 2A: FAIL preregistrado, adjudicado post hoc, no bloqueante.**
+La regla exigía `chrY/autosoma > 0,25` sobre el contig completo y dio **0,170**, así que **falló y
+se conserva como fallida**. El umbral **no se ha cambiado** después de ver el resultado. Registro
+literal, fechado 2026-09-09:
+
+```text
+sex_check_preregistered = FAIL
+sex_check_adjudication  = XY-consistent
+sex_check_blocking      = false
+reason:
+  The preregistered whole-chrY/autosome threshold was misspecified because
+  the denominator included large masked/unmappable portions of chrY.
+  The threshold was not changed after observing the result.
+support:
+  chrX/autosome                     = 0.512
+  chrX non-PAR heterozygosity       = 0.0127
+  chrY covered-bases depth          = 22.8x
+  chrX covered-bases depth          = 22.4x
+  autosomal covered-bases depth     ≈ 44.4x
+  chrY fraction of contig covered   = 31.1 %
+future_rule:
+  For future samples, define a callable-region or predefined Y-region metric
+  before looking at sample results. Do not calibrate a new threshold from this patient.
+```
+
 **`QC-DEF-002` · un paso de QC fallaba en silencio y escribía un fichero vacío.**
 La profundidad en la región de BUB1B no se calculó en la corrida del GO 2A: la mediana se pedía con
 `asort()`, una extensión de GNU awk que el `mawk` del contenedor no tiene, y además el fichero de
 regiones llevaba fin de línea de Windows, cuyo retorno de carro entraba dentro de la coordenada. El
 paso devolvía un fichero **vacío sin fallar**, y sólo se detectó porque el campo apareció vacío en el
 resumen final. **Corregido:** la mediana se calcula en Python y la etapa **aborta con ALTO** si el
-fichero sale vacío. *Un paso de QC que falla en silencio es peor que uno que no existe, porque el
+fichero sale vacío. Clasificación del mantenedor: **`reporting/QC implementation defect; alignment unaffected`**. No se repite el alineamiento: el fallo estaba en el cálculo y el reporte de la profundidad regional, no en bwa, ni en el BAM, ni en el marcado de duplicados, y las cifras corregidas (45,31× en ±50 kb, 45,77× en ±1 Mb) se obtuvieron sobre **el mismo BAM**. *Un paso de QC que falla en silencio es peor que uno que no existe, porque el
 resumen parece completo.*
 
 **`QC-OPT-001` · el QC por grupo de lectura recorre el BAM entero varias veces.**

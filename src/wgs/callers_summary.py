@@ -1,0 +1,306 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""GO 2B · adjudicacion por lecturas, MitoRead y resumen de los llamadores.
+
+Subcomandos (los usa run_callers.sh):
+    regions   escribe la region de trabajo de BUB1B (Tier 1) y los dos alelos
+    bub1b     metricas por lectura de los dos alelos desde el SAM del locus
+    mito      cociente mtDNA:nuclear consciente de NUMT
+    summary   recuento de llamadas por herramienta, extraccion de Tier 1 y manifest
+
+NADA DE ESTO INTERPRETA. Cuenta, mide y tabula. La adjudicacion cientifica es
+del mantenedor, despues del STOP.
+
+TECHOS ESCRITOS AQUI, no en el informe:
+    SV/CNV negativo -> "No supported structural or copy-number second allele was
+        detected by the specified short-read WGS workflow; classes poorly
+        accessible to short reads remain unresolved." Nunca "excluido".
+    bcftools        -> "TECHNICAL REPLICATION FROM THE SAME READS", nunca
+        evidencia independiente.
+    MitoRead        -> "cell-composition-unadjusted WGS-derived blood
+        mtDNA:nuclear ratio". Nunca disfuncion mitocondrial.
+    ExpansionHunter -> cribado; solo se interpreta DMPK, y como segundo
+        diagnostico posible, no como causa del MVA.
+"""
+from __future__ import annotations
+import csv, glob, gzip, hashlib, io, json, os, re, statistics, sys
+from datetime import datetime, timezone
+
+sys.path.insert(0, ".")
+
+W = "work/callers"
+BAM = "work/align/full_depth.markdup.bam"
+TIER1_FLANK = 1_000_000
+DMPK_LOCI = ("DMPK",)          # el unico locus de expansiones que se interpreta
+
+
+def sha256(p):
+    h = hashlib.sha256()
+    with io.open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 22), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+def _alleles():
+    """Los dos alelos prioritarios, desde el CSV de entrega (objeto canonico)."""
+    rows = list(csv.DictReader(io.open("work/submission/track1_predictions.csv", encoding="utf-8")))
+    r = [x for x in rows if x["finding_type"] == "primary"][0]
+    return [{"chrom": r["chrom_1"].replace("chr", ""), "pos": int(r["pos_1"]), "ref": r["ref_1"], "alt": r["alt_1"]},
+            {"chrom": r["chrom_2"].replace("chr", ""), "pos": int(r["pos_2"]), "ref": r["ref_2"], "alt": r["alt_2"]}]
+
+
+def _tier1():
+    from src.structure.transcript_model import fetch
+    tx = fetch()
+    lo = min(e["start"] for e in tx["exons"]) - TIER1_FLANK
+    hi = max(e["end"] for e in tx["exons"]) + TIER1_FLANK
+    a = _alleles()[0]["chrom"]
+    return a, max(1, lo), hi
+
+
+def regions():
+    c, lo, hi = _tier1()
+    print(f"TIER1\t{c}:{lo}-{hi}")
+
+
+# ------------------------------------------------- 6 · lecturas de BUB1B ----
+def bub1b():
+    """Metricas por lectura de cada alelo, leidas del SAM del locus.
+
+    Sin pysam: el SAM se parsea a mano. Se cuentan lecturas primarias no
+    duplicadas que cubren la posicion, y se clasifica cada una por la base que
+    presenta en ella, resolviendo el CIGAR.
+    """
+    sam = os.path.join(W, "bub1b", "locus.sam")
+    out = {"alleles": [], "note": "primary, non-duplicate reads covering the position"}
+    als = _alleles()
+    recs = []
+    for line in io.open(sam, encoding="utf-8", errors="replace"):
+        if line.startswith("@"):
+            continue
+        p = line.rstrip("\n").split("\t")
+        flag = int(p[1])
+        if flag & 0x900:                      # secundaria o suplementaria
+            continue
+        recs.append((flag, p[2], int(p[3]), int(p[4]), p[5], p[9], p[10]))
+    for a in als:
+        cov = {"A": 0, "C": 0, "G": 0, "T": 0}
+        mapq, bq, fwd, rev, clip, dup = [], [], 0, 0, 0, 0
+        for flag, rname, pos, q, cigar, seq, qual in recs:
+            if rname.replace("chr", "") != a["chrom"]:
+                continue
+            # recorre el CIGAR hasta la posicion pedida
+            ref_i, read_i, base, bqual = pos, 0, None, None
+            for n, op in re.findall(r"(\d+)([MIDNSHP=X])", cigar):
+                n = int(n)
+                if op in "SH":
+                    if op == "S":
+                        read_i += n
+                    clip_here = True
+                    continue
+                if op in "M=X":
+                    if ref_i <= a["pos"] < ref_i + n:
+                        off = a["pos"] - ref_i
+                        base = seq[read_i + off]
+                        bqual = ord(qual[read_i + off]) - 33
+                        break
+                    ref_i += n; read_i += n
+                elif op == "I":
+                    read_i += n
+                elif op in "DN":
+                    if ref_i <= a["pos"] < ref_i + n:
+                        base = "-"; break
+                    ref_i += n
+            if base is None:
+                continue
+            if flag & 0x400:
+                dup += 1
+                continue                      # los duplicados no cuentan para el balance
+            if base in cov:
+                cov[base] += 1
+            mapq.append(q)
+            if bqual is not None:
+                bq.append(bqual)
+            if flag & 0x10:
+                rev += 1
+            else:
+                fwd += 1
+            if "S" in cigar or "H" in cigar:
+                clip += 1
+        ref_n, alt_n = cov.get(a["ref"], 0), cov.get(a["alt"], 0)
+        tot = sum(cov.values())
+        out["alleles"].append({
+            "ref": a["ref"], "alt": a["alt"],
+            "DP_primary_nondup": tot, "AD_ref": ref_n, "AD_alt": alt_n,
+            "allele_balance_alt": (alt_n / tot) if tot else None,
+            "other_bases": tot - ref_n - alt_n,
+            "MAPQ_median": statistics.median(mapq) if mapq else None,
+            "MAPQ_min": min(mapq) if mapq else None,
+            "base_quality_median": statistics.median(bq) if bq else None,
+            "forward": fwd, "reverse": rev,
+            "strand_balance_fwd": (fwd / (fwd + rev)) if (fwd + rev) else None,
+            "soft_or_hard_clipped_reads": clip,
+            "duplicates_at_site": dup,
+        })
+    out["ceiling"] = ("read-level QC of the two prioritized alleles on the reconstructed alignment. "
+                      "Recovery here is not independent evidence of pathogenicity.")
+    io.open(os.path.join(W, "bub1b", "read_metrics.json"), "w", encoding="utf-8").write(
+        json.dumps(out, indent=1))
+    for i, x in enumerate(out["alleles"], 1):
+        print(f"  alelo {i}: DP {x['DP_primary_nondup']} · AD {x['AD_ref']},{x['AD_alt']} · "
+              f"balance {x['allele_balance_alt']} · MAPQ mediana {x['MAPQ_median']} · "
+              f"hebras {x['forward']}/{x['reverse']} · recortadas {x['soft_or_hard_clipped_reads']}")
+
+
+# --------------------------------------------------------- 7 · MitoRead ----
+def mito():
+    def depths(p):
+        v = [int(l.split("\t")[2]) for l in io.open(p, encoding="utf-8") if l.strip()]
+        return v
+    d0 = depths(os.path.join(W, "mito", "chrM_q0.txt"))
+    d30 = depths(os.path.join(W, "mito", "chrM_q30.txt"))
+    cov = {}
+    for line in io.open("work/align/qc/coverage_by_contig.tsv", encoding="utf-8"):
+        if line.startswith("#"):
+            continue
+        p = line.rstrip("\n").split("\t")
+        if len(p) > 6:
+            cov[p[0]] = {"len": int(p[2]) - int(p[1]) + 1, "mean": float(p[6])}
+    autos = [str(i) for i in range(1, 23)]
+    aw = sum(cov[c]["mean"] * cov[c]["len"] for c in autos if c in cov) / \
+         sum(cov[c]["len"] for c in autos if c in cov)
+    per_chr = {c: round(cov[c]["mean"], 2) for c in autos if c in cov}
+    m0 = statistics.median(d0) if d0 else 0
+    m30 = statistics.median(d30) if d30 else 0
+    out = {
+        "chrM_median_depth_MAPQ0": m0, "chrM_median_depth_MAPQ30": m30,
+        "chrM_mean_depth_MAPQ0": round(statistics.mean(d0), 1) if d0 else 0,
+        "chrM_mean_depth_MAPQ30": round(statistics.mean(d30), 1) if d30 else 0,
+        "numt_aware_note": ("MAPQ>=30 filtering reduces, identifies and filters likely "
+                            "nuclear-mitochondrial (NUMT) mappings; it does not guarantee their "
+                            "complete removal"),
+        "mapq30_retained_fraction": round(m30 / m0, 4) if m0 else None,
+        "autosomal_weighted_mean_depth": round(aw, 2),
+        "per_autosome_mean_depth": per_chr,
+        "ratio_mtDNA_to_nuclear_MAPQ30": round(m30 / aw, 1) if aw else None,
+        "ratio_mtDNA_to_nuclear_MAPQ0": round(m0 / aw, 1) if aw else None,
+        "sensitivity_to_denominator": {
+            "min_autosome": round(m30 / min(per_chr.values()), 1) if per_chr else None,
+            "max_autosome": round(m30 / max(per_chr.values()), 1) if per_chr else None},
+        "ceiling": ("Without CBC/platelet/cell-composition data, the result is a "
+                    "cell-composition-unadjusted WGS-derived blood mtDNA:nuclear ratio. "
+                    "It is an orthogonal WGS readout, not evidence of mitochondrial dysfunction."),
+    }
+    io.open(os.path.join(W, "mito", "mitoread.json"), "w", encoding="utf-8").write(json.dumps(out, indent=1))
+    print(f"  chrM mediana MAPQ0 {m0} · MAPQ>=30 {m30} · retenido {out['mapq30_retained_fraction']}")
+    print(f"  cociente mtDNA:nuclear (MAPQ>=30) {out['ratio_mtDNA_to_nuclear_MAPQ30']} · "
+          f"sensibilidad al denominador {out['sensitivity_to_denominator']}")
+
+
+# ------------------------------------------------------- 9 · resumen -------
+def _count_vcf(path, tier1=None):
+    """(total, en Tier 1) de un VCF/BCF comprimido, sin dependencias."""
+    if not os.path.exists(path):
+        return None, None
+    n = t = 0
+    op = gzip.open if path.endswith(".gz") else io.open
+    try:
+        with op(path, "rt", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                n += 1
+                if tier1:
+                    p = line.split("\t", 3)
+                    if p[0].replace("chr", "") == tier1[0] and tier1[1] <= int(p[1]) <= tier1[2]:
+                        t += 1
+    except Exception:
+        return None, None
+    return n, t
+
+
+def summary():
+    for d in ("", "sv", "cnv", "mei", "bub1b", "mito", "repeats", "qc", "logs"):
+        os.makedirs(os.path.join(W, d), exist_ok=True)
+    c, lo, hi = _tier1()
+    tier1 = (c, lo, hi)
+    stages = {}
+    for k in ("1", "2", "3", "4", "5a", "5b", "6", "7", "8"):
+        d, f = os.path.join(W, f".go2b_{k}.done"), os.path.join(W, f".go2b_{k}.failed")
+        stages[k] = "COMPLETED" if os.path.exists(d) else (
+            "NOT RUN — " + io.open(f).read().strip() if os.path.exists(f) else "NOT REACHED")
+
+    manta = os.path.join(W, "sv/manta/results/variants/diploidSV.vcf.gz")
+    delly = os.path.join(W, "sv/delly.vcf.gz")
+    m_n, m_t = _count_vcf(manta, tier1)
+    d_n, d_t = _count_vcf(delly, tier1)
+
+    def _rows(p):
+        return sum(1 for l in io.open(p, encoding="utf-8", errors="replace") if l.strip()) \
+            if os.path.exists(p) else None
+    cnv_rd = _rows(os.path.join(W, "cnv/calls_rd.tsv"))
+    cnv_cb = _rows(os.path.join(W, "cnv/calls_combined.tsv"))
+    scr = sorted(glob.glob(os.path.join(W, "mei", "scramble*MEIs.txt")))
+    scr_n = _rows(scr[0]) if scr else None
+
+    eh = os.path.join(W, "repeats", "eh.json")
+    dmpk = {}
+    if os.path.exists(eh):
+        try:
+            j = json.load(io.open(eh, encoding="utf-8"))
+            for name, v in (j.get("LocusResults") or {}).items():
+                if any(g.lower() in name.lower() for g in DMPK_LOCI):
+                    dmpk[name] = v
+        except Exception as e:                      # noqa: BLE001
+            dmpk = {"error": f"{type(e).__name__}"}
+
+    out = {
+        "run": "GO 2B", "finished_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "primary_object": {"file": os.path.basename(BAM),
+                           "sha256": sha256(BAM) if os.path.exists(BAM) else None,
+                           "rule": "the globally duplicate-marked BAM is the primary downstream "
+                                   "alignment object; the pre-markdup BAM was NOT used here"},
+        "stages": stages,
+        "tier1_region_bp": hi - lo + 1,
+        "structural_variants": {
+            "manta_total": m_n, "manta_in_tier1": m_t,
+            "delly_total": d_n, "delly_in_tier1": d_t,
+            "concordance_note": "caller concordance increases technical support but is not required "
+                                "for candidate retention",
+            "ceiling": "No supported structural or copy-number second allele was detected by the "
+                       "specified short-read WGS workflow; classes poorly accessible to short reads "
+                       "remain unresolved. NEVER 'structural second allele excluded'."},
+        "copy_number": {"cnvpytor_rd_calls": cnv_rd, "cnvpytor_combined_rd_baf_calls": cnv_cb,
+                        "note": "CNVpytor is read-depth + BAF; mosdepth is coverage QC only and is "
+                                "not a CNV caller"},
+        "mobile_elements": {"scramble_calls": scr_n, "xtea": stages.get("5b"),
+                            "ceiling": "a combined negative does not exclude all complex insertions; "
+                                       "some are resolvable only by targeted analysis or long reads"},
+        "bub1b_read_backed": ("work/callers/bub1b/read_metrics.json" if os.path.exists(
+            os.path.join(W, "bub1b/read_metrics.json")) else None),
+        "technical_replication": {"tool": "bcftools mpileup/call on the same BAM",
+                                  "label": "TECHNICAL REPLICATION FROM THE SAME READS",
+                                  "not": "independent evidence"},
+        "mitoread": ("work/callers/mito/mitoread.json" if os.path.exists(
+            os.path.join(W, "mito/mitoread.json")) else None),
+        "repeat_expansions": {"catalog": "ExpansionHunter grch38 official catalog, run as a SCREEN",
+                              "interpreted_loci": list(DMPK_LOCI),
+                              "dmpk_result": dmpk or None,
+                              "ceiling": "P1 residual / second-diagnosis screen, not an MVA-causal "
+                                         "hypothesis; any positive requires visual inspection"},
+        "not_done_on_purpose": ["no interpretation", "Track 1 untouched", "variant classification "
+                                "untouched", "Track 2 untouched", "EXP-024 not scored",
+                                "callers not run twice"],
+    }
+    io.open(os.path.join(W, "go2b_summary.json"), "w", encoding="utf-8").write(json.dumps(out, indent=1))
+    print("  etapas: " + " · ".join(f"{k}={v.split(' — ')[0]}" for k, v in stages.items()))
+    print(f"  SV: Manta {m_n} total / {m_t} en Tier 1 · DELLY {d_n} / {d_t}")
+    print(f"  CNV: CNVpytor {cnv_rd} llamadas RD, {cnv_cb} combinadas RD+BAF")
+    print(f"  MEI: SCRAMble {scr_n} · xTea {stages.get('5b', '')[:40]}")
+    print(f"  DMPK: {'presente en el catalogo' if dmpk else 'sin resultado'}")
+
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "summary"
+    {"regions": regions, "bub1b": bub1b, "mito": mito, "summary": summary}[cmd]()

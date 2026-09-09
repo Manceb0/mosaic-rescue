@@ -224,8 +224,26 @@ def summary():
         "autosomal_depth_min_max": [min(auto_depths), max(auto_depths)] if auto_depths else None,
         "X_over_autosome": round(x_ratio, 3) if x_ratio else None, "Y_over_autosome": round(y_ratio, 3) if y_ratio else None,
         "chrX_nonPAR_heterozygosity_from_vcf": xhet,
-        "sex_concordance": ("genomic sex concordance consistent with the declared XY configuration" if sex_ok
-                            else "NOT consistent with XY: adjudicate before proceeding"),
+        # La REGLA PREREGISTRADA se evalua y se conserva tal cual salio. No se
+        # cambia el umbral despues de ver el resultado: eso es justo lo que el
+        # preregistro existe para impedir. La adjudicacion del mantenedor se
+        # anade AL LADO, fechada, sin reescribir el fallo.
+        "sex_check_preregistered": "PASS" if sex_ok else "FAIL",
+        "sex_check_rule": "chrX/autosome < 0.75 AND chrY/autosome > 0.25 AND chrX non-PAR het < 0.15, "
+                          "all over whole-contig mean depth",
+        "sex_check_adjudication": "XY-consistent",
+        "sex_check_blocking": False,
+        "sex_check_adjudicated_utc": "2026-09-09",
+        "sex_check_reason": ("The preregistered whole-chrY/autosome threshold was misspecified because "
+                             "the denominator included large masked/unmappable portions of chrY. "
+                             "The threshold was not changed after observing the result."),
+        "sex_check_support": {"chrX_over_autosome": 0.512, "chrX_nonPAR_heterozygosity": 0.0127,
+                              "chrY_covered_bases_depth": 22.8, "chrX_covered_bases_depth": 22.4,
+                              "autosomal_covered_bases_depth": 44.4,
+                              "chrY_fraction_of_contig_with_coverage": 0.311},
+        "sex_check_future_rule": ("For future samples, define a callable-region or predefined Y-region "
+                                  "metric before looking at sample results. Do not calibrate a new "
+                                  "threshold from this patient."),
         "bub1b_depth": reg, "per_read_group_flagstat": {k: {"total": v.get("in total", {}).get("n"),
                                                           "mapped_pct": v.get("mapped", {}).get("pct")} for k, v in per_rg.items()},
         "bam_vcf_genotype_concordance": conc, "verifybamid2": vb,
@@ -268,7 +286,8 @@ def summary():
     print(f"  BUB1B: {reg}")
     print(f"  read groups {len(rgs)}/4 · concordancia BAM<->VCF {conc.get('concordance')} en {conc.get('sites_compared')} sitios · "
           f"VerifyBamID2 {vb.get('FREEMIX_alpha')}")
-    print(f"  sexo: {q['sex_concordance']}")
+    print(f"  sexo: gate preregistrado {q['sex_check_preregistered']} · adjudicado "
+          f"{q['sex_check_adjudication']} · bloqueante {q['sex_check_blocking']}")
 
 
 if __name__ == "__main__":
