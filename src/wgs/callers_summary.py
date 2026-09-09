@@ -270,6 +270,20 @@ def summary():
         else:
             stages[k] = {"name": label, "status": "NOT_RUN",
                          "detail": "no se alcanzo esta etapa en esta corrida"}
+        # subestados: un agregado FAILED no puede borrar la parte que si funciono
+        sub = os.path.join(W, "status", f"{k}.sub")
+        if os.path.exists(sub):
+            stages[k]["sub_status"] = dict(
+                l.rstrip("\n").split("\t")[:2] for l in io.open(sub, encoding="utf-8") if "\t" in l)
+        # procedencia de arrastre: `carried_forward` es procedencia, no un estado
+        carry = os.path.join(W, "status", f"{k}.carry.json")
+        if os.path.exists(carry):
+            c = json.load(io.open(carry, encoding="utf-8"))
+            stages[k]["carried_forward"] = True
+            stages[k]["executed_under_commit"] = c.get("executed_under_commit")
+            stages[k]["output_sha256"] = {n: v["sha256"] for n, v in c.get("outputs", {}).items()}
+            stages[k]["carry_forward_reason"] = c.get("carry_forward_reason")
+            stages[k]["carry_forward_validation"] = c.get("carry_forward_validation")
     tally = {}
     for v in stages.values():
         tally[v["status"]] = tally.get(v["status"], 0) + 1
@@ -298,8 +312,17 @@ def summary():
         except Exception as e:                      # noqa: BLE001
             dmpk = {"error": f"{type(e).__name__}"}
 
+    import subprocess
+    try:
+        ctrl = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
+                              text=True, check=True).stdout.strip()
+    except Exception:                                   # noqa: BLE001
+        ctrl = "no disponible"
     out = {
         "run": "GO 2B", "finished_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "controlflow_commit": ctrl,
+        "provenance_note": ("stages marked carried_forward ran under an earlier commit, named in "
+                            "executed_under_commit; every other stage ran under controlflow_commit"),
         "primary_object": {"file": os.path.basename(BAM),
                            "sha256": sha256(BAM) if os.path.exists(BAM) else None,
                            "rule": "the globally duplicate-marked BAM is the primary downstream "
@@ -351,8 +374,14 @@ def summary():
                                 "callers not run twice"],
     }
     io.open(os.path.join(W, "go2b_summary.json"), "w", encoding="utf-8").write(json.dumps(out, indent=1))
+    print(f"  control de flujo: {ctrl}")
     for k, v in stages.items():
-        print(f"  {k:<3} {v['name']:<26} {v['status']}{'  · ' + v['detail'] if v['detail'] else ''}")
+        extra = ""
+        if v.get("carried_forward"):
+            extra += f"  · carried_forward desde {v['executed_under_commit']}"
+        if v.get("sub_status"):
+            extra += "  · " + ", ".join(f"{a}={b}" for a, b in v["sub_status"].items())
+        print(f"  {k:<3} {v['name']:<26} {v['status']}{'  · ' + v['detail'] if v['detail'] else ''}{extra}")
     print("  recuento: " + " · ".join(f"{k} {n}" for k, n in sorted(tally.items())))
     print(f"  SV: Manta {m_n} total / {m_t} en Tier 1 · DELLY {d_n} / {d_t}")
     print(f"  CNV: CNVpytor {cnv_rd} llamadas RD, {cnv_cb} combinadas RD+BAF")

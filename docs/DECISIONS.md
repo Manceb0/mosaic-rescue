@@ -1279,6 +1279,21 @@ future_rule:
   before looking at sample results. Do not calibrate a new threshold from this patient.
 ```
 
+**`EXEC-DEF-003` · editar un script de bash mientras se está ejecutando.**
+Durante el GO 2B se corrigió `run_callers.sh` **con la corrida en marcha**. Bash no carga el script
+entero: lo lee por trozos según avanza. Al terminar mosdepth, el proceso volvió al fichero y leyó la
+**versión nueva desde el desplazamiento en el que iba**, de modo que ejecutó la cabecera del
+orquestador enmendado a mitad de camino y murió con `unbound variable`. La corrida salió con código
+1 en vez de 0.
+
+**Daño: ninguno.** Se comprobó después: las tres salidas de mosdepth conservan exactamente los
+`sha256` sellados, y ningún otro directorio de llamadores llegó a escribirse. El único coste fue un
+código de salida engañoso.
+
+**Regla, escrita a partir de aquí:** *un script en ejecución no se edita*. Si hay que enmendarlo,
+primero se detiene la tarea, después se edita, y sólo entonces se relanza. Este mismo riesgo se
+había evitado a propósito en el GO 2A y se olvidó aquí.
+
 **`QC-DEF-002` · un paso de QC fallaba en silencio y escribía un fichero vacío.**
 La profundidad en la región de BUB1B no se calculó en la corrida del GO 2A: la mediana se pedía con
 `asort()`, una extensión de GNU awk que el `mawk` del contenedor no tiene, y además el fichero de
