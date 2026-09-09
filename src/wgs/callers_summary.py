@@ -64,6 +64,34 @@ def regions():
     print(f"TIER1\t{c}:{lo}-{hi}")
 
 
+def dmpk_catalog():
+    """Catalogo DERIVADO con un solo locus, DMPK.
+
+    El catalogo oficial de ExpansionHunter para GRCh38 trae 31 loci. Ejecutarlo
+    entero generaria resultados de 30 loci que el preregistro prohibe
+    interpretar, y un resultado que existe se acaba mirando. Aqui se extrae la
+    entrada de DMPK del catalogo oficial y se escribe un catalogo de un
+    elemento: los demas loci no se llaman, no se generan y no se revisan ni
+    incidentalmente. La procedencia del catalogo oficial queda registrada.
+    """
+    src = os.path.join(W, "repeats", "catalog_official_grch38.json")
+    if not os.path.exists(src):
+        raise SystemExit("falta la copia del catalogo oficial: el orquestador debe extraerla del contenedor")
+    official = json.load(io.open(src, encoding="utf-8"))
+    picked = [x for x in official if x.get("LocusId") in DMPK_LOCI]
+    if len(picked) != len(DMPK_LOCI):
+        raise SystemExit(f"esperados {len(DMPK_LOCI)} loci, encontrados {len(picked)}")
+    out = os.path.join(W, "repeats", "catalog_dmpk_only.json")
+    io.open(out, "w", encoding="utf-8", newline="\n").write(json.dumps(picked, indent=1))
+    io.open(os.path.join(W, "repeats", "catalog_provenance.json"), "w", encoding="utf-8").write(
+        json.dumps({"derived_from": "ExpansionHunter 5.0.0 official grch38 variant_catalog.json",
+                    "official_loci": len(official), "official_sha256": sha256(src),
+                    "interpreted_loci": list(DMPK_LOCI), "derived_sha256": sha256(out),
+                    "reason": "P1 phenotype-driven screen; other loci are not called, not generated "
+                              "and not reviewed even incidentally"}, indent=1))
+    print(f"  catalogo derivado: {len(picked)} locus de {len(official)} oficiales")
+
+
 # ------------------------------------------------- 6 · lecturas de BUB1B ----
 def bub1b():
     """Metricas por lectura de cada alelo, leidas del SAM del locus.
@@ -225,11 +253,26 @@ def summary():
         os.makedirs(os.path.join(W, d), exist_ok=True)
     c, lo, hi = _tier1()
     tier1 = (c, lo, hi)
+    # Taxonomia de estados: SUCCESS / FAILED / SKIPPED_DEPENDENCY / NOT_RUN.
+    # FAILED nunca se degrada a NOT_RUN: que una herramienta se intentara y
+    # fallara es informacion, y borrarla falsea el reporte.
+    NAMES = {"0": "preflight critico", "1": "mosdepth (QC)", "2": "Manta (SV)",
+             "3": "DELLY (SV ortogonal)", "4": "CNVpytor (RD + BAF)",
+             "5b": "xTea (MEI primario)", "5a": "SCRAMble (MEI ortogonal)",
+             "6": "BUB1B por lecturas", "7": "MitoRead", "8": "DMPK (solo un locus)"}
     stages = {}
-    for k in ("1", "2", "3", "4", "5a", "5b", "6", "7", "8"):
-        d, f = os.path.join(W, f".go2b_{k}.done"), os.path.join(W, f".go2b_{k}.failed")
-        stages[k] = "COMPLETED" if os.path.exists(d) else (
-            "NOT RUN — " + io.open(f).read().strip() if os.path.exists(f) else "NOT REACHED")
+    for k, label in NAMES.items():
+        p = os.path.join(W, "status", f"{k}.status")
+        if os.path.exists(p):
+            parts = io.open(p, encoding="utf-8").read().rstrip("\n").split("\t")
+            stages[k] = {"name": label, "status": parts[1] if len(parts) > 1 else "UNKNOWN",
+                         "detail": parts[2] if len(parts) > 2 and parts[2] else None}
+        else:
+            stages[k] = {"name": label, "status": "NOT_RUN",
+                         "detail": "no se alcanzo esta etapa en esta corrida"}
+    tally = {}
+    for v in stages.values():
+        tally[v["status"]] = tally.get(v["status"], 0) + 1
 
     manta = os.path.join(W, "sv/manta/results/variants/diploidSV.vcf.gz")
     delly = os.path.join(W, "sv/delly.vcf.gz")
@@ -261,7 +304,15 @@ def summary():
                            "sha256": sha256(BAM) if os.path.exists(BAM) else None,
                            "rule": "the globally duplicate-marked BAM is the primary downstream "
                                    "alignment object; the pre-markdup BAM was NOT used here"},
-        "stages": stages,
+        "stages": stages, "status_tally": tally,
+        "status_taxonomy": {"SUCCESS": "ran and produced valid outputs",
+                            "FAILED": "ran and failed; never downgraded to NOT_RUN",
+                            "SKIPPED_DEPENDENCY": "not run because a prerequisite failed",
+                            "NOT_RUN": "not attempted, with an explicit stated reason"},
+        "failure_scope": {"critical_shared": "BAM / BAI / reference / contig compatibility / "
+                                             "provenance → aborts GO 2B entirely",
+                          "local": "a single caller → FAILED for that branch only; independent "
+                                   "branches continue"},
         "tier1_region_bp": hi - lo + 1,
         "structural_variants": {
             "manta_total": m_n, "manta_in_tier1": m_t,
@@ -274,7 +325,11 @@ def summary():
         "copy_number": {"cnvpytor_rd_calls": cnv_rd, "cnvpytor_combined_rd_baf_calls": cnv_cb,
                         "note": "CNVpytor is read-depth + BAF; mosdepth is coverage QC only and is "
                                 "not a CNV caller"},
-        "mobile_elements": {"scramble_calls": scr_n, "xtea": stages.get("5b"),
+        "mobile_elements": {"xtea_role": "PRIMARY", "xtea_status": stages["5b"]["status"],
+                            "scramble_role": "ORTHOGONAL", "scramble_status": stages["5a"]["status"],
+                            "scramble_calls": scr_n,
+                            "role_note": "roles are fixed by the preregistration and do not depend on "
+                                         "which tool ran first or which one succeeded",
                             "ceiling": "a combined negative does not exclude all complex insertions; "
                                        "some are resolvable only by targeted analysis or long reads"},
         "bub1b_read_backed": ("work/callers/bub1b/read_metrics.json" if os.path.exists(
@@ -284,7 +339,9 @@ def summary():
                                   "not": "independent evidence"},
         "mitoread": ("work/callers/mito/mitoread.json" if os.path.exists(
             os.path.join(W, "mito/mitoread.json")) else None),
-        "repeat_expansions": {"catalog": "ExpansionHunter grch38 official catalog, run as a SCREEN",
+        "repeat_expansions": {"catalog": "DERIVED single-locus catalog extracted from the official "
+                                         "ExpansionHunter grch38 catalog; other loci are not called, "
+                                         "not generated and not reviewed even incidentally",
                               "interpreted_loci": list(DMPK_LOCI),
                               "dmpk_result": dmpk or None,
                               "ceiling": "P1 residual / second-diagnosis screen, not an MVA-causal "
@@ -294,13 +351,17 @@ def summary():
                                 "callers not run twice"],
     }
     io.open(os.path.join(W, "go2b_summary.json"), "w", encoding="utf-8").write(json.dumps(out, indent=1))
-    print("  etapas: " + " · ".join(f"{k}={v.split(' — ')[0]}" for k, v in stages.items()))
+    for k, v in stages.items():
+        print(f"  {k:<3} {v['name']:<26} {v['status']}{'  · ' + v['detail'] if v['detail'] else ''}")
+    print("  recuento: " + " · ".join(f"{k} {n}" for k, n in sorted(tally.items())))
     print(f"  SV: Manta {m_n} total / {m_t} en Tier 1 · DELLY {d_n} / {d_t}")
     print(f"  CNV: CNVpytor {cnv_rd} llamadas RD, {cnv_cb} combinadas RD+BAF")
-    print(f"  MEI: SCRAMble {scr_n} · xTea {stages.get('5b', '')[:40]}")
+    print(f"  MEI: xTea (primario) {stages['5b']['status']} · SCRAMble (ortogonal) "
+          f"{stages['5a']['status']}, {scr_n} llamadas")
     print(f"  DMPK: {'presente en el catalogo' if dmpk else 'sin resultado'}")
 
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "summary"
-    {"regions": regions, "bub1b": bub1b, "mito": mito, "summary": summary}[cmd]()
+    {"regions": regions, "dmpk_catalog": dmpk_catalog, "bub1b": bub1b,
+     "mito": mito, "summary": summary}[cmd]()
