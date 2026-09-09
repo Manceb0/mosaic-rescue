@@ -279,11 +279,14 @@ def summary():
         carry = os.path.join(W, "status", f"{k}.carry.json")
         if os.path.exists(carry):
             c = json.load(io.open(carry, encoding="utf-8"))
-            stages[k]["carried_forward"] = True
+            # execution_status es historico y no lo reescribe una validacion fallida
+            stages[k]["execution_status"] = c.get("execution_status")
             stages[k]["executed_under_commit"] = c.get("executed_under_commit")
+            stages[k]["carry_forward_validation"] = c.get("carry_forward_validation")
+            stages[k]["carried_forward"] = c.get("carried_forward")
             stages[k]["output_sha256"] = {n: v["sha256"] for n, v in c.get("outputs", {}).items()}
             stages[k]["carry_forward_reason"] = c.get("carry_forward_reason")
-            stages[k]["carry_forward_validation"] = c.get("carry_forward_validation")
+            stages[k]["carry_forward_validation_note"] = c.get("carry_forward_validation")
     tally = {}
     for v in stages.values():
         tally[v["status"]] = tally.get(v["status"], 0) + 1
@@ -323,6 +326,14 @@ def summary():
         "controlflow_commit": ctrl,
         "provenance_note": ("stages marked carried_forward ran under an earlier commit, named in "
                             "executed_under_commit; every other stage ran under controlflow_commit"),
+        "provenance_axes": {
+            "execution_status": "what actually happened when the stage ran. Historical: a failed "
+                                "reuse validation never rewrites it",
+            "carry_forward_validation": "PASS or FAIL — whether those outputs may be reused now",
+            "carried_forward": "true only when validation passed and the stage was not re-run",
+            "rule": "preflight FAILED -> abort. preflight PASS + hashes match -> reuse. preflight "
+                    "PASS + outputs invalid -> validation FAIL, history untouched, stage re-run. "
+                    "Only a new failed execution yields FAILED"},
         "primary_object": {"file": os.path.basename(BAM),
                            "sha256": sha256(BAM) if os.path.exists(BAM) else None,
                            "rule": "the globally duplicate-marked BAM is the primary downstream "
@@ -377,8 +388,10 @@ def summary():
     print(f"  control de flujo: {ctrl}")
     for k, v in stages.items():
         extra = ""
-        if v.get("carried_forward"):
-            extra += f"  · carried_forward desde {v['executed_under_commit']}"
+        if v.get("executed_under_commit"):
+            extra += (f"  · ejecucion {v.get('execution_status')} bajo {v['executed_under_commit']}"
+                      f", reutilizacion {v.get('carry_forward_validation')}"
+                      f", carried_forward={v.get('carried_forward')}")
         if v.get("sub_status"):
             extra += "  · " + ", ".join(f"{a}={b}" for a, b in v["sub_status"].items())
         print(f"  {k:<3} {v['name']:<26} {v['status']}{'  · ' + v['detail'] if v['detail'] else ''}{extra}")

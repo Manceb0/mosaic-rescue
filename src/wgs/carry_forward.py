@@ -74,7 +74,12 @@ def seal(stage, commit):
     h, err = _hashes(stage)
     if err:
         raise SystemExit(f"no se puede sellar la etapa {stage}: {err}")
-    rec = {"stage": stage, "status": "SUCCESS", "carried_forward": True,
+    # Dos ejes SEPARADOS, y no se contaminan:
+    #   execution_status        lo que paso de verdad al ejecutar. Historico.
+    #                           Una validacion de reutilizacion fallida NO lo reescribe.
+    #   carry_forward_validation si esas salidas se pueden REUTILIZAR ahora.
+    rec = {"stage": stage, "execution_status": "SUCCESS",
+           "carry_forward_validation": "PENDING", "carried_forward": False,
            "executed_under_commit": commit, "sealed_utc": now(), "outputs": h,
            **TOOL.get(stage, {}),
            "carry_forward_reason": ("mosdepth completed successfully before the control-flow "
@@ -94,27 +99,56 @@ def now():
 
 
 def accept(stage):
-    """Lo llama el orquestador: acepta el arrastre solo si todo cuadra."""
+    """Lo llama el orquestador. Codigos de salida, y lo que significan:
+
+        0  validacion PASS  -> se reutiliza; la etapa no se repite
+        2  validacion FAIL  -> NO se reutiliza y la etapa se REPITE. El
+                              `execution_status` historico NO se reescribe: la
+                              ejecucion original si tuvo exito; lo que fallo es
+                              la reutilizacion. Solo una NUEVA ejecucion fallida
+                              produce FAILED.
+        3  el preflight critico no esta en SUCCESS -> el orquestador ABORTA
+    """
     p = os.path.join(S, f"{stage}.carry.json")
     if not os.path.exists(p):
-        raise SystemExit(f"la etapa {stage} no tiene procedencia sellada: no se arrastra")
+        print(f"  etapa {stage}: sin procedencia sellada; se repite")
+        return 2
     rec = json.load(io.open(p, encoding="utf-8"))
-    h, err = _hashes(stage)
-    if err:
-        raise SystemExit(f"arrastre rechazado: {err}")
-    for k, v in rec["outputs"].items():
-        if k not in h or h[k]["sha256"] != v["sha256"]:
-            raise SystemExit(f"arrastre rechazado: {k} cambio desde el sellado")
+
     st = os.path.join(S, "0.status")
     ok0 = os.path.exists(st) and io.open(st, encoding="utf-8").read().split("\t")[1] == "SUCCESS"
     if not ok0:
-        raise SystemExit("arrastre rechazado: el preflight critico no esta en SUCCESS bajo este commit")
-    rec["accepted_utc"] = now()
+        print("  el preflight critico no esta en SUCCESS bajo este commit")
+        return 3
+
+    h, err = _hashes(stage)
+    reason = err
+    if not err:
+        for k, v in rec["outputs"].items():
+            if k not in h or h[k]["sha256"] != v["sha256"]:
+                reason = f"{k} cambio desde el sellado"
+                break
+
     rec["controlflow_commit"] = head_commit()
     rec["preflight_revalidated_under_controlflow_commit"] = True
+    rec["evaluated_utc"] = now()
+    if reason:
+        rec["carry_forward_validation"] = "FAIL"
+        rec["carry_forward_validation_reason"] = reason
+        rec["carried_forward"] = False
+        rec["note"] = ("the original execution SUCCEEDED and that history is not rewritten; "
+                       "only the reuse validation failed, so the stage is re-run")
+        io.open(p, "w", encoding="utf-8").write(json.dumps(rec, indent=1))
+        print(f"  etapa {stage}: carry_forward_validation=FAIL ({reason}). "
+              f"execution_status historico sigue siendo {rec['execution_status']}. Se repite.")
+        return 2
+    rec["carry_forward_validation"] = "PASS"
+    rec["carried_forward"] = True
+    rec["accepted_utc"] = now()
     io.open(p, "w", encoding="utf-8").write(json.dumps(rec, indent=1))
-    print(f"  etapa {stage} arrastrada: SUCCESS · ejecutada bajo {rec['executed_under_commit']} · "
-          f"control de flujo {rec['controlflow_commit']} · preflight revalidado")
+    print(f"  etapa {stage}: carry_forward_validation=PASS · execution_status "
+          f"{rec['execution_status']} bajo {rec['executed_under_commit']} · control de flujo "
+          f"{rec['controlflow_commit']} · preflight revalidado")
     return 0
 
 

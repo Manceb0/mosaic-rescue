@@ -116,23 +116,27 @@ fi
   echo "EXIT_CODE=3" > "$W/go2b.exit"; exit 3; }
 
 # ------------------------------------------------------ 1 · mosdepth (QC) ---
+# Evaluacion del ARRASTRE antes de decidir si se repite. Dos ejes separados:
+#   execution_status         lo que paso al ejecutar. Historico, no se reescribe.
+#   carry_forward_validation si esas salidas se pueden reutilizar AHORA.
+# Una validacion fallida NO convierte la ejecucion original en FAILED: solo
+# obliga a repetir la etapa. Unicamente una nueva ejecucion fallida da FAILED.
+if done_ 1 && [ ! -f "$S/1.status" ]; then
+  py src/wgs/carry_forward.py accept 1 2>&1 | tee -a "$L/carry_forward.log"
+  case "${PIPESTATUS[0]}" in
+    0) set_status 1 SUCCESS "carried_forward · ver status/1.carry.json" ;;
+    2) log "  arrastre no validado: se repite mosdepth (el SUCCESS historico no se reescribe)"
+       rm -f "$W/.go2b_1.done" ;;
+    *) log "ABORT: el preflight critico no esta en SUCCESS"; echo "EXIT_CODE=3" > "$W/go2b.exit"; exit 3 ;;
+  esac
+fi
 if ! done_ 1; then
   log "1 · mosdepth · cobertura en ventanas de 1 kb (QC, no es CNV calling)"
   if $DK $I_MOS mosdepth -t 4 -n --by 1000 /work/callers/qc/win1kb "$BAM" > "$L/mosdepth.log" 2>&1 \
      && [ -s "$W/qc/win1kb.regions.bed.gz" ]; then
-    set_status 1 SUCCESS; mark 1
+    set_status 1 SUCCESS "ejecutada bajo este commit"; mark 1
   else
-    set_status 1 FAILED "mosdepth"
-  fi
-elif [ ! -f "$S/1.status" ]; then
-  # Etapa completada por una corrida ANTERIOR a esta enmienda de control de
-  # flujo. No se repite, pero tampoco se finge que la produjo codigo que aun no
-  # existia: su procedencia real la escribe src/wgs/carry_forward.py y se
-  # arrastra solo si el preflight critico de la etapa 0 pasa bajo ESTE commit.
-  if py src/wgs/carry_forward.py accept 1 >> "$L/carry_forward.log" 2>&1; then
-    set_status 1 SUCCESS "carried_forward · ver work/callers/status/1.carry.json"
-  else
-    set_status 1 FAILED "arrastre rechazado: salidas ausentes, vacias o con hash distinto"
+    set_status 1 FAILED "mosdepth: nueva ejecucion fallida"
   fi
 fi
 
