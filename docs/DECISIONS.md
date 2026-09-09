@@ -1252,6 +1252,31 @@ máximo: *NUMT-aware filtering / reduction of likely nuclear-mitochondrial mappi
 «NUMTs excluded». Sigue siendo un *orthogonal WGS readout*, no prueba de disfunción mitocondrial, y
 lleva el caveat de composición celular y plaquetas.
 
+### Deuda técnica declarada durante la corrida
+
+**`QC-OPT-001` · el QC por grupo de lectura recorre el BAM entero varias veces.**
+*Per-read-group QC currently performs multiple full BAM scans. Future runs should derive per-RG
+statistics in a single traversal, e.g. `samtools stats --split RG` or equivalent validated one-pass
+aggregation.*
+
+Medido en esta corrida: cada recorrido completo del BAM de 60 GB tarda **1 h 6 min**, y el QC pide
+un recuento por cada uno de los cuatro grupos de lectura, así que son cuatro recorridos donde
+bastaría uno. El coste es de horas, no de ciencia: **ninguna métrica ni criterio cambia**.
+
+La causa no es el disco. Medido durante la etapa: lectura de 14 MB/s con **latencia de 0,11 ms** en
+un SSD NVMe, CPU al 7 % (≈ 1 hilo de 24) y 48 GB de RAM libres. El límite está en decodificar los
+bloques BGZF, filtrar y contar cada registro, no en el hardware.
+
+Verificado en el contenedor fijado (`samtools 1.21`): existen `-S, --split <tag>` y
+`-P, --split-prefix <str>` en `samtools stats`, que producen estadísticas separadas por etiqueta en
+**una sola pasada**. Nota sobre `-@`: la ayuda de 1.21 lo describe igual en `stats` y en `view`
+(*number of additional threads*), así que **no se asume** que añadir hilos acelere un recuento
+concreto; eso se mediría antes de fijarlo.
+
+**No se corrige a mitad de corrida.** Cancelar con el recuento global y tres de las cuatro lanes ya
+hechos, para ganar una hora en la cuarta, es exactamente la optimización que llega tarde. Se aplica
+en la siguiente ejecución.
+
 ### Lo que se devuelve antes de interpretar
 
 Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen de llamadas SV/CNV
