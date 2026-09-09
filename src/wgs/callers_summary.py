@@ -288,6 +288,22 @@ def summary():
             stages[k]["output_sha256"] = {n: v["sha256"] for n, v in c.get("outputs", {}).items()}
             stages[k]["carry_forward_reason"] = c.get("carry_forward_reason")
             stages[k]["carry_forward_validation_note"] = c.get("carry_forward_validation")
+    # Interrupciones: una etapa que quedo en RUNNING es una corrida anterior
+    # cortada antes de su estado terminal. El hecho se conserva aunque la etapa
+    # se haya rehecho despues con exito, porque "corrio una vez" y "se rehizo
+    # tras un corte" no son lo mismo en una auditoria.
+    interruptions = []
+    itsv = os.path.join(W, "status", "interrupted.tsv")
+    if os.path.exists(itsv):
+        for line in io.open(itsv, encoding="utf-8"):
+            f = line.rstrip('\n').split('\t')
+            if len(f) < 4:
+                continue
+            interruptions.append({"detected_utc": f[0], "stage": f[1],
+                                  "was_running_under_commit": f[2], "note": f[3]})
+            if f[1] in stages:
+                stages[f[1]]["previous_execution_interrupted"] = True
+
     tally = {}
     for v in stages.values():
         tally[v["status"]] = tally.get(v["status"], 0) + 1
@@ -340,7 +356,9 @@ def summary():
                            "rule": "the globally duplicate-marked BAM is the primary downstream "
                                    "alignment object; the pre-markdup BAM was NOT used here"},
         "stages": stages, "status_tally": tally,
-        "status_taxonomy": {"SUCCESS": "ran and produced valid outputs",
+        "interruptions": interruptions,
+        "status_taxonomy": {"RUNNING": "TRANSIENT, not a terminal state: written before the tool is launched and overwritten by one of the four terminal states. A stage left in RUNNING means the previous run was interrupted before it wrote a terminal state; it is never counted as SUCCESS and is never auto-skipped",
+                            "SUCCESS": "ran and produced valid outputs",
                             "FAILED": "ran and failed; never downgraded to NOT_RUN",
                             "SKIPPED_DEPENDENCY": "not run because a prerequisite failed",
                             "NOT_RUN": "not attempted, with an explicit stated reason"},

@@ -1313,9 +1313,20 @@ Dos cosas, ambas de procedencia y ninguna de ciencia:
    coinciden, el arrastre devuelve el código 3 y la corrida aborta, en vez de reutilizar salidas sobre
    una base no revalidada.
 
-Verificado en las tres ramas antes de relanzar: sin commit registrado → aborta; sellado bajo otro
-commit → aborta; sellado bajo el commit actual → `PASS` con `preflight_commit` igual al del control de
-flujo. *Un campo de procedencia que se escribe sin comprobarse es peor que no tenerlo, porque la
+3. Una etapa que quedara en `RUNNING` se repetía, porque el marcador `.done` sólo se escribe al
+   terminar bien, pero **la interrupción no se registraba en ninguna parte**: el resumen final no
+   distinguiría una etapa rehecha tras un corte de una que corrió una sola vez. Al relanzar, el
+   orquestador barre los estados, anota cada etapa en `RUNNING` en `status/interrupted.tsv` con el
+   commit bajo el que estaba corriendo, y **sólo después** el flujo normal decide si se repite. Si
+   aparece la contradicción de un `.done` junto a un `RUNNING`, el marcador se retira: una etapa que
+   nunca escribió estado terminal no puede saltarse. No se crea ningún estado terminal nuevo para
+   esto, y el resumen marca esas etapas con `previous_execution_interrupted`.
+
+Verificado en las tres ramas del arrastre antes de relanzar: sin commit registrado → aborta; sellado
+bajo otro commit → aborta; sellado bajo el commit actual → `PASS` con `preflight_commit` igual al del
+control de flujo. El barrido de interrupciones se probó aparte: etapa en `RUNNING` con `.done`
+contradictorio → registrada y marcador retirado; etapa en `RUNNING` sin commit → registrada como
+`sin registro de commit`; etapa en `SUCCESS` → intacta. *Un campo de procedencia que se escribe sin comprobarse es peor que no tenerlo, porque la
 auditoría lo lee como evidencia.*
 
 **`QC-DEF-002` · un paso de QC fallaba en silencio y escribía un fichero vacío.**

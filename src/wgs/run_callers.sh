@@ -92,6 +92,32 @@ begin() { set_status "$1" RUNNING "en curso bajo $CTRL_COMMIT"; }
 sub_status() { printf '%s\t%s\n' "$2" "$3" >> "$S/$1.sub"; }
 status_of() { [ -f "$S/$1.status" ] && cut -f2 "$S/$1.status" || echo "NOT_REACHED"; }
 
+# --- etapas que quedaron en RUNNING de una corrida anterior -----------------
+# Una etapa en RUNNING significa que la corrida anterior se interrumpio antes
+# de que esa etapa escribiera su estado terminal. Dos reglas, y ninguna crea un
+# estado terminal nuevo:
+#   no cuenta como SUCCESS: `status_of` devuelve RUNNING, y toda dependencia
+#     compara contra SUCCESS, asi que la ve como no-SUCCESS;
+#   no se auto-salta: el hecho se REGISTRA primero en status/interrupted.tsv y
+#     solo despues decide el flujo normal si la etapa se repite.
+# Sin este registro la interrupcion se repetiria en silencio y el resumen final
+# no distinguiria una etapa rehecha tras un corte de una que corrio una sola vez.
+for f in "$S"/*.status; do
+  [ -f "$f" ] || continue
+  [ "$(cut -f2 "$f")" = "RUNNING" ] || continue
+  st="$(cut -f1 "$f")"; pc="$(cut -f4 "$f")"
+  printf '%s	%s	%s	%s\n' \
+    "$(stamp)" "$st" "${pc:-sin registro de commit}" \
+    "la corrida anterior quedo interrumpida: la etapa nunca escribio estado terminal" \
+    >> "$S/interrupted.tsv"
+  log "AVISO · la etapa $st quedo en RUNNING bajo ${pc:-sin registro de commit}: la corrida anterior se interrumpio. No cuenta como SUCCESS y queda registrada en status/interrupted.tsv"
+  if done_ "$st"; then
+    log "  contradiccion: tenia marcador .done con estado RUNNING. Se retira el marcador, porque una etapa que nunca escribio estado terminal no puede saltarse"
+    rm -f "$W/.go2b_$st.done"
+  fi
+done
+
+
 log "GO 2B inicio · objeto primario: BAM con duplicados marcados"
 
 # =================================================== 0 · preflight critico ===
