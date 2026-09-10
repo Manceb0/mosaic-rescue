@@ -12,9 +12,12 @@ NADA DE ESTO INTERPRETA. Cuenta, mide y tabula. La adjudicacion cientifica es
 del mantenedor, despues del STOP.
 
 TECHOS ESCRITOS AQUI, no en el informe:
-    SV/CNV negativo -> "No supported structural or copy-number second allele was
-        detected by the specified short-read WGS workflow; classes poorly
-        accessible to short reads remain unresolved." Nunca "excluido".
+    SV negativo -> "No SV call from Manta or DELLY overlapped the BUB1B gene body or
+        either prioritized allele position; events outside the gene body are not
+        adjudicated here for regulatory or mobile-element relevance; classes poorly
+        accessible to short reads remain unresolved." Habla del CUERPO DEL GEN, no del
+        "locus", y solo anade "copy-number" si CNVpytor corrio con exito. Nunca "excluido".
+    Genotipos de llamadores de SV/MEI -> siempre "caller-GT", nunca zigosidad establecida.
     bcftools        -> "TECHNICAL REPLICATION FROM THE SAME READS", nunca
         evidencia independiente.
     MitoRead        -> "cell-composition-unadjusted WGS-derived blood
@@ -259,7 +262,8 @@ def summary():
     NAMES = {"0": "preflight critico", "1": "mosdepth (QC)", "2": "Manta (SV)",
              "3": "DELLY (SV ortogonal)", "4": "CNVpytor (RD + BAF)",
              "5b": "xTea (MEI primario)", "5a": "SCRAMble (MEI ortogonal)",
-             "6": "BUB1B por lecturas", "7": "MitoRead", "8": "DMPK (solo un locus)"}
+             "6": "BUB1B por lecturas", "7": "MitoRead", "8": "DMPK (solo un locus)",
+             "9": "Tier 1 + resumen"}
     stages = {}
     for k, label in NAMES.items():
         p = os.path.join(W, "status", f"{k}.status")
@@ -312,6 +316,20 @@ def summary():
     delly = os.path.join(W, "sv/delly.vcf.gz")
     m_n, m_t = _count_vcf(manta, tier1)
     d_n, d_t = _count_vcf(delly, tier1)
+    # cuerpo del gen: el techo habla de lo que solapa el GEN, no del locus extendido
+    from src.structure.transcript_model import fetch as _fetch
+    _tx = _fetch()
+    gene_body = (c, min(e["start"] for e in _tx["exons"]), max(e["end"] for e in _tx["exons"]))
+    _, m_g = _count_vcf(manta, gene_body)
+    _, d_g = _count_vcf(delly, gene_body)
+    cnv_ok = stages["4"]["status"] == "SUCCESS"
+    sv_ceiling = ("No SV call from Manta or DELLY overlapped the BUB1B gene body or either prioritized "
+                  "allele position" if (m_g == 0 and d_g == 0) else
+                  "SV calls overlapping the BUB1B gene body exist and must be adjudicated individually")
+    sv_ceiling += ("; copy-number calls from CNVpytor are reported in copy_number" if cnv_ok else
+                   "; the copy-number branch is NOT interpretable in this run")
+    sv_ceiling += ("; events outside the gene body are not adjudicated here for regulatory or mobile-element "
+                   "relevance; classes poorly accessible to short reads remain unresolved. NEVER 'excluded'.")
 
     def _rows(p):
         return sum(1 for l in io.open(p, encoding="utf-8", errors="replace") if l.strip()) \
@@ -361,7 +379,8 @@ def summary():
                             "SUCCESS": "ran and produced valid outputs",
                             "FAILED": "ran and failed; never downgraded to NOT_RUN",
                             "SKIPPED_DEPENDENCY": "not run because a prerequisite failed",
-                            "NOT_RUN": "not attempted, with an explicit stated reason"},
+                            "NOT_RUN": "not attempted, with an explicit stated reason",
+                            "sub_status_only": {"SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9": "xTea --igv --bamsnap steps: the generator emits an option x_TEA_main.py does not know; visualization only, never blocks the stage"}},
         "failure_scope": {"critical_shared": "BAM / BAI / reference / contig compatibility / "
                                              "provenance → aborts GO 2B entirely",
                           "local": "a single caller → FAILED for that branch only; independent "
@@ -370,21 +389,33 @@ def summary():
         "structural_variants": {
             "manta_total": m_n, "manta_in_tier1": m_t,
             "delly_total": d_n, "delly_in_tier1": d_t,
+            "manta_overlapping_gene_body": m_g, "delly_overlapping_gene_body": d_g,
+            "gene_body": f"{gene_body[0]}:{gene_body[1]}-{gene_body[2]}",
             "concordance_note": "caller concordance increases technical support but is not required "
-                                "for candidate retention",
-            "ceiling": "No supported structural or copy-number second allele was detected by the "
-                       "specified short-read WGS workflow; classes poorly accessible to short reads "
-                       "remain unresolved. NEVER 'structural second allele excluded'."},
-        "copy_number": {"cnvpytor_rd_calls": cnv_rd, "cnvpytor_combined_rd_baf_calls": cnv_cb,
+                                "for candidate retention; concordance is counted per locus, not per record",
+            "genotype_note": "genotypes emitted by SV callers are caller-GT, never established zygosity",
+            "ceiling": sv_ceiling},
+        "copy_number": {"cnvpytor_status": stages["4"]["status"], "cnvpytor_sub_status": stages["4"].get("sub_status"),
+                        "interpretable_in_this_run": cnv_ok,
+                        "cnvpytor_rd_calls": cnv_rd, "cnvpytor_combined_rd_baf_calls": cnv_cb,
                         "note": "CNVpytor is read-depth + BAF; mosdepth is coverage QC only and is "
                                 "not a CNV caller"},
         "mobile_elements": {"xtea_role": "PRIMARY", "xtea_status": stages["5b"]["status"],
+                            "xtea_sub_status": stages["5b"].get("sub_status"),
+                            "xtea_vcfs": sorted(os.path.relpath(v, W).replace(os.sep, "/") for v in glob.glob(os.path.join(W, "mei", "xtea", "*", "*", "*.vcf"))),
+                            "xtea_visual_steps": {"--igv --bamsnap": "SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9 · non-scientific visualization · not required for stage success"},
                             "scramble_role": "ORTHOGONAL", "scramble_status": stages["5a"]["status"],
                             "scramble_calls": scr_n,
+                            "scramble_rejected_by_coordinate_validity": (io.open(os.path.join(W, "mei", "scramble_rejected_count.txt")).read().strip()
+                                                                         if os.path.exists(os.path.join(W, "mei", "scramble_rejected_count.txt")) else None),
+                            "concordance_evaluable": (stages["5b"]["status"] == "SUCCESS" and stages["5a"]["status"] == "SUCCESS"),
                             "role_note": "roles are fixed by the preregistration and do not depend on "
                                          "which tool ran first or which one succeeded",
-                            "ceiling": "a combined negative does not exclude all complex insertions; "
-                                       "some are resolvable only by targeted analysis or long reads"},
+                            "genotype_note": "MEI genotypes are caller-GT, never established zygosity",
+                            "ceiling": ("a combined negative does not exclude all complex insertions; "
+                                        "some are resolvable only by targeted analysis or long reads"
+                                        if (stages["5b"]["status"] == "SUCCESS" and stages["5a"]["status"] == "SUCCESS") else
+                                        "MEI concordance is NOT evaluable and MEI absence is NOT claimable in this run")},
         "bub1b_read_backed": ("work/callers/bub1b/read_metrics.json" if os.path.exists(
             os.path.join(W, "bub1b/read_metrics.json")) else None),
         "technical_replication": {"tool": "bcftools mpileup/call on the same BAM",

@@ -1361,6 +1361,67 @@ concreto; eso se mediría antes de fijarlo.
 hechos, para ganar una hora en la cuarta, es exactamente la optimización que llega tarde. Se aplica
 en la siguiente ejecución.
 
+**`EXEC-DEF-004`, `EXEC-DEF-005`, `EXEC-DEF-006` y `PROV-GAP-9` · remediación única del GO 2B, adjudicada tras el STOP.**
+Fechada 2026-09-10. Integra sólo lo adjudicado por el mantenedor tras tres scratches técnicos sin datos del
+paciente. Los `FAILED` históricos de la corrida bajo `47d24da` **no se reescriben**: el rerun es una ejecución
+nueva bajo un SHA nuevo, y cualquier estado terminal o subestado anterior se archiva en `<etapa>.history` y
+`<etapa>.sub.history` antes de sobrescribirse.
+
+*Etapa 4, CNVpytor (`EXEC-DEF-004`).* La imagen fijada no trae los recursos de GC y máscara y devuelve código 0
+cuando faltan. Los siete ficheros que el paquete exige se congelaron desde el commit upstream `3adc56fc…`
+(etiqueta v1.3.2), verificados por bytes y blob de git contra la etiqueta, y se montan **sólo lectura** sobre el
+`data/` del paquete. Un gate (`src/wgs/remediation_gates.py stage4`) comprueba que la imagen local resuelve al digest fijado y
+el sha256 de los siete ficheros contra `src/wgs/remediation_manifest.json` antes de correr nada; la imagen se
+ejecuta por digest, no por etiqueta. El arranque se comprueba en **positivo**: `cnvpytor -rg_info` tiene que
+devolver código 0 y listar hg38 con GC y máscara disponibles (la salida conocida del scratch); cualquier otro
+código o salida deja la etapa `FAILED` antes de `-rd`. La etapa exige fichero de llamadas no vacío, porque el
+código de salida de la herramienta no es fiable, y archiva en `work/callers/attempts/` las salidas de un intento
+anterior antes de correr.
+
+*Etapa 5b, xTea (`EXEC-DEF-005`).* Cinco defectos del orquestador (sin `-x null`, sin `--xtea`, biblioteca
+inexistente, `bam_list.txt` sin identificador de muestra, y una etapa que sólo preparaba y nunca ejecutaba) y
+dos de la imagen fijada: no trae `deepforest`, que `x_TEA_main.py` importa incondicionalmente y usa en el paso de
+genotipado de las tres familias (alcanzabilidad demostrada con un sentinel), y su `sort` es BusyBox, sin el tipo
+de orden `V` que `--gVCF` necesita. Entorno corregido **A'**, derivado del digest original con el código de xTea y
+el modelo DF21 byte a byte iguales: `scikit-learn 1.0.1` (la versión que el propio `param.pkl` del modelo declara),
+`deep-forest 0.1.6` (versión compatible seleccionada técnicamente; el modelo no conserva la suya), `joblib`,
+`threadpoolctl`, y GNU `sort` 8.30 de `coreutils 8.30-3` de Debian buster (`.deb` y binario fijados por sha256,
+cero bibliotecas extranjeras). Validado con un fixture sintético de chr21 completo: A' es byte a byte idéntico a
+A en los 24 artefactos anteriores a `--gVCF`, produce gVCF válidos en L1, Alu y SVA con la inserción sintética
+recuperada y `caller-GT 1/1`, y dos corridas son byte a byte idénticas. La etapa comprueba el **ImageID completo**
+de A' (`sha256:42da6df7…`), la biblioteca (`rep_lib_annotation` en el commit `20c7e9fb…`, LFS `oid` coincidente:
+12 ficheros de anotación y los 15 índices bwa de los consensos, por sha256) y GENCODE v33, ejecuta de verdad
+`run_xTEA_pipeline.sh` por familia con su código de salida capturado, y declara éxito sólo con el terminal
+científico: genotipado completado, `--gVCF` completado en el fichero de nombre fijo que `x_TEA_main.py` escribe
+(`<BAM sin extensión>_<LINE1|ALU|SVA>.vcf`, único `.vcf` de la familia) y que bcftools parsea. Un código de
+salida distinto de 0 sólo se admite si lo explica exclusivamente el paso `--igv --bamsnap` (opción inexistente
+en 0.1.9: error de `optparse` después del paso `--gVCF`, sin ningún `Traceback`); queda como subestado
+`SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9` y no bloquea. Cualquier otro error deja la familia `FAILED` aunque existan
+ficheros. Los contigs de GENCODE
+llevan `chr` y la referencia no; `-g` sólo anota tras el filtrado y el código normaliza: no cambia llamadas.
+
+*Etapa 5a, SCRAMble (`EXEC-DEF-006`).* El escritor de VCF aborta si una inserción cae en `POS = 0`. Parche
+versionado en `src/wgs/patches/`: cuarentena de coordenadas inválidas con motivo (`POS_LT_1`,
+`CONTIG_NOT_IN_REFERENCE`, `POS_GT_CONTIG_LENGTH`), sin imputar ni borrar en silencio, recuento siempre escrito;
+identidad byte a byte de los registros válidos frente al original; montado sólo lectura sobre el fichero de la
+imagen, cuyo digest no cambia y por el que se ejecuta. El gate comprueba, antes de montar, que la imagen local
+resuelve a ese digest, que el `make.vcf.R` original dentro de ella tiene el sha256 esperado (observado en la
+imagen, no sólo anotado) y que el parche versionado tiene el suyo; el sha256 del fichero montado que SCRAMble
+vio queda en el log y se exige igual al del parche. Éxito = VCF no vacío que bcftools parsea, `scramble_MEIs.txt`
+presente y recuento de rechazos entero ≥ 0. Como el parche anexa y suma, las salidas de un intento anterior se
+archivan antes de correr.
+
+*Huecos de procedencia.* La etapa 9 escribe su propio fichero de estado (`PROV-GAP-9`) y el resumen se escribe en dos
+pasadas, la segunda una vez fijado `9 = SUCCESS`, para que no se lea a sí mismo como `RUNNING`; el preflight se
+repite también al reanudar tras una interrupción; el orquestador aborta si el árbol de trabajo no está limpio,
+decidido por el código de salida del gate (que exige código 0 de `git status` y de `git rev-parse` y un `HEAD`
+válido), porque el commit registrado sólo es verdad si es el código que corre. El techo de afirmación de la rama SV habla del
+**cuerpo del gen**, no del "locus", y sólo menciona número de copia si CNVpytor corrió con éxito; los genotipos de
+llamadores se escriben siempre como `caller-GT`.
+
+Evidencia de los scratches y de la corrida del STOP: `work/callers/stop_2026-09-09/` (fuera del repositorio);
+especificación y adjudicaciones en la bitácora del mantenedor.
+
 ### Lo que se devuelve antes de interpretar
 
 Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen de llamadas SV/CNV

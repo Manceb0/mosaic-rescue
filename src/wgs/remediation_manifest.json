@@ -1,0 +1,189 @@
+{
+ "schema": "mosaic-rescue GO 2B remediation manifest v1",
+ "adjudicated_utc": "2026-09-10",
+ "rule": "stages 4, 5b and 5a verify these identities at runtime before running anything on the patient; any mismatch -> FAILED with reason, nothing runs",
+ "cnvpytor_stage4": {
+  "image": "quay.io/biocontainers/cnvpytor:1.3.2--pyhdfd78af_0",
+  "image_digest": "sha256:614b22c8fc1fcef147bcda48bb4d53cb63c988bffc588e186acff7335013fcf1",
+  "upstream_commit": "3adc56fc6433ab8d76db1f151720cc4a4e487f20",
+  "resource_dir_rel": "work/resources/cnvpytor/3adc56fc6433ab8d76db1f151720cc4a4e487f20",
+  "mount_target": "/usr/local/lib/python3.12/site-packages/cnvpytor/data",
+  "mount_mode": "ro",
+  "resources_sha256": {
+   "gc_hg38.pytor": "96dc8423c95792380b8750e6c500fb6dd432b7fecf6c0a219998e3d3aa19395b",
+   "mask_hg38.pytor": "389ba0dc3ec0c6a9fb7c9275fcdcc85cd2a939f5313a4ac6d3eac01d51c7026c",
+   "gc_hg19.pytor": "528094d1e26b08ef6bbf0b0ef3eff2762452f0da7ad99f45da236d00f7bad740",
+   "mask_hg19.pytor": "f698608d7e7427c143ef1eae1b594ae68c782636cdfd65528556e3a76c40f741",
+   "gc_chm13v2.0.pytor": "16b5de2b3491e4f927ec05d18e551d8bffab604ca468bb26ed69afcac8d6f777",
+   "gc_chm13v1.1.pytor": "bfb96360eaabb99478e2df133a46b0f1e6916c3f34220607ce701856864ddc03",
+   "gc_kn99.pytor": "76414bf7f98f40f99072202dc7b1cd53eb6e73d711c56b823a6b1f3aa05544cd"
+  },
+  "resources_bytes": {
+   "gc_hg38.pytor": 22233599,
+   "mask_hg38.pytor": 13657529,
+   "gc_hg19.pytor": 20133542,
+   "mask_hg19.pytor": 13834206,
+   "gc_chm13v2.0.pytor": 21335996,
+   "gc_chm13v1.1.pytor": 21117209,
+   "gc_kn99.pytor": 164929
+  },
+  "acquired_utc": "2026-09-10T01:17:48Z",
+  "download_source": "commit-pinned raw.githubusercontent.com",
+  "image_by_digest": "quay.io/biocontainers/cnvpytor@sha256:614b22c8fc1fcef147bcda48bb4d53cb63c988bffc588e186acff7335013fcf1",
+  "per_attempt_hygiene": "work/callers/cnv/{sample.pytor,calls_rd.tsv,calls_combined.tsv} archived to work/callers/attempts/4_<utc>/ before a new attempt",
+  "startup_gate": "cnvpytor -rg_info must return rc=0 and list hg38 with 'GC file specified: Yes' and 'Mask file specified: Yes' (positive check), else FAILED before -rd"
+ },
+ "xtea_stage5b": {
+  "base_image": "quay.io/biocontainers/xtea:0.1.9--hdfd78af_0",
+  "base_image_digest": "sha256:0855c844a4e6298aacbbdef1d538507c33ab1683215b22b2b20aa0077af9bd42",
+  "env_candidate_A": {
+   "tag": "mosaic-rescue/xtea-env-canda:0.1.9-sk1.0.1-df0.1.6",
+   "image_id": "sha256:8e10fb9811380ac067678e566ad05b9431b3fd63cd8a293a431fd461da009c8c",
+   "pins": {
+    "scikit-learn": "1.0.1",
+    "deep-forest": "0.1.6",
+    "joblib": "1.1.0",
+    "threadpoolctl": "3.1.0"
+   },
+   "wheels_sha256": {
+    "deep_forest-0.1.6-cp37-cp37m-manylinux2010_x86_64.whl": "7e9c7785e4b433ca9589201b5e0290f516da38429f594c50766a1a9aec1dde25",
+    "joblib-1.1.0-py2.py3-none-any.whl": "f21f109b3c7ff9d95f8387f752d0d9c34a02aa2f7060c2135f465da0e5160ff6",
+    "scikit_learn-1.0.1-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl": "32d941f12fd7e245f01da2b82943c5ce6f1133fa5375eb80caa51457532b3e7e",
+    "threadpoolctl-3.1.0-py3-none-any.whl": "8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"
+   }
+  },
+  "env_candidate_A_prime": {
+   "tag": "mosaic-rescue/xtea-env-canda-prime:0.1.9-sk1.0.1-df0.1.6-gnusort",
+   "image_id": "sha256:42da6df7f1eca858fadacf1ab623af45c74ba278600a6252906c4f843ac145c5",
+   "parent_image_id": "sha256:8e10fb9811380ac067678e566ad05b9431b3fd63cd8a293a431fd461da009c8c",
+   "gnu_sort": {
+    "coreutils_deb": "coreutils_8.30-3_amd64.deb",
+    "deb_sha256": "ae6e5cd6e9aaf74d66edded3931a7a6c916625b8b890379189c75574f6856bf4",
+    "sort_sha256": "5c9c5373d32f315833066103f848d687aa955ec9e3fa5e06c2862ed40e6d4583",
+    "deb_url": "http://archive.debian.org/debian/pool/main/c/coreutils/coreutils_8.30-3_amd64.deb",
+    "extracted_in": "debian:buster-slim@sha256:bb3dc79fddbca7e8903248ab916bb775c96ec61014b3d02b4f06043b604726dc",
+    "installed_at": "/usr/local/bin/sort",
+    "foreign_runtime_libraries_added": 0
+   }
+  },
+  "required_image_id": "sha256:42da6df7f1eca858fadacf1ab623af45c74ba278600a6252906c4f843ac145c5",
+  "library": {
+   "upstream_tag": "v0.1.9",
+   "upstream_commit": "20c7e9fbecbe4c0e35eb0766c4c7b4e6125fe71e",
+   "tarball_lfs_oid_sha256": "ea0cb58beb31272ad2f19f984dfab1cc38cc25651df55b29766b8774c119965f",
+   "dir_rel": "work/resources/xtea/20c7e9fbecbe4c0e35eb0766c4c7b4e6125fe71e/rep_lib_annotation",
+   "mount_target": "/res/xtea_lib",
+   "mount_mode": "ro",
+   "required_files_for_y7_sha256": {
+    "LINE/hg38/hg38_L1_larger_500_with_all_L1HS.out": "a80226cfbe2d208ae1cbd6b474875c0e549235061a92d55f9c5d6524dfd437b6",
+    "LINE/hg38/hg38_L1.fa.out": "5ad01e622a0d5c9b98b9efcaf54d8a61affca7203b37b61177cf83ee91bd4600",
+    "LINE/hg38/hg38_L1HS_copies_larger_5K_with_flank.fa": "48efdac0ecb4172019d811a3e40d2e44db429739f117a3e8e8cb0edf02a3617a",
+    "LINE/hg38/hg38_FL_L1_flanks_3k.fa": "9d490d8296eeeeae965c456b67324adb07715cda9afa258da58b6e4e6597293f",
+    "consensus/LINE1.fa": "b159191941412b51f9e2810c939e013f25d2d5da2f633fc0a1af2c438ea2390d",
+    "Alu/hg38/hg38_Alu.out": "c34777b9697d69062792f29d95269910a905f83ee86ec6bd69dd428b8c96a4b1",
+    "Alu/hg38/hg38_AluJabc_copies_with_flank.fa": "ec1b7dabec6df424f0661d726e52a0f8e6441989e27942f6a03b12999d44ceba",
+    "consensus/ALU.fa": "16a3f4124be10491afdb4341febc85500f37e413fb6324e5b17d7802d73637b6",
+    "SVA/hg38/hg38_SVA.out": "e1da4828f8d5c3ddeb2c757b7eba74af51328321c44e164016d1d6103bf3f1ed",
+    "SVA/hg38/hg38_SVA_copies_with_flank.fa": "c578a2cfe7d5bf629e8ce67ed3a412ceba04e13396a67d29545124f861794c02",
+    "SVA/hg38/hg38_FL_SVA_flanks_3k.fa": "51d8d1b9073500de8368ef6ce402f2601a2c299fc290cfc80f6c39fa087303d6",
+    "consensus/SVA.fa": "750e6243b41b3062e3b552f570ba49f385b34eacf32e2a56e91f37de2a23f8bc"
+   },
+   "consensus_bwa_index_sha256": {
+    "consensus/LINE1.fa.amb": "9d23cf9f43c516cfb7b5fb60eff2895ddeace0b1bb28a0bd9fa0bafda6f916ee",
+    "consensus/LINE1.fa.ann": "be386df65fb6dc433c973a3019f73108e7fb3ac88a92388166833419fdfe4db7",
+    "consensus/LINE1.fa.bwt": "8503b944bba8fcd2e22b69a56837b46150deba6c9fb4d05ad95ea873d4225933",
+    "consensus/LINE1.fa.pac": "8bce14a0e436155a4451bc475736966aa6caf1bf3dc898f4600c1c9063d29b69",
+    "consensus/LINE1.fa.sa": "e9fe8e74baa81c0eefe9c880eebb2a0b9a0ed817b7a23e3072486127d743dc90",
+    "consensus/ALU.fa.amb": "74a5147387d680cce5684d79d27512cbb4620e0dd6defa14226407c1dece9ba5",
+    "consensus/ALU.fa.ann": "e49206d0590c22958dcd539def67c5f2183fad2a061f1c0b6b2c127c8dc60daa",
+    "consensus/ALU.fa.bwt": "6c1c9d7c88022360d233b4953aaaac0e382f61b09726b38e1cb82a47d4fa625b",
+    "consensus/ALU.fa.pac": "5794d18e1ae9bd84d29bacf97646473c204e88707b63eaea6fa3da7acc290684",
+    "consensus/ALU.fa.sa": "6b5246a90e2a8bfd64d2813a327616e8bacf10b7308b79c05c1602cb74ad87ca",
+    "consensus/SVA.fa.amb": "710e3fda29f9ed3597bb8c7b5766b9964194b740ad34b7518007fe832417aa44",
+    "consensus/SVA.fa.ann": "99fbd0f7c2f1cfd3f5b5019528e9460160fe729dd1fdd69d7fd150b9f27e11a0",
+    "consensus/SVA.fa.bwt": "68fb16ba8ab2f250aef05e7ebd88a4339c396f506d0900ecb129d3aa300d4b4c",
+    "consensus/SVA.fa.pac": "07f59a9d5aceb5530c1910af9631e6b6d3ecc73a1df4f0afb82fd26fe571cc88",
+    "consensus/SVA.fa.sa": "50ac68bf7b8fabba45fcc22b45694405a1859aa9fe49daed35702f1038fd9177"
+   }
+  },
+  "gencode": {
+   "file": "gencode.v33.annotation.gff3",
+   "dir_rel": "work/resources/gencode/release_33",
+   "mount_target": "/res/gencode",
+   "mount_mode": "ro",
+   "gz_md5": "d4bf3aad6eb87addbbb5f0c5241c2818",
+   "gz_sha256": "8dd700b452cea75aeba52c9d85e0a40e77cb810cd9bfcb99684b1ac5b9d44e36",
+   "decompressed_sha256": "c47a72a4f70519e85c195341930d64808d77cd8e80f2d68737fc49eba9d1907c",
+   "note": "contig names carry 'chr'; xTea strips them when loading (-g only annotates after filtering; does not change calls)"
+  },
+  "generator_flags": [
+   "-x null",
+   "--xtea /usr/local/lib/",
+   "-f 5907",
+   "-y 7"
+  ],
+  "bam_list_format": "<sample_id>\t<bam_path>",
+  "scientific_terminal": [
+   "candidate_disc_filtered_cns.txt.high_confident.post_filtering_with_gene_gntp.txt exists",
+   "exactly one *.vcf in the family dir and it is the expected final gVCF name",
+   "bcftools 1.21 (by digest) parses it",
+   "script rc == 0, OR rc != 0 explained ONLY by 'no such option: --bamsnap' with zero Python Tracebacks"
+  ],
+  "visual_steps": {
+   "--igv --bamsnap": {
+    "execution_role": "non-scientific visualization",
+    "required_for_stage_success": false,
+    "status": "SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9"
+   }
+  },
+  "final_vcf_rule": {
+   "source": "x_TEA_main.py --gVCF: sf_vcf = prefix + sample_id + '_' + rep_type + '.vcf'; sample_id = nombre del BAM sin su ultima extension",
+   "bam_basename_without_extension": "full_depth.markdup",
+   "rep_type_by_family": {
+    "L1": "LINE1",
+    "Alu": "ALU",
+    "SVA": "SVA"
+   },
+   "expected_vcf_by_family": {
+    "L1": "full_depth.markdup_LINE1.vcf",
+    "Alu": "full_depth.markdup_ALU.vcf",
+    "SVA": "full_depth.markdup_SVA.vcf"
+   },
+   "exactly_one_vcf_per_family_dir": true
+  },
+  "per_attempt_hygiene": "work/callers/mei/xtea is archived to work/callers/attempts/5b_<utc>/ before a new attempt"
+ },
+ "scramble_stage5a": {
+  "image": "quay.io/biocontainers/scramble:1.0.2--hec16e2b_0",
+  "image_digest": "sha256:68d1452fa2ca389373a89c02ea7a83880e9332e5f839fafcca733859e5d9c97f",
+  "patch_file_rel": "src/wgs/patches/scramble_1.0.2_make.vcf.R",
+  "patch_target": "/usr/local/share/scramble/bin/make.vcf.R",
+  "mount_mode": "ro",
+  "original_sha256": "521b4abbe699059c88999dc3d4be650c63acc5e75ef5d5de71f92ee3ed30d5d8",
+  "patched_sha256": "c77d2f7305238d2661544d252a940ccd84f5a4e47276ea605a000dfbadacab60",
+  "declared_outputs": [
+   "scramble.vcf",
+   "scramble_MEIs.txt",
+   "scramble_rejected_count.txt",
+   "scramble_rejected_records.txt (only if rejected > 0)"
+  ],
+  "quarantine_classes": [
+   "POS_LT_1",
+   "CONTIG_NOT_IN_REFERENCE",
+   "POS_GT_CONTIG_LENGTH"
+  ],
+  "image_by_digest": "quay.io/biocontainers/scramble@sha256:68d1452fa2ca389373a89c02ea7a83880e9332e5f839fafcca733859e5d9c97f",
+  "per_attempt_hygiene": "work/callers/mei/{clusters.txt,scramble.vcf,scramble_MEIs.txt,scramble_rejected_*} archived to work/callers/attempts/5a_<utc>/ before a new attempt",
+  "success_criteria": [
+   "Rscript rc == 0",
+   "scramble.vcf non-empty and parsed by bcftools (by digest)",
+   "scramble_MEIs.txt exists",
+   "scramble_rejected_count.txt exists and is an integer >= 0"
+  ],
+  "original_sha256_observed_at_runtime": true
+ },
+ "bcftools_for_terminal_checks": {
+  "image": "quay.io/biocontainers/bcftools:1.21--h8b25389_0",
+  "image_by_digest": "quay.io/biocontainers/bcftools@sha256:969314d56b9131683917cc5801734891a9af130daf7a0fb902b7707060b06027"
+ }
+}

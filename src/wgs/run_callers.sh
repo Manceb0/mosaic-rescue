@@ -67,9 +67,14 @@ I_BCF=quay.io/biocontainers/bcftools:1.21--h8b25389_0
 I_MOS=quay.io/biocontainers/mosdepth:0.3.10--h4e814b3_1
 I_MANTA=quay.io/biocontainers/manta:1.6.0--h9ee0642_2
 I_DELLY=quay.io/biocontainers/delly:1.3.3--h4d20210_1
-I_CNV=quay.io/biocontainers/cnvpytor:1.3.2--pyhdfd78af_0
-I_XTEA=quay.io/biocontainers/xtea:0.1.9--hdfd78af_0
-I_SCR=quay.io/biocontainers/scramble:1.0.2--hec16e2b_0
+# CNVpytor y SCRAMble se ejecutan por DIGEST (el que fija el manifest), no por etiqueta; los gates de las etapas
+# 4 y 5a comprueban ademas que la imagen local resuelve a ese digest antes de correr nada.
+I_CNV="$(py -c "import json; print(json.load(open('src/wgs/remediation_manifest.json'))['cnvpytor_stage4']['image_by_digest'])")"
+I_XTEA_BASE=quay.io/biocontainers/xtea:0.1.9--hdfd78af_0   # solo referencia historica: no puede ejecutar xTea (sin deepforest, sort BusyBox)
+# xTea se ejecuta en el entorno A' (A + GNU sort) por ImageID COMPLETO, comprobado en el gate de la etapa 5b;
+# la etiqueta no basta. Manifest: src/wgs/remediation_manifest.json. Dockerfiles: src/wgs/containers/.
+I_XTEA_ENV_ID="$(py src/wgs/remediation_gates.py image_id)"
+I_SCR="$(py -c "import json; print(json.load(open('src/wgs/remediation_manifest.json'))['scramble_stage5a']['image_by_digest'])")"
 I_EH=quay.io/biocontainers/expansionhunter:5.0.0--hf366f20_1
 
 stamp() { date -u +%FT%TZ; }
@@ -81,6 +86,11 @@ CTRL_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo 'no disponible')"
 # La cuarta columna es el commit bajo el que corre esta etapa, de modo que la
 # procedencia queda visible tambien MIENTRAS corre, no solo al terminar.
 set_status() {
+  # Un estado terminal anterior NUNCA se pierde: antes de sobrescribir, se anexa a <etapa>.history
+  # con la marca de tiempo. Asi el FAILED de una corrida previa sigue siendo legible tras el rerun.
+  if [ -f "$S/$1.status" ] && [ "$(cut -f2 "$S/$1.status")" != "RUNNING" ]; then
+    printf '%s\t%s\n' "$(stamp)" "$(cat "$S/$1.status")" >> "$S/$1.history"
+  fi
   printf '%s\t%s\t%s\t%s\n' "$1" "$2" "${3:-}" "$CTRL_COMMIT" > "$S/$1.status"
   log "  etapa $1 → $2${3:+ · $3}"
 }
@@ -90,6 +100,28 @@ begin() { set_status "$1" RUNNING "en curso bajo $CTRL_COMMIT"; }
 # evidencia valida de una parte que si funciono (p. ej. CNVpytor RD=SUCCESS con
 # BAF=FAILED sigue siendo FAILED en agregado, pero la parte RD se conserva).
 sub_status() { printf '%s\t%s\n' "$2" "$3" >> "$S/$1.sub"; }
+# reset_sub <etapa>: los subestados de una corrida anterior se archivan en <etapa>.sub.history antes de
+# empezar de nuevo; un rerun no borra la evidencia de que RD fallo o de que una familia no llego al terminal.
+reset_sub() {
+  if [ -s "$S/$1.sub" ]; then
+    { printf '# %s · subestados previos de la etapa %s\n' "$(stamp)" "$1"; cat "$S/$1.sub"; } >> "$S/$1.sub.history"
+  fi
+  : > "$S/$1.sub"
+}
+# archive_attempt <etapa> <ruta>...: las salidas de un intento anterior se mueven a work/callers/attempts/<etapa>_<utc>/
+# antes de volver a correr. Ni se borran (evidencia) ni se dejan donde una herramienta que ANEXA (el parche de SCRAMble
+# suma _rejected_count y anexa _rejected_records) o que reabre un fichero (sample.pytor) las mezclaria con el intento nuevo.
+archive_attempt() {
+  local st="$1" dst moved=0 p; shift
+  dst="$W/attempts/${st}_$(stamp | tr -d ':')"
+  for p in "$@"; do
+    if [ -e "$p" ]; then mkdir -p "$dst"; mv "$p" "$dst/"; moved=$((moved+1)); fi
+  done
+  if [ "$moved" -gt 0 ]; then log "  etapa $st: $moved salida(s) de un intento anterior archivadas en $dst"; fi
+  return 0
+}
+# is_nonneg_int <texto>: entero decimal >= 0, sin signo, sin espacios, no vacio
+is_nonneg_int() { case "$1" in ''|*[!0-9]*) return 1;; *) return 0;; esac; }
 status_of() { [ -f "$S/$1.status" ] && cut -f2 "$S/$1.status" || echo "NOT_REACHED"; }
 
 # --- etapas que quedaron en RUNNING de una corrida anterior -----------------
@@ -102,9 +134,11 @@ status_of() { [ -f "$S/$1.status" ] && cut -f2 "$S/$1.status" || echo "NOT_REACH
 #     solo despues decide el flujo normal si la etapa se repite.
 # Sin este registro la interrupcion se repetiria en silencio y el resumen final
 # no distinguiria una etapa rehecha tras un corte de una que corrio una sola vez.
+INTERRUPTED_FOUND=0
 for f in "$S"/*.status; do
   [ -f "$f" ] || continue
   [ "$(cut -f2 "$f")" = "RUNNING" ] || continue
+  INTERRUPTED_FOUND=1
   st="$(cut -f1 "$f")"; pc="$(cut -f4 "$f")"
   printf '%s	%s	%s	%s\n' \
     "$(stamp)" "$st" "${pc:-sin registro de commit}" \
@@ -119,6 +153,13 @@ done
 
 
 log "GO 2B inicio · objeto primario: BAM con duplicados marcados"
+# El commit que se registra como procedencia solo es verdad si el arbol de trabajo esta limpio.
+# Sin esto, una corrida con cambios sin commitear nombraria un commit cuyo contenido no es el que corrio.
+# Decide el CODIGO DE SALIDA del gate (cierra en fallo: git status o git rev-parse con rc!=0 tambien abortan), no un grep.
+if ! py src/wgs/remediation_gates.py worktree >> "$L/callers.log" 2>&1; then
+  log "ABORT: arbol de trabajo sucio; relanzar unicamente desde codigo versionado"
+  echo "EXIT_CODE=5" > "$W/go2b.exit"; exit 5
+fi
 
 # =================================================== 0 · preflight critico ===
 # Un fallo aqui es COMPARTIDO: aborta la corrida entera. Ningun caller puede
@@ -132,6 +173,11 @@ log "GO 2B inicio · objeto primario: BAM con duplicados marcados"
 PRE_COMMIT="$( [ -f "$S/0.status" ] && cut -f4 "$S/0.status" || echo '' )"
 if done_ 0 && [ "$PRE_COMMIT" != "$CTRL_COMMIT" ]; then
   log "0 · el preflight se repite: sellado bajo '${PRE_COMMIT:-sin registro de commit}', control de flujo $CTRL_COMMIT"
+  rm -f "$W/.go2b_0.done"
+fi
+# ... y tambien cuando la corrida se reanuda tras una interrupcion: es justo cuando mas falta hace revalidar la base.
+if done_ 0 && [ "$INTERRUPTED_FOUND" = "1" ]; then
+  log "0 · el preflight se repite: se detecto una etapa interrumpida en RUNNING"
   rm -f "$W/.go2b_0.done"
 fi
 if ! done_ 0; then
@@ -231,19 +277,39 @@ if ! done_ 4; then
   log "4 · CNVpytor · profundidad de lectura y frecuencia del alelo B"
   begin 4
   R=/work/callers/cnv/sample.pytor
-  : > "$S/4.sub"
-  if $DK $I_CNV cnvpytor -root $R -rd "$BAM" > "$L/cnvpytor.log" 2>&1 \
-     && $DK $I_CNV cnvpytor -root $R -his 1000 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
-     && $DK $I_CNV cnvpytor -root $R -partition 1000 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
-     && $DK $I_CNV sh -c "cnvpytor -root $R -call 1000 10000 100000 > /work/callers/cnv/calls_rd.tsv" >> "$L/cnvpytor.log" 2>&1 \
+  reset_sub 4
+  archive_attempt 4 "$W/cnv/sample.pytor" "$W/cnv/calls_rd.tsv" "$W/cnv/calls_combined.tsv"
+  # La imagen fijada no trae los recursos de GC y mascara (y devuelve codigo 0 cuando faltan). Se montan
+  # SOLO LECTURA los siete ficheros congelados al commit upstream 3adc56f, tras comprobar su sha256
+  # contra el manifest. Si el gate falla, la etapa queda FAILED con motivo y no corre nada.
+  CNV_RES="$(py -c "import json; print(json.load(open('src/wgs/remediation_manifest.json'))['cnvpytor_stage4']['resource_dir_rel'])")"
+  DK_CNV="$DK -v ${HOST_REPO}/${CNV_RES}:/usr/local/lib/python3.12/site-packages/cnvpytor/data:ro"
+  # Gate POSITIVO de arranque (no basta con que falte el mensaje de error): -rg_info tiene que devolver rc=0 y su salida
+  # tiene que listar '* hg38' con 'GC file specified: Yes' y 'Mask file specified: Yes', la salida conocida del scratch.
+  cnvpytor_startup_ok() {
+    local rg_log="$L/cnvpytor_rg_info.log" rg_rc
+    if $DK_CNV $I_CNV cnvpytor -rg_info > "$rg_log" 2>&1; then rg_rc=0; else rg_rc=$?; fi
+    cat "$rg_log" >> "$L/cnvpytor.log"
+    py src/wgs/remediation_gates.py cnvpytor_startup "$rg_log" "$rg_rc" >> "$L/cnvpytor.log" 2>&1
+  }
+  if ! py src/wgs/remediation_gates.py stage4 >> "$L/cnvpytor.log" 2>&1; then
+    sub_status 4 RD NOT_RUN; sub_status 4 BAF NOT_RUN
+    set_status 4 FAILED "gate de recursos congelados no superado (ver status/4.gate.json)"
+  elif ! cnvpytor_startup_ok; then
+    sub_status 4 RD NOT_RUN; sub_status 4 BAF NOT_RUN
+    set_status 4 FAILED "arranque de CNVpytor no confirmado: -rg_info tiene que devolver rc=0 y listar hg38 con GC y mascara (ver status/4.startup.gate.json, logs/cnvpytor_rg_info.log)"
+  elif $DK_CNV $I_CNV cnvpytor -root $R -rd "$BAM" >> "$L/cnvpytor.log" 2>&1 \
+     && $DK_CNV $I_CNV cnvpytor -root $R -his 1000 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
+     && $DK_CNV $I_CNV cnvpytor -root $R -partition 1000 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
+     && $DK_CNV $I_CNV sh -c "cnvpytor -root $R -call 1000 10000 100000 > /work/callers/cnv/calls_rd.tsv" >> "$L/cnvpytor.log" 2>&1 \
      && [ -s "$W/cnv/calls_rd.tsv" ]; then
     sub_status 4 RD SUCCESS
     # La mitad BAF puede fallar sin invalidar la mitad RD. El estado AGREGADO
     # sera FAILED, pero el subestado conserva la evidencia valida de RD.
-    if $DK $I_CNV cnvpytor -root $R -snp "/vcf/$VCF_BASE" -sample "$SM" >> "$L/cnvpytor.log" 2>&1 \
-       && $DK $I_CNV cnvpytor -root $R -mask_snps >> "$L/cnvpytor.log" 2>&1 \
-       && $DK $I_CNV cnvpytor -root $R -baf 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
-       && $DK $I_CNV sh -c "cnvpytor -root $R -call combined 100000 > /work/callers/cnv/calls_combined.tsv" >> "$L/cnvpytor.log" 2>&1 \
+    if $DK_CNV $I_CNV cnvpytor -root $R -snp "/vcf/$VCF_BASE" -sample "$SM" >> "$L/cnvpytor.log" 2>&1 \
+       && $DK_CNV $I_CNV cnvpytor -root $R -mask_snps >> "$L/cnvpytor.log" 2>&1 \
+       && $DK_CNV $I_CNV cnvpytor -root $R -baf 10000 100000 >> "$L/cnvpytor.log" 2>&1 \
+       && $DK_CNV $I_CNV sh -c "cnvpytor -root $R -call combined 100000 > /work/callers/cnv/calls_combined.tsv" >> "$L/cnvpytor.log" 2>&1 \
        && [ -s "$W/cnv/calls_combined.tsv" ]; then
       sub_status 4 BAF SUCCESS
       set_status 4 SUCCESS "RD y BAF"
@@ -264,22 +330,96 @@ fi
 #   xTea     = PRIMARIO
 #   SCRAMble = ORTOGONAL
 if ! done_ 5b; then
-  log "5b · xTea (PRIMARIO) · inserciones de elementos moviles"
+  log "5b · xTea (PRIMARIO) · inserciones de elementos moviles · entorno A' por ImageID"
   begin 5b
-  if $DK $I_XTEA sh -c "cd /work/callers/mei && echo '$SM' > sample_id.txt && printf '%s\n' '$BAM' > bam_list.txt && xtea -i sample_id.txt -b bam_list.txt -p /work/callers/mei/xtea -o run_xtea.sh -l /usr/local/lib/rep_lib_prep -r $REF -y 7 -f 5907 -n $THREADS -m 32 -q 1 -t 0-23" > "$L/xtea_prep.log" 2>&1 \
-     && [ -d "$W/mei/xtea" ]; then
-    set_status 5b SUCCESS "preparacion"; mark 5b
+  reset_sub 5b
+  # Lo adjudicado tras el scratch: (1) gate del ImageID COMPLETO de A', de los 12 ficheros de biblioteca
+  # que exige -y 7 y de GENCODE v33; (2) -x null y --xtea, que el generador exige; (3) bam_list.txt con
+  # <sample_id>\t<ruta>; (4) EJECUCION EFECTIVA de run_xTEA_pipeline.sh por familia, con su rc capturado; (5) terminal
+  # cientifico = genotipado completado + --gVCF completado en el fichero de nombre FIJO que x_TEA_main escribe
+  # (<bam sin extension>_<LINE1|ALU|SVA>.vcf), unico .vcf de la familia, que bcftools parsea; (6) rc!=0 solo se admite
+  # si lo explica EXCLUSIVAMENTE el paso visual --igv --bamsnap (opcion inexistente en 0.1.9: error de optparse, tras el
+  # paso gVCF, cero Tracebacks) y queda como subestado SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9; cualquier otro error o rc =
+  # familia FAILED aunque existan ficheros. Biblioteca y GENCODE se montan SOLO LECTURA en rutas que no tapan nada
+  # del sistema (nunca /lib).
+  XLIB="$(py -c "import json; m=json.load(open('src/wgs/remediation_manifest.json'))['xtea_stage5b']; print(m['library']['dir_rel'])")"
+  XGEN="$(py -c "import json; m=json.load(open('src/wgs/remediation_manifest.json'))['xtea_stage5b']; print(m['gencode']['dir_rel'])")"
+  DK_XTEA="$DK -v ${HOST_REPO}/${XLIB}:/res/xtea_lib:ro -v ${HOST_REPO}/${XGEN}:/res/gencode:ro"
+  XW=/work/callers/mei/xtea
+  if ! py src/wgs/remediation_gates.py stage5b >> "$L/xtea_gate.log" 2>&1; then
+    for fam in L1 Alu SVA; do sub_status 5b "$fam" NOT_RUN; done
+    set_status 5b FAILED "gate de A'/biblioteca/GENCODE no superado (ver status/5b.gate.json)"
   else
-    set_status 5b FAILED "xTea: se intento y fallo (ver logs/xtea_prep.log)"
+    archive_attempt 5b "$W/mei/xtea"; mkdir -p "$W/mei/xtea"
+    printf '%s\n' "$SM" > "$W/mei/xtea/sample_id.txt"
+    printf '%s\t%s\n' "$SM" "$BAM" > "$W/mei/xtea/bam_list.txt"
+    if $DK_XTEA "$I_XTEA_ENV_ID" sh -c "cd $XW && xtea -x null -i sample_id.txt -b bam_list.txt -p $XW/ -o submit.sh -l /res/xtea_lib/ -r $REF -g /res/gencode/gencode.v33.annotation.gff3 --xtea /usr/local/lib/ -f 5907 -y 7 -n $THREADS -m 32 -q 1 -t 0-23" > "$L/xtea_prep.log" 2>&1 \
+       && [ -f "$W/mei/xtea/$SM/L1/run_xTEA_pipeline.sh" ] && [ -f "$W/mei/xtea/$SM/Alu/run_xTEA_pipeline.sh" ] && [ -f "$W/mei/xtea/$SM/SVA/run_xTEA_pipeline.sh" ]; then
+      XOK=1
+      for fam in L1 Alu SVA; do
+        FD="$W/mei/xtea/$SM/$fam"
+        XLOG="$L/xtea_exec_$fam.log"
+        # bash -x deja en el log la traza de cada paso del script generado (como en el scratch): sirve para situar el
+        # error de --bamsnap DESPUES del paso --gVCF. El rc se captura; no se descarta.
+        if $DK_XTEA "$I_XTEA_ENV_ID" bash -x "$XW/$SM/$fam/run_xTEA_pipeline.sh" > "$XLOG" 2>&1; then XRC=0; else XRC=$?; fi
+        GNTP="$FD/candidate_disc_filtered_cns.txt.high_confident.post_filtering_with_gene_gntp.txt"
+        VCF_NAME="$(py src/wgs/remediation_gates.py xtea_vcf_name "$fam")"; VCF="$FD/$VCF_NAME"
+        NVCF="$(find "$FD" -maxdepth 1 -name '*.vcf' 2>/dev/null | wc -l | tr -d ' ')"
+        TRACEBACKS="$(grep -c '^Traceback (most recent call last)' "$XLOG" || true)"
+        ERRS="$(grep -c 'x_TEA_main.py: error:' "$XLOG" || true)"
+        BAMSNAP="$(grep -c 'error: no such option: --bamsnap' "$XLOG" || true)"
+        GV_LINE="$(grep -n -- '--gVCF' "$XLOG" | head -1 | cut -d: -f1)"; GV_LINE="${GV_LINE:-0}"
+        BS_LINE="$(grep -n 'error: no such option: --bamsnap' "$XLOG" | head -1 | cut -d: -f1)"; BS_LINE="${BS_LINE:-0}"
+        RC_OK=0
+        if [ "$XRC" -eq 0 ]; then RC_OK=1
+        elif [ "$BAMSNAP" -gt 0 ] && [ "$ERRS" -eq "$BAMSNAP" ] && [ "$TRACEBACKS" -eq 0 ] && [ "$GV_LINE" -gt 0 ] && [ "$BS_LINE" -gt "$GV_LINE" ]; then RC_OK=1
+        fi
+        if [ "$RC_OK" = "1" ] && [ -f "$GNTP" ] && [ "$NVCF" = "1" ] && [ -s "$VCF" ] \
+           && $DK $I_BCF sh -c "bcftools view $XW/$SM/$fam/$VCF_NAME > /dev/null" >> "$XLOG" 2>&1; then
+          sub_status 5b "$fam" SUCCESS
+        else
+          sub_status 5b "$fam" FAILED; XOK=0
+        fi
+        log "  5b/$fam: rc=$XRC tracebacks=$TRACEBACKS errores_optparse=$ERRS de_ellos_bamsnap=$BAMSNAP gntp=$([ -f "$GNTP" ] && echo si || echo no) vcfs=$NVCF esperado=$VCF_NAME"
+        if [ "$BAMSNAP" -gt 0 ]; then sub_status 5b "${fam}_igv_bamsnap" SKIPPED_UNSUPPORTED_IN_XTEA_0.1.9; fi
+      done
+      if [ "$XOK" = "1" ]; then
+        set_status 5b SUCCESS "L1, Alu y SVA: genotipado + gVCF validos"; mark 5b
+      else
+        set_status 5b FAILED "xTea: alguna familia no alcanzo el terminal cientifico (ver subestados y logs/xtea_exec_*.log)"
+      fi
+    else
+      for fam in L1 Alu SVA; do sub_status 5b "$fam" SKIPPED_DEPENDENCY; done
+      set_status 5b FAILED "xTea: el generador fallo (ver logs/xtea_prep.log)"
+    fi
   fi
 fi
 if ! done_ 5a; then
-  log "5a · SCRAMble (ORTOGONAL) · inserciones por lecturas recortadas"
+  log "5a · SCRAMble (ORTOGONAL) · inserciones por lecturas recortadas · escritor de VCF parcheado"
   begin 5a
-  if $DK $I_SCR sh -c "cluster_identifier $BAM > /work/callers/mei/clusters.txt" > "$L/scramble_cluster.log" 2>&1 \
+  archive_attempt 5a "$W/mei/clusters.txt" "$W"/mei/scramble*
+  # El escritor de VCF de SCRAMble 1.0.2 aborta si una insercion cae en POS=0 (viola VCF 1-based). El parche
+  # versionado en src/wgs/patches/ pone en cuarentena las coordenadas invalidas con motivo, sin imputar ni
+  # borrar en silencio, y se monta SOLO LECTURA sobre el fichero de la imagen: el digest no cambia. El gate
+  # comprueba, por digest, que la imagen local es la fijada, que el make.vcf.R ORIGINAL dentro de ella tiene el sha256
+  # esperado (observado ahora, no solo anotado) y que el parche versionado tiene el suyo, antes de montarlo; tras correr,
+  # el sha256 del fichero montado que SCRAMble vio queda en el log y se exige igual al del parche. Exito = scramble.vcf
+  # no vacio que bcftools parsea + scramble_MEIs.txt presente + scramble_rejected_count.txt con un entero >= 0
+  # (scramble_rejected_records.txt solo si hubo rechazos). Las salidas de un intento anterior se archivan antes: el
+  # parche ANEXA y SUMA, no sobrescribe.
+  SPATCH="$(py -c "import json; print(json.load(open('src/wgs/remediation_manifest.json'))['scramble_stage5a']['patch_file_rel'])")"
+  DK_SCR="$DK -v ${HOST_REPO}/${SPATCH}:/usr/local/share/scramble/bin/make.vcf.R:ro"
+  SPATCH_SHA="$(py -c "import json; print(json.load(open('src/wgs/remediation_manifest.json'))['scramble_stage5a']['patched_sha256'])")"
+  if ! py src/wgs/remediation_gates.py stage5a >> "$L/scramble_gate.log" 2>&1; then
+    set_status 5a FAILED "gate de imagen/original/parche no superado (ver status/5a.gate.json)"
+  elif $DK $I_SCR sh -c "cluster_identifier $BAM > /work/callers/mei/clusters.txt" > "$L/scramble_cluster.log" 2>&1 \
      && [ -s "$W/mei/clusters.txt" ] \
-     && $DK $I_SCR sh -c "Rscript /usr/local/share/scramble/bin/SCRAMble.R --out-name /work/callers/mei/scramble --cluster-file /work/callers/mei/clusters.txt --install-dir /usr/local/share/scramble/bin --mei-refs /usr/local/share/scramble/resources/MEI_consensus_seqs.fa --ref $REF --eval-meis" > "$L/scramble_eval.log" 2>&1; then
-    set_status 5a SUCCESS; mark 5a
+     && $DK_SCR $I_SCR sh -c "sha256sum /usr/local/share/scramble/bin/make.vcf.R && Rscript /usr/local/share/scramble/bin/SCRAMble.R --out-name /work/callers/mei/scramble --cluster-file /work/callers/mei/clusters.txt --install-dir /usr/local/share/scramble/bin --mei-refs /usr/local/share/scramble/resources/MEI_consensus_seqs.fa --ref $REF --eval-meis" > "$L/scramble_eval.log" 2>&1 \
+     && grep -q "^${SPATCH_SHA}  /usr/local/share/scramble/bin/make.vcf.R" "$L/scramble_eval.log" \
+     && [ -s "$W/mei/scramble.vcf" ] && [ -f "$W/mei/scramble_MEIs.txt" ] \
+     && REJ="$(tr -d '[:space:]' < "$W/mei/scramble_rejected_count.txt" 2>/dev/null)" && is_nonneg_int "$REJ" \
+     && $DK $I_BCF sh -c "bcftools view /work/callers/mei/scramble.vcf > /dev/null" >> "$L/scramble_eval.log" 2>&1; then
+    set_status 5a SUCCESS "VCF valido; scramble_MEIs.txt presente; rechazos por coordenada: $REJ"; mark 5a
   else
     set_status 5a FAILED "SCRAMble (ver logs/scramble_*.log)"
   fi
@@ -337,6 +477,20 @@ fi
 
 # --------------------------------------------- 9 · Tier 1 y resumen final ----
 log "9 · interrogacion de BUB1B +/-1 Mb y resumen"
-py src/wgs/callers_summary.py summary 2>&1 | tee -a "$L/callers.log"
+# La etapa 9 escribe su propio estado terminal: su exito ya no se infiere del log.
+begin 9
+summary_ok() {
+  py src/wgs/callers_summary.py summary >> "$L/callers.log" 2>&1 \
+  && py -c "import json,io; json.load(io.open('work/callers/go2b_summary.json', encoding='utf-8'))"
+}
+# Dos pasadas (PROV-GAP-9): la primera prueba que el resumen se escribe y es JSON valido; fijado 9=SUCCESS, la segunda
+# lo reescribe para que se lea a si mismo en su estado terminal y no como RUNNING. Si la segunda falla, 9 pasa a FAILED:
+# lo que quede en disco no describe un estado terminal coherente.
+if summary_ok; then
+  set_status 9 SUCCESS "resumen escrito y JSON valido"
+  if ! summary_ok; then set_status 9 FAILED "la reescritura final del resumen (con 9=SUCCESS) fallo (ver logs/callers.log)"; fi
+else
+  set_status 9 FAILED "resumen no escrito o JSON invalido"
+fi
 log "GO 2B COMPLETO · STOP: no se interpreta nada, no se toca Track 1 ni Track 2"
 echo "EXIT_CODE=0" > "$W/go2b.exit"
