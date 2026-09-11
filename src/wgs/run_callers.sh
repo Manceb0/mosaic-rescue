@@ -292,7 +292,14 @@ if ! done_ 4; then
     cat "$rg_log" >> "$L/cnvpytor.log"
     py src/wgs/remediation_gates.py cnvpytor_startup "$rg_log" "$rg_rc" >> "$L/cnvpytor.log" 2>&1
   }
-  if ! py src/wgs/remediation_gates.py stage4 >> "$L/cnvpytor.log" 2>&1; then
+  # EXEC-OOM-001: en el rerun bajo ffb3c09, -rd murio por OOM (exit 137) con la VM de Docker en 30 GiB tras leer los 2 580 contigs.
+  # Gate de memoria PREVIO, operacional: objetivo local 48GB en ~/.wslconfig, MemTotal efectivo de Docker >= 47 GiB, sin otros
+  # contenedores, imagen por digest. Es una remediacion de esta maquina, no un requisito publicado de CNVpytor. Si vuelve a haber
+  # OOM: FAILED, sin bajar -j, sin mas memoria, sin rescatar el RD de intentos previos; se preserva todo y se readjudica.
+  if ! py src/wgs/remediation_gates.py stage4_memory >> "$L/cnvpytor.log" 2>&1; then
+    sub_status 4 RD NOT_RUN; sub_status 4 BAF NOT_RUN
+    set_status 4 FAILED "gate de memoria no superado (ver status/4.memory.gate.json)"
+  elif ! py src/wgs/remediation_gates.py stage4 >> "$L/cnvpytor.log" 2>&1; then
     sub_status 4 RD NOT_RUN; sub_status 4 BAF NOT_RUN
     set_status 4 FAILED "gate de recursos congelados no superado (ver status/4.gate.json)"
   elif ! cnvpytor_startup_ok; then

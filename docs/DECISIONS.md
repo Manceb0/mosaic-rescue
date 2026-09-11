@@ -1422,6 +1422,37 @@ llamadores se escriben siempre como `caller-GT`.
 Evidencia de los scratches y de la corrida del STOP: `work/callers/stop_2026-09-09/` (fuera del repositorio);
 especificación y adjudicaciones en la bitácora del mantenedor.
 
+**`EXEC-OOM-001` · agotamiento de memoria del entorno en la etapa 4 del rerun bajo `ffb3c09`; amendment operacional.**
+Fechada 2026-09-11. En el rerun dirigido bajo `ffb3c09`, `cnvpytor -rd` pasó ambos gates técnicos (recursos 7/7 por sha256 e
+imagen por digest; arranque positivo con `-rg_info`), abrió el BAM, detectó hg38 y leyó los 2 580 contigs, y fue matado por el
+kernel de la VM de Docker al empezar a guardar: eventos `oom` y `die exitCode=137` a las 22:26:27Z, sin traceback ni línea de error
+de CNVpytor. La VM tenía 30,17 GiB (configuración por defecto de WSL2 sin `.wslconfig`; host de 61,62 GiB). Adjudicación del líder:
+`OPERATIONAL_RESOURCE_EXHAUSTION`, mecanismo Docker OOM; sin error interno del llamador, sin evidencia de corrupción de entrada,
+sin contaminación entre intentos (el parcial del intento interrumpido por corte de luz quedó archivado en `attempts/`, y su
+`RD SUCCESS` es evidencia técnica de que el paso puede completar, **no** se reutiliza). La rama de número de copia queda
+`NOT INTERPRETABLE` mientras `RD = FAILED` y `BAF = SKIPPED_DEPENDENCY`.
+
+*Tres capas separadas.* **Literatura** (PMID 34817058, PMID 39018173): CNVpytor basa el análisis de CNV/CNA en RD y utiliza BAF como
+señal complementaria; ambos tipos de datos y sus intermedios se almacenan en `.pytor`. **Adjudicación de este proyecto, no una
+conclusión publicada:** dado que RD terminó `FAILED` y BAF quedó `SKIPPED_DEPENDENCY`, la rama preregistrada de número de copia
+permanece `NOT INTERPRETABLE`. **De ingeniería local:** el OOM con código 137, la VM de unos 30 GiB y el objetivo de unos 48 GiB pertenecen
+exclusivamente a la remediación de esta máquina. La literatura no fija ningún umbral de RAM; `48GB` es un objetivo local de
+remediación derivado de EXEC-OOM-001 y de la capacidad del host, no un requisito publicado de CNVpytor, ni un mínimo empírico,
+ni un parámetro científico. `47 GiB` es solo un suelo operacional tolerante a la contabilidad de la VM.
+
+*Amendment, solo entorno operacional.* Entradas científicas, imagen de CNVpytor por digest, BAM, índice, referencia, los siete
+recursos en solo lectura, el comando y el paralelismo de `-rd` (8 procesos, valor por defecto de la herramienta) **no cambian**. En el host,
+el mantenedor fija `[wsl2] memory=48GB` en `~/.wslconfig`, con `wsl --shutdown` y reinicio de Docker; el fichero no se
+commitea: el repositorio registra solo la línea relevante, la memoria efectiva observada y la procedencia de la decisión
+(`src/wgs/remediation_manifest.json`, bloque `cnvpytor_stage4.memory_remediation`). Un gate previo a la etapa 4
+(`src/wgs/remediation_gates.py stage4_memory`, dentro del módulo existente) exige objetivo configurado `48GB`, `MemTotal` efectivo
+de Docker ≥ 47 GiB registrado en bytes y GiB, ningún otro contenedor en marcha e imagen por digest, y escribe
+`status/4.memory.gate.json`; después corren los gates de recursos y de arranque ya existentes. Disciplina si vuelve a haber OOM:
+la etapa escribe `FAILED`, no se baja `-j`, no se sube más la memoria, no se rescata el RD de intentos previos; se preserva todo y
+se readjudica. El rerun científico es solo la etapa 4, desde cero (`sample.pytor` nuevo, sin reutilizar `calls_rd` ni
+`calls_combined`); si termina `SUCCESS`, la etapa 9 se regenera únicamente como resumen y procedencia, lo que no es un rerun de
+llamador ni reabre la rama MEI, que queda `FINAL FOR GO2B`.
+
 ### Lo que se devuelve antes de interpretar
 
 Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen de llamadas SV/CNV

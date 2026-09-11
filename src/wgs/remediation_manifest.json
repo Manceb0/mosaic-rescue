@@ -31,7 +31,52 @@
   "download_source": "commit-pinned raw.githubusercontent.com",
   "image_by_digest": "quay.io/biocontainers/cnvpytor@sha256:614b22c8fc1fcef147bcda48bb4d53cb63c988bffc588e186acff7335013fcf1",
   "per_attempt_hygiene": "work/callers/cnv/{sample.pytor,calls_rd.tsv,calls_combined.tsv} archived to work/callers/attempts/4_<utc>/ before a new attempt",
-  "startup_gate": "cnvpytor -rg_info must return rc=0 and list hg38 with 'GC file specified: Yes' and 'Mask file specified: Yes' (positive check), else FAILED before -rd"
+  "startup_gate": "cnvpytor -rg_info must return rc=0 and list hg38 with 'GC file specified: Yes' and 'Mask file specified: Yes' (positive check), else FAILED before -rd",
+  "memory_remediation": {
+   "id": "EXEC-OOM-001",
+   "scope": "operational environment only",
+   "observed_failure": {
+    "utc": "2026-09-10T22:26:27Z",
+    "controlflow_commit": "ffb3c09",
+    "stage": "4 (cnvpytor -rd)",
+    "mechanism": "Docker OOM (cgroup OOM kill of the container; docker events: oom + die exitCode=137)",
+    "container_exit_code": 137,
+    "caller_internal_error": "not observed",
+    "input_corruption_evidence": "none",
+    "docker_vm_memtotal_bytes_at_failure": 32392261632,
+    "docker_vm_memtotal_gib_at_failure": 30.17,
+    "wsl_memory_config_at_failure": "absent (~/.wslconfig not present: WSL2 default, about half of host RAM)",
+    "host_total_gib": 61.62,
+    "same_step_completed_earlier_same_day": "attempt interrupted by power loss (EXEC-INT-002): RD SUCCESS at 14:50Z; evidence only, NOT reused"
+   },
+   "host_config_file": "~/.wslconfig",
+   "host_config_committed": false,
+   "host_config_relevant_line": "[wsl2] memory=48GB",
+   "wsl_memory_target": "48GB",
+   "effective_floor_gib": 47,
+   "wsl_shutdown_required": true,
+   "docker_restart_required": true,
+   "target_semantics": "48GB is a LOCAL OPERATIONAL REMEDIATION TARGET derived from EXEC-OOM-001 and available host capacity. It is NOT a CNVpytor published requirement, NOT an empirically determined minimum RAM requirement, and NOT a scientific parameter.",
+   "floor_semantics": "47 GiB is only an accounting-tolerant operational gate for a 48GB WSL target, not a biological/tool requirement.",
+   "literature_boundary": "CNVpytor publications (PMID 34817058, PMID 39018173) support the RD+BAF method and its intermediate data; they do not state any RAM threshold.",
+   "unchanged": [
+    "CNVpytor image digest",
+    "BAM / index / reference",
+    "resources 7/7 read-only",
+    "CNVpytor command",
+    "-rd parallelism (8 cores, tool default)",
+    "scientific inputs"
+   ],
+   "gate": "remediation_gates.py stage4_memory -> status/4.memory.gate.json; first check of stage 4, before the resource gate (4.gate.json) and the startup gate (4.startup.gate.json)",
+   "no_reuse": [
+    "sample.pytor recreated from zero",
+    "calls_rd.tsv not reused",
+    "calls_combined.tsv not reused",
+    "previous outputs archived in work/callers/attempts/"
+   ],
+   "discipline_on_repeat_oom": "stage 4 writes FAILED; no -j reduction, no further memory increase, no rescue of the previous RD within that run; preserve everything and re-adjudicate",
+   "stage9_after_success": "regenerated only as summary/provenance so the summary no longer shows the old 4=FAILED; not a caller rerun; MEI branch stays FINAL FOR GO2B"
+  }
  },
  "xtea_stage5b": {
   "base_image": "quay.io/biocontainers/xtea:0.1.9--hdfd78af_0",

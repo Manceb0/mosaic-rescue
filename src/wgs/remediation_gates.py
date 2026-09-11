@@ -8,6 +8,8 @@ distinto -> codigo 1 y la etapa queda FAILED con motivo escrito; no corre nada.
 Cada gate escribe work/callers/status/<etapa>.gate.json con lo observado, para la procedencia.
 
     remediation_gates.py worktree                 git status --porcelain vacio; rc=0 de git status y git rev-parse; HEAD valido
+    remediation_gates.py stage4_memory            EXEC-OOM-001: objetivo local de memoria en .wslconfig, MemTotal efectivo de Docker
+                                                  >= suelo, sin otros contenedores, imagen por digest (antes de stage4)
     remediation_gates.py stage4                   imagen de CNVpytor presente por DIGEST; siete recursos por sha256
     remediation_gates.py cnvpytor_startup <f> <rc>  la salida de `cnvpytor -rg_info` confirma hg38 con GC y mascara (positivo), rc=0
     remediation_gates.py stage5b                  ImageID COMPLETO de A'; 12 ficheros de biblioteca + 15 indices bwa por sha256; GENCODE
@@ -130,6 +132,64 @@ def cnvpytor_startup(path: str, rc_text: str) -> int:
     return finish("4.startup", rec, not fails)
 
 
+def stage4_memory() -> int:
+    """EXEC-OOM-001: `cnvpytor -rd` murio por OOM (exit 137) con la VM de Docker en 30,17 GiB. Este gate comprueba la
+    remediacion OPERACIONAL del host antes de la etapa 4: (1) el objetivo local de memoria configurado en ~/.wslconfig
+    ([wsl2] memory=<target>), (2) el MemTotal efectivo que Docker declara, comparado en BYTES exactos contra un suelo tolerante a
+    contabilidad (el GiB redondeado solo se muestra), (3) que no haya otros contenedores en marcha, (4) que la imagen de CNVpytor resuelva al digest fijado.
+    El objetivo es una REMEDIACION OPERACIONAL LOCAL derivada de EXEC-OOM-001 y de la capacidad del host; no es un
+    requisito publicado de CNVpytor, ni un minimo empirico de RAM, ni un parametro cientifico."""
+    m = MAN["cnvpytor_stage4"]["memory_remediation"]
+    fails = []
+    wsl_path = os.path.expanduser(m["host_config_file"])
+    configured, section, relevant_line = None, None, None
+    if os.path.exists(wsl_path):
+        for line in io.open(wsl_path, encoding="utf-8", errors="replace"):
+            s = line.strip()
+            if s.startswith("[") and s.endswith("]"):
+                section = s.lower()
+            elif section == "[wsl2]" and s.lower().startswith("memory") and "=" in s:
+                configured = s.split("=", 1)[1].strip(); relevant_line = s
+    if configured is None:
+        fails.append(f"{wsl_path}: sin 'memory=' en [wsl2] (WSL2 usa su configuracion por defecto)")
+    elif configured.upper().replace(" ", "") != m["wsl_memory_target"].upper():
+        fails.append(f"memory configurada '{configured}' distinta del objetivo '{m['wsl_memory_target']}'")
+    # La desigualdad se decide en BYTES exactos; el valor en GiB redondeado es solo para mostrar.
+    floor_bytes = int(m["effective_floor_gib"] * (2 ** 30))
+    rc, out, err = run(["docker", "info", "--format", "{{.MemTotal}}"])
+    mem_bytes = int(out.strip()) if (rc == 0 and out.strip().isdigit()) else None
+    mem_gib = round(mem_bytes / 2 ** 30, 2) if mem_bytes is not None else None
+    if mem_bytes is None:
+        fails.append(f"docker info no devolvio MemTotal (rc={rc}): {err.strip()[:100]}")
+    elif mem_bytes < floor_bytes:
+        fails.append(f"MemTotal efectivo de Docker {mem_bytes} bytes ({mem_gib} GiB) por debajo del suelo "
+                     f"{floor_bytes} bytes ({m['effective_floor_gib']} GiB)")
+    rc, out, _ = run(["docker", "ps", "-q"])
+    running = [l for l in out.split() if l]
+    if rc != 0 or running:
+        fails.append(f"otros contenedores en marcha: {len(running)}")
+    ref = MAN["cnvpytor_stage4"]["image_by_digest"]
+    present, iid = image_present_by_digest(ref)
+    if not present:
+        fails.append(f"imagen no presente por digest: {ref}")
+    host_gib = None
+    try:
+        rc, out, _ = run(["powershell", "-NoProfile", "-Command", "(Get-CimInstance Win32_OperatingSystem).TotalVisibleMemorySize"], timeout=60)
+        host_gib = round(int(out.strip()) / 2 ** 20, 2) if rc == 0 and out.strip().isdigit() else None
+    except Exception:
+        pass
+    rec = {"gate": "stage4_memory_remediation", "id": m["id"], "scope": m["scope"],
+           "wsl_config_file": wsl_path, "wsl_config_present": os.path.exists(wsl_path), "wsl_relevant_line_observed": relevant_line,
+           "configured_wsl_target": configured, "required_wsl_target": m["wsl_memory_target"],
+           "docker_memtotal_bytes": mem_bytes, "docker_memtotal_gib": mem_gib, "effective_floor_gib": m["effective_floor_gib"],
+           "effective_floor_bytes": floor_bytes, "comparison": "docker_memtotal_bytes >= effective_floor_bytes (exact bytes; GiB shown rounded)",
+           "host_total_gib": host_gib, "other_running_containers": len(running), "image_by_digest": ref, "image_present": present, "image_id": iid,
+           "target_semantics": m["target_semantics"], "floor_semantics": m["floor_semantics"],
+           "unchanged": m["unchanged"], "gates_run_next": ["4.gate.json (recursos 7/7 por sha256, imagen por digest)", "4.startup.gate.json (-rg_info positivo)"],
+           "failures": fails}
+    return finish("4.memory", rec, not fails)
+
+
 # ----------------------------------------------------------------------------- stage 5b -----
 def stage5b() -> int:
     m = MAN["xtea_stage5b"]
@@ -205,7 +265,7 @@ if __name__ == "__main__":
         print(xtea_vcf_name(sys.argv[2])); sys.exit(0)
     if cmd == "cnvpytor_startup":
         sys.exit(cnvpytor_startup(sys.argv[2], sys.argv[3]))
-    fn = {"worktree": worktree, "stage4": stage4, "stage5b": stage5b, "stage5a": stage5a}.get(cmd)
+    fn = {"worktree": worktree, "stage4_memory": stage4_memory, "stage4": stage4, "stage5b": stage5b, "stage5a": stage5a}.get(cmd)
     if fn is None:
-        raise SystemExit("uso: remediation_gates.py worktree|stage4|cnvpytor_startup <f> <rc>|stage5b|stage5a|image_id|xtea_vcf_name <fam>")
+        raise SystemExit("uso: remediation_gates.py worktree|stage4_memory|stage4|cnvpytor_startup <f> <rc>|stage5b|stage5a|image_id|xtea_vcf_name <fam>")
     sys.exit(fn())
