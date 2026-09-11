@@ -1453,6 +1453,56 @@ se readjudica. El rerun científico es solo la etapa 4, desde cero (`sample.pyto
 `calls_combined`); si termina `SUCCESS`, la etapa 9 se regenera únicamente como resumen y procedencia, lo que no es un rerun de
 llamador ni reabre la rama MEI, que queda `FINAL FOR GO2B`.
 
+**`GO 2B · SCIENCE FINAL` · cierre de la interrogación estructural del WGS de lecturas cortas.** Fechada 2026-09-11, emitida por el
+revisor científico tras adjudicar cada rama. Código de ejecución final `5b66f58` (etapa 4 rehecha tras `EXEC-OOM-001`); rama MEI
+producida bajo `ffb3c09`; etapas 1, 2, 3, 6, 7 y 8 bajo `47d24da`. Todas las etapas del GO 2B en `SUCCESS`.
+
+```text
+GO2B execution                    FINAL · PASS
+stage 4 RD + BAF                  FINAL · PASS
+MEI branch                        FINAL
+CNV primary branch                FINAL
+AE1 gene context                  FINAL
+AE2 population lookup             NOT EXECUTED (data policy)
+AE3 BUB1B read-level assay        FINAL · PASS
+AE4 raw CNV inventory rule        FINAL
+
+BUB1B CNV overlap (RD+BAF)        none emitted
+BUB1B MEI overlap (xTea/SCRAMble) none emitted
+BUB1B short-read breakpoint assay descriptive metrics reported; no inferential threshold; complex insertion NOT excluded
+
+biallelic model                   hypothesis-level; phase unresolved; missense pathogenicity unresolved
+diagnostic claim                  NOT established by GO2B alone
+mosaic fraction estimate          NOT made
+cytogenetic MVA claim             NOT made
+therapeutic claim                 NOT made
+```
+
+*Significado.* Se cerraron correctamente las clases de evidencia que se decidió interrogar; no significa "caso resuelto". En BUB1B,
+CNVpytor no emitió una CNV solapante, xTea y SCRAMble no emitieron una MEI solapante y AE3 no ofrece una prueba inferencial de punto
+de ruptura; ninguno de esos resultados convierte la ausencia de señal en lecturas cortas en exclusión de una alteración compleja
+(Kawakami et al. 2024, PMID 38102195: una inserción intrónica Alu/SVA de 3 kb en BUB1B no detectada por genoma corto y resuelta con
+RNA-seq y lecturas largas).
+
+*Frases máximas aprobadas.* CNV: *CNVpytor did not emit an RD+BAF CNV overlapping the BUB1B gene body.* MEI: *No xTea or SCRAMble MEI
+call overlapped the BUB1B gene body.* AE3: *The preregistered short-read breakpoint metrics for the BUB1B body and equal-length flanks
+are reported side by side; no inferential excess/no-excess threshold was defined, and complex insertion is not excluded.* AE1, grupo
+40,56 Mb: *Breakpoints overlap exonic and intronic regions of CBX3; another partner overlaps an exon of CBX3P9, which GENCODE annotates
+as a processed pseudogene. This establishes gene-associated breakpoint context but does not establish a retrocopy or
+processed-pseudogene insertion architecture.* Los 49 registros RD+BAF son *genome-wide raw caller inventory, not individually
+adjudicated alternative diagnoses*. Los genotipos de llamadores se escriben siempre como `caller-GT`.
+
+*AE2.* `NOT EXECUTED (data policy)`: la puerta exigía confirmación escrita de que las condiciones del conjunto de datos permiten enviar
+coordenadas individuales a una base externa, y esa confirmación no forma parte del expediente. No es un resultado negativo de gnomAD,
+no dice nada sobre frecuencia poblacional y no invalida GO 2B. Con autorización explícita podría ejecutarse como análisis exploratorio
+posterior al FINAL, conservando su preregistro, sin reabrir el freeze científico salvo decisión expresa.
+
+*Artefactos y hashes.* Los reportes y JSON con datos derivados del paciente se conservan fuera del repositorio por política de datos;
+sus sha256 y tamaños quedan congelados en `docs/go2b_final_artifacts.sha256.json` (22 documentos, 13 ficheros de datos, incluido el BAM
+`6388cd66…`). Preregistros previos a mirar datos: métricas CNV (`CNV_METRICS_PREREG.md`), lookups AE (`AE_PREREG_LOOKUPS.md`).
+
+*Reapertura.* GO 2B no se reabre salvo nueva evidencia, un bug reproducible o un cambio explícitamente versionado del protocolo.
+
 ### Lo que se devuelve antes de interpretar
 
 Manifest del alineamiento; hashes, versiones y referencia; QC completo; resumen de llamadas SV/CNV

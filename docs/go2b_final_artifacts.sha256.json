@@ -1,0 +1,190 @@
+{
+ "title": "GO 2B · SCIENCE FINAL · frozen artifact hashes",
+ "frozen_utc": "2026-09-11T19:47:10Z",
+ "final_execution_commit": "5b66f58",
+ "mei_branch_commit": "ffb3c09",
+ "carry_forward_commit_stages_1_2_3_6_7_8": "47d24da",
+ "adjudication": "GO2B SCIENCE FINAL by the scientific reviewer, 2026-09-11; AE2 NOT EXECUTED (data policy)",
+ "note": "Reports and JSON derived from patient data are kept outside the repository by data policy (maintainer's local evidence folders and the gitignored work/ tree). Only their identities are recorded here.",
+ "documents_outside_repo": [
+  {
+   "file": "REPORTE_GO2B_STOP_OPERACIONAL.md",
+   "bytes": 11398,
+   "sha256": "27ba554265ddff5f8c092fb42e4a9ae5e19c3118445bd2bc8e6539d6860b90dc"
+  },
+  {
+   "file": "REPORTE_GO2B_STOP_CIENCIA.md",
+   "bytes": 14404,
+   "sha256": "160c02a8fb219b117d3dc675d30d5f911cbb3efd933f82cd81e499f2ea79ad13"
+  },
+  {
+   "file": "REPORTE_GO2B_RERUN_STOP_OPERACIONAL.md",
+   "bytes": 9137,
+   "sha256": "a2ac3ebd9111f0c4f192b51b496a5f0c2fecd8ffb859718c0fc2bc2448caf2e4"
+  },
+  {
+   "file": "go2b_rerun_stop_checkpoint.json",
+   "bytes": 11841,
+   "sha256": "5e88f21d8954a4ff9e174a4ca6ed69691dd88ecb55ced70257d81e50c0443ec4"
+  },
+  {
+   "file": "REPORTE_GO2B_MEI_CIENCIA.md",
+   "bytes": 18546,
+   "sha256": "9b2cdd32ab2a9f14df35842bb7301df19dc71f2da0cc5e37fe3324959e2f8917"
+  },
+  {
+   "file": "go2b_mei_read.json",
+   "bytes": 8429,
+   "sha256": "410e706efb9ab83198cb39389fcf510467712a5452625570df5c1d8c8244faf0"
+  },
+  {
+   "file": "go2b_mei_concordance.json",
+   "bytes": 9783,
+   "sha256": "f7f199645a3360e54d649ef94a9e881e8ea735644558516118865efeba0a403e"
+  },
+  {
+   "file": "REPORTE_GO2B_STAGE4_STOP_OPERACIONAL.md",
+   "bytes": 4359,
+   "sha256": "0e036107f578cc07e8438b3a8bb4aa3a5a0f0eeed4a189f75f35ac3dc482991c"
+  },
+  {
+   "file": "go2b_stage4_stop_checkpoint.json",
+   "bytes": 8981,
+   "sha256": "d5104e2036fe35102f76b1b523cf9ad843774a2bebc602f3584308cb735b1f22"
+  },
+  {
+   "file": "CNV_METRICS_PREREG.md",
+   "bytes": 5139,
+   "sha256": "e30b6af44f392abb81bbe35d1bc6aff83cb0e351edd2ff331c653dcb29907cfd"
+  },
+  {
+   "file": "REPORTE_GO2B_CNV_CIENCIA.md",
+   "bytes": 18258,
+   "sha256": "50fcb19697965de4c0a148a53d40ba59b2935efd50655f86702af475ba8a89f0"
+  },
+  {
+   "file": "go2b_cnv_read.json",
+   "bytes": 56444,
+   "sha256": "e39e39153929c62c0878efbd576be412e3b8b57925b2e54e02bfe674e246a12e"
+  },
+  {
+   "file": "go2b_cnv_hdf5_metrics.json",
+   "bytes": 92794,
+   "sha256": "9b3067218310160d61a8b49f39df36b9a9418c2427d0c6b01a44366ebe65adcf"
+  },
+  {
+   "file": "AE_PREREG_LOOKUPS.md",
+   "bytes": 7937,
+   "sha256": "4a880df40cc1b2ad67f1b51b08be5aea0ebfab8e7215274ee68c5a7e30b33a6d"
+  },
+  {
+   "file": "AE1_GENE_CONTEXT.md",
+   "bytes": 4522,
+   "sha256": "cb04ee461657080d1063a776d4904575a850419b18ea4e8376e32c67a9103648"
+  },
+  {
+   "file": "ae1_gene_context.json",
+   "bytes": 14772,
+   "sha256": "7db6d9324e1339dc50281d86b873d3c63839af92af3596482d089819c1bf4334"
+  },
+  {
+   "file": "AE3_BUB1B_READLEVEL.md",
+   "bytes": 3025,
+   "sha256": "03388198367e5fa4438a97e45099940652adf94a770c52ba560a53dd87c78bbc"
+  },
+  {
+   "file": "ae3_bub1b_readlevel.json",
+   "bytes": 49777,
+   "sha256": "3e845787eb27217ede5e97f86aba2691dcccf668dc47a5292e732c234b321231"
+  },
+  {
+   "file": "STAGE4_OPERATIONAL_FAILURE_ffb3c09.md",
+   "bytes": 9462,
+   "sha256": "5ccc16ab9fc3f5406828f05d2daf7b99e6cc7f49b85340766513c66d9c2a3de3"
+  },
+  {
+   "file": "STAGE4_ADJUDICATION_ffb3c09.md",
+   "bytes": 3416,
+   "sha256": "077f448246486c3e10dfedb4549bb48b7c6f4d3df3857c4dddd503e0c09dbb61"
+  },
+  {
+   "file": "PRE_RERUN_VERIFICATION_GO2B.md",
+   "bytes": 1709,
+   "sha256": "d89f132e593731d291f3b767f2d1aebdb3981ac8cbee427fb0c5f78762033012"
+  },
+  {
+   "file": "PRE_RUN_STAGE4_5b66f58.md",
+   "bytes": 866,
+   "sha256": "f70618c31b395a9faaab89319779d94049a888caed3f8d1e33fff7cf3530797a"
+  }
+ ],
+ "data_files_under_work": [
+  {
+   "file": "work/callers/cnv/sample.pytor",
+   "bytes": 327183214,
+   "sha256": "673af571322a3f0e66fd92c8360066356ae085184eaae114a76e10a3be1bca15"
+  },
+  {
+   "file": "work/callers/cnv/calls_rd.tsv",
+   "bytes": 346317,
+   "sha256": "816c281577550bb7cd38ac16f5096f496738a3b44369cd6ce03e739d2c144dcf"
+  },
+  {
+   "file": "work/callers/cnv/calls_combined.tsv",
+   "bytes": 11572,
+   "sha256": "a4b9d19e962e44f4712a2f137d56bbb7640e218d345000b5e659268828b878e3"
+  },
+  {
+   "file": "work/callers/go2b_summary.json",
+   "bytes": 10584,
+   "sha256": "48b5c98d6874284e52585bdf0df6bad3ef9f062419edca554d140418dc13d02a"
+  },
+  {
+   "file": "work/callers/mei/scramble.vcf",
+   "bytes": 387967,
+   "sha256": "fc44fbd76f02034036124157a55640f020c4baf70c5acbdcdb348454427bc307"
+  },
+  {
+   "file": "work/callers/mei/scramble_MEIs.txt",
+   "bytes": 569392,
+   "sha256": "7f04e649fbb1a403cfd53076d1ee2b777da843b7109b8b956c4e56be7ef586d4"
+  },
+  {
+   "file": "work/callers/mei/scramble_rejected_records.txt",
+   "bytes": 19042,
+   "sha256": "f9c7c84a373cdabc6f6e38f1d5819c9d5c660547b22dbcdfd9791e5c9d52ecf1"
+  },
+  {
+   "file": "work/resources/grc_exclusions/GCA_000001405.15_GRCh38_GRC_exclusions.bed",
+   "bytes": 929,
+   "sha256": "7b06fe94703ae437d17793e15ab73a28836bc7c2655f4f3292055b923f1f3417"
+  },
+  {
+   "file": "work/struct/transcript.json",
+   "bytes": 4676,
+   "sha256": "695a916cca7a1234fc4f75370dee24fed85a22576bf0dfd4b9a2f60a455abdec"
+  },
+  {
+   "file": "work/align/full_depth.markdup.bam",
+   "bytes": 64606755030,
+   "sha256": "6388cd66d9d412ec167733802c00a70831d2edcd4ee78bfa0f644cb81296f278",
+   "note": "recomputed 2026-09-11 for AE3; equals work/align/bam_sha256.txt"
+  },
+  {
+   "file": "work/callers/mei/xtea/<SM>/L1/full_depth.markdup_LINE1.vcf",
+   "bytes": 143349,
+   "sha256": "93363dfe987152406b738b466d68d0464b8b7382160c5456372bd83303d24936"
+  },
+  {
+   "file": "work/callers/mei/xtea/<SM>/Alu/full_depth.markdup_ALU.vcf",
+   "bytes": 780115,
+   "sha256": "c86d318659325fc08a8cd869eb929ac4fcf65bf81594b7089105fd5466d680ca"
+  },
+  {
+   "file": "work/callers/mei/xtea/<SM>/SVA/full_depth.markdup_SVA.vcf",
+   "bytes": 59423,
+   "sha256": "c0f09e4d78e9a03ea35a81295557342653788520bb94e07758c7e66ba7d5ba65"
+  }
+ ],
+ "reopening_rule": "GO 2B is not reopened except for new evidence, a reproducible bug, or an explicitly versioned protocol change"
+}
