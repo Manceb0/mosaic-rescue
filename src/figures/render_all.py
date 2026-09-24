@@ -76,6 +76,21 @@ FIGURES = [
      "Three interventions in three different roles, not a ranking: azithromycin is the only "
      "allele-directed arm, arimoclomol is informative by failing, and sirolimus exists to "
      "probe the safety boundary. None is proposed for administration."),
+    # GO 2B, falsificacion estructural. No salen de un notebook: leen artefactos congelados
+    # bajo work/callers/final/ y src/figures/frozen.py aborta si un sha256 no coincide.
+    ("fig09_cnv_chromosomes", "fig09_cnvpytor_chromosome_rd_baf", "GO2B_STRUCTURAL_FALSIFICATION",
+     "DATA", "MEASURED+DERIVED",
+     "Chromosome-level RD and BAF of the patient's blood WGS, descriptive only: autosomal medians in a "
+     "narrow band, uniform aggregated BAF. No mosaic fraction is estimated and no aneuploidy is asserted "
+     "or excluded."),
+    ("fig10_bub1b_readlevel", "fig10_bub1b_readlevel_assay", "GO2B_STRUCTURAL_FALSIFICATION",
+     "DATA", "MEASURED+DERIVED",
+     "Short-read breakpoint metrics for the BUB1B body and two equal-length flanks, side by side. No "
+     "inferential excess/no-excess threshold was defined, and a complex insertion is not excluded."),
+    ("fig11_mei_sv_adjudication", "fig11_mei_sv_adjudication_map", "GO2B_STRUCTURAL_FALSIFICATION",
+     "DATA", "MEASURED+EXTERNAL+DERIVED",
+     "The four alternative structural signals near BUB1B, their breakpoint partners and the gene context "
+     "of each. None overlaps the gene body; no retrocopy architecture is established."),
 ]
 
 EXTRA = [("fig04_tracks", "fig04S_alphagenome_accessibility_tf",

@@ -63,6 +63,9 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | `fig05_hpo_disease_matrix` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 | `fig06_baf_cancellation` | `SIMULATION` | `SIMULATED` |
 | `fig07_track2_evidence_matrix` | `CURATED_EVIDENCE` | `EXTERNAL+DERIVED` |
+| `fig09_cnvpytor_chromosome_rd_baf` | `DATA` | `MEASURED+DERIVED` |
+| `fig10_bub1b_readlevel_assay` | `DATA` | `MEASURED+DERIVED` |
+| `fig11_mei_sv_adjudication_map` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 
 ---
 
@@ -293,6 +296,90 @@ outputs*) checks that every artefact cites that manifest.
 | **correction applied** | the title says `three roles, not a ranking`; the subtitle says there is no overall score and no winner; the provenance strip states in its own line that **colour encodes provenance, not efficacy or support**, and that none of these is proposed for administration. The transfer-distance table lives in `reports/TRACK2_REPORT.md` §5, where each arm's system, dose and measured outcome are named. |
 | **full-size render checked?** | yes |
 | **fit for the 3-minute video?** | **no, not at full size.** Too much small text. `docs/JUDGE_PATH.md` records that a reduced version keeping only the three roles and the killing question is what the pitch would use, and that it is not built yet. |
+
+---
+
+## Fig 10 · CNVpytor chromosome-level RD and BAF summary: `fig09_cnvpytor_chromosome_rd_baf`
+
+| | |
+|---|---|
+| **Figure ID** | `fig09_cnvpytor_chromosome_rd_baf` (final set: Figure 5) |
+| **notebook** | none: GO 2B frozen artifact, not a notebook figure |
+| **Classification** | `DATA` |
+| **Evidence mode** | `MEASURED+DERIVED` (the single derivation, normalisation to the autosomal median `RD_ref`, was preregistered in `CNV_METRICS_PREREG.md` before any value was inspected) |
+| **Source artifact(s)** | `work/callers/final/go2b_cnv_hdf5_metrics.json` (per-chromosome metrics written inside the pinned CNVpytor 1.3.2 image, digest `sha256:614b22c8fc1fcef147bcda48bb4d53cb63c988bffc588e186acff7335013fcf1`); `work/callers/final/go2b_cnv_read.json` (record counts only, for the provenance strip) |
+| **Source SHA256** | `9b3067218310160d61a8b49f39df36b9a9418c2427d0c6b01a44366ebe65adcf` · `e39e39153929c62c0878efbd576be412e3b8b57925b2e54e02bfe674e246a12e` |
+| **Renderer** | `src/figures/fig09_cnv_chromosomes.py` |
+| **Output** | `figures/pub/fig09_cnvpytor_chromosome_rd_baf.svg` (+ PNG 300 dpi, thumbnail) |
+| **Output SHA256** | `d285e2d58c13b89c093e21db7157f31892a5d12f2ea073441fc687501d8ebef3` |
+| **Frozen commit** | data produced under `5b66f58` (stage 4 rerun after `EXEC-OOM-001`); GO 2B SCIENCE FINAL recorded in `docs/DECISIONS.md` |
+| **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
+| **n** | 24 primary chromosomes · 100 kb bins (27 579 autosomal bins with RD > 0 define `RD_ref`) · 1 636 719 heterozygous SNPs over the 24 chromosomes (1 634 791 autosomal) |
+| **axes / units** | A: chromosome × median RD / autosomal median, ± MAD · B: chromosome × median per-bin minor-allele fraction, ± MAD · C: chromosome × CNVpytor `i1` and `i2` medians · D: chromosome × heterozygous SNPs (thousands) and fraction of bins with RD > 0 |
+| **statistic represented** | medians and unscaled MADs over 100 kb bins of CNVpytor's own emitted per-bin datasets (`his_rd_p_<c>_100000_GC`, `snp_maf`, `snp_i1`, `snp_i2`, `snp_bafc_01/10`); nothing recomputed from reads |
+| **uncertainty represented?** | dispersion across bins (MAD), yes; no confidence intervals |
+| **uncertainty quantified?** | technical dispersion only; no reference cohort with an identical pipeline, so no comparison against controls (EXP-015 remains blocked for inference) |
+| **Claim ceiling** | *Chromosome-level RD/BAF showed the pattern drawn: autosomal medians in a narrow band around the autosomal reference, uniform aggregated BAF statistics, X and Y reported with the same reference without adjustment.* |
+| **Forbidden inference** | `cytogenetic aneuploidy detected / excluded`, `mosaic fraction = X %`, `chromosome N is trisomic / monosomic`, and any reading of the 49 RD+BAF caller records as validated CNVs (they are raw inventory, AE4, and are not drawn) |
+| **possible misleading interpretation** | that a flat chromosome-level summary of aggregated blood WGS says anything about cell-level variegated aneuploidy. It does not: CNVpytor's segmentation is described for high cell fractions (PMID 34817058) and PCS/MVA is assessed cell by cell (Yamaguchi 2018, Kato 2017). |
+| **correction applied** | no copy-number guide lines at 0.5 / 1.5; X and Y separated by a hairline and labelled "no adjustment, no interpretation"; Y BAF annotated with its denominator (10 het SNPs in 2 bins); provenance strip states DESCRIPTIVE ONLY and the PMID |
+| **full-size render checked?** | yes (preview render, layout corrected twice: annotation, legends, provenance strip) |
+
+---
+
+## Fig 11 · BUB1B read-level breakpoint assay: `fig10_bub1b_readlevel_assay`
+
+| | |
+|---|---|
+| **Figure ID** | `fig10_bub1b_readlevel_assay` (final set: Figure 6) |
+| **notebook** | none: GO 2B post-final exploratory lookup AE3, frozen artifact |
+| **Classification** | `DATA` |
+| **Evidence mode** | `MEASURED+DERIVED` (per-bin fractions are counts divided by the preregistered denominator `n_reads`; region medians are the ones in the frozen summary) |
+| **Source artifact(s)** | `work/callers/final/ae3_bub1b_readlevel.json`, written by `go2b_stop_tools/ae3_bub1b_readlevel.py` with pysam 0.23.0 inside the pinned CNVpytor image from the GO 2A BAM (sha256 `6388cd66d9d412ec167733802c00a70831d2edcd4ee78bfa0f644cb81296f278`) |
+| **Source SHA256** | `3e845787eb27217ede5e97f86aba2691dcccf668dc47a5292e732c234b321231` |
+| **Renderer** | `src/figures/fig10_bub1b_readlevel.py` |
+| **Output** | `figures/pub/fig10_bub1b_readlevel_assay.svg` (+ PNG 300 dpi, thumbnail) |
+| **Output SHA256** | `540f9af27f40f53ab117b8ba72e6ffeb6a6dce5a0100cc84a0dc2dca7df121de` |
+| **Frozen commit** | assay preregistered in `AE_PREREG_LOOKUPS.md` § AE3 and adjudicated FINAL · PASS; data under `5b66f58`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
+| **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
+| **n** | 181 bins of 1 kb on 15:40101001-40282000 · 60 upstream / 60 body / 60 downstream by midpoint inside exact 60 055 bp intervals · 1 CONTEXT_ONLY bin excluded · reads: upstream 18 906, body 19 850, downstream 19 332 · intron 2: 5 bins, 1 828 reads · intron 8: 11 bins, 3 747 reads |
+| **axes / units** | A–D: fraction of bin reads; E: clusters per bin (Σ per region annotated); F: reads per bin (bins per region annotated); x = region groups |
+| **statistic represented** | per-bin values of the six preregistered metrics (`f_softclip` ≥ 20 bp clip; `f_split` SA tag; `f_discordant` preregistered definition; `f_mapq0`; `n_clip_clusters` ≥ 3 clipped reads at the same coordinate + side; `n_reads`) and the frozen region medians |
+| **uncertainty represented?** | the spread of bins is shown in full; no confidence intervals |
+| **uncertainty quantified?** | no: no threshold, no test, no model was preregistered, so none is drawn |
+| **Claim ceiling** | *The preregistered short-read breakpoint metrics for the BUB1B body and equal-length flanks are reported side by side; no inferential excess/no-excess threshold was defined, and complex insertion is not excluded.* |
+| **Forbidden inference** | `excess`, `no excess`, `complex insertion excluded`, and any post-hoc selection of individual bins or of introns 2/8 as evidence: they appear only because the literature highlighted them (Kawakami 2024, PMID 38102195; Kato 2017, PMID 28611924) |
+| **possible misleading interpretation** | reading the body median of `f_discordant` (0.0157 vs 0.0100 / 0.0121) or the body cluster sum (17 vs 10 / 11) as an "excess". No threshold existed before the read, so no such statement is licensed; and a short-read assay cannot exclude a composite intronic insertion (Kawakami 2024). |
+| **correction applied** | groups plotted on identical axes with the frozen medians only; region sizes stated as exact 60 055 bp intervals; introns marked with an asterisk explained in the header; the approved sentence printed verbatim in the provenance strip |
+| **full-size render checked?** | yes (preview render, layout corrected once: titles, tick labels, provenance strip, bottom margin) |
+
+---
+
+## Fig 12 · MEI/SV adjudication map around BUB1B: `fig11_mei_sv_adjudication_map`
+
+| | |
+|---|---|
+| **Figure ID** | `fig11_mei_sv_adjudication_map` (final set: Figure 7) |
+| **notebook** | none: GO 2B frozen artifacts and post-final lookup AE1 |
+| **Classification** | `DATA` |
+| **Evidence mode** | `MEASURED+EXTERNAL+DERIVED` (caller records are measured; GENCODE v33 gene context is external; the only derived numbers are distances between frozen coordinates, used as labels) |
+| **Source artifact(s)** | `work/callers/final/tier1_sv_manta_delly.json` (Manta and DELLY records in the Tier 1 window, STOP of 2026-09-09, stages 2/3 under `47d24da`); `work/callers/final/go2b_mei_read.json` (xTea and SCRAMble records in the window, `ffb3c09`); `work/callers/final/ae1_gene_context.json` (AE1 gene context, frozen GENCODE v33, `5b66f58`) |
+| **Source SHA256** | `26e0013c51d8d6108731fa08eda001fec9aae0e108d215eb24b6aef7caa74f00` · `410e706efb9ab83198cb39389fcf510467712a5452625570df5c1d8c8244faf0` · `7db6d9324e1339dc50281d86b873d3c63839af92af3596482d089819c1bf4334` |
+| **Renderer** | `src/figures/fig11_mei_sv_adjudication.py` |
+| **Output** | `figures/pub/fig11_mei_sv_adjudication_map.svg` (+ PNG 300 dpi, thumbnail) |
+| **Output SHA256** | `ac081e282a2182e8c758e8c2e3745fd6f6bde2ad19e468c90c8b44ebd598b049` |
+| **Frozen commit** | Tier 1 SV `47d24da`; MEI `ffb3c09`; AE1 `5b66f58`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
+| **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
+| **n** | Tier 1 window 15:39161069-41221123 · Manta 10 records (9 PASS) · DELLY 28 records (16 PASS) · xTea 2 records · SCRAMble 1 record · 12 frozen loci annotated by AE1 |
+| **axes / units** | A: chr15 position (Mb, GRCh38) × caller rows; B: schematic, no axes |
+| **statistic represented** | none: emitted records at their coordinates, caller-GT as emitted, AE1 gene context printed verbatim |
+| **uncertainty represented?** | no; not applicable to a map of emitted records |
+| **uncertainty quantified?** | no |
+| **Claim ceiling** | *None of these loci overlaps the BUB1B gene body or the two prioritised positions.* Per locus: 39.70 Mb *geometry consistent with insertion of non-local chr12-derived sequence; xTea annotates an L1-family orphan/sibling transduction, consistent with an L1-mediated transduction hypothesis*; 40.56 Mb *breakpoints overlap exonic and intronic regions of CBX3; another partner overlaps an exon of CBX3P9, which GENCODE annotates as a processed pseudogene; gene-associated breakpoint context, not a retrocopy or processed-pseudogene insertion architecture*. |
+| **Forbidden inference** | `retrocopy established`, `processed pseudogene insertion established`, `mechanism established`, any diagnosis or exclusion from these loci, and any reading of caller-GT as biological zygosity |
+| **possible misleading interpretation** | that the partner mapping to CBX3 and CBX3P9 demonstrates a CBX3 retrocopy. The preregistered condition for even the weaker "consistent with a gene-derived insertion/retrocopy hypothesis" sentence (all three chr7 partners in exons) was not met: one partner is transcript-dependent, one intronic, one exonic. |
+| **correction applied** | the leader's frozen sentences are printed verbatim inside the ceiling boxes; SCRAMble's absence at 39.70 Mb is explained by its method, not read as evidence; AE2 is shown as NOT EXECUTED (data policy) rather than as a negative |
+| **full-size render checked?** | yes (preview render, layout corrected twice: label staggering, text wrapping, box heights, provenance strip) |
 
 ---
 
