@@ -12,8 +12,8 @@ Resumen: **16 resueltas · 7 retiradas junto con su arquitectura (bloques 12–1
 
 | # | Pregunta | Respuesta | Estado |
 |---|---|---|---|
-| 1 | ¿Cuáles son los 11 ficheros gated? | Inventariados en el notebook 00; FASTQ L001 (R1/R2) + VCF son los que sostienen el análisis | **resuelta** |
-| 2 | ¿Solo VCF, o también BAM/CRAM? | **Solo VCF y FASTQ.** Sin BAM/CRAM de profundidad completa. Esto bloquea EXP-012 (SV/CNV) | **resuelta** |
+| 1 | ¿Cuáles son los 11 ficheros gated? | Inventario inicial en notebook 00; el análisis posterior incluye cuatro carriles, ocho FASTQ, VCF y BAM reconstruido | **resuelta** |
+| 2 | ¿Solo VCF, o también BAM/CRAM? | BAM de profundidad completa reconstruido; GO 2B cerrado dentro del protocolo. Ver informe Track 1 y manifest final | **resuelta** |
 | 3 | ¿Hay RNA-seq masivo? | **No existe** | **resuelta** |
 | 4 | ¿Hay scRNA-seq u otra modalidad resuelta por célula? | **No existe.** Es la razón por la que cayó *Patient-as-Screen* | **resuelta** |
 | 5 | ¿Hay muestreo longitudinal? | **No existe.** Es la razón por la que cayó *Mosaic Forecast* | **resuelta** |
@@ -27,7 +27,7 @@ Resumen: **16 resueltas · 7 retiradas junto con su arquitectura (bloques 12–1
 | 8 | ¿Cuál es la hipótesis causal principal tras priorizar el genoma completo? | `BUB1B`. **#4 en el `A0` congelado, #1 en `A0-FREQFIX`**; los dos números se reportan juntos | **resuelta** (EXP-006, EXP-021b) |
 | 9 | ¿Encaja en genes MVA clásicos o en una vía MVA-*like* más amplia? | Gen MVA clásico: `BUB1B` es MVA1 (OMIM 257300) | **resuelta** |
 | 10 | ¿La fase o la herencia son informativas? | **No.** Sin muestras parentales la fase queda sin resolver y `PM3` bloqueado | **resuelta como negativa** (EXP-013) |
-| 11 | ¿El candidato implica dosis, estabilidad, pérdida de interfaz, catálisis, *splicing* o regulación? | Alelo truncante (dosis/estabilidad) + missense en bolsillo estructural. **Splicing descartado** por AlphaGenome | **resuelta** (EXP-009, EXP-010) |
+| 11 | ¿El candidato implica dosis, estabilidad, pérdida de interfaz, catálisis, *splicing* o regulación? | NMD predicho para el truncante; missense sin mecanismo funcional confirmado. AlphaGenome no apoyó el candidato regulador evaluado: no descarta splicing en el paciente | **hipótesis delimitadas; función ABIERTA**, vinculada a #19 (EXP-009, EXP-010) |
 
 ## *Patient-as-Screen* — retirada
 

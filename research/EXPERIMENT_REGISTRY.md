@@ -5,6 +5,12 @@
 
 ## Estado
 
+**Integración de estado, 24-09-2026.** GO 2B está cerrado según `docs/DECISIONS.md`
+(cierre de 11-09-2026). El BAM completo existe. Las filas actualizadas abajo distinguen
+ese cierre de las subpreguntas que aún necesitan reconciliación individual de salidas.
+Las siete nuevas síntesis de `src/figures/story.py` son guías visuales, no experimentos
+ni figuras científicas adicionales dentro de los notebooks. Mapa: `docs/STORYBOARD.md`.
+
 | ID | Experimento | Estado | Origen ejecutable |
 |---|---|---|---|
 | **EXP-001** | QC de FASTQ (L001) | **SURVIVES** | `src/qc_fastq_sample.py` → `notebooks/00_DATA_REALITY.ipynb` |
@@ -32,15 +38,15 @@
 | **EXP-022** | **`LZTR1` e `IGBP1`, los dos competidores que quedaban** | **NEGATIVE** los dos como causa del MVA. `LZTR1`: el recesivo exige dos alelos y solo hay uno. `IGBP1`: mecanismo reportado distinto (5'UTR), una sola familia, `MAX_AF` 1 × 10⁻⁴. **`LZTR1` queda registrado como candidato secundario/incidental de investigación**, que exigiría confirmación clínica independiente y un procedimiento de devolución de resultados | `docs/COMPETITOR_AUDIT_LZTR1_IGBP1.md` |
 | **EXP-020** | **`FANCD2` como hipótesis competidora** | **NEGATIVE**, los tres alelos al ~47 % de frecuencia, todos heterocigotos | `docs/FANCD2_AUDIT.md` |
 | **EXP-011b** | *Siguiente de esa rama:* abundancia y recambio de BUBR1 específico de variante | **PARKED**, no lo ejecuta este proyecto | — |
-| **EXP-012** | SV / CNV en `BUB1B` | **BLOCKED → PREREGISTERED (v5)**: los ocho FASTQ están en la máquina replicada; alineamiento, Manta, DELLY y CNVpytor (RD + BAF) preregistrados con gates de referencia, almacenamiento e integridad; ejecución pendiente del GO | `docs/DECISIONS.md` § alineamiento y § v5 · `src/wgs/` |
-| **EXP-012b** | Inserciones de elementos móviles (MEI): genoma completo → BUB1B → genes MVA → fenotipo residual | **PREREGISTERED (v5)**, xTea + SCRAMble fijados por digest; un negativo no excluye inserciones complejas | `docs/DECISIONS.md` § v5 |
+| **EXP-012** | SV / CNV en `BUB1B` | **NEGATIVE dentro del alcance CNV; GO 2B FINAL**: CNVpytor no emitió CNV RD+BAF solapante al cuerpo de BUB1B. No excluye toda alteración estructural; llamadas fuera del locus no equivalen a diagnósticos adjudicados | `docs/DECISIONS.md` § SCIENCE FINAL · `src/wgs/` · `src/figures/fig09_cnv_chromosomes.py` |
+| **EXP-012b** | Inserciones de elementos móviles (MEI): genoma completo → BUB1B → genes MVA → fenotipo residual | **NEGATIVE dentro del alcance MEI; GO 2B FINAL**: ninguna llamada xTea/SCRAMble solapante al cuerpo de BUB1B. Inserción compleja no excluida; AE3 descriptivo sin umbral inferencial | `docs/DECISIONS.md` § SCIENCE FINAL · `src/figures/fig10_bub1b_readlevel.py`, `fig11_mei_sv_adjudication.py` |
 | **EXP-012c** | Alelo regulador histórico aguas arriba de `BUB1B` (precedente publicado en PCS/MVA) | **PREREGISTERED (v5)**, estados `PRESENT / ABSENT / TECHNICALLY UNRESOLVED` | `docs/DECISIONS.md` § v5 |
-| **EXP-025** | Adjudicación basada en lecturas de los dos alelos de `BUB1B` + integridad BAM↔VCF | **PREREGISTERED (v5)**; replicación técnica con `bcftools`, nunca evidencia independiente | `docs/DECISIONS.md` § v5 |
-| **EXP-026** | Expansiones de repeticiones, P1, único locus con conexión fenotípica preregistrada (`DMPK`; `CNBP` excluido a propósito) | **PREREGISTERED (v5)**, cribado; toda positiva exige inspección visual | `docs/DECISIONS.md` § v5 |
+| **EXP-025** | Adjudicación basada en lecturas de los dos alelos de `BUB1B` + integridad BAM↔VCF | **EXECUTED**: ambos alelos recuperados; replicación técnica del mismo material, no evidencia biológica independiente ni fase | Informe STOP CIENCIA, hash en `docs/go2b_final_artifacts.sha256.json` |
+| **EXP-026** | Expansiones de repeticiones, P1, único locus con conexión fenotípica preregistrada (`DMPK`; `CNBP` excluido a propósito) | **EXECUTED**: cribado DMPK negativo dentro del alcance short-read; no excluye otros trastornos por repeticiones | Informe STOP CIENCIA, hash en `docs/go2b_final_artifacts.sha256.json` |
 | **EXP-013** | Fase parental | **BLOCKED**, muestras de los padres | — |
 | **EXP-014a** | MitoRead · prototipo sobre L001 | **UNRESOLVED**, *naive mtDNA-equivalent estimate* ≈259 bajo los supuestos del piloto. **No calibrado, no interpretable** | `src/mito/pilot_l001.py` |
-| **EXP-014a-v2** | MitoRead · piloto **con alineamiento** para excluir NUMT | **PARKED**, sin alineador instalable (`mappy` no compila sin toolchain de C) y descargar binarios ejecutables está prohibido por política. El prototipo ya demostró factibilidad | — |
-| **EXP-014b** | MitoRead · **interpretación biológica** | **BLOCKED**, exige profundidad completa comparable, controles con pipeline idéntico, y hemograma (plaquetas + fórmula) | — |
+| **EXP-014a-v2** | MitoRead · lectura **con alineamiento** y sensibilidad a MAPQ; no excluye NUMT | **EXECUTED, DESCRIPTIVE**: cociente mtDNA:nuclear de sangre sin ajuste por composición celular; controles comparables pendientes | Informe STOP CIENCIA, hash en `docs/go2b_final_artifacts.sha256.json` |
+| **EXP-014b** | MitoRead · **interpretación biológica** | **BLOCKED**, exige controles con pipeline idéntico y hemograma (plaquetas + fórmula); el BAM completo ya está disponible | — |
 | **EXP-015a·1** | **Recentrado del BAF agregado CON SIGNO bajo dirección de homólogo mezclada** | **SURVIVES**, potencia 0,980 → 0,050 al mezclar la dirección; la profundidad no lo mueve | `src/mosaic/simulate_dispersion.py` |
 | **EXP-015a·2** | **Atribución del desplome del estadístico ABSOLUTO a la cancelación entre linajes** | **NEGATIVE · FALSADA.** Un valor absoluto es ciego al signo; lo produce la profundidad dependiente del número de copia | `src/mosaic/ablation_baf.py` |
 | **EXP-015c** | **Ablación diagnóstica 2×2 · dirección de homólogo × profundidad** | **`POST-HOC DIAGNOSTIC ABLATION`**, no preregistrada: se diseñó **después** de que la auditoría detectara el confundido. Apoya la interpretación revisada; no es confirmación preregistrada. Incluye un **control diagnóstico post-hoc** clonal, añadido tras ver la primera ablación | `src/mosaic/ablation_baf.py` |

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="864pt" height="518.4pt" viewBox="0 0 864 518.4" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.8.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 518.4
+L 864 518.4
+L 864 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 37.44 130.32
+L 275.04 130.32
+Q 282.24 130.32 282.24 137.52
+L 282.24 357.12
+Q 282.24 364.32 275.04 364.32
+L 37.44 364.32
+Q 30.24 364.32 30.24 357.12
+L 30.24 137.52
+Q 30.24 130.32 37.44 130.32
+z
+" clip-path="url(#p47173bd000)" style="fill: #eaf5f1; stroke: #c8d4db; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 41.76 144.72
+L 44.64 144.72
+L 44.64 156.96
+L 41.76 156.96
+z
+" clip-path="url(#p47173bd000)" style="fill: #00695c"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 313.2 130.32
+L 550.8 130.32
+Q 558 130.32 558 137.52
+L 558 357.12
+Q 558 364.32 550.8 364.32
+L 313.2 364.32
+Q 306 364.32 306 357.12
+L 306 137.52
+Q 306 130.32 313.2 130.32
+z
+" clip-path="url(#p47173bd000)" style="fill: #f3f6f8; stroke: #c8d4db; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 317.52 144.72
+L 320.4 144.72
+L 320.4 156.96
+L 317.52 156.96
+z
+" clip-path="url(#p47173bd000)" style="fill: #145b8a"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 588.96 130.32
+L 826.56 130.32
+Q 833.76 130.32 833.76 137.52
+L 833.76 357.12
+Q 833.76 364.32 826.56 364.32
+L 588.96 364.32
+Q 581.76 364.32 581.76 357.12
+L 581.76 137.52
+Q 581.76 130.32 588.96 130.32
+z
+" clip-path="url(#p47173bd000)" style="fill: #fcf3e6; stroke: #c8d4db; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 593.28 144.72
+L 596.16 144.72
+L 596.16 156.96
+L 593.28 156.96
+z
+" clip-path="url(#p47173bd000)" style="fill: #86520b"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 36 388.08
+L 828 388.08
+Q 833.76 388.08 833.76 393.84
+L 833.76 432.72
+Q 833.76 438.48 828 438.48
+L 36 438.48
+Q 30.24 438.48 30.24 432.72
+L 30.24 393.84
+Q 30.24 388.08 36 388.08
+z
+" clip-path="url(#p47173bd000)" style="fill: #fcf3e6"/>
+   </g>
+   <g id="text_1">
+    <text style="fill: #00695c; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="24.878437" transform="rotate(-0 30.24 24.878437)">MOSAIC RESCUE  /  04</text>
+   </g>
+   <g id="text_2">
+    <text style="fill: #163344; font: 700 25px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="63.636094" transform="rotate(-0 30.24 63.636094)">Three evidence layers. Three different meanings.</text>
+   </g>
+   <g id="text_3">
+    <text style="fill: #536572; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="90.478125" transform="rotate(-0 30.24 90.478125)">PCS/MVA evidence context: no patient-specific mosaic fraction or cell-lineage reconstruction.</text>
+   </g>
+   <g id="text_4">
+    <text style="fill: #536572; font: 9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="504.358594" transform="rotate(-0 30.24 504.358594)">READING GUIDE · Schematic, not a new measurement · Sources and limits: docs/STORYBOARD.md</text>
+   </g>
+   <g id="text_5">
+    <text style="fill: #00695c; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="51.12" y="152.318438" transform="rotate(-0 51.12 152.318438)">PATIENT / AGGREGATED WGS</text>
+   </g>
+   <g id="text_6">
+    <text style="fill: #163344; font: 700 18px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="44.64" y="182.157188" transform="rotate(-0 44.64 182.157188)">What was measured</text>
+   </g>
+   <g id="text_7">
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 212.237813)">Chromosome-level RD and BAF.</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 229.510422)">Short-read signals at the</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 246.783031)">locus.</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 264.055641)"/>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 281.32825)">These summarize blood DNA;</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 298.600859)">they do not count abnormal</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(44.64 315.873469)">cells.</text>
+   </g>
+   <g id="text_8">
+    <text style="fill: #145b8a; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="326.88" y="152.318438" transform="rotate(-0 326.88 152.318438)">SIMULATION / MODEL</text>
+   </g>
+   <g id="text_9">
+    <text style="fill: #163344; font: 700 18px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="320.4" y="182.157188" transform="rotate(-0 320.4 182.157188)">What was tested</text>
+   </g>
+   <g id="text_10">
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 212.237813)">Mixing homolog directions can</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 229.510422)">recenter signed BAF.</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 246.783031)"/>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 264.055641)">The absolute-statistic collapse</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 281.32825)">was depth-confounded. No</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(320.4 298.600859)">validated detector resulted.</text>
+   </g>
+   <g id="text_11">
+    <text style="fill: #86520b; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="602.64" y="152.318438" transform="rotate(-0 602.64 152.318438)">LITERATURE / OTHER CASES</text>
+   </g>
+   <g id="text_12">
+    <text style="fill: #163344; font: 700 18px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="596.16" y="182.157188" transform="rotate(-0 596.16 182.157188)">What informs the test</text>
+   </g>
+   <g id="text_13">
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 212.237813)">RNA and long reads resolved a</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 229.510422)">hidden insertion in another</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 246.783031)">BUB1B case.</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 264.055641)"/>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 281.32825)">This motivates a test; it does</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 298.600859)">not transfer that finding to</text>
+    <text style="fill: #163344; font: 14px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(596.16 315.873469)">this patient.</text>
+   </g>
+   <g id="text_14">
+    <text style="fill: #86520b; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="407.238281" transform="rotate(-0 43.2 407.238281)">KEEP THE LAYERS SEPARATE</text>
+   </g>
+   <g id="text_15">
+    <text style="fill: #163344; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="423.838125" transform="rotate(-0 43.2 423.838125)">A flat aggregate summary cannot establish or exclude cytogenetic MVA; simulation is not patient evidence.</text>
+   </g>
+   <g id="text_16">
+    <text style="fill: #163344; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="469.198125" transform="rotate(-0 43.2 469.198125)">Still needed: suitable controls, phase, cell-level validation where relevant, and functional measurements.</text>
+   </g>
+  </g>
+  <g id="text_17">
+   <text style="fill: #5b6670; font: 6.2px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: end" x="862.272" y="6.007031" transform="rotate(-0 862.272 6.007031)">Figure class: synthesis    Evidence origin: derived, external</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p47173bd000">
+   <rect x="0" y="0" width="864" height="518.4"/>
+  </clipPath>
+ </defs>
+</svg>

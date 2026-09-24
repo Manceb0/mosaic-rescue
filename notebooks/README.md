@@ -1,6 +1,6 @@
 # Los notebooks: la investigación, ejecutable y visible
 
-> **Ocho notebooks, ejecutados, con 28 figuras embebidas, 23 de ellas científicas.** No son un
+> **Ocho notebooks con 30 figuras en sus salidas ejecutadas, 25 de ellas científicas.** No son un
 > registro de que algo ocurrió: son la investigación, y se leen de arriba abajo sin salir de
 > ellos.
 >
@@ -14,6 +14,13 @@
 > conserva en `docs/history/notebooks_README_SUPERSEDED.md`.
 
 ## La regla que se aplica en todos
+
+La integración de septiembre añade **10 imágenes adjuntas autocontenidas**: nueve
+paneles narrativos/de síntesis y el gráfico cromosómico RD/BAF congelado de GO 2B.
+Están dentro del archivo, visibles sin acceder al disco del autor. No se contabilizan
+como nuevas salidas de ejecución. Se regeneran con `python src/nb/story_integration.py`
+y también se incluyen al reconstruir los notebooks. Las celdas originales conservan
+su fecha y alcance; la introducción visual distingue el estado posterior.
 
 **Generar una figura y escribirla en `figures/` NO basta.** Aparece INLINE, en la misma celda o
 la siguiente, con un caption que declara cuatro cosas:
@@ -68,7 +75,7 @@ alineamiento, BAF, un heatmap o cobertura, la respuesta es sí. Si ve «SURVIVES
 | **01** | `TRACK1_GENOME_WIDE` | ¿Qué gen explica el caso cuando compite todo el genoma? | Manhattan de priorización sobre `A0` congelado | **7 · 7** |
 | **02** | `BUB1B_ALLELE_CURATION` | ¿Qué sostiene cada alelo, y qué haría falta para que el par sea causal? | Navegador del gen: exones, dominios y 1 497 missense de ClinVar | 4 · 3 |
 | **03** | `BUBR1_MECHANISM` | El missense no se mueve por clasificación: ¿se mueve por mecanismo? | Bolsillo de AlphaFold con distancias reales + logo de conservación | 3 · 3 |
-| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | Navegador REF/ALT/Δ de las nueve pistas congeladas, en dos figuras por modalidad | 4 · 4 |
+| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | Pistas REF/ALT/Δ, ISM y contactos de AlphaGenome, como predicciones | 6 · 6 |
 | **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | Matriz término HPO × modelo de enfermedad, en bits de Resnik | 3 · 2 |
 | **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | Distribuciones de BAF simuladas + curva de potencia | 3 · 1 |
 | **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | Matriz 8 puentes × 10 dimensiones de evidencia curada, más la cartera experimental de tres brazos | 3 · 2 |

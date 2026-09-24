@@ -341,11 +341,11 @@ reading is the ablation's combined pattern, not that statistic on its own.
 
 ## 10 · Scalability
 
-Measured, not asserted: **41 of 84 modules in `src/`, 6 554 of 16 757 lines (39 %), contain no
+Measured, not asserted: **44 of 91 modules in `src/`, 6 830 of 17 743 lines (38 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
-**Read that number for what it is.** It says *39 % of the current codebase is case-agnostic
-under a conservative lexical census*. It does **not** say the project is 39 % scalable. Real
+**Read that number for what it is.** It says *38 % of the current codebase is case-agnostic
+under a conservative lexical census*. It does **not** say the project is 38 % scalable. Real
 scalability also asks which inputs can be substituted, how many modules depend on `BUB1B` or on
 the MVA phenotype specifically, and which parts reuse generic HPO and VCF machinery — none of
 which a text search can answer. Treat it as a **technical proxy**, not a measure of scalability.
@@ -374,7 +374,7 @@ pip install -r requirements.txt
 python src/verify.py
 ```
 
-Eight checks run with no patient data: unit tests, module imports (discovered rather than
+Checks include unit tests, module imports (discovered rather than
 hand-listed), published figure counts recomputed from the executed notebooks, both Track 2
 matrices, the contradiction count, the privacy scanner and the superseded-claim auditor.
 
@@ -392,9 +392,9 @@ Required by the submission rules.
 
 | | |
 |---|---|
-| **Provider** | Anthropic |
-| **Interface** | Claude Code |
-| **Model** | Claude Opus 5 |
+| **Provider** | Anthropic (earlier recorded work); OpenAI (current visual integration) |
+| **Interface** | Claude Code; Codex desktop |
+| **Model** | Earlier record: Claude Opus 5, to be checked by maintainer; current session: GPT-6 |
 | **Plan / tier** | *To be completed by the maintainer* |
 | **Data-handling setting** | *To be completed by the maintainer* |
 
@@ -407,8 +407,12 @@ commit or push to the repository. The project's operating rules define explicit 
 conditions, and the choice of therapeutic candidate is one of them; the portfolio framing in
 this report was decided by the maintainer.
 
-**Patient data and external services.** This repository contains no patient data. One external
-service received patient-derived values: **AlphaGenome**, given a variant shortlist and never
+**Patient data and external services.** The assistant reviewed local project documents,
+user-supplied figures and selected tool outputs. Account data-handling settings require
+maintainer verification; this is not a claim of zero disclosure to an AI provider.
+Raw sequencing files are excluded from version control, while some internal technical
+figures contain case-specific locus information. The earlier project record documents
+**AlphaGenome** receiving patient-derived values: a variant shortlist and never
 the VCF. It runs in an isolated virtual environment, its outputs are cached, and the call is
 not repeated on a normal build. See `docs/03_ALPHAGENOME_ASSESSMENT.md`.
 
@@ -429,8 +433,9 @@ Bionetworks**, the **MVA Society**, **Hugging Face**, **BEACON**, **AWS** and **
 
 **Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The **formal citation is not reproduced here**: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
 
-**Privacy.** No variant coordinate, HGVS string, genotype or sample identifier appears in this
-document or in the repository. No attempt was made to locate the family.
+**Privacy.** This report omits variant coordinates, HGVS strings, genotypes and sample
+identifiers. Internal technical figures elsewhere need review before any public release.
+No attempt was made to locate the family.
 
 ## 14 · Verified sources
 

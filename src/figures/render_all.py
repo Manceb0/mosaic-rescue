@@ -27,6 +27,8 @@ from src.figures import style as S                                     # noqa: E
 #
 # (module, slug, notebook, figure class, evidence origin, takeaway)
 FIGURES = [
+    ("fig12_ablation", "fig12_baf_factorial_ablation", "06_MOSAIC_AND_MITOREAD",
+     "SIMULATION", "SIMULATED", "Post-hoc factorial ablation separates homolog direction and depth effects; no new simulation."),
     ("fig00_qc", "fig00_fastq_qc", "00_DATA_REALITY", "DATA", "MEASURED",
      "Reads are fit for use: 149 bp invariant, GC 41.3 % against the genome's 41 %, "
      "92.9 % of bases at Q30+, and quality degrades from 4.52 % to 13.29 % non-Q37."),
@@ -118,6 +120,9 @@ def main():
               f"{done[slug]['size_in'][0]}x{done[slug]['size_in'][1]} in")
 
     print()
+    # Capa narrativa: síntesis verificadas contra sus fuentes, no resultados nuevos.
+    from src.figures.story import render_all as render_story
+    done.update(render_story())
     print(f"  {'figure':<40}{'FIGURE CLASS':<20}EVIDENCE ORIGIN")
     print("  " + "-" * 92)
     for slug, r in done.items():

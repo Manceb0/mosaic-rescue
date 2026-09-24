@@ -38,6 +38,8 @@ def build(path: str, cells: list) -> None:
                                  "name": "python3"}
     nb.metadata["language_info"] = {"name": "python", "version": sys.version.split()[0]}
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    from src.nb.story_integration import integrate
+    nb = integrate(nb, path)
     nbf.write(nb, path)
 
 

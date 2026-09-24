@@ -1,0 +1,8 @@
+{
+  "check": "consecutive renders, local environment",
+  "sha256": {
+    "figures\\pub\\fig04I_alphagenome_ism.svg": "ac0428cfcd8555c0e9173ae755638a61103487688fb23586a68901f850d6e7a0",
+    "figures\\pub\\fig04C_alphagenome_contact_maps.svg": "36c4fb937d2d1ee47e839c32d32be907e34ca5f2e2c9d93513ff1f349caf2349",
+    "figures\\pub\\fig06_baf_cancellation.svg": "6a5011bef076ed8541d68e70765424891efc5ce51e7c02a1aa225cce9f498c2e"
+  }
+}

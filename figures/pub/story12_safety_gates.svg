@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="864pt" height="568.8pt" viewBox="0 0 864 568.8" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.8.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 568.8
+L 864 568.8
+L 864 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 36 128.88
+L 828 128.88
+Q 833.76 128.88 833.76 134.64
+L 833.76 189.36
+Q 833.76 195.12 828 195.12
+L 36 195.12
+Q 30.24 195.12 30.24 189.36
+L 30.24 134.64
+Q 30.24 128.88 36 128.88
+z
+" clip-path="url(#p10b314fb74)" style="fill: #f3f6f8; stroke: #cdd8de; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 36 205.2
+L 828 205.2
+Q 833.76 205.2 833.76 210.96
+L 833.76 265.68
+Q 833.76 271.44 828 271.44
+L 36 271.44
+Q 30.24 271.44 30.24 265.68
+L 30.24 210.96
+Q 30.24 205.2 36 205.2
+z
+" clip-path="url(#p10b314fb74)" style="fill: #f3f6f8; stroke: #cdd8de; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 36 281.52
+L 828 281.52
+Q 833.76 281.52 833.76 287.28
+L 833.76 342
+Q 833.76 347.76 828 347.76
+L 36 347.76
+Q 30.24 347.76 30.24 342
+L 30.24 287.28
+Q 30.24 281.52 36 281.52
+z
+" clip-path="url(#p10b314fb74)" style="fill: #f3f6f8; stroke: #cdd8de; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 36 357.84
+L 828 357.84
+Q 833.76 357.84 833.76 363.6
+L 833.76 418.32
+Q 833.76 424.08 828 424.08
+L 36 424.08
+Q 30.24 424.08 30.24 418.32
+L 30.24 363.6
+Q 30.24 357.84 36 357.84
+z
+" clip-path="url(#p10b314fb74)" style="fill: #f3f6f8; stroke: #cdd8de; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 36 448.56
+L 828 448.56
+Q 833.76 448.56 833.76 454.32
+L 833.76 493.2
+Q 833.76 498.96 828 498.96
+L 36 498.96
+Q 30.24 498.96 30.24 493.2
+L 30.24 454.32
+Q 30.24 448.56 36 448.56
+z
+" clip-path="url(#p10b314fb74)" style="fill: #fcf3e6"/>
+   </g>
+   <g id="text_1">
+    <text style="fill: #00695c; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="24.878438" transform="rotate(-0 30.24 24.878438)">MOSAIC RESCUE  /  12</text>
+   </g>
+   <g id="text_2">
+    <text style="fill: #163344; font: 700 25px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="63.636094" transform="rotate(-0 30.24 63.636094)">A rescue claim has to survive every gate.</text>
+   </g>
+   <g id="text_3">
+    <text style="fill: #536572; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="90.478125" transform="rotate(-0 30.24 90.478125)">Proposed decision rules for preclinical experiments. No arm has passed these gates in this case.</text>
+   </g>
+   <g id="text_4">
+    <text style="fill: #536572; font: 9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="30.24" y="554.758594" transform="rotate(-0 30.24 554.758594)">READING GUIDE · Schematic, not a new measurement · Sources and limits: docs/STORYBOARD.md</text>
+   </g>
+   <g id="text_5">
+    <text style="fill: #00695c; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="44.64" y="151.638281" transform="rotate(-0 44.64 151.638281)">01 / ENGAGEMENT</text>
+   </g>
+   <g id="text_6">
+    <text style="fill: #163344; font: 700 16px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="152.5575" transform="rotate(-0 216 152.5575)">Does the proposed molecular change occur?</text>
+   </g>
+   <g id="text_7">
+    <text style="fill: #536572; font: 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="175.477969" transform="rotate(-0 216 175.477969)">No → the proposed route is unsupported.</text>
+   </g>
+   <g id="text_8">
+    <text style="fill: #00695c; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="44.64" y="227.958281" transform="rotate(-0 44.64 227.958281)">02 / FUNCTION</text>
+   </g>
+   <g id="text_9">
+    <text style="fill: #163344; font: 700 16px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="228.8775" transform="rotate(-0 216 228.8775)">Does chromosome segregation improve?</text>
+   </g>
+   <g id="text_10">
+    <text style="fill: #536572; font: 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="251.797969" transform="rotate(-0 216 251.797969)">No → more protein or viability is insufficient.</text>
+   </g>
+   <g id="text_11">
+    <text style="fill: #00695c; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="44.64" y="304.278281" transform="rotate(-0 44.64 304.278281)">03 / SAFETY</text>
+   </g>
+   <g id="text_12">
+    <text style="fill: #163344; font: 700 16px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="305.1975" transform="rotate(-0 216 305.1975)">Do unstable cells gain clonogenic survival?</text>
+   </g>
+   <g id="text_13">
+    <text style="fill: #a43a35; font: 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="328.117969" transform="rotate(-0 216 328.117969)">Yes → veto, even if another readout improves.</text>
+   </g>
+   <g id="text_14">
+    <text style="fill: #00695c; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="44.64" y="380.598281" transform="rotate(-0 44.64 380.598281)">04 / INTERPRETABILITY</text>
+   </g>
+   <g id="text_15">
+    <text style="fill: #163344; font: 700 16px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="381.5175" transform="rotate(-0 216 381.5175)">Are viability and controls interpretable?</text>
+   </g>
+   <g id="text_16">
+    <text style="fill: #536572; font: 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="216" y="404.437969" transform="rotate(-0 216 404.437969)">No → repeat or redesign; do not call rescue.</text>
+   </g>
+   <g id="text_17">
+    <text style="fill: #86520b; font: 700 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="467.718281" transform="rotate(-0 43.2 467.718281)">CONTROLS ARE PART OF THE EXPERIMENT</text>
+   </g>
+   <g id="text_18">
+    <text style="fill: #163344; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="484.318125" transform="rotate(-0 43.2 484.318125)">Vehicle · genetic rescue control · matched euploid/aneuploid context · direct molecular readout</text>
+   </g>
+   <g id="text_19">
+    <text style="fill: #536572; font: 12px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="43.2" y="526.798125" transform="rotate(-0 43.2 526.798125)">Thresholds and experimental conditions must be fixed before testing; this diagram invents none.</text>
+   </g>
+  </g>
+  <g id="text_20">
+   <text style="fill: #5b6670; font: 6.2px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: end" x="862.272" y="6.133031" transform="rotate(-0 862.272 6.133031)">Figure class: synthesis    Evidence origin: derived, external</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p10b314fb74">
+   <rect x="0" y="0" width="864" height="568.8"/>
+  </clipPath>
+ </defs>
+</svg>

@@ -1,5 +1,13 @@
 # Camino crítico científico
 
+> **Actualización de lectura, 24-09-2026:** el cierre GO 2B de 11-09-2026 en
+> `docs/DECISIONS.md` supersede las referencias históricas de esta tabla a BAM ausente.
+> El BAM completo existe; CNVpytor no emitió CNV RD+BAF y xTea/SCRAMble no emitieron
+> MEI solapantes al cuerpo de BUB1B. Inserción compleja, fase y función de la missense
+> siguen sin resolver. AE2 permanece NOT EXECUTED (data policy). El mapa de pendientes
+> vigente para la entrega está en `docs/STORYBOARD.md`; los notebooks conservan su
+> estado de ejecución original.
+
 > **La reproducibilidad es infraestructura, no el producto.** Este documento existe porque
 > el proyecto derivó: se convirtió EXP-006 y su andamiaje en el proyecto entero mientras
 > ramas centrales quedaban flotando.
@@ -31,14 +39,14 @@ Si no responde a las dos, va al *backlog* de ingeniería, no al camino crítico.
 | 1 | ¿Qué gen explica el caso cuando compite todo el genoma codificante? | Sin esto, elegir `BUB1B` es sesgo de confirmación | **#1 en 14 de los 15 análisis**. En `A0` congelado queda **#4**; los tres que lo superan resultaron ser **polimorfismos comunes con rsID** cuya frecuencia VEP no supo anotar (hasta 313 150 homocigotos en gnomAD). En la sensibilidad `A0-FREQFIX`, que repara los 33 alelos afectados, **vuelve al puesto 1**. Modelo causal: OMIM:257300, compatible con herencia | **CERRADO · SURVIVES** | — | baseline externo hecho (#2 de 398, modelo AR) · notebook 03 reproduce desde las entradas · Figura 6 regenerada desde él. **Bloque de ranking cerrado; no se refina más salvo fallo concreto** | T1 |
 | 2 | ¿Los dos alelos de `BUB1B` están en *trans*? | Sin *trans* no hay modelo bialélico | Sin `PGT`/`PID`; hueco 13,8× la longitud de fragmento | **BLOCKED** | genotipos parentales o lectura larga dirigida | pedirlos | T1 · **el de mayor valor** |
 | 3 | ¿Hay un segundo alelo SNV/indel oculto en el locus? | El truncante necesita pareja | 270 kb, 1 candidato, AlphaGenome Δ plano | **NEGATIVE** | — | cerrado dentro del alcance evaluado | T1 |
-| 4 | ¿El segundo hit es estructural? | Es la clase que el VCF no ve | CNV grande sin evidencia desde profundidad y heterocigosidad | **BLOCKED** | BAM/CRAM de profundidad completa | pedirlo | T1 |
+| 4 | ¿El segundo hit es estructural? | El VCF no cubre todas las clases | GO 2B FINAL: ninguna CNV RD+BAF ni MEI emitida solapa el cuerpo de BUB1B; AE3 descriptivo | **NEGATIVE dentro del ensayo; compleja UNRESOLVED** | fase y modalidades ortogonales | fase dirigida; RNA/lecturas largas si persiste la pregunta | T1 |
 | 5 | ¿Compite algún gen que no habíamos mirado? | Protege del sesgo de panel | **Los cuatro competidores auditados y ninguno sobrevive.** `CTU2`/`PEX5`/`SLC22A1` (`A0` #1–#3): polimorfismos comunes con rsID. `FANCD2` (Exomiser #6): alelos al ~47 %, todos heterocigotos. `LZTR1` (`B0` #4): el recesivo exige dos alelos y solo hay uno; el LoF heterocigoto da schwannomatosis de inicio adulto, sin función establecida en segregación cromosómica. `IGBP1` (`B0` #6): el único mecanismo reportado es 5'UTR y el nuestro es missense, asociación de una sola familia, y `MAX_AF` 1 × 10⁻⁴ **fuertemente inconsistente** con un modelo ultra-raro y penetrante para un síndrome ligado al X descrito una vez. Los tres argumentos juntos, no la frecuencia sola | **CERRADO · NEGATIVE** | — | `docs/COMPETITOR_AUDIT_LZTR1_IGBP1.md` (EXP-022). `LZTR1` se registra además como **candidato secundario/incidental de investigación**, **no** un hallazgo clínico devolvible: parada prematura MANE, heterocigota, ClinVar P/LP, DP 48 · GQ 99. No es la causa del MVA y no se emite recomendación clínica | T1 |
 | 6 | ¿La nefrocalcinosis congénita exige un segundo diagnóstico? | No desaparece porque `BUB1B` gane | Primeros HIGH renales comunes. **Y el modo B añade señal: la nefrocalcinosis aporta poco soporte semántico al modelo MVA anotado** | **BARRIDO NEGATIVE · pregunta ABIERTA** | historia obstétrica y electrolitos | 0 alelos raros en 28 genes al umbral del panel; **0 variantes de `MAGED2`**. La nefrocalcinosis congénita sigue sin explicación propia | T1 |
 | 6b | ¿La atrofia muscular está cubierta por el modelo MVA? | Mismo patrón que la renal | **No anotada en el modelo y no cuantificada en la serie de 31 casos** | **PARKED** | dato ausente en la literatura | — | T1 |
 | 6c | ¿La literatura de MVA respalda crecimiento y perinatales? | Las bases HPO son incompletas | **Sí: 93,5 % de retraso de crecimiento.** El bajo soporte era **hueco de anotación**, no biología | **CERRADO · NEGATIVE como residual** | — | cerrado; no requiere experimento nuevo | T1 |
 | 7 | ¿Cuál es el mecanismo, no solo el gen? | Encontrar el gen no es encontrar el mecanismo | Truncante → NMD predicho. Missense: **conservación ortóloga SURVIVES**, posición en el percentil 90 de su propia proteína, propiedad química conservada al 99,2 % en 120 ortólogos, la clase que introduce la sustitución no aparece en ninguno. **No cambia ACMG** | **PARCIAL · avanza** | ΔΔG explícito bloqueado por licencia FoldX | **siguiente mejor experimento registrado: ensayo de abundancia y recambio de BUBR1 específico de variante** | **T1→T2** |
 | 8 | ¿El WGS conserva firma de mosaicismo? | Pieza central de originalidad | **Simulación hecha (EXP-015a), y su explicación falsada por nosotros con una ablación diagnóstica POST-HOC, no preregistrada (EXP-015c):** las mezclas balanceadas de homólogos recentran el BAF agregado **con signo** — potencia 0,980 → 0,050 al mezclar la dirección — pero el desplome del estadístico **absoluto** a 0,000 lo produce la profundidad dependiente del número de copia, no la cancelación. **Superioridad sobre MoChA NO demostrada**, la línea base usada carece de fase | **COMPUERTA SUPERADA · aplicación BLOQUEADA** | controles con pipeline idéntico | conseguir controles; comparar contra un método CON fase | T1 |
-| 9 | ¿Hay señal mitocondrial ortogonal? | Lectura independiente del mismo WGS | **Prototipo ejecutado:** 0,069 % de lecturas compatibles, *naive mtDNA-equivalent estimate* ≈259 bajo los supuestos del piloto. **Prototipo, no medida**: los NUMT no se excluyen sin alinear al genoma completo | **VIABILIDAD TÉCNICA · interpretación BLOCKED** | BAM/CRAM de profundidad completa **y** hemograma contemporáneo | pedir ambos; sin el hemograma la medida es ininterpretable | T1 |
+| 9 | ¿Hay señal mitocondrial ortogonal? | Lectura del mismo WGS, no réplica biológica | Cociente alineado descriptivo, sin ajuste por composición celular; informe STOP CIENCIA cotejado con hash congelado | **EXECUTED descriptivo · interpretación BLOCKED** | controles y hemograma contemporáneo | controles y composición celular | T1 |
 | 10 | ¿Qué hipótesis terapéutica sobrevive? | **Es el diferencial del proyecto** | **6 clases evaluadas; la modulación de proteostasis es la superviviente principal ENTRE LAS EVALUADAS.** Separada en T2-A (aguas arriba) y T2-B (aguas abajo), con riesgos oncológicos opuestos. **Puente 7 cerrado como `UNRESOLVED` con contraevidencia verificada**: en fibroblastos NPC1 la sobreexpresión de HSP70 rescató y arimoclomol no, sin inducir HSP70 (PMID 34481829); y en aneuploides humanos la inducción de HSR está al 50–60 % (PMID 25205676). **Se nomina una cartera experimental de tres brazos para discriminación preclínica, no un ganador terapéutico** | **ABIERTO** | puente 7 con prior en contra; puente 8 vacío | **Next Best Experiment redefinido**: par isogénico aneuploide/euploide ± coinductor, con **control positivo genético** y **lectura obligatoria de si el fármaco induce HSP**, midiendo a la vez CIN y supervivencia clonogénica | **T2** |
 
 ---
@@ -73,14 +81,15 @@ Estas no desaparecen del registro porque no contesten.
 
 | Petición | Bloquea | Estado |
 |---|---|---|
-| **BAM/CRAM** de los 4 carriles, con índice, *read groups* preservados y la referencia exacta | #4 SV/CNV, #8 mosaicismo, #9 MitoRead | pendiente |
+| **BAM/CRAM** completo | Infraestructura de #4, #8 y #9 | **RESUELTO** por el alineamiento completo; interpretación adicional conserva sus propios requisitos |
 | **Genotipos o muestras parentales** | #2 fase, el de mayor valor del proyecto | pendiente |
 | Tipo de preparación de librería (`DNA Prep` o `DNA PCR-Free`) | peso de #8 | pendiente |
 | Hemograma contemporáneo a la extracción | confusor de #9 | pendiente |
 | ¿Polihidramnios u oligohidramnios? | pondera #6 | pendiente |
 
-**Solo `L001` está en disco (~13×).** El VCF vino de los cuatro carriles. Prohibido cerrar
-un negativo estructural con un carril.
+**Estado histórico superado:** el piloto inicial usó L001. Hoy existen los cuatro carriles
+y el BAM completo usado por GO 2B. Los límites del negativo estructural siguen siendo
+los del ensayo, aunque el bloqueo de profundidad completa quedó resuelto.
 
 ---
 

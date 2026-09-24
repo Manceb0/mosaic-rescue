@@ -10,6 +10,42 @@
 
 ## The standard these figures are held to
 
+### fig12_baf_factorial_ablation
+
+SIMULATION / SIMULATED. Renderer: `src/figures/fig12_ablation.py`.
+Source: `work/mosaic/baf_ablation.json`, SHA256
+`27fdcb62b0f2c82ef6492081eff88bcf68290b9ebc2994df32d227a6eea22f19` (checked before render).
+Four readouts, shared rejection-proportion scale, all fractions of the four factorial
+`scope=frac` arms. `scope=all` diagnostic clonal controls are deliberately outside this
+view. Colour encodes direction; line/marker encodes depth. Lines only connect tested
+fractions. No newly estimated uncertainty; no effect claimed for small differences.
+**Misreading to avoid:** preregistered confirmation, patient mosaic fraction or detector
+superiority. The experiment is explicitly POST-HOC. SVG/PNG/thumbnail via standard export.
+
+### September narrative integration
+
+Seven editorial diagrams use a separate card layout and labelled navy/teal/amber
+palette; these are synthesis, not additional scientific data plots. Source hashes
+are checked by `src/figures/story.py` against `docs/story_sources.sha256.json`.
+Output hashes and exact claim ceilings are in `docs/story_figure_manifest.json`.
+All export SVG with text, PNG 300 dpi and thumbnails. Card text bounds are checked
+programmatically; the seven full-size renders were inspected for legibility.
+
+| Figure | Class | Shows | Misleading interpretation to avoid |
+|---|---|---|---|
+| `story00_overview` | NARRATIVE | Data → causal hypothesis → falsification → next assay | Proven diagnosis or rescue |
+| `story02_variant_card` | SYNTHESIS | LP research curation, VUS, unresolved phase | The schematic cis/trans scenarios are measured haplotypes |
+| `story03_second_allele` | SYNTHESIS | Scope of the closed structural search | Short reads excluded a complex insertion |
+| `story04_evidence_context` | SYNTHESIS | Patient, simulation and external evidence | A cell fraction measured from aggregate WGS |
+| `story10_mechanism` | SYNTHESIS | Competing functional hypotheses | External rescue proves this patient's mechanism |
+| `story12_safety_gates` | SYNTHESIS | Proposed molecular, CIN and survival vetoes | Completed drug assays or clinical suitability |
+| `story13_next_experiment` | SYNTHESIS | Assay matched to uncertainty | RNA/protein/parental measurements already available |
+
+Notebook attachments import nine instances of these diagrams and one frozen
+`fig09_cnvpytor_chromosome_rd_baf` image, with explicit captions. They do not
+increase the count of executed output figures. Existing technical figures retain
+their original data provenance and internal-sharing limits.
+
 | | |
 |---|---|
 | **Language** | English inside every final figure. Notebooks explain in Spanish; a figure never mixes both. |

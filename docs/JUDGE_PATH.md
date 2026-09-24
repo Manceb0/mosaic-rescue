@@ -1,158 +1,89 @@
-# Judge path — las cuatro figuras del recorrido de 3 minutos
+# Three-minute script: from finding to experiment
 
-> **Para qué es esto.** El repositorio tiene **28 figuras embebidas, 23 científicas**. Eso está
-> bien para un cuaderno de investigación y es demasiado para un vídeo de 3 minutos. Este
-> documento fija **cuáles cuatro** se enseñan, en qué orden, y qué se dice exactamente sobre
-> cada una.
->
-> No se eligen «las más bonitas». Se eligen las cuatro que sostienen el argumento completo, una
-> por cada criterio de la evaluación oficial.
+This version integrates the closed GO 2B and keeps the narration separate from the technical
+results. The thirteen visual questions and their files are listed in [STORYBOARD.md](STORYBOARD.md).
 
-## El arco, en una línea
+## 0:00–0:30 · The question
 
-**Buscamos sin panel y contamos el resultado incómodo → encontramos un modo de fallo que nadie
-había cuantificado → mapeamos la evidencia terapéutica y salió llena de huecos → y por eso la
-propuesta es una cartera de falsación, no un fármaco.**
+Show [the cover](../figures/pub/story00_overview.svg).
 
----
+"We have one blood genome from a child with a suspected chromosome-segregation disorder. We
+want to answer two questions: what best explains the case, and what experiment could test a
+rescue without favouring genomically unstable cells."
 
-## 1 · `fig01_prioritization_genomewide` — el rigor
+If asked: four sequencing lanes are still one sample. There is no RNA, no protein data and no
+parental genotyping. GRCh38 is the reference.
 
-**Qué se dice.** `BUB1B` compite contra **6 321 genes**, sin panel. En el `A0` **congelado y
-preregistrado** queda **#4**, no #1. Los tres que lo superaban resultaron ser polimorfismos
-comunes; la sensibilidad `A0-FREQFIX` lo devuelve al #1. **Los dos números se cuentan
-juntos, siempre.**
+## 0:30–1:10 · The hypothesis and its weak point
 
-**Por qué esta y no otra.** Es la figura que un jurado usa para decidir si se fía. Enseñar el
-#4 voluntariamente compra más credibilidad que cualquier #1.
+Show [the causal card](../figures/pub/story02_variant_card.svg).
+Optional detail: [the original ranking](../figures/pub/fig01_prioritization_genomewide.svg).
 
-**Lo que NO se puede decir.** Que el eje Y sea un p-value. **No lo es.** Es una puntuación
-preregistrada, sin distribución nula y sin línea de significación. Si alguien lo llama
-Manhattan, hay que corregirlo en el momento.
+"We searched without choosing a gene in advance. BUB1B came fourth in the frozen ranking. An
+audit found that three competitors were common variants whose frequencies were missing; once
+repaired, BUB1B ranked first. We report both numbers. The child carries a truncating allele and
+a missense, which is exactly the classic genotype of this disease. What we do not yet know is
+whether they sit on opposite copies of the gene. The missense is still a variant of uncertain
+significance."
 
-**Criterio oficial que cubre:** rigor científico (35 %).
+Do not call this a diagnosis. Exomiser uses the same VCF: another tool, not evidence from
+another patient.
 
-## 2 · `fig06_baf_cancellation` — la innovación
+## 1:10–1:40 · Trying to refute it
 
-**Qué se dice.** En aneuploidía **variegada** simulada, las ganancias balanceadas de
-homólogos **recentran el BAF agregado con signo** hacia 0,5: la potencia del estadístico con
-signo cae de **0,980** a **0,050** —el azar— solo con mezclar la dirección del homólogo. El
-genoma vuelve a centrarse en 0,5 **con la aneuploidía presente**.
+Show [the second-allele search](../figures/pub/story03_second_allele.svg).
 
-**Lo que ya no se dice, y por qué.** La versión anterior atribuía a esa cancelación el desplome
-a 0,000 de un estadístico **absoluto**. Una auditoría propia lo falsó: `|BAF−0,5|` es ciego al
-signo, así que la cancelación no puede moverlo, y una **ablación diagnóstica post-hoc**
-(EXP-015c, diseñada *después* de la auditoría, **no preregistrada**) no encuentra evidencia de
-efecto de la dirección —0,520 y 0,505 con la profundidad igualada, que a 200 repeticiones es el
-mismo resultado—. Ese desplome lo producía comparar contra un nulo de otra profundidad. La corrección está en `docs/MOSAIC_SIMULATION.md`.
+"In this disease the second allele has often hidden outside the exons. So we rebuilt the full
+alignment and searched the structural classes we had preregistered. No copy-number or
+mobile-element call overlaps BUB1B. The read metrics are descriptive and do not exclude a
+complex insertion. We closed that analysis, not the case."
 
-**Por qué esta.** Sigue siendo el resultado más general del proyecto, y ahora viene con su
-propia falsación al lado, que es la parte que un jurado no espera ver.
+The RNA/long-read precedent comes from another published case. Never show its blots as if they
+belonged to this patient. GO 2B details are for questions.
 
-**Lo que NO se puede decir.** Que superamos a MoChA. **El comparador no es MoChA**: carece de
-fase de largo alcance. Esa rama está marcada `UNVALIDATED · PARKED` y la propia figura lo lleva
-escrito en rojo dentro del panel D. Decir «superamos al método estándar» sería exactamente la
-exageración que este proyecto documenta haber evitado.
+## 1:40–2:20 · The problem a rescue has to solve
 
-**Criterio oficial:** innovación (25 %).
+Show [the mechanism](../figures/pub/story10_mechanism.svg).
+If asked about compounds, open [the portfolio](../figures/pub/fig08_track2_portfolio.svg).
 
-## 3 · `fig07_track2_evidence_matrix` — la honestidad intelectual
+"Better survival is not enough: we might be helping the wrong cells survive. We separate an
+allele-directed hypothesis, a sentinel that tests whether the pharmacology works at all, and a
+comparator that challenges safety. Azithromycin, arimoclomol and sirolimus fill those three
+roles. They are not a therapeutic ranking."
 
-**Qué se dice.** La cadena «este gen causa la enfermedad, luego este fármaco ayudará» se
-descompone en **8 puentes × 10 dimensiones = 80 celdas**. **61 están vacías.** El puente 7 es
-el hueco **traduccional**, con contraevidencia verificada. El puente 8, si la intervención
-mueve a la vez inestabilidad cromosómica y supervivencia clonogénica, está **vacío en las diez
-dimensiones: nuestra búsqueda acotada no encontró evidencia que cualifique**.
+External evidence does not demonstrate efficacy in this case. The assay must measure molecular
+activity, chromosome segregation and clonogenic survival, as well as viability.
+[Rejection rules](../figures/pub/story12_safety_gates.svg).
 
-**Por qué esta.** Las celdas vacías **son** el resultado. Un argumento terapéutico parece
-fuerte casi siempre porque nadie dibujó la cadena.
+## 2:20–3:00 · The useful result is a decision
 
-**Lo que NO se puede decir.** Que una celda `ABSENT` signifique que la afirmación es falsa.
-Significa que **nuestra búsqueda acotada no encontró evidencia que cualifique**, no que el
-mundo no haya mirado nunca. Tampoco que las 80 celdas sean 80 evidencias independientes:
-un mismo artículo llena varias, y el denominador honesto son **4 publicaciones distintas más 2
-artefactos internos** del proyecto. Y no
-hay puntuación global, a propósito.
+Show [the next experiment](../figures/pub/story13_next_experiment.svg).
 
-**Criterio oficial:** impacto potencial (25 %) e innovación.
+"The most informative next step is phase: if both alleles are on the same copy, this pair no
+longer explains a recessive mechanism. Then we need variant-specific function, and RNA and long
+reads if the search for a second allele continues. For any rescue, more clonogenic survival of
+unstable cells is a reason to reject it, not a win. We deliver a traceable hypothesis and the
+tests that can change it."
 
-## 4 · `fig08_track2_portfolio` — la propuesta
+## Questions that must be answerable in one sentence
 
-**Qué se dice.** Tres brazos farmacológicos aprobados en **tres papeles distintos**, más
-tres controles: **dos hipótesis candidatas y un comparador adversarial**. **Azitromicina** es el único brazo dirigido al alelo truncante de este paciente, y
-no tiene ninguna evidencia directa. **Arimoclomol** es el único con contraevidencia verificada,
-y por eso vale como **centinela de falsación**: informa al fallar. **Sirolimus** no compite:
-está para demostrar por qué rescatar más células aneuploides no equivale a un buen desenlace.
-Es el único con evidencia farmacológica directa **en un modelo de CIN en Drosophila** —el
-calificativo va siempre pegado— y esa evidencia ya es **parcialmente negativa** en el desenlace
-que importa.
-
-**Por qué esta.** Es la respuesta literal al entregable de Track 2, y a la vez la demostración
-de que no se ha convertido en una carrera con ganador.
-
-**La frase exacta, en voz alta, no en un pie de figura.** *Nominamos brazos farmacológicos
-para discriminación preclínica, no un ganador terapéutico ni una recomendación clínica.*
-Ninguno de los tres se propone para administración a ningún paciente.
-
-**Y no se dice «no hay nominación».** Suena a que no se respondió la pregunta del entregable,
-cuando sí se responde: lo que se nomina son brazos experimentales, no un ganador.
-
-> **Para vídeo, versión reducida.** La `fig08` completa es una figura de **informe**: a tamaño
-> de vídeo tiene demasiado texto pequeño. Para el pitch sobreviven solo **los tres papeles y la
-> pregunta que mata cada brazo**; el panel A de procedencia se cuenta de palabra. Esa versión
-> reducida **todavía no está construida**: se hace al preparar el vídeo, no antes.
-
-**Criterio oficial:** impacto (25 %) y rigor.
-
----
-
-## Reparto de los 3 minutos
-
-| Tramo | Contenido | Figura |
-|---|---|---|
-| 0:00–0:25 | El caso y la pregunta. Un niño real, MVA sospechada, WGS y nada más | — |
-| 0:25–1:00 | Búsqueda sin panel y el `A0` #4 contado de frente | **fig01** |
-| 1:00–1:40 | El modo de fallo del BAF en aneuploidía variegada | **fig06** |
-| 1:40–2:20 | Los ocho puentes y las 61 celdas vacías | **fig07** |
-| 2:20–2:50 | La cartera de tres papeles y su regla de descarte | **fig08** |
-| 2:50–3:00 | Escalabilidad en una frase, y la frase de no-recomendación clínica | — |
-
-## Las que se quedan fuera, y por qué
-
-No es que sean peores. Es que **no caben en tres minutos**, y algunas se leen mal a tamaño de
-vídeo.
-
-| Figura | Motivo |
+| Question | Answer |
 |---|---|
-| `fig00_fastq_qc` | Fundamental, pero «los datos son aptos» no es un latido narrativo. Se menciona de palabra |
-| `fig02_gene_browser` | Excelente a tamaño completo, **demasiado densa** para vídeo: 1 497 variantes de ClinVar. Su conclusión (`PM1` no aplica) se dice en una frase |
-| `fig03_pocket_and_conservation` | Sostiene el mecanismo, pero abre una discusión estructural que no cabe |
-| `fig04_alphagenome_*` | Es un **negativo**: ALT sigue a REF en todas las modalidades. Importa mucho para el registro y muy poco para el pitch |
-| `fig05_hpo_disease_matrix` | Misma razón que fig02: densa, y su conclusión (la nefrocalcinosis es el único rasgo sin cobertura) cabe en una frase |
+| How many genomes? | One biological sample, four lanes; not a cohort and not a trio |
+| Is the case solved? | No: phase and the function of the missense remain open |
+| Is the BAM missing? | It exists; GO 2B is closed within its protocol |
+| Does the RD/BAF plot show mosaicism? | It is descriptive; it does not count cells or establish a karyotype |
+| Which drug won? | None: we propose experimental roles with rejection criteria |
+| What does this project change? | It makes explicit what supports each inference, what contradicts it and which experiment decides it |
+| What about the rest of the phenotype? | The nephrocalcinosis remains a residual question; prioritising BUB1B does not erase it |
+| What generalises? | The decision procedure; it has not yet been validated on another patient |
 
-## Reglas para el vídeo
+## Preparing the submission
 
-1. **Los dos números de `BUB1B` van siempre juntos.** `A0` #4 y `A0-FREQFIX` #1. Nunca solo el
-   segundo.
-2. **Ninguna recomendación clínica.** Ni una pauta, ni una dosis, ni «mejoraría al paciente».
-3. **Nada de datos del paciente en pantalla**: ni coordenadas, ni HGVS, ni genotipos, ni el
-   identificador de muestra. Las figuras ya están saneadas; el guion también tiene que estarlo.
-4. **La fase sigue sin resolver.** Si aparece la palabra «diagnóstico», está mal: es una
-   *hipótesis causal candidata*.
-5. **Las figuras hablan inglés.** El guion, en el idioma que se decida, pero las figuras no se
-   retocan para el vídeo: son las mismas que están en `figures/pub/`.
-6. **`LZTR1` no entra en el pitch.** Es un candidato secundario de investigación, va en el CSV
-   y en el informe de Track 1, y en tres minutos solo distraería de `BUB1B` y abriría una
-   conversación clínica mucho más grande de la que cabe.
-7. **Nunca «evidencia directa» a secas para sirolimus.** Siempre «en un modelo de CIN en
-   Drosophila». Sin el calificativo, a un jurado clínico le suena a dato humano.
+Do not use the old slogan "The Patient Is the Screen" as a finding: no selection or cell
+persistence was measured. Do not use the internal technical figures that carry positions or
+genotypes in a public presentation. The new syntheses omit those fields, but a privacy review
+of the whole package is still required.
 
-## Cómo obtenerlas
-
-```bash
-python src/figures/render_all.py
-```
-
-Salen en `figures/pub/` como SVG y PNG a 300 dpi, y en `figures/pub/thumb/` en versión de
-índice. Son **deterministas**: dos renderizados producen ficheros idénticos byte a byte, así
-que la figura del vídeo y la del repositorio son la misma.
+Complete the account and AI-use fields, the formal dataset citation and the submission review.
+A green `verify.py` is not a submitted package.

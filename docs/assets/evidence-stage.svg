@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+<title id="title">Mosaic Rescue: evidencia, hipótesis y prueba</title><desc id="desc">Diagrama conceptual: WGS conduce a una hipótesis causal, las predicciones y evidencia externa informan el mecanismo. La fase y la función siguen abiertas. El ensayo propuesto puede vetar un rescate aparente.</desc>
+<defs>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#283342" stroke-width=".6"/></pattern>
+<linearGradient id="glass" x2=".3" y2="1"><stop stop-color="#334352" stop-opacity=".75"/><stop offset=".5" stop-color="#151e28"/><stop offset="1" stop-color="#0d141e"/></linearGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="4"/></filter>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#6ad5d0" stroke-width="1.4"/></marker>
+</defs>
+<rect width="1200" height="600" rx="20" fill="#080d14"/><rect width="1200" height="600" rx="20" fill="url(#grid)"/>
+<g font-family="Inter,Segoe UI,Arial,sans-serif" fill="#edf4fa">
+<text x="48" y="48" fill="#74d9d3" font-size="13" letter-spacing="3">MOSAIC RESCUE / EVIDENCE → DECISION</text>
+<text x="48" y="89" font-size="29" font-weight="600">Cada conexión exige una prueba.</text>
+<g fill="none" stroke="#57c9d7" stroke-width="2" marker-end="url(#arrow)">
+<path d="M302 218H440"/><path d="M730 218H868"/>
+<path d="M1010 275V368H728"/><path d="M440 422H300"/>
+<path d="M580 370V282" stroke="#e4b45a" stroke-dasharray="6 6"/>
+</g>
+<g font-size="12" fill="#9eb1c5"><text x="328" y="201">priorizar</text><text x="756" y="201">interrogar</text><text x="855" y="351">diseñar, no administrar</text><text x="330" y="407">rechazar</text><text x="600" y="324" fill="#e4b45a">fase + función pendientes</text></g>
+<g class="scene-node" data-stage="0"><rect x="48" y="158" width="254" height="120" rx="15" fill="url(#glass)" stroke="#53697d"/>
+<text x="70" y="188" font-size="12" fill="#6ad5d0">01 / OBSERVADO</text><text x="70" y="222" font-size="24" font-weight="600">Un genoma</text><text x="70" y="252" font-size="14" fill="#b6c6d5">Sangre · WGS · fenotipo</text></g>
+<g class="scene-node" data-stage="1"><rect x="440" y="150" width="290" height="132" rx="15" fill="url(#glass)" stroke="#6cb8ff"/>
+<text x="464" y="181" font-size="12" fill="#7cbfff">02 / HIPÓTESIS CAUSAL</text><text x="464" y="219" font-size="28" font-weight="600">BUB1B</text><text x="464" y="252" font-size="14" fill="#b6c6d5">Dos alelos · fase sin resolver</text></g>
+<g class="scene-node" data-stage="2"><rect x="868" y="158" width="284" height="120" rx="15" fill="url(#glass)" stroke="#53697d"/>
+<text x="890" y="188" font-size="12" fill="#b2a5ff">03 / PREDICCIÓN + LITERATURA</text><text x="890" y="222" font-size="24" font-weight="600">Mecanismo</text><text x="890" y="252" font-size="14" fill="#b6c6d5">ISM · contactos · estructura</text></g>
+<g class="scene-node" data-stage="3"><rect x="440" y="370" width="290" height="120" rx="15" fill="url(#glass)" stroke="#e4b45a"/>
+<text x="464" y="401" font-size="12" fill="#e4b45a">04 / EXPERIMENTO PROPUESTO</text><text x="464" y="435" font-size="24" font-weight="600">Ponerlo a prueba</text><text x="464" y="465" font-size="14" fill="#b6c6d5">Actividad · segregación · supervivencia</text></g>
+<g class="scene-node" data-stage="4"><rect x="48" y="370" width="254" height="120" rx="15" fill="url(#glass)" stroke="#f38c98"/>
+<text x="70" y="401" font-size="12" fill="#f38c98">05 / CRITERIO DE VETO</text><text x="70" y="435" font-size="24" font-weight="600">¿Rescate seguro?</text><text x="70" y="465" font-size="14" fill="#b6c6d5">Sobrevivir ≠ corregir el defecto</text></g>
+<text x="48" y="552" font-size="13" fill="#9eb1c5">SÍNTESIS CONCEPTUAL · Las conexiones expresan preguntas. No representan efectos causales demostrados.</text>
+</g></svg>
