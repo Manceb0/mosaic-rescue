@@ -21,13 +21,13 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 
 # Celda 0 de todos los notebooks: entorno, estilo y biblioteca de figuras.
 SETUP = '''import sys, os, io, json, pickle, collections
-os.chdir("..")                       # el pipeline usa rutas relativas a la raiz
+os.chdir("..")                       # the pipeline uses paths relative to the repo root
 sys.path.insert(0, ".")
 %matplotlib inline
 import matplotlib.pyplot as plt
 import numpy as np
-from src.nb import figlib as fl      # figuras inline + caption con procedencia
-print("entorno listo · las figuras de este notebook aparecen INLINE, con caption")'''
+from src.nb import figlib as fl      # inline figures + provenance captions
+print("environment ready · figures in this notebook render inline, each with a provenance caption")'''
 
 
 def build(path: str, cells: list) -> None:
@@ -89,7 +89,7 @@ def run(path: str, cells: list, min_sci: int = 1):
     build(path, cells)
     _, secs = execute(path)
     errs, figs, sci, ok = verify(path, min_sci)
-    tag = "OK" if ok else "FALLA"
-    print(f"  {os.path.basename(path):<34} {secs:5.0f}s  figuras: {figs:>2}  "
-          f"cientificas: {sci:>2}  errores: {errs}  [{tag}]")
+    tag = "OK" if ok else "FAIL"
+    print(f"  {os.path.basename(path):<34} {secs:5.0f}s  figures: {figs:>2}  "
+          f"scientific: {sci:>2}  errors: {errs}  [{tag}]")
     return ok

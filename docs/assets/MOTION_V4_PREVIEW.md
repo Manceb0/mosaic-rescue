@@ -1,0 +1,23 @@
+# Technical illustration v4 — preview, not publication ready
+
+Built-in imagegen; one composition for user style review. Not installed in README.
+
+Asset: `mosaic-technical-preview-v4.png`.
+
+QA: imagegen reconstructed chart pixels rather than preserving exact crops. Genome plot tick labels are corrupted, contact color scale is omitted, and the BAM connector incorrectly appears to originate from the prediction panel. This draft cannot substitute for the original scientific figures. Final quantitative insets require exact compositing from original files; routing also needs correction.
+
+## Prompt
+
+Produce ONE sophisticated ENGLISH scientific motion-design storyboard frame for MOSAIC RESCUE, 16:9 landscape, high resolution. This is a preview for the researcher to assess the first image before more are made.
+INPUT ROLES:
+Image 1 is STYLE ONLY: emulate the precise dark grid, thin white luminous outlines, controlled frosted glass with subtle grain, fine blue/green/amber wires, technical explanatory composition and small details. Do not copy the controller, memory cube, car, computer, positions, or Spanish text.
+Images 2,3,4 are ACTUAL PROJECT SCIENTIFIC FIGURES to insert as recognizable chart excerpts, not inspiration for imaginary charts. Preserve selected chart patterns, axes, numbers and labels faithfully. Their inset backgrounds can stay ivory so original scientific scales remain legible. Integrate their frames into the black grid. Do NOT invent measurements. Scientific inset fidelity takes priority over decorative recoloring.
+Visual direction: looks like a carefully art-directed educational animation paused at its most informative frame. Understated dark charcoal square grid, ortho frontal view, gently translucent scientific instrument modules, hairline borders, small colored connector ports, labeled routing lines with rounded bends. Detail and technical information, not a sparse generic box-arrow diagram. No oversized title, no serif, no cinematic lighting, no decorations in corners, no rainbow blobs, no stock-photo biology.
+STORY AND LAYOUT:
+Small upper-left title "MOSAIC RESCUE". Under it "What the genome suggests — and what remains unresolved".
+Three main modules across the canvas, graph insets occupying about half the image area in total. A bottom connected uncertainty strip.
+Left module heading "01 / PRIORITIZE". Small input text "Blood WGS + phenotype", and "1 sample · 4 technical lanes · GRCh38". A detailed tiny stack of 4 labeled lanes L1 L2 L3 L4 feeds a merge point; this is an explicitly schematic file pipeline, not invented sequencing data. Large inset cropped from image2 panel A (genome-wide scatter; preserve chromosome distribution and BUB1B orange marker). Retain meaningful score-axis labeling and make it readable. Under inset EXACT "BUB1B: frozen A0 #4; A0-FREQFIX #1". Tiny source "Source: fig01". Do not suggest two different patients or replicate experiments.
+Center module heading "02 / PREDICT". Slim translucent header "AlphaGenome". Large inset from image3: REF and ALT contact heatmaps side-by-side, preserve pale yellow colors, actual hotspot geometry and source scales; label "REF" and "ALT". Below a small restrained label "Predicted contacts · not patient Hi-C", source "Source: fig04C". Do not invent heatmap effects or imply measured chromatin. A blue fine connector from left toward center labeled "Candidate context".
+Right module heading "03 / CHALLENGE". Header "BUB1B read-level assay". Large inset from image4 panel A actual soft-clip dot plot with five groups upstream, BUB1B body, downstream, intron 2, intron 8; preserve source dot geometry and medians, y-axis values, and colors. Under inset "Descriptive evidence; complex insertion not excluded". Tiny source "Source: fig10". Connect left to right module with an independent thin blue routed line labeled "BAM evidence". Do not imply AlphaGenome produced the BAM assay.
+Lower strip: all modules connect with thin restrained lines to a central decision node "BUB1B remains a hypothesis". From this node amber dashed lines connect to two compact outlined branches "Phase unresolved" and "Missense: VUS", then converge into "Proposed: parental phasing · RNA · functional assays". Small exact footer "Editorial preview using project figure excerpts. Consult original figures for quantitative interpretation."
+Use crisp medium-weight sans serif, aligned baselines, spacious 3-column layout with microdetails (ports, source tags, exact technical labels), short text that can be read, no crossing connectors through graphs. The human should recognize real analysis fragments in an elegant technical explainer, not generic decorative charts. NO other text.

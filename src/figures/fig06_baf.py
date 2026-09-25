@@ -36,8 +36,10 @@ BINS = np.linspace(0.15, 0.85, 71)
 
 
 def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
-    fig = plt.figure(figsize=(11.6, 6.6))
-    gs = fig.add_gridspec(2, 3, height_ratios=[1.20, 1.0], hspace=0.46, wspace=0.16)
+    fig = plt.figure(figsize=(11.6, 7.3))
+    # bottom leaves room for the five-line provenance strip; it used to overflow the canvas.
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.20, 1.0], hspace=0.46, wspace=0.16,
+                          bottom=0.17)
 
     dens = {k: np.histogram(bafs[k], bins=BINS, density=True)[0] for k, _m, _c in SCEN}
     hi = max(d.max() for d in dens.values())
@@ -108,8 +110,8 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
     # pisaban.
     axD.legend(ncol=2, loc="lower center", bbox_to_anchor=(0.5, 1.115),
                fontsize=S.BASE - 1.0, columnspacing=2.4)
-    axD.text(0.985, 0.06, "Baseline is a site-wise unphased BAF statistic,\nnot MoChA: no long-range phasing",
-             transform=axD.transAxes, ha="right", va="bottom",
+    axD.text(0.015, 0.93, "Baseline is a site-wise unphased BAF statistic,\nnot MoChA: no long-range phasing",
+             transform=axD.transAxes, ha="left", va="top",
              fontsize=S.BASE - 0.5, color=S.VERM, fontweight="bold",
              bbox=dict(boxstyle="round,pad=0.32", fc="white", ec=S.VERM, lw=0.9))
 
@@ -130,11 +132,12 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
            f"{fraction * 100:.0f} % cell fraction, {S.thousands(n_sites)} sites each.\n"
            f"Variegated power of this site-wise ABSOLUTE statistic falls from {pv[0]:.3f} to "
            f"{pv[-1]:.3f}. The project first attributed that to lineage cancellation and its own "
-           "audit falsified it: an absolute statistic is blind to sign, and the 2x2 ablation "
-           "(EXP-015c, POST-HOC, designed after the audit and not preregistered) shows the fall is "
-           "driven by copy-number-dependent depth. What cancellation "
-           "does move is the SIGNED statistic, 0.980 to 0.050. No superiority over the standard "
-           "method is claimed: the comparator is unphased and MoChA is not reproduced here.\n"
+           "audit falsified it: an absolute statistic is blind to sign.\n"
+           "The 2x2 ablation (EXP-015c, POST-HOC, designed after the audit and not "
+           "preregistered) shows the fall is driven by copy-number-dependent depth. What "
+           "cancellation does move is the SIGNED statistic, 0.980 to 0.050.\n"
+           "No superiority over the standard method is claimed: the comparator is unphased and "
+           "MoChA is not reproduced here.\n"
            "Simulated power is optimistic: no GC bias, no mappability, no reference-allele "
            "bias, which at this depth are the real limiting factors.", y=0.005)
     return fig

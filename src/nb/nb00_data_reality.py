@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/00_DATA_REALITY.ipynb.
+"""Builds notebooks/00_DATA_REALITY.ipynb.
 
-HERO CIENTIFICO: QC de FASTQ calculado sobre L001, calidad por ciclo con
-percentiles, distribucion de GC por lectura, longitud y poly-G por ciclo.
-La lista de modalidades pasa a NARRATIVE: es metadata, no un objeto cientifico.
+Scientific hero: FASTQ QC computed on L001, per-cycle quality, per-read GC distribution,
+read length and per-cycle base composition. The modality list is metadata, not a scientific
+object, and is shown as a table.
 """
 from __future__ import annotations
 import sys
@@ -14,44 +14,47 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/00_DATA_REALITY.ipynb"
 
 CELLS = [
-("md", """# 00 · Qué datos tenemos y qué pueden sostener
+("md", """# 00 · What data we have, and what it can support
 
-> **Lugar en el argumento:** punto de partida. Antes de interpretar variantes, este notebook
-> separa las preguntas contestables de las que requieren una modalidad que no existe.
->
-> **Salida principal:** QC de secuenciación medido + inventario de modalidades disponibles y
-> ausentes. No intenta priorizar genes.
+**Place in the argument.** The starting point. Before interpreting any variant, this notebook
+separates the questions the data can answer from those that need a modality that does not
+exist.
 
-> **Saneado:** ninguna ruta local, ningún identificador de muestra, ninguna coordenada.
->
-> **Sustituye a `00_data_inventory.ipynb`**, una plantilla sin ejecutar que apuntaba a un
-> `../data` inexistente. Se conserva en `docs/history/`.
+**Main output.** Measured sequencing QC and an inventory of available and missing modalities.
+It does not prioritise genes.
 
-## Pregunta
+> **Sanitised output.** No local path, no sample identifier, no coordinate.
 
-**¿Los datos que hay son aptos, y para qué preguntas alcanzan?**
+## The question
 
-Dos preguntas distintas. La primera se responde con QC sobre el FASTQ. La segunda, con el
-inventario de lo que existe y lo que no."""),
+**Are the data fit for purpose, and which questions can they reach?**
+
+Two different questions. The first is answered by QC of the FASTQ. The second, by an inventory
+of what exists and what does not.
+
+**The one fact that shapes everything downstream:** this is **one genome**. One blood sample,
+sequenced on one flowcell across four lanes (eight FASTQ files, one VCF column). The lanes are
+technical partitions, not people or biological replicates. There are no parents, no RNA and no
+protein data."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Lectura", "Hasta donde llega")'),
+("code", 'fl.labels("Reading", "How far it reaches")'),
 
-("md", """## QC de secuenciación, calculado, no citado
+("md", """## Sequencing QC, computed rather than quoted
 
-Una submuestra reproducible de L001 R1. Se recorren las lecturas una vez y se acumulan los
-estadísticos por ciclo; nada viene del brief."""),
+A reproducible subsample of L001 R1. The reads are traversed once and per-cycle statistics are
+accumulated; nothing comes from the brief."""),
 
 ("code", '''from src.figures import fig00_qc as F
 from src.paths import get, patient_vcf
 
 fq1 = get("patient", "fastq_l001_r1")
-N = F.N_DEFAULT                  # submuestra reproducible: los estadisticos son agregados
+N = F.N_DEFAULT                  # reproducible subsample: the statistics are aggregates
 
-# Un solo recorrido del FASTQ, el MISMO que usa la figura de publicacion. Antes
-# el notebook y la figura tenian dos implementaciones del escaneo; podian
-# divergir, y una figura que no reproduce lo que imprime su notebook no vale.
+# One pass over the FASTQ, the SAME one the publication figure uses. The notebook and the
+# figure used to have two implementations of the scan; they could diverge, and a figure that
+# does not reproduce what its notebook prints is worthless.
 D = F.scan(fq1, n_reads=N)
 
 n, CYC = D["n_reads"], D["cycles"]
@@ -59,87 +62,88 @@ gcarr = D["gc"]
 median_readq = float(np.median(D["read_mean_q"]))
 non_top_first, non_top_last = float(D["non_top"][0]), float(D["non_top"][-1])
 
-print(f"  lecturas muestreadas   : {n:,}")
-print(f"  longitud de lectura    : {CYC} pb  ·  valores distintos: {len(D['lengths'])}")
-print(f"  bins de calidad        : {len(D['levels'])} -> "
+print(f"  reads sampled          : {n:,}")
+print(f"  read length            : {CYC} bp  ·  distinct values: {len(D['lengths'])}")
+print(f"  quality bins           : {len(D['levels'])} -> "
       + ", ".join("Q" + str(v) for v in D["levels"]))
-print(f"  fuera del bin alto     : {non_top_first:.2f} % en el ciclo 1  ->  "
-      f"{non_top_last:.2f} % en el {CYC}")
-print(f"  GC medio por lectura   : {gcarr.mean():.1f} %  (sd {gcarr.std():.1f})")
-print(f"  calidad media/lectura  : mediana {median_readq:.1f}  ·  "
-      f"{100 * float((D['read_mean_q'] < 30).mean()):.1f} % por debajo de Q30")
+print(f"  outside the top bin    : {non_top_first:.2f} % at cycle 1  ->  "
+      f"{non_top_last:.2f} % at cycle {CYC}")
+print(f"  mean GC per read       : {gcarr.mean():.1f} %  (sd {gcarr.std():.1f})")
+print(f"  mean quality per read  : median {median_readq:.1f}  ·  "
+      f"{100 * float((D['read_mean_q'] < 30).mean()):.1f} % below Q30")
 print(f"  bases >= Q30           : {D['q30_pct']:.1f} %")'''),
 
-("md", """### Figura científica 1 · QC de secuenciación por ciclo
+("md", """### Scientific figure 1 · per-cycle sequencing QC
 
-Los cuatro paneles que se miran en cualquier informe de QC real. **Calculados aquí**, no
-citados: calidad por ciclo con su dispersión, GC por lectura frente a la distribución teórica,
-longitud, y composición de bases por ciclo."""),
+The four panels any real QC report looks at, **computed here**: quality by cycle with its
+spread, GC per read against the theoretical distribution, mean quality per read, and base
+composition by cycle."""),
 
-("code", '''from src.figures import fig00_qc as F
-
-fig = F.build(F.scan(fq1, n_reads=N))
-fl.pub(fig, "Figura 1 · QC de secuenciacion de L001", "EXP-001", "MEASURED", "DATA",
-       f"la degradacion real a lo largo de la lectura. Este secuenciador entrega calidades "
-       f"BINADAS en cuatro valores (Q2, Q11, Q25, Q37) y lo que informa es la masa que "
-       f"ABANDONA el bin alto: de {non_top_first:.2f} % en el ciclo 1 a {non_top_last:.2f} % "
-       f"en el {CYC}. Ademas: GC por lectura centrado en {gcarr.mean():.1f} % contra el 41 % "
-       f"del genoma humano, calidad media por lectura con mediana {median_readq:.1f}, y "
-       f"composicion de bases estable sin deriva poly-G al final del read.",
-       "que los datos sean SUFICIENTES. El QC dice que son aptos, no que alcancen para las "
-       "preguntas que quedan. Y no dice nada del tipo de libreria: PCR-free o DNA Prep "
-       "comparten adaptador, y eso sigue sin respuesta.",
-       source=f"submuestra reproducible de {n:,} lecturas de L001 R1",
+("code", '''fig = F.build(D)
+fl.pub(fig, "Figure 1 · sequencing QC of lane L001", "EXP-001", "MEASURED", "DATA",
+       f"the real degradation along the read. This sequencer reports BINNED qualities in four "
+       f"values (Q2, Q11, Q25, Q37), so what is informative is the mass that LEAVES the top bin: "
+       f"from {non_top_first:.2f} % at cycle 1 to {non_top_last:.2f} % at cycle {CYC}. Also: GC "
+       f"per read centred on {gcarr.mean():.1f} % against 41 % for the human genome, a median "
+       f"per-read quality of {median_readq:.1f}, and stable base composition with no poly-G "
+       f"drift at the end of the read.",
+       "that the data are SUFFICIENT. QC says they are fit, not that they reach the open "
+       "questions. It also says nothing about library type: PCR-free and DNA Prep share an "
+       "adapter, and that remains unanswered.",
+       source=f"reproducible subsample of {n:,} reads from L001 R1",
        lib="matplotlib", slug="fig00_fastq_qc")'''),
 
-("md", """## Inventario de modalidades, metadata, no un objeto científico
+("md", """## Modality inventory: metadata, not a scientific object
 
-Esto **no** es una figura científica y se etiqueta como tal. Es el límite de lo que el
-proyecto puede afirmar, y se comprueba en disco, no se declara."""),
+This is **not** a scientific figure, and it is labelled as such. It is the boundary of what the
+project can claim, and it is checked on disk, not declared."""),
 
 ("code", '''import glob
+from IPython.display import Markdown, display
+
 def size_gb(p):
     return os.path.getsize(p) / 2**30 if p and os.path.exists(p) else None
 
 vcf = patient_vcf()
 lanes = sorted(glob.glob(os.path.dirname(fq1) + "/*_L00[2-4]_R[12]_*.fastq.gz"))
+bam = glob.glob("work/align/*.bam")
 MOD = [
-    ("VCF de WGS",                 os.path.exists(vcf),  f"{size_gb(vcf):.2f} GB"),
-    ("FASTQ L001 (R1)",            os.path.exists(fq1),  f"{size_gb(fq1):.1f} GB"),
-    ("FASTQ L002-L004",            len(lanes) > 0,       f"{len(lanes)} en disco"),
-    ("BAM / CRAM profundidad completa",
-     len(glob.glob("work/**/*.cram", recursive=True)
-         + glob.glob("work/**/*.bam", recursive=True)) > 0, "-"),
-    ("Genotipos parentales",       False, "no entregados"),
-    ("RNA-seq",                    False, "no existe"),
-    ("Single-cell",                False, "no existe"),
-    ("Proteomica",                 False, "no existe"),
-    ("Tejido tumoral",             False, "no entregado"),
-    ("Cariotipo / array previo",   False, "no entregado"),
-    ("Hemograma contemporaneo",    False, "pedido, sin respuesta"),
-    ("Fenotipo HPO",               os.path.exists("config/phenotype_v2.yaml"), "7 + 1 terminos"),
+    ("WGS VCF",                        os.path.exists(vcf),  f"{size_gb(vcf):.2f} GB"),
+    ("FASTQ, lane L001 (R1)",          os.path.exists(fq1),  f"{size_gb(fq1):.1f} GB"),
+    ("FASTQ, lanes L002 to L004",      len(lanes) > 0,       f"{len(lanes)} files on disk"),
+    ("Full-depth alignment (BAM)",     len(bam) > 0,         "rebuilt in GO 2A from all four lanes"),
+    ("Parental genotypes",             False, "not supplied: phase cannot be resolved"),
+    ("RNA-seq",                        False, "does not exist: splicing cannot be measured"),
+    ("Long reads",                     False, "do not exist: complex insertions cannot be excluded"),
+    ("Protein / functional assay",     False, "does not exist: missense function cannot be measured"),
+    ("Single-cell data",               False, "does not exist: mosaic fraction cannot be estimated"),
+    ("Tumour tissue",                  False, "not supplied"),
+    ("Prior karyotype / array",        False, "not supplied"),
+    ("Contemporaneous blood count",    False, "requested, no answer"),
+    ("HPO phenotype",                  os.path.exists("config/phenotype_v2.yaml"), "7 + 1 terms"),
 ]
-for name, present, note in MOD:
-    print(f"  {'SI ' if present else 'NO '} {name:<34} {note}")'''),
+md = ["| Modality | Available | Note |", "|---|:---:|---|"]
+md += [f"| {name} | {'yes' if present else '**no**'} | {note} |" for name, present, note in MOD]
+display(Markdown("\\n".join(md)))'''),
 
-("md", """## Decisión
+("md", """## Decision
 
 | | |
 |---|---|
-| **Los datos son aptos** | longitud invariante, GC en rango, Q30 alto, sin deriva poly-G |
-| **No son suficientes** | 5 de 16 ramas bloqueadas por modalidades ausentes |
+| **The data are fit** | invariant read length, GC in range, high Q30, no poly-G drift |
+| **They are not sufficient** | the four open questions of the project (phase, missense function, safe rescue, generality of the method) each need a modality that is missing here |
 
-### Qué NO demuestra este notebook
+### What this notebook does not show
 
-Que las modalidades ausentes vayan a llegar, ni que los datos presentes alcancen para las
-preguntas abiertas. **Y prohibido cerrar un negativo con L001**: un carril a ~13× es piloto.
+That the missing modalities will arrive, or that the data present reach the open questions.
+**And a negative can never be closed with L001 alone**: a single lane at ~13× is a pilot.
 
-### Falsificador
+### Falsifier
 
-Si aparece cualquiera de las modalidades marcadas ausente, hay que reejecutarlo. Está
-construido para eso: **ningún valor está escrito a mano**.
+If any modality marked missing appears, the notebook must be re-run. It is built for that: **no
+value is typed in by hand**.
 
-### Siguiente experimento
+### Next
 
 `01_TRACK1_GENOME_WIDE`."""),
 

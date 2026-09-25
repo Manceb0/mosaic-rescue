@@ -2,7 +2,9 @@
 
 <p align="center"><strong>ONE GENOME. A MECHANISM TO TEST. A SAFER QUESTION.</strong></p>
 
-![Conceptual glass illustration: a genome, layers of evidence and an unfinished assembly represent the search for a causal explanation.](docs/assets/mosaic-rescue-hero.png)
+![Mosaic Rescue project map: causal investigation, conditional rescue hypotheses, external evidence, safety gate and proposed falsifiable experiment.](docs/assets/mosaic-00-project-map.png)
+
+*Project overview · Case data, computational predictions and proposed tests are distinguished. Simulations stress-test methods; they are not patient measurements. Independent validation remains pending. The output is a prioritized experiment with explicit safety rejection criteria. All miniature plots are schematic; no rescue has been demonstrated.*
 
 <p align="center"><em>A variant is only the beginning.</em></p>
 
@@ -23,7 +25,7 @@ The story below connects the evidence to the decisions; the notebooks expose the
 | Which gene best explains the case? | What would overturn that explanation? | What separates functional rescue from tolerance of instability? |
 | Genome-wide ranking + phenotype | Allele curation + hidden-allele search | Mechanism + counter-evidence + safety vetoes |
 
-*Cover and crossroads artwork: AI-generated conceptual illustrations, not experimental images or molecular models.*
+*The conceptual illustrations below explain the research questions; the scientific plots retain their original data and model-output provenance.*
 
 **Current answer:** `BUB1B` is the leading causal hypothesis. Its two candidate alleles
 are not yet a proven recessive pair. Short-read structural analysis is complete within
@@ -35,6 +37,30 @@ has been established.**
 [Track 2: experimental portfolio](reports/TRACK2_REPORT.md) ·
 [All 13 visual questions and remaining work](docs/STORYBOARD.md) ·
 [Three-minute presentation](docs/JUDGE_PATH.md)
+
+## Results and deliverables by track
+
+### Track 1 — the leading causal hypothesis is BUB1B
+
+**Result:** frozen A0 rank **#4**, frequency-corrected sensitivity **#1**, and Exomiser **#2 of 398 genes** on the same VCF. The truncating allele is research Likely Pathogenic; the missense remains **VUS**, with **phase unresolved**. The scoped structural search found no overlapping RD+BAF CNV or mobile-element call in BUB1B; a complex insertion remains possible. **This is a prioritized hypothesis, not a confirmed diagnosis.**
+
+**Deliverables:** [causal report](reports/TRACK1_REPORT.md), [ranking](notebooks/01_TRACK1_GENOME_WIDE.ipynb), [allele curation](notebooks/02_BUB1B_ALLELE_CURATION.ipynb), and a two-row prediction CSV in ignored local storage. The [CSV generator](src/submission/track1_csv.py) preserves the method without publishing patient coordinates. Its older rationale and the packaged report need a final consistency review. Local ranks are not official leaderboard scores.
+
+### Track 2 — a falsifiable preclinical portfolio
+
+| Proposed arm | Role | What would reject the proposed route |
+|---|---|---|
+| Azithromycin | Allele-directed readthrough hypothesis | No useful functional product under tested conditions |
+| Arimoclomol | Falsification sentinel | No target engagement despite an informative positive control |
+| Sirolimus | Adversarial safety comparator | Increased survival of genomically unstable cells |
+
+**Result:** three experimental roles with controls and rejection rules, supported by a bounded **8 × 10 evidence matrix with 61 empty cells**. These gaps remain explicit. There is **no therapeutic winner or demonstrated rescue**; the arms are research proposals, not administration recommendations.
+
+**Deliverables:** [Track 2 report](reports/TRACK2_REPORT.md), [evidence matrix](figures/pub/fig07_track2_evidence_matrix.svg), [portfolio and controls](figures/pub/fig08_track2_portfolio.svg), [safe-rescue notebook](notebooks/07_TRACK2_SAFE_RESCUE.ipynb), and [three-minute pitch script](docs/JUDGE_PATH.md). A final hosted pitch video has not been verified.
+
+### What the organizers require
+
+Track 1 requires a ranked predictions CSV, a methods/evidence report and the reproducible repository. Track 2 requires a mechanism-supported repurposing report, repository and three-minute video. Reports must include the requested AI-use disclosure. See the [official-requirement-to-artifact checklist](docs/TRACK_DELIVERABLES.md) for source links, file status and remaining packaging work. **No submission receipt or jury score is claimed here.**
 
 ## See the science
 
@@ -94,6 +120,10 @@ visible; no invented efficacy, safety or patient-resilience scores position the 
 
 ## 1. The story starts with one child’s genome
 
+![Track 1 conceptual workflow: WGS and phenotype inform BUB1B; model predictions guide a proposed functional test.](docs/assets/mosaic-01-causal-workflow.png)
+
+*Figure 1 · Causal workflow. REF/ALT signals are schematic, not quantitative predictions; the assay is proposed. This figure develops Track 1, not the entire project.*
+
 The first task was to establish what the dataset could actually answer. Four sequencing
 lanes can look like four datasets; here they belong to the same biological sample.
 That distinction determines how much confidence any agreement between analyses can add.
@@ -116,15 +146,9 @@ We searched broadly before choosing a mechanism. `BUB1B` competed in a **6 321-g
 universe carrying HIGH or MODERATE consequence alleles; 151 genes scored under an
 inheritance model.
 
-```mermaid
-flowchart LR
-    A[One WGS sample] --> B[Panel-free search<br/>6 321-gene universe]
-    B --> C[Frozen A0<br/>BUB1B ranks 4th]
-    C --> D[Audit missing frequencies<br/>A0-FREQFIX ranks 1st]
-    D --> E[Leading hypothesis<br/>phase and function unresolved]
-    A --> F[Exomiser: 2nd of 398<br/>same VCF, another method]
-    F --> E
-```
+![Ranking audit: frozen A0 places BUB1B fourth; repairing missing frequency annotations places it first in a later sensitivity analysis. Exomiser ranks it second using the same VCF.](docs/assets/mosaic-03-ranking-audit.png)
+
+*Figure 3 · Verified ranking results, schematic glyphs. A0 remains frozen; Exomiser is another method on the same sample. [Original quantitative plot](figures/pub/fig01_prioritization_genomewide.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
 
 The frozen **A0 #4** and later **A0-FREQFIX #1** are always reported together. The three
 genes above `BUB1B` in A0 carried common alleles whose frequency annotation was missing.
@@ -132,7 +156,9 @@ Repairing that annotation was a later sensitivity analysis, not a rewrite of A0.
 `BUB1B` ranks first in 14 of 15 analyses. Exomiser's agreement is methodological
 convergence on the same data, not a second patient's validation.
 
-![Two candidate BUB1B alleles: the truncating allele is likely pathogenic in research curation, the missense is a VUS, and phase must be resolved before claiming a biallelic configuration.](figures/pub/story02_variant_card.svg)
+![Two BUB1B variants: cis and trans remain possible; phase and missense function are independent unresolved questions.](docs/assets/mosaic-02-phase-function.png)
+
+*Figure 2 · Phase and function. Neither haplotype configuration is established. Readout symbols illustrate proposed tests, not experimental results.*
 
 The result supports **candidate compound heterozygosity with phase unresolved**.
 If both alleles are on the same copy of the gene, this pair cannot explain the proposed
@@ -149,7 +175,9 @@ mobile-element callers, and descriptive inspection of short-read breakpoint sign
 **GO 2B is closed**, with frozen artifacts and source hashes in
 [the decision record](docs/DECISIONS.md) and [artifact manifest](docs/go2b_final_artifacts.sha256.json).
 
-![Second-allele evidence: the assessed regulatory branch has no supported candidate; CNVpytor and mobile-element callers emitted no call overlapping the BUB1B body; read-level metrics remain descriptive and complex insertion is not excluded.](figures/pub/story03_second_allele.svg)
+![Bounded hidden-allele search: AlphaGenome predictions, CNVpytor, mobile-element callers and descriptive read metrics do not exclude a complex insertion.](docs/assets/mosaic-04-hidden-allele.png)
+
+*Figure 4 · Scope matters: no overlapping caller record is not universal exclusion. RNA/long-read work is proposed; AE2 was not executed. All signal glyphs are schematic. [Actual read-level metrics](figures/pub/fig10_bub1b_readlevel_assay.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
 
 The conclusion is specific: **CNVpytor emitted no RD+BAF CNV overlapping the BUB1B gene
 body; xTea and SCRAMble emitted no overlapping MEI call.** The breakpoint assay had no
@@ -200,7 +228,9 @@ Finding a plausible gene does not establish the defect caused by this particular
 pair. The working hypothesis is reduced useful BUBR1 function. Patient-specific protein
 abundance, turnover and checkpoint function remain unmeasured.
 
-![Proposed mechanism: candidate alleles may alter residual BUBR1 function, but restoring function and increasing tolerance of unstable cells are different routes. Both chromosome instability and clonogenic survival must be measured.](figures/pub/story10_mechanism.svg)
+![Proposed mechanisms: restoring residual BUBR1 function and increasing tolerance of unstable cells must be distinguished using joint segregation and clonogenic-survival measurements.](docs/assets/mosaic-08-mechanism.png)
+
+*Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; segregation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/MOSAIC_07_08_REVISION.md).*
 
 External MVA-cell experiments support distinct abundance and functional defects in other
 alleles. A normal abundance assay would weaken the instability hypothesis, not exclude
@@ -215,7 +245,9 @@ this patient. [PubMed](https://pubmed.ncbi.nlm.nih.gov/34481829/) ·
 
 ## 5. The turning point: survival can be the wrong success
 
-![Conceptual illustration of two open experimental paths: testing functional correction and testing tolerance of instability. Neither path represents an observed result.](docs/assets/rescue-crossroads.png)
+![Proposed rescue assay: three experimental roles and three controls, joint molecular, segregation, clonogenic-survival and viability readouts, with explicit rejection and safety-veto outcomes.](docs/assets/mosaic-05-rescue-test.png)
+
+*Figure 5 · Proposed preclinical design, not drug efficacy results. Controls are context-dependent; reject/veto branches do not lead to advancement. [Evidence and controls](figures/pub/fig08_track2_portfolio.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
 
 Suppose an intervention makes more cells survive. That could reflect useful restoration
 of function. It could also allow unstable cells to persist. Those outcomes lead to very
@@ -245,7 +277,9 @@ HSF1 work makes that distinction particularly relevant.
 
 ## 6. The next chapter needs a different kind of evidence
 
-![Next experiments: phase the two alleles, test missense function, use RNA and targeted long reads if needed for a hidden allele, and evaluate rescue with simultaneous instability and clonogenic-survival measurements.](figures/pub/story13_next_experiment.svg)
+![Four proposed measurements and the decisions they inform: phase, missense function, hidden allele and safe rescue.](docs/assets/mosaic-06-next-experiments.png)
+
+*Figure 6 · Proposed measurements, not completed results. Phase is the first genetic priority; normal protein abundance alone does not establish normal function. [Caption and sources](docs/assets/MOSAIC_06_07_CAPTIONS.md).*
 
 **The highest-value immediate genetic question is phase.** More ranking refinement cannot
 replace that datum. RNA/long-read work addresses a hidden allele; the functional assay
@@ -303,32 +337,9 @@ Only one patient has been analysed. [Scalability and its limits](docs/SCALABILIT
 The project has parallel branches. They meet at a decision, not at a single score.
 This map separates work already performed from the measurements still needed.
 
-```mermaid
-flowchart TB
-    A[One blood WGS + clinical phenotype] --> B[Inventory, read QC and reference checks]
-    B --> C[Full-depth alignment and technical concordance]
-    B --> D[VCF annotation and genome-wide ranking]
-    D --> E[Frequency audit + phenotype comparison + Exomiser]
-    E --> F[BUB1B allele curation]
-    F --> G[Conservation + structural context]
-    F --> H[Regulatory predictions: AlphaGenome]
-    C --> I[CNV, SV, mobile elements and locus read metrics]
-    C --> J[Aligned MitoRead + DMPK screen]
-    A --> K[Residual phenotype review]
-    A --> L[Mosaicism simulations and falsification]
-    G --> M[Mechanism hypotheses + external evidence]
-    H --> N[Causal interpretation with unresolved phase/function]
-    I --> N
-    J --> N
-    K --> N
-    L --> N
-    M --> O[Three experimental roles + safety vetoes]
-    N --> P[Proposed next measurements]
-    O --> P
-    P --> Q[Phase, functional assays, RNA/long reads as indicated]
-    classDef next fill:#fff4df,stroke:#946421,color:#3d3019;
-    class P,Q next;
-```
+![Research route: parallel case evidence and model context inform a causal hypothesis; independent simulation constrains methods, while external evidence and safety criteria inform proposed experiments.](docs/assets/mosaic-07-research-route.png)
+
+*Figure 7 · One case supports parallel variant, read and phenotype analyses; models add hypotheses. Independent simulations assess method limits. External evidence informs conditional rescue proposals and safety criteria. The endpoint is a proposed experiment, not a diagnosis or safe therapy. All glyphs are schematic; the table below supplies tools, findings and limitations. [Caption and sources](docs/assets/MOSAIC_07_08_REVISION.md).*
 
 ### What each branch contributes
 
@@ -357,7 +368,7 @@ flowchart TB
 
 ## Reproduce or inspect the work
 
-Eight executed notebooks retain **30 embedded output figures, 25 scientific**.
+Eight executed notebooks retain **27 embedded output figures, 26 scientific**.
 They now also include **10 self-contained image attachments**: nine narrative/synthesis
 panels and the frozen GO 2B chromosome RD/BAF figure. These reviewed additions are
 labelled separately from the original executed analysis; they do not imply a new run.
@@ -404,6 +415,6 @@ omit variant coordinates, genotypes and sample identifiers. The privacy scanner 
 partial check, not publication permission.
 
 No diagnosis, dose, administration advice or demonstrated rescue is claimed.
-Editorial artwork uses the built-in image generation tool; [prompts and provenance](docs/assets/ART_DIRECTION.md).
+Editorial artwork uses the built-in image generation tool; [approved series, captions and placement](docs/assets/FIGURE_SERIES.md).
 Research rules: [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md).
 Counter-evidence: [contradictions](research/contradictions.md).

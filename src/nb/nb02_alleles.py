@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/02_BUB1B_ALLELE_CURATION.ipynb."""
+"""Builds notebooks/02_BUB1B_ALLELE_CURATION.ipynb."""
 from __future__ import annotations
 import sys
 sys.path.insert(0, ".")
@@ -9,37 +9,39 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/02_BUB1B_ALLELE_CURATION.ipynb"
 
 CELLS = [
-("md", """# 02 · Evidencia de los dos alelos de `BUB1B`
+("md", """# 02 · The evidence behind each `BUB1B` allele
 
-> **Lugar en el argumento:** Track 1, curación. El ranking propone un gen; este notebook
-> comprueba por separado qué evidencia sostiene cada alelo y qué impide cerrar el par.
+**Place in the argument.** Track 1, curation. The ranking proposes a gene; this notebook checks,
+allele by allele, what evidence supports each one and what prevents the pair from being closed.
+
+**Main output.** QC of the two calls, ACMG-style curation, and the geometry of nonsense-mediated
+decay (NMD) and phase. It does not turn a VUS into a pathogenic variant, or an unknown phase into
+*trans*.
+
+> **Sanitised output.** No positions, no amino-acid identities, no coordinates. The alleles are
+> named by their role (`truncating`, `missense`), which is what curation needs.
 >
-> **Salida principal:** QC de las llamadas, curación estilo ACMG y geometría de NMD/fase. No
-> convierte una VUS en patogénica ni una fase desconocida en *trans*.
+> **This is research curation, not a clinical report.** The project delivers a falsifiable
+> hypothesis, never a recommendation.
 
-> **Saneado:** sin posición, sin identidad de aminoácidos, sin coordenadas. Los alelos se
-> nombran por su papel (`truncante`, `missense`), que es lo que importa para la curación.
->
-> **Esto es curación de investigación, no un informe clínico.** El entregable del proyecto es
-> una hipótesis falsable, nunca una recomendación.
+## The biological question
 
-## Pregunta biológica
+**What supports each allele on its own, and what would it take for the pair to be causal?**
 
-**¿Qué sostiene cada alelo por separado, y qué haría falta para que el par sea causal?**
+## Hypothesis and preregistration
 
-## Hipótesis y preregistro
-
-`docs/DECISIONS.md`. Los umbrales de `PP3` se sellaron **antes** de mirar REVEL, precisamente
-para que un predictor no informativo no se sumara a conveniencia."""),
+`docs/DECISIONS.md`. The `PP3` thresholds were sealed **before** REVEL was looked at, precisely
+so that an uninformative predictor could not be added when convenient."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Interpretacion", "Limite de la evidencia")'),
+("code", 'fl.labels("Interpretation", "Limit of the evidence")'),
 
-("md", """## Entradas, QC de las dos llamadas
+("md", """## Inputs · QC of the two calls
 
-Antes de curar nada: ¿son buenas las llamadas? Una curación sobre una llamada mala es ruido
-con formato ACMG."""),
+Before curating anything: are the calls good? Curation on a bad call is noise formatted as
+ACMG. Each allele is placed against the same metric for every heterozygous HIGH/MODERATE call in
+this genome, which is the reference a single number needs."""),
 
 ("code", '''from src.paths import patient_vcf
 from src.prioritization.genome_wide import load
@@ -54,65 +56,79 @@ for v in rows:
         continue
     seen.add(k); alleles.append(v)
 
-ROLE = {"HIGH": "alelo A · truncante", "MODERATE": "alelo B · missense"}
-# El campo GT crudo NO se imprime: es el genotipo del paciente en el formato
-# exacto que la regla dura prohibe versionar. La cigosidad si se dice, en
-# palabras, porque ya es la afirmacion canonica del proyecto. Lo demas son
-# metricas de calidad de la llamada, que es lo que este QC evalua.
-ZYG = {"0/1": "heterocigoto", "1|0": "heterocigoto", "0|1": "heterocigoto",
-       "1/1": "homocigoto alternativo"}
+ROLE = {"HIGH": "allele A · truncating", "MODERATE": "allele B · missense"}
+# The raw GT field is NOT printed: it is the patient's genotype in exactly the format the hard
+# rule forbids versioning. Zygosity is stated in words, because that is already the project's
+# canonical claim. The rest are call-quality metrics, which is what this QC evaluates.
+ZYG = {"0/1": "heterozygous", "1|0": "heterozygous", "0|1": "heterozygous",
+       "1/1": "homozygous alternate"}
 for v in alleles:
     ab = v.allele_balance
-    print(f"  {ROLE.get(v.impact, v.impact):<24} {ZYG.get(v.gt, 'cigosidad no resuelta'):<14}"
+    print(f"  {ROLE.get(v.impact, v.impact):<24} {ZYG.get(v.gt, 'zygosity unresolved'):<14}"
           f"DP={v.dp}  GQ={v.gq}  AB={ab:.2f}  FILTER={v.filt}  MAX_AF="
-          f"{('%.2e' % v.max_af) if v.max_af is not None else 'AUSENTE'}")'''),
+          f"{('%.2e' % v.max_af) if v.max_af is not None else 'ABSENT'}")
 
-("code", '''fig, axes = plt.subplots(1, 3, figsize=(11.0, 3.4))
-labels = [ROLE.get(v.impact, v.impact).split("·")[1].strip() for v in alleles]
-cols = [fl.DEAD if v.impact == "HIGH" else fl.OPEN for v in alleles]
+# Background: every heterozygous HIGH/MODERATE call in the genome, one entry per allele
+bg, seen_bg = [], set()
+for v in rows:
+    if v.impact in ("HIGH", "MODERATE") and v.gt in ("0/1", "0|1", "1|0") \\
+            and (v.loc, v.allele) not in seen_bg and v.allele_balance is not None:
+        seen_bg.add((v.loc, v.allele)); bg.append(v)
+print(f"\\n  background: {len(bg):,} heterozygous HIGH/MODERATE calls")'''),
 
-axes[0].bar(labels, [v.dp for v in alleles], color=cols, alpha=0.9)
-axes[0].axhline(44, color=fl.SOFT, ls="--", lw=1.2)
-axes[0].text(1.5, 45.5, "mediana del conjunto", fontsize=7.6, color=fl.SOFT, ha="right")
-axes[0].set_title("Profundidad"); axes[0].set_ylabel("DP")
+("code", '''# Genotype quality is not drawn: both calls sit at the caller's GQ ceiling of 99, as do most
+# heterozygous calls, so a histogram would carry no information.
+fig, axes = plt.subplots(1, 2, figsize=(11.0, 3.3))
+MET = [("DP", "read depth (DP)", [v.dp for v in bg], lambda v: v.dp, np.arange(0, 101, 3)),
+       ("AB", "allele balance (ALT / total)", [v.allele_balance for v in bg],
+        lambda v: v.allele_balance, np.linspace(0, 1, 41))]
+COL = {"HIGH": fl.DEAD, "MODERATE": fl.OPEN}
+for ax, (key, xlabel, vals, get, bins) in zip(axes, MET):
+    vals = np.clip(np.asarray(vals, float), bins[0], bins[-1])
+    ax.hist(vals, bins=bins, color=fl.FLOW, alpha=0.55, lw=0)
+    for v in alleles:
+        x = get(v)
+        pct = 100 * np.mean(np.asarray([get(b) for b in bg], float) <= x)
+        ax.axvline(x, color=COL[v.impact], lw=2)
+        right = v.impact == "HIGH"
+        ax.text(x + (0.012 if right else -0.012) * (bins[-1] - bins[0]), ax.get_ylim()[1] * 0.95,
+                f"{ROLE[v.impact].split('·')[1].strip()}: {x:.2f}".replace(".00", "") + f"\\n{pct:.0f}th percentile",
+                color=COL[v.impact], fontsize=7.8, va="top", ha="left" if right else "right",
+                bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.2))
+    if key == "AB":
+        ax.axvspan(0.35, 0.65, color=fl.ALIVE, alpha=0.08, lw=0)
+    ax.set_xlabel(xlabel); ax.grid(axis="y"); ax.set_yticks([])
+    ax.spines["left"].set_visible(False)
+axes[0].set_ylabel("heterozygous calls")
+fl.title(axes[0], "Depth: both calls within the bulk of the genome")
+fl.title(axes[1], "Allele balance: both near 0.5 (shaded 0.35 to 0.65)")
 
-axes[1].bar(labels, [v.gq for v in alleles], color=cols, alpha=0.9)
-axes[1].set_ylim(0, 100); axes[1].set_title("Calidad de genotipo"); axes[1].set_ylabel("GQ")
+fl.done(fig, "QC figure · the two calls against every heterozygous call in the genome",
+        "EXP-007", "MEASURED", "DATA",
+        "both alleles are ordinary, well-supported heterozygous calls: depth is within the bulk "
+        "of the genome's heterozygous HIGH/MODERATE calls, allele balance is near 0.5, and both "
+        "have the maximum genotype quality (GQ 99). Nothing about the calls argues for an artefact.",
+        "causality: good calls are a precondition, not evidence. Allele balance serves QC and "
+        "mosaicism screening; it does NOT establish that the alleles sit on opposite copies of the gene.",
+        prov="patient VCF, joined by allele identity")'''),
 
-abs_ = [v.allele_balance for v in alleles]
-axes[2].bar(labels, abs_, color=cols, alpha=0.9)
-axes[2].axhspan(0.40, 0.60, color=fl.ALIVE, alpha=0.16)
-axes[2].axhline(0.5, color=fl.ALIVE, ls="--", lw=1.2)
-axes[2].set_ylim(0, 1); axes[2].set_title("Balance alelico"); axes[2].set_ylabel("ALT / total")
-axes[2].text(1.5, 0.62, "banda esperada\\npara heterocigoto", fontsize=7.4, color=fl.ALIVE,
-             ha="right")
+("md", """## Primary result 1 · the anatomy of the gene, with all of ClinVar on top
 
-fl.done(fig, "Figura QC · las dos llamadas, antes de curar nada", "EXP-007", "MEASURED",
-        "DATA",
-        "profundidad por encima de la mediana del conjunto, GQ maxima y balance alelico "
-        "dentro de la banda esperada para heterocigotos en ambos alelos. Las llamadas son "
-        "solidas.",
-        "que buenas llamadas impliquen causalidad. El balance alelico sirve para QC y "
-        "mosaicismo; NO establece que los alelos esten en trans.",
-        prov="VCF del paciente, cruzado por identidad de alelo")'''),
+Curation needs to know **where** each allele falls in the gene. The transcript model and domains
+come from **Ensembl REST**, and the variant landscape is the **1 497 ClinVar missense records**
+for this gene, one by one.
 
-("md", """## Resultado primario 1 · la anatomía del gen, con todo ClinVar encima
-
-La curación necesita saber **dónde** cae cada alelo dentro del gen. Hasta ahora eso se dibujaba
-a mano. Aquí el modelo de transcrito y los dominios vienen de **Ensembl REST**, y el paisaje de
-variantes son los **1 497 registros missense de ClinVar** para este gen, uno a uno.
-
-> La petición a Ensembl lleva únicamente el símbolo `BUB1B`. **Ningún dato del paciente sale de
-> la máquina.** Las posiciones del caso entran solo como marcas sobre el eje, sin número."""),
+> The Ensembl request carries only the symbol `BUB1B`. **No patient data leaves the machine.**
+> The case positions enter only as marks on the axis, without numbers."""),
 
 ("code", '''from src.structure.transcript_model import fetch
-T = fetch()                                   # cacheado en work/struct/transcript.json
+T = fetch()                                   # cached in work/struct/transcript.json
 L = T["translation"]["length"]
 DOM = [d for d in T["domains"] if d["type"] in ("Pfam", "Gene3D")]
 EX  = [e for e in T["exons"] if e.get("aa")]
 
 print(f"  Ensembl release {T['release']} · {T['transcript']} [{T['transcript_pick']}]")
-print(f"  {T['n_exons']} exones · proteina {L} aa · CDS {T['translation']['cds_len']:,} nt")
+print(f"  {T['n_exons']} exons · protein {L} aa · CDS {T['translation']['cds_len']:,} nt")
 for d in DOM:
     print(f"    {d['type']:<8}{d['start']:>5}-{d['end']:<5} {d['desc'][:52]}")
 
@@ -122,148 +138,214 @@ per = collections.defaultdict(collections.Counter)
 for v in cv["variants"]:
     per[v["pos"]][v["cls"]] += 1
 print()
-print(f"  ClinVar missense en el gen: {len(cv['variants']):,} registros "
-      f"sobre {len(per):,} residuos distintos")
+print(f"  ClinVar missense records in the gene: {len(cv['variants']):,} "
+      f"over {len(per):,} distinct residues")
 for k, v in tot.items():
-    print(f"    {k:<8}{v:>6}  ({100*v/sum(tot.values()):.1f} %)")'''),
+    k = {"CONFLICTIVA": "conflicting", "otra": "other"}.get(k, k)   # keys as stored in the snapshot
+    print(f"    {k:<12}{v:>6}  ({100*v/sum(tot.values()):.1f} %)")'''),
 
-("md", """### Figura principal 1 · navegador del gen, exones, dominios y ClinVar"""),
+("md", """### Main figure 1 · gene browser: exons, domains and ClinVar"""),
 
 ("code", '''from src.figures import fig02_browser as FB
 
 g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
 fig = FB.build(T, cv, {"ptc_aa": g["ptc_cds"] // 3 + 1, "mis_aa": g["mis_cds"] // 3 + 1})
-fl.pub(fig, "Figura principal 1 · navegador del gen, exones, dominios y ClinVar",
+fl.pub(fig, "Main figure 1 · gene browser: exons, domains and ClinVar",
        "EXP-007", "EXTERNAL", "DATA",
-       f"la anatomia real del transcrito canonico ({T['n_exons']} exones, {L} aa), los "
-       f"dominios que Ensembl anota sobre la traduccion, y las {len(cv['variants']):,} "
-       f"missense que ClinVar tiene registradas en el gen, una por registro. "
-       f"{100*tot['VUS']/sum(tot.values()):.1f} % son VUS, {tot.get('CONFLICTIVA',0)} estan "
-       f"EN CONFLICTO y hay UNA sola P/LP en todo el gen: "
-       f"no existe hotspot demostrable en ninguna parte, y por eso PM1 no aplica aqui ni en "
-       f"ningun otro punto. El panel D convierte los 1 497 registros en una distribucion "
-       f"legible; las dos guias verticales situan los alelos del caso en esa anatomia.",
-       "que estar dentro de un dominio sea patogenicidad. La densidad de ClinVar refleja "
-       "sobre todo cuanto se ha secuenciado y reportado el gen, no donde estan las mutaciones "
-       "que importan; y la ausencia de hotspot NO es evidencia contra el candidato.",
+       f"the real anatomy of the canonical transcript ({T['n_exons']} exons, {L} aa), the "
+       f"domains Ensembl annotates on the translation, and the {len(cv['variants']):,} missense "
+       f"records ClinVar holds for the gene, one mark per record. "
+       f"{100*tot['VUS']/sum(tot.values()):.1f} % are VUS, {tot.get('CONFLICTIVA', 0)} have "
+       f"conflicting interpretations, and there is a SINGLE P/LP in the whole gene: there is no "
+       f"demonstrable hotspot anywhere, which is why PM1 does not apply here or anywhere else. "
+       f"Panel D turns the records into a readable distribution; the two vertical guides place "
+       f"the case alleles in that anatomy.",
+       "that falling inside a domain means pathogenicity. ClinVar density mostly reflects how "
+       "much the gene has been sequenced and reported, not where the mutations that matter lie; "
+       "and the absence of a hotspot is NOT evidence against the candidate.",
        source="Ensembl REST release " + str(T["release"]) +
-              " + work/clinvar/landscape_missense.json (1 497 registros)",
+              " + work/clinvar/landscape_missense.json (1 497 records)",
        lib="dna_features_viewer + matplotlib", slug="fig02_gene_browser")'''),
 
-("md", """## Resultado primario 2 · el paisaje de missense en ClinVar
+("md", """## Primary result 2 · the missense landscape in ClinVar
 
-`PM1`, `PS1` y `PM5` se evalúan sobre la clase comparable. El error que esto corrigió: contar
-«0 P/LP frente a 35 B/LB» mezclaba todas las consecuencias, **31 de esas 35 eran sinónimas**."""),
+`PM1`, `PS1` and `PM5` are assessed on the comparable class. The error this corrected: counting
+"0 P/LP against 35 B/LB" mixed every consequence type; **31 of those 35 were synonymous**."""),
 
 ("code", '''d = json.load(io.open("work/clinvar/landscape_missense.json", encoding="utf-8"))
 tot = d["totals"]
-print("  ClinVar sobre TODO el gen, solo missense:")
+LBL = {"CONFLICTIVA": "conflicting", "otra": "other"}
+rows_md = ["| ClinVar class (missense only, whole gene) | records | share |", "|---|---:|---:|"]
 for k, v in tot.items():
-    print(f"    {k:<14}{v:>6}")
-print()
-print(f"  -> {100*tot.get('VUS',0)/sum(tot.values()):.1f} % son VUS sobre los "
-      f"{sum(tot.values()):,} registros. Ningun punto del gen")
-print("     tiene hotspot demostrable, asi que PM1 no aplica en NINGUNA parte.")'''),
+    rows_md.append(f"| {LBL.get(k, k)} | {v:,} | {100*v/sum(tot.values()):.1f} % |")
+from IPython.display import Markdown, display
+display(Markdown("\\n".join(rows_md) + "\\n\\nNo residue of the gene has a demonstrable hotspot, "
+                 "so PM1 does not apply **anywhere**."))'''),
 
-("md", """## Resultado primario 3 · geometría de NMD y de la fase
+("md", """## Primary result 3 · the geometry of NMD and of phase
 
-Dos medidas geométricas deciden dos cosas distintas: si el truncante activa NMD, y si los dos
-alelos pueden conectarse con lecturas cortas."""),
+Two geometric measurements decide two different things: whether the truncating allele triggers
+NMD, and whether the two alleles can be connected with short reads."""),
 
-("code", '''g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
-ptc, last = g["ptc_cds"], g["last_junction"]
+("code", '''import re
+g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
+EXN, ptc, mis, last = g["exons"], g["ptc_cds"], g["mis_cds"], g["last_junction"]
 margin = last - ptc
-print(f"  distancia del PTC a la ultima union exon-exon : {margin:,} nt")
-print(f"  umbral de la regla 50-55 nt                   : 50-55 nt")
-print(f"  margen                                        : ~{margin/52:.0f}x el umbral")
-print()
-print("  -> NMD predicho con holgura. PVS1 candidato, con el arbol de decision recorrido.")'''),
+# Genomic distances between the two alleles and the single informative heterozygote between
+# them, measured from the VCF when figures/fig3 was built. Only DIFFERENCES are used here; no
+# absolute coordinate is printed or drawn.
+_src = io.open("src/make_fig3.py", encoding="utf-8").read()
+GA, GH, GB = map(int, re.search(r"GA, GH, GB = (\\d+), (\\d+), (\\d+)", _src).groups())
+d_ah, d_hb, d_ab = GH - GA, GB - GH, GB - GA
+FRAG = 300
+print(f"  PTC to the last exon-exon junction : {margin:,} nt  (rule: 50-55 nt) -> ~{margin/52:.0f}x the threshold")
+print(f"  distance between the two alleles   : {d_ab:,} bp")
+print(f"  informative heterozygotes between  : 1  ({d_ah:,} bp and {d_hb:,} bp from each allele)")
+print(f"  shortest gap / library fragment    : {d_hb:,} / ~{FRAG} bp = {d_hb/FRAG:.1f}x")'''),
 
-("code", '''fl.svg("figures/fig3_phase.svg",
-       "Figura principal 3 · geometria de NMD y de la fase",
-       "EXP-007 · EXP-013", "MEASURED+DERIVED", "DATA",
-       f"el PTC cae a ~{margin:,} nt de la ultima union exon-exon, muy por encima del umbral "
-       "de 50-55 nt: NMD predicho con holgura. Y abajo, por que la fase no se resuelve: el "
-       "hueco entre los dos alelos es de ~11 kb frente a fragmentos de ~300 pb, con un solo "
-       "heterocigoto intermedio.",
-       "que los dos alelos esten en trans. `unphased` no es `trans`: el bloque de fase mas "
-       "largo de todo el genoma mide 288 pb. La fase no resuelta PERMANECE no resuelta.",
-       generator="src/make_fig3.py")'''),
+("code", '''fig = plt.figure(figsize=(11.4, 5.0))
+gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 1.0], hspace=0.75)
+axA, axB = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
 
-("md", """## Robustez · el techo de cada alelo, y qué lo movería
+# A · the mature mRNA, CDS scale, last seven exons
+c0 = EXN[0]["c0"]
+for e in EXN:
+    last_ex = e is EXN[-1]
+    axA.add_patch(plt.Rectangle((e["c0"] - c0, 0), e["c1"] - e["c0"] + 1, 1,
+                                fc="#C9D1D8" if not last_ex else "#A7B4BF", ec="white", lw=1.2))
+    axA.text((e["c0"] + e["c1"]) / 2 - c0, -0.35, f"exon {e['n']}", ha="center", va="top",
+             fontsize=7.6, color=fl.SOFT)
+axA.axvspan(last - 55 - c0, last - c0, ymin=0.05, ymax=0.95, color=fl.OPEN, alpha=0.25, lw=0)
+axA.axvline(last - c0, color=fl.INK, lw=1.4)
+axA.text(last - c0 + 8, 1.55, "last exon-exon junction", fontsize=8, va="bottom")
+axA.text(last - 55 - c0 - 8, 1.55, "55-nt NMD-escape zone", fontsize=8, color=fl.OPEN,
+         ha="right", va="bottom")
+axA.plot([ptc - c0], [0.5], marker="v", ms=11, color=fl.DEAD, zorder=4)
+axA.text(ptc - c0, 1.25, "premature stop\\n(allele A)", ha="center", va="bottom", fontsize=8,
+         color=fl.DEAD)
+axA.plot([mis - c0], [0.5], marker="o", ms=9, color=fl.OPEN, mec="white", zorder=4)
+axA.text(mis - c0, -1.25, "missense (allele B)", ha="center", va="center", fontsize=8, color=fl.OPEN)
+axA.annotate("", xy=(last - c0, -1.25), xytext=(ptc - c0, -1.25),
+             arrowprops=dict(arrowstyle="<->", color=fl.DEAD, lw=1.1))
+axA.text((ptc + last) / 2 - c0, -1.4, f"{margin:,} nt upstream of the last junction "
+         f"(threshold 55 nt): NMD predicted", ha="center", va="top", fontsize=8.2, color=fl.DEAD)
+axA.set_xlim(-20, EXN[-1]["c1"] - c0 + 30); axA.set_ylim(-2.2, 2.3)
+axA.axis("off")
+fl.title(axA, "A · Mature mRNA at coding-sequence scale: the stop codon triggers NMD")
 
-La curación no termina en una etiqueta: termina sabiendo **cuánta evidencia falta y de qué
-tipo**."""),
+# B · the genomic interval, at true scale, with a library fragment drawn to the same scale
+axB.plot([0, d_ab], [0, 0], color=fl.SOFT, lw=2.2, solid_capstyle="butt")
+for x, lab, c in ((0, "allele A\\ntruncating · LP", fl.DEAD), (d_ab, "allele B\\nmissense · VUS", fl.OPEN)):
+    axB.plot([x], [0], marker="o", ms=10, color=c, zorder=3)
+    axB.text(x, 0.45, lab, ha="center", va="bottom", fontsize=8.2, color=c)
+axB.plot([d_ah], [0], marker="|", ms=16, mew=2, color=fl.INK)
+axB.text(d_ah, 0.45, "the only informative\\nheterozygote between them", ha="center", va="bottom",
+         fontsize=7.8, color=fl.INK)
+for a, b, y in ((0, d_ah, -0.55), (d_ah, d_ab, -0.55)):
+    axB.annotate("", xy=(b, y), xytext=(a, y), arrowprops=dict(arrowstyle="<->", color=fl.SOFT, lw=0.9))
+    axB.text((a + b) / 2, y - 0.12, f"{b - a:,} bp", ha="center", va="top", fontsize=8, color=fl.SOFT)
+axB.add_patch(plt.Rectangle((d_ah + 200, -1.45), FRAG, 0.22, color=fl.BLUE))
+axB.text(d_ah + 200 + FRAG + 80, -1.34, f"one ~{FRAG}-bp library fragment, same scale: "
+         f"the shorter gap is {d_hb/FRAG:.1f}× longer", va="center", fontsize=8, color=fl.BLUE)
+axB.set_xlim(-400, d_ab + 400); axB.set_ylim(-1.8, 1.4); axB.axis("off")
+fl.title(axB, f"B · The {d_ab:,} bp between the alleles, at true scale: short reads cannot bridge them")
 
-("code", '''# Puntos del marco bayesiano de ClinGen, tal y como se aplicaron
+fl.done(fig, "Main figure 3 · the geometry of NMD and of phase", "EXP-007 · EXP-013",
+        "MEASURED+DERIVED", "DATA",
+        f"the premature stop lies {margin:,} nt upstream of the last exon-exon junction, far "
+        "beyond the 50-55 nt rule: NMD is predicted with a wide margin. Below, why phase cannot "
+        f"be resolved: {d_ab:,} bp separate the two alleles, with a single informative "
+        f"heterozygote between them, against library fragments of ~{FRAG} bp.",
+        "that the alleles sit on opposite copies of the gene. `unphased` is not `trans`: the longest phase block in the "
+        "whole genome is 288 bp. Unresolved phase STAYS unresolved; only parental genotypes or "
+        "long-molecule phasing can settle it.",
+        prov="work/struct/fig3_exons.json (exon limits probed at 2 bp) + VCF distances in src/make_fig3.py")'''),
+
+("md", """## Robustness · the ceiling of each allele, and what would move it
+
+Curation does not end at a label: it ends knowing **how much evidence is missing, and of what
+kind**. The scale is ClinGen's Bayesian points framework (VUS 0–5, likely pathogenic 6–9,
+pathogenic ≥ 10)."""),
+
+("code", '''# ClinGen Bayesian points framework, as applied
 EVID = {
- "alelo A · truncante": [("PVS1  nulo con NMD predicho", 8, True),
-                          ("PM2_Supporting  ausente/raro", 1, True),
-                          ("PM3  en trans con patogenica", 2, False),
-                          ("PS3  evidencia funcional", 4, False)],
- "alelo B · missense": [("PM2_Supporting  ausente en gnomAD", 1, True),
-                         ("PP3  predictor calibrado", 1, False),
-                         ("PM1  hotspot", 2, False),
-                         ("PM5  otro cambio P/LP mismo residuo", 2, False),
-                         ("PS3  evidencia funcional", 4, False)],
+ "allele A · truncating": [("PVS1", 8, True), ("PM2_Supporting", 1, True),
+                            ("PM3", 2, False), ("PS3", 4, False)],
+ "allele B · missense":   [("PM2_Supporting", 1, True), ("PP3", 1, False), ("PM1", 2, False),
+                            ("PM5", 2, False), ("PS3", 4, False)],
 }
-fig, axes = plt.subplots(1, 2, figsize=(11.4, 3.9))
-for ax, (name, items) in zip(axes, EVID.items()):
-    ys = range(len(items))
-    got = [p if ok else 0 for _, p, ok in items]
-    miss = [0 if ok else p for _, p, ok in items]
-    ax.barh(list(ys), got, color=fl.ALIVE, alpha=0.9, height=0.6, label="aplicado")
-    ax.barh(list(ys), miss, color=fl.RULE, height=0.6, label="NO aplicado")
-    ax.set_yticks(list(ys)); ax.set_yticklabels([t for t, _, _ in items], fontsize=8.4)
-    ax.set_xlabel("puntos"); ax.set_title(name, fontsize=10.5)
-    ax.axvline(0, color=fl.INK, lw=1)
-    total = sum(got)
-    ax.text(0.98, 0.06, f"total aplicado: {total} pts", transform=ax.transAxes,
-            ha="right", fontsize=9, fontweight="bold",
-            color=fl.ALIVE if total >= 6 else fl.OPEN)
-    ax.legend(fontsize=7.6, frameon=False, loc="lower right", bbox_to_anchor=(1, 0.16))
+BANDS = [(0, 5.5, "VUS", "#EEF0F2"), (5.5, 9.5, "likely pathogenic", "#FBE3D6"),
+         (9.5, 16, "pathogenic", "#F4C7B0")]
+fig, ax = plt.subplots(figsize=(11.0, 3.2))
+for x0, x1, lab, c in BANDS:
+    ax.axvspan(x0, x1, color=c, lw=0, zorder=0)
+    ax.text((x0 + x1) / 2, 1.72, lab, ha="center", fontsize=8.2, color=fl.SOFT)
+for yi, (name, items) in enumerate(EVID.items()):
+    y = 1 - yi
+    x = 0
+    for code, p, ok in items:
+        if ok:
+            ax.barh(y, p, left=x, height=0.46, color=fl.ALIVE, ec="white", lw=1.2, zorder=2)
+        else:
+            ax.barh(y, p, left=x, height=0.46, fc="white", ec=fl.FLOW, hatch="///", lw=0.8, zorder=2)
+        ax.text(x + p / 2, y, code.replace("_Supporting", "_Sup"), ha="center", va="center",
+                fontsize=7.2, color="white" if ok else fl.SOFT, zorder=3,
+                bbox=None if ok else dict(fc="white", ec="none", pad=0.6))
+        x += p
+    applied = sum(p for _, p, ok in items if ok)
+    ax.plot([applied], [y + 0.32], marker="v", ms=8, color=fl.INK, zorder=4)
+    ax.text(applied, y + 0.4, f"{applied} point{'s' if applied != 1 else ''} applied", ha="center", va="bottom", fontsize=8,
+            fontweight="bold")
+ax.set_yticks([1, 0]); ax.set_yticklabels(list(EVID)); ax.tick_params(axis="y", length=0)
+ax.set_xlim(0, 16); ax.set_ylim(-0.5, 1.95); ax.grid(False)
+ax.spines["left"].set_visible(False)
+ax.set_xlabel("ClinGen Bayesian points · solid = applied · hatched = not applied, and what it would add")
 
-fl.done(fig, "Figura de robustez · puntos ACMG aplicados y los que faltan",
+fl.done(fig, "Robustness figure · ACMG points applied, and those still missing",
         "EXP-007", "DERIVED", "SYNTHESIS",
-        "el truncante suma 9 puntos (PVS1 + PM2_Supporting) y llega a Likely Pathogenic. El "
-        "missense suma 1: se queda en VUS, y seguiria en VUS aunque entrara PP3, porque el "
-        "maximo alcanzable con PM1+PM5 son 5 puntos y VUS llega hasta 5.",
-        "que los puntos no aplicados sean evidencia en contra. PM3 esta bloqueado por "
-        "DECISION, mas conservador que ClinGen; PP3 no aplica porque REVEL dio 0,472, por "
-        "debajo del umbral SELLADO ANTES de mirarlo.",
-        prov="docs/ACMG_CURATION.md · umbrales preregistrados en DECISIONS.md")'''),
+        "the truncating allele reaches 9 points (PVS1 + PM2_Supporting): likely pathogenic. The "
+        "missense has 1: it stays a VUS, and would stay a VUS even with PP3, because PM1 and PM5 "
+        "cannot apply in a gene without a hotspot or a prior pathogenic change at the residue. "
+        "Only functional evidence (PS3) can move it.",
+        "that criteria not applied are evidence against. PM3 is blocked BY DECISION, more "
+        "conservative than ClinGen, because phase is unresolved; PP3 does not apply because "
+        "REVEL gave 0.472, below the threshold sealed BEFORE it was looked at.",
+        prov="docs/ACMG_CURATION.md · thresholds preregistered in DECISIONS.md")'''),
 
-("md", """## Evidencia contradictoria, declarada
+("md", """## Contradicting evidence, declared
 
-**SIFT `deleterious` 0,01 y PolyPhen 0,997 apuntaban fuerte a patogenicidad.** El predictor
-calibrado dice que no hay evidencia asignable. Sumar los dos primeros habría dado un `PP3`
-injustificado, **se ve el tamaño del error que el preregistro evitó**.
+**SIFT `deleterious` 0.01 and PolyPhen 0.997 pointed strongly towards pathogenicity.** The
+calibrated predictor says there is no assignable evidence. Adding the first two would have
+produced an unjustified `PP3`: this is the size of the error the preregistration prevented.
 
-Y un error propio: afirmé que ninguna candidata estaba en dbSNP, deduciéndolo de la columna
-`ID` vacía del VCF. **Falso**: esa columna solo indica que el caller no anotó. El truncante sí
-está, y en ClinVar como patogénico.
+And an error of our own: we once stated that no candidate was in dbSNP, inferring it from the
+VCF's empty `ID` column. **Wrong**: that column only means the caller did not annotate it. The
+truncating allele is in dbSNP, and in ClinVar as pathogenic.
 
-## Decisión
+## Decision
 
 | | |
 |---|---|
-| **Alelo A · truncante** | **Likely Pathogenic** (9 pts) |
-| **Alelo B · missense** | **VUS**, y sigue VUS aunque entrara `PP3` |
-| **El par** | *one likely pathogenic truncating allele + one rare missense candidate, **phase unresolved*** |
+| **Allele A · truncating** | **Likely pathogenic** (9 points, research curation) |
+| **Allele B · missense** | **VUS**, and it stays a VUS even if `PP3` were added |
+| **The pair** | *one likely pathogenic truncating allele + one rare missense candidate, **phase unresolved*** |
 
-### Qué NO establece
+### What it does not establish
 
-**No es heterocigosis compuesta demostrada.** `PM3` sigue bloqueado, la fase sigue sin
-resolver, y sin eso el modelo bialélico es *candidato*, no establecido.
+**Compound heterozygosity is not demonstrated.** `PM3` stays blocked, phase stays unresolved, and
+without that the biallelic model is a *candidate*, not established. This pair is the canonical
+MVA1 configuration ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)), which raises its prior
+plausibility but does not replace phase or function.
 
-### Falsificador
+### Falsifier
 
-Genotipos parentales, o lectura larga dirigida sobre los ~11 kb que separan los dos alelos.
-Cualquiera de los dos convierte «candidato» en resuelto, **en la dirección que sea**.
+Parental genotypes, or targeted long-molecule phasing across the interval that separates the two
+alleles. Either one turns "candidate" into resolved, **in whichever direction**.
 
-### Siguiente experimento
+### Next
 
-`03_BUBR1_MECHANISM`, si el missense no se mueve por clasificación, ¿se mueve por mecanismo?"""),
+`03_BUBR1_MECHANISM`: if the missense does not move by classification, does it move by
+mechanism?"""),
 ]
 
 if __name__ == "__main__":

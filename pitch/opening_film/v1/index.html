@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mosaic Rescue · Opening Film</title>
+<!-- Optional web fonts. Offline, the film falls back to Helvetica/Arial + system mono. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#050607;overflow:hidden}
+  canvas{position:absolute;inset:0;margin:auto;display:block;background:#07080a}
+  body.playing{cursor:none}
+  #hint{position:fixed;left:0;right:0;bottom:18px;text-align:center;font:12px/1.4 "IBM Plex Mono",Menlo,Consolas,monospace;
+        color:#6d6a64;letter-spacing:.06em;transition:opacity .6s;pointer-events:none;user-select:none}
+  #hint b{color:#a9a59c;font-weight:500}
+  #hint.off{opacity:0}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint"><b>SPACE</b> play &nbsp;·&nbsp; <b>F</b> fullscreen &nbsp;·&nbsp; <b>M</b> sound &nbsp;·&nbsp; <b>D</b> timeline &nbsp;·&nbsp; <b>R</b> record .webm &nbsp;·&nbsp; <b>W</b> export .wav</div>
+<script>
+/* ============================================================================
+   MOSAIC RESCUE — opening film (cold open, ~38 s)
+   Everything is drawn procedurally on a 2D canvas from seeded randomness.
+   render(t) is a pure function of time: the same t always gives the same frame.
+
+   TIMELINE (film seconds; scaled if CONFIG.DURATION ≠ 38)
+     1 ORDER               0.0 –  5.0   one cell → 2 → 4, 46 → 46 → 46
+     2 MISSEGREGATION      5.0 – 10.0   nondisjunction: 45 / 47, more errors
+     3 THE MOSAIC         10.0 – 15.5   pull-back into a tissue mosaic, "Some persist." (+ 0.5 s silence)
+     4 CONVENTIONAL PATH  15.5 – 21.0   +Chr −Chr CIN …, DISEASE → DRUG breaks
+     5 THE QUESTION FLIPS 21.0 – 28.0   persisted vs disappeared, Δ, "Why did this state persist?"
+     6 MOSAIC → MECHANISM 28.0 – 34.0   karyotype → locus → REF/ALT → ISM → contacts → network → safety
+     7 TITLE              34.0 – 38.0   wells form an M, MOSAIC RESCUE, THE PATIENT IS THE SCREEN.
+
+   KEYS   Space play/pause · ←/→ ±1 s (Shift ±5) · Home restart · 1–7 jump to scene
+          D timeline/debug · M mute · F fullscreen · R record WebM (real time) · W export WAV
+   URL    ?t=25.5  start time · ?debug=1 · ?mute=1 · ?export=1 (fixed 1920×1080 backing canvas)
+          ?duration=36 (stretch/compress the whole film)
+   API    window.MOSAIC_RESCUE.renderFrame(t) — deterministic frame render for PNG-sequence export
+   ========================================================================== */
+'use strict';
+
+// ---------------------------------------------------------------- CONFIG
+const CONFIG = {
+  DURATION: 38.0,          // total seconds; every scene and sound cue scales proportionally
+  SEED: 20260925,          // deterministic randomness
+  END_MODE: 'fade',        // 'fade' → ends on black · 'hold' → holds the final title frame
+  DEBUG: false,            // timeline bar
+  AUDIO: true,
+  VOLUME: 2.4,             // master gain before the limiter
+  GRAIN: 0.035,            // film grain strength (0 disables)
+  FONT_SANS: '"Inter","Helvetica Neue",Helvetica,Arial,sans-serif',
+  FONT_MONO: '"IBM Plex Mono","SF Mono",Menlo,Consolas,monospace',
+  COPY: {
+    counter: ['46', ' → 46', ' → 46', ' → 45 · 47'],
+    s2: ['Not every cell', 'inherits the', 'same genome.'],
+    s3a: ['MVA creates many chromosomal states', 'inside one child.'],
+    s3b: 'Some persist.',
+    tags: ['+Chr', '−Chr', 'CIN', 'stress', 'missegregation'],
+    s4ask: 'Most systems ask:',
+    s4from: 'DISEASE', s4to: 'DRUG',
+    s4q: '“What treats the disease?”',
+    s5a: 'We asked a different question.',
+    s5rowA: 'persisted', s5rowB: 'disappeared',
+    s5q: 'Why did this state persist?',
+    s6words: ['MOSAIC', 'MECHANISM', 'FUNCTION', 'RESCUE', 'SAFETY'],
+    s6note: 'Synthetic illustrative data · model predictions are not measurements',
+    title: 'MOSAIC RESCUE',
+    subtitle: 'Patient-specific rescue hypothesis engine',
+    final: 'THE PATIENT IS THE SCREEN.'
+  }
+};
+
+const Q = new URLSearchParams(location.search);
+if (Q.has('debug')) CONFIG.DEBUG = Q.get('debug') !== '0';
+if (Q.has('mute')) CONFIG.AUDIO = false;
+if (Q.has('duration')) CONFIG.DURATION = Math.max(20, +Q.get('duration') || 38);
+if (Q.has('end')) CONFIG.END_MODE = Q.get('end');
+const TS = CONFIG.DURATION / 38;          // real seconds per film second
+const EXPORT = Q.has('export');
+
+const SCENES = [
+  { n: 1, name: 'ORDER', a: 0, b: 5 },
+  { n: 2, name: 'MISSEGREGATION', a: 5, b: 10 },
+  { n: 3, name: 'THE MOSAIC', a: 10, b: 15.5 },
+  { n: 4, name: 'CONVENTIONAL PATH', a: 15.5, b: 21 },
+  { n: 5, name: 'THE QUESTION FLIPS', a: 21, b: 28 },
+  { n: 6, name: 'MOSAIC → MECHANISM', a: 28, b: 34 },
+  { n: 7, name: 'TITLE', a: 34, b: 38 }
+];
+
+// ---------------------------------------------------------------- MATH
+const clamp = (x, a = 0, b = 1) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const inv = (a, b, x) => clamp((x - a) / (b - a));
+const eIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eOut = t => 1 - Math.pow(1 - t, 3);
+const eIn = t => t * t * t;
+const eSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+const env = (t, a, b, c, d) => Math.min(eIO(inv(a, b, t)), c == null ? 1 : 1 - eIO(inv(c, d, t)));
+const TAU = Math.PI * 2;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuffle(arr, rng) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+function kf(t, K) {
+  if (t <= K[0][0]) return K[0][1];
+  for (let i = 1; i < K.length; i++) if (t <= K[i][0]) { const a = K[i - 1], b = K[i]; return lerp(a[1], b[1], eIO(inv(a[0], b[0], t))); }
+  return K[K.length - 1][1];
+}
+const mix = (c1, c2, k) => [lerp(c1[0], c2[0], k), lerp(c1[1], c2[1], k), lerp(c1[2], c2[2], k)];
+const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a < 0 ? 0 : a > 1 ? 1 : a})`;
+
+// ---------------------------------------------------------------- PALETTE
+const BG = [7, 8, 10];
+const INK = [236, 233, 226];
+const AMB = [232, 178, 90];     // persistence / the question
+const SAND = [212, 182, 132];   // the persistent state before it is singled out
+const RED = [217, 89, 76];      // instability, veto — used sparingly
+const CYA = [127, 196, 214];    // analysis
+const WARM = [[196, 172, 142], [178, 152, 124], [204, 188, 162], [172, 142, 118], [190, 164, 152]];
+const COOL = [[132, 160, 176], [118, 142, 162], [150, 170, 182], [112, 134, 146]];
+
+// ---------------------------------------------------------------- CANVAS
+const W = 1920, H = 1080;
+const cvs = document.getElementById('c');
+const ctx = cvs.getContext('2d');
+let SCALE = 1;
+function resize() {
+  const vw = innerWidth, vh = innerHeight, s = Math.min(vw / W, vh / H);
+  const cw = Math.round(W * s), ch = Math.round(H * s);
+  cvs.style.width = cw + 'px'; cvs.style.height = ch + 'px';
+  if (EXPORT) { cvs.width = W; cvs.height = H; }
+  else { const dpr = Math.min(devicePixelRatio || 1, 2); cvs.width = Math.round(cw * dpr); cvs.height = Math.round(ch * dpr); }
+  SCALE = cvs.width / W;
+}
+addEventListener('resize', resize); resize();
+
+// ---------------------------------------------------------------- TYPE
+const SANS = CONFIG.FONT_SANS, MONO = CONFIG.FONT_MONO;
+const measureCache = new Map();
+function charXs(text, f, track) {
+  const key = f + '|' + track + '|' + text; let r = measureCache.get(key); if (r) return r;
+  ctx.font = f; const xs = [];
+  for (let i = 0; i <= text.length; i++) xs.push(ctx.measureText(text.slice(0, i)).width + i * track);
+  r = { xs, w: xs[text.length] - track }; measureCache.set(key, r); return r;
+}
+function textWidth(text, o) { const size = o.size || 32; const f = `${o.weight || 500} ${size}px ${o.mono ? MONO : SANS}`; return charXs(text, f, (o.track || 0) * size).w; }
+/* drawText: per-character reveal (rise + fade), exit, wipe-erase, per-char color. Returns width. */
+function drawText(text, x, y, o = {}) {
+  const size = o.size || 32, fam = o.mono ? MONO : SANS, f = `${o.weight || 500} ${size}px ${fam}`;
+  const track = (o.track || 0) * size, { xs, w } = charXs(text, f, track);
+  const x0 = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
+  const a = o.alpha == null ? 1 : o.alpha; if (a <= 0.003) return w;
+  const reveal = o.reveal == null ? 1 : o.reveal, exit = o.exit || 0;
+  if (reveal <= 0 || exit >= 1) return w;
+  const n = text.length, k = o.soft || 6, rise = (o.rise == null ? 0.22 : o.rise) * size;
+  ctx.save();
+  if (o.wipe) { ctx.beginPath(); ctx.rect(x0 + o.wipe * (w + 8) - 4, y - size * 1.2, W, size * 2); ctx.clip(); }
+  ctx.font = f; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  const ex = eIO(exit);
+  for (let i = 0; i < n; i++) {
+    const ch = text[i]; if (ch === ' ') continue;
+    let ca = 1, dy = 0;
+    if (reveal < 1) { const c = clamp(reveal * (n + k) - i, 0, k) / k, e = eOut(c); ca = e; dy = (1 - e) * rise; }
+    const col = o.colors ? o.colors(i) : (o.color || INK);
+    ctx.globalAlpha = clamp(a * ca * (1 - ex)); ctx.fillStyle = rgba(col, 1);
+    ctx.fillText(ch, x0 + xs[i], y + dy - ex * size * 0.18);
+  }
+  ctx.restore();
+  if (o.wipe && o.wipe > 0 && o.wipe < 1) { ctx.fillStyle = rgba(INK, 0.8 * a); ctx.fillRect(x0 + o.wipe * (w + 8) - 5, y - size * 0.82, 1.5, size * 1.02); }
+  return w;
+}
+/* soft dark scrim that keeps statements readable over the mosaic */
+function scrim(x, y, w, h, a) {
+  if (a <= 0) return;
+  const g = ctx.createLinearGradient(x, 0, x + w, 0);
+  g.addColorStop(0, rgba(BG, 0.78 * a)); g.addColorStop(0.65, rgba(BG, 0.5 * a)); g.addColorStop(1, rgba(BG, 0));
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+}
+function rrPath(x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2)); ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+// ================================================================ DATA
+// Human chromosome sizes (Mb, GRCh38, rounded) and approximate centromere fractions — used only for proportions.
+const CHR_MB = [248, 242, 198, 190, 181, 171, 159, 145, 138, 134, 135, 133, 114, 107, 102, 90, 83, 80, 59, 64, 47, 51, 156];
+const CHR_CEN = [.50, .39, .46, .26, .27, .36, .39, .31, .33, .30, .39, .27, .14, .15, .16, .41, .28, .22, .45, .46, .30, .30, .39];
+const HERO_CHR = 7;            // symbolic; never labelled with a number on screen
+const chrLen = c => 6 + 16 * (CHR_MB[c] / 248);
+const BR = mulberry32(CONFIG.SEED ^ 0xB4D5);
+function makeBands(n) { const out = []; for (let i = 0; i < n; i++) out.push([0.07 + 0.86 * (i + BR() * 0.55) / n, 0.012 + BR() * 0.028]); return out; }
+const BANDS = CHR_MB.map(mb => makeBands(3 + Math.floor(mb / 34)));
+const HERO_BANDS = makeBands(17).map(([p, w]) => [p, w * 0.7]);
+const sameState = (a, b) => a && b && a.c === b.c && a.d === b.d;
+const HERO_STATE = { c: HERO_CHR, d: 1 };
+function stateOf(chrom) { const n = new Array(23).fill(0); chrom.forEach(ch => n[ch.c]++); for (let c = 0; c < 23; c++) if (n[c] !== 2) return { c, d: n[c] - 2 }; return null; }
+function stateRGB(st, lit) {
+  if (!st) return INK;
+  if (sameState(st, HERO_STATE)) return lit ? AMB : SAND;
+  const h = (st.c * 7 + (st.d > 0 ? 3 : 0)) % 5;
+  return st.d > 0 ? WARM[h % WARM.length] : COOL[h % COOL.length];
+}
+
+// ---------------------------------------------------------------- LINEAGE (scenes 1–2)
+const R = 110, S = 352;
+const LR = mulberry32(CONFIG.SEED ^ 0x51F);
+const cells = []; let cellId = 0;
+function makeLayout(n) {
+  const pts = [], rN = 0.5 * R;
+  for (let i = 0; i < n; i++) {
+    let x = 0, y = 0, tries = 0;
+    do { const a = LR() * TAU, rr = Math.sqrt(LR()) * rN; x = Math.cos(a) * rr; y = Math.sin(a) * rr; tries++; }
+    while (tries < 40 && pts.some(p => (p.x - x) ** 2 + (p.y - y) ** 2 < 70));
+    pts.push({ x, y, a: LR() * Math.PI });
+  }
+  return pts;
+}
+function newCell(gen, tx, ty, chrom) {
+  const c = { id: cellId++, gen, tx, ty, chrom, layout: makeLayout(chrom.length), init: null, bornT: -10, bx: tx, by: ty, div: null, parent: null };
+  c.count = chrom.length; c.state = stateOf(chrom); cells.push(c); return c;
+}
+const poleDist = p => lerp(0.72 * R, 1.57 * R, eIO(inv(0.55, 0.9, p)));
+/* position/orientation of one sister chromatid during mitosis, relative to the parent centre */
+function chromatid(cell, i, sis, p) {
+  const D = cell.div, pl = D.plate[i], L = cell.layout[i], ax = D.ax, ay = D.ay;
+  const lu = L.x * ax + L.y * ay, lv = -L.x * ay + L.y * ax;
+  const q1 = eIO(inv(0.04, 0.36, p));
+  const sep = 2.8 * eOut(inv(0.0, 0.22, p));
+  let u = lerp(lu, pl.d, q1), v = lerp(lv, pl.s, q1);
+  let ang = lerp(L.a - D.theta, Math.PI / 2 + pl.tilt, q1);
+  const isErr = i === D.errI, side = isErr ? D.errTo : sis;
+  const t0 = 0.46 + pl.lag + (isErr ? 0.07 : 0), t1 = 0.8 + pl.lag + (isErr ? 0.09 : 0);
+  const tr = eIO(inv(t0, t1, p));
+  u = lerp(u + sis * sep / 2, side * (poleDist(p) - 0.16 * R + pl.pj), tr);
+  v = v * lerp(1, 0.46, tr);
+  ang = lerp(ang, pl.tilt * 0.4, tr * 0.75);
+  return [u * ax - v * ay, u * ay + v * ax, ang + D.theta];
+}
+function divide(cell, t0, dur, axisX, targets, err) {
+  const ax = axisX ? 1 : 0, ay = axisX ? 0 : 1, n = cell.chrom.length;
+  const order = shuffle([...Array(n).keys()], LR), plate = new Array(n);
+  order.forEach((i, rank) => { plate[i] = { s: lerp(-0.64 * R, 0.64 * R, (rank + 0.5) / n) + (LR() - .5) * 7, d: (LR() - .5) * 9, tilt: (LR() - .5) * 0.6, lag: LR() * 0.05, pj: (LR() - .5) * 0.22 * R }; });
+  const errI = err ? cell.chrom.findIndex(ch => ch.c === err.c) : -1;
+  const D = cell.div = { t0, dur, ax, ay, theta: Math.atan2(ay, ax), plate, errI, errTo: err ? err.to : 0 };
+  const born = t0 + 0.9 * dur;
+  D.kids = [-1, 1].map((side, k) => {
+    const bx = cell.tx + ax * side * 1.57 * R, by = cell.ty + ay * side * 1.57 * R, chrom = [], init = [];
+    for (let i = 0; i < n; i++) for (const sis of [-1, 1]) {
+      const dest = i === errI ? D.errTo : sis; if (dest !== side) continue;
+      const [x, y, a] = chromatid(cell, i, sis, 0.9);
+      chrom.push({ c: cell.chrom[i].c, err: i === errI }); init.push({ x: x + cell.tx - bx, y: y + cell.ty - by, a });
+    }
+    const kid = newCell(cell.gen + 1, targets[k][0], targets[k][1], chrom);
+    Object.assign(kid, { init, bornT: born, bx, by, parent: cell }); return kid;
+  });
+  return D.kids;
+}
+const base46 = []; for (let c = 0; c < 23; c++) base46.push({ c }, { c });
+const root = newCell(0, 0, 0, base46);
+const g1 = divide(root, 0.95, 1.2, true, [[-S, 0], [S, 0]], null);
+const g2 = []; g1.forEach((c, i) => g2.push(...divide(c, 2.95 + i * 0.1, 1.2, false, [[c.tx, c.ty - S], [c.tx, c.ty + S]], null)));
+const g3 = []; const g2t = [5.2, 5.4, 5.52, 5.63], g2d = [1.55, 1.25, 1.25, 1.25];
+g2.forEach((c, i) => g3.push(...divide(c, g2t[i], g2d[i], true, [[c.tx - S / 2, c.ty], [c.tx + S / 2, c.ty]], i === 0 ? { c: HERO_CHR, to: 1 } : null)));
+const g3t = [7.74, 7.82, 7.9, 7.78, 7.96, 7.86, 8.03, 7.92];
+const g3err = { 3: { c: 15, to: -1 }, 6: { c: 3, to: 1 } };
+const jit = () => (LR() - 0.5) * 110;
+g3.forEach((c, i) => divide(c, g3t[i], 1.1, false, [[c.tx + jit(), c.ty - S / 2 + jit()], [c.tx + jit(), c.ty + S / 2 + jit()]], g3err[i] || null));
+const leaves = cells.filter(c => c.gen === 4);
+const heroLeaf = g3[1].div.kids[1];   // descendant of the first 47 cell
+
+// ---------------------------------------------------------------- TISSUE MOSAIC (scenes 3–5)
+const TRng = mulberry32(CONFIG.SEED ^ 0xA11CE);
+const PR = 330, GAP = 26;
+function poisson(w, h, r, fixed, rng) {
+  const cs = r / Math.SQRT2, gw = Math.ceil(w / cs), gh = Math.ceil(h / cs), grid = new Int32Array(gw * gh).fill(-1), pts = [], active = [];
+  const gi = (x, y) => [Math.floor((x + w / 2) / cs), Math.floor((y + h / 2) / cs)];
+  const add = (x, y) => { const [i, j] = gi(x, y); pts.push([x, y]); grid[j * gw + i] = pts.length - 1; active.push(pts.length - 1); };
+  const ok = (x, y) => {
+    if (x < -w / 2 || x >= w / 2 || y < -h / 2 || y >= h / 2) return false;
+    const [i, j] = gi(x, y);
+    for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
+      const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= gw || jj >= gh) continue;
+      const k = grid[jj * gw + ii]; if (k >= 0) { const dx = pts[k][0] - x, dy = pts[k][1] - y; if (dx * dx + dy * dy < r * r) return false; }
+    }
+    return true;
+  };
+  fixed.forEach(p => add(p[0], p[1]));
+  while (active.length) {
+    const ai = Math.floor(rng() * active.length), [px, py] = pts[active[ai]]; let found = false;
+    for (let k = 0; k < 24; k++) { const a = rng() * TAU, d = r * (1 + rng()), x = px + Math.cos(a) * d, y = py + Math.sin(a) * d; if (ok(x, y)) { add(x, y); found = true; break; } }
+    if (!found) active.splice(ai, 1);
+  }
+  return pts;
+}
+function clipPoly(poly, p, ux, uy, c) {
+  const out = []; let cut = false;
+  for (let i = 0; i < poly.length; i++) {
+    const A = poly[i], B = poly[(i + 1) % poly.length];
+    const da = (A[0] - p[0]) * ux + (A[1] - p[1]) * uy - c, db = (B[0] - p[0]) * ux + (B[1] - p[1]) * uy - c;
+    if (da <= 0) out.push(A); else cut = true;
+    if ((da <= 0) !== (db <= 0)) { const tt = da / (da - db); out.push([A[0] + (B[0] - A[0]) * tt, A[1] + (B[1] - A[1]) * tt]); }
+  }
+  return { out, cut };
+}
+function voronoi(pts, r, gap) {
+  const cs = r, map = new Map(), key = (i, j) => i * 100003 + j;
+  pts.forEach((p, k) => { const kk = key(Math.floor(p[0] / cs), Math.floor(p[1] / cs)); if (!map.has(kk)) map.set(kk, []); map.get(kk).push(k); });
+  return pts.map((p, k) => {
+    let poly = [[p[0] - 2.2 * r, p[1] - 2.2 * r], [p[0] + 2.2 * r, p[1] - 2.2 * r], [p[0] + 2.2 * r, p[1] + 2.2 * r], [p[0] - 2.2 * r, p[1] + 2.2 * r]];
+    const i0 = Math.floor(p[0] / cs), j0 = Math.floor(p[1] / cs), nb = [];
+    for (let dj = -4; dj <= 4; dj++) for (let di = -4; di <= 4; di++) { const L = map.get(key(i0 + di, j0 + dj)); if (L) for (const q of L) if (q !== k) nb.push(q); }
+    nb.sort((a, b) => ((pts[a][0] - p[0]) ** 2 + (pts[a][1] - p[1]) ** 2) - ((pts[b][0] - p[0]) ** 2 + (pts[b][1] - p[1]) ** 2));
+    const neighbors = [];
+    for (const q of nb) {
+      const nx = pts[q][0] - p[0], ny = pts[q][1] - p[1], d = Math.hypot(nx, ny); if (d > 4.4 * r) break;
+      const res = clipPoly(poly, p, nx / d, ny / d, d / 2 - gap / 2); if (res.cut) neighbors.push(q); poly = res.out;
+    }
+    return { poly, neighbors };
+  });
+}
+function radialOf(poly, cx, cy, N) {
+  const out = new Float32Array(N);
+  for (let j = 0; j < N; j++) {
+    const a = j / N * TAU, dx = Math.cos(a), dy = Math.sin(a); let best = 1e9;
+    for (let i = 0; i < poly.length; i++) {
+      const A = poly[i], B = poly[(i + 1) % poly.length], ex = B[0] - A[0], ey = B[1] - A[1];
+      const den = dx * ey - dy * ex; if (Math.abs(den) < 1e-9) continue;
+      const ax = A[0] - cx, ay = A[1] - cy, tt = (ax * ey - ay * ex) / den, s = (ax * dy - ay * dx) / den;
+      if (tt > 0 && s >= 0 && s <= 1 && tt < best) best = tt;
+    }
+    out[j] = best;
+  }
+  return out;
+}
+const tilePts = poisson(15200, 8800, PR, leaves.map(c => [c.tx, c.ty]), TRng);
+const vor = voronoi(tilePts, PR, GAP);
+const tiles = tilePts.map((p, k) => {
+  const d = Math.hypot(p[0], p[1]);
+  return { k, x: p[0], y: p[1], poly: vor[k].poly, nb: vor[k].neighbors, appearT: k < 16 ? 9.9 : 9.6 + Math.max(0, d - 600) / 2800,
+    base: null, persist: null, trans: [], reserved: false, group: null };
+});
+leaves.forEach((c, k) => { c.tileK = k; tiles[k].radial = radialOf(tiles[k].poly, c.tx, c.ty, 72); tiles[k].leaf = c; });
+const HERO = tiles[heroLeaf.tileK];
+const nearestTile = (x, y, pred) => { let best = null, bd = 1e18; for (const T of tiles) { if (pred && !pred(T)) continue; const d = (T.x - x) ** 2 + (T.y - y) ** 2; if (d < bd) { bd = d; best = T; } } return best; };
+
+// lineage leaves: the hero state persists; every other aberrant leaf later vanishes (its ghost is reused in scene 5)
+const GHOSTS = [];
+const lineageVanish = [12.35, 12.8, 12.0, 13.2, 12.6, 11.75];
+let lv = 0;
+leaves.forEach(c => {
+  const T = tiles[c.tileK];
+  if (!c.state) return;
+  if (sameState(c.state, HERO_STATE)) { T.persist = { t: 9.0, state: HERO_STATE }; T.group = 'A'; }
+  else { const vt = lineageVanish[lv++ % lineageVanish.length]; T.trans.push({ t0: 8.0, dur: vt - 8.0, state: c.state }); T.reserved = true; GHOSTS.push({ T, state: c.state, sister: sameState(c.state, { c: HERO_CHR, d: -1 }) }); }
+});
+// persistent patches (clonal-looking growth) and recurrent motifs of the same state
+function grow(seeds, state, group, maxN, startT = 0) {
+  const q = []; let count = 0;
+  for (const [T, t] of seeds) { if (!T.persist) { T.persist = { t: Math.max(t, T.appearT + 0.2), state }; T.group = group; } q.push(T); count++; }
+  while (q.length && count < maxN) {
+    const T = q.shift();
+    for (const nk of shuffle(T.nb.slice(), TRng)) {
+      const N = tiles[nk]; if (N.persist || N.reserved || N.trans.length) continue;
+      if (TRng() < 0.42) continue;
+      const tt = Math.max(T.persist.t + 0.24 + TRng() * 0.34, N.appearT + 0.25, startT + TRng() * 0.3); if (tt > 14.0) continue;
+      N.persist = { t: tt, state }; N.group = group; q.push(N); if (++count >= maxN) break;
+    }
+  }
+}
+const heroSeeds = tiles.filter(T => T.group === 'A').map(T => [T, 9.0]);
+const A2 = nearestTile(2700, 1300), A3 = nearestTile(-3000, 1700);
+grow(heroSeeds, HERO_STATE, 'A', 15, 11.0);
+grow([[A2, 11.7]], HERO_STATE, 'A', 7);
+grow([[A3, 12.2]], HERO_STATE, 'A', 5);
+const STATE_B = { c: 17, d: 1 }, STATE_C = { c: 22, d: -1 };
+grow([[nearestTile(1500, -1000, T => !T.persist && !T.reserved), 11.1]], STATE_B, 'B', 10);
+grow([[nearestTile(-1700, 900, T => !T.persist && !T.reserved), 11.4]], STATE_C, 'C', 8);
+// transient states: appear, then vanish
+const TRANS = [];
+for (let n = 0, guard = 0; n < 170 && guard < 5000; guard++) {
+  const T = tiles[Math.floor(TRng() * tiles.length)];
+  if (T.k < 16 || T.persist || T.reserved || Math.abs(T.x) > 6600 || Math.abs(T.y) > 3700 || T.appearT > 13.3) continue;
+  const lo = Math.max(10.4, T.appearT + 0.25), t0 = lo + TRng() * (13.8 - lo), dur = 0.35 + TRng() * 1.0;
+  if (T.trans.some(e => Math.abs(e.t0 - t0) < 3)) continue;
+  let st; do { st = { c: Math.floor(TRng() * 23), d: TRng() < 0.55 ? 1 : -1 }; } while (sameState(st, HERO_STATE) || sameState(st, STATE_B) || sameState(st, STATE_C));
+  const ev = { t0, dur, state: st }; T.trans.push(ev); TRANS.push({ T, ev }); n++;
+}
+// scene-5 selections
+const A_TILES = tiles.filter(T => T.group === 'A');
+TRANS.slice().sort((a, b) => ((a.T.x - HERO.x) ** 2 + (a.T.y - HERO.y) ** 2) - ((b.T.x - HERO.x) ** 2 + (b.T.y - HERO.y) ** 2))
+  .slice(0, 9).forEach(o => GHOSTS.push({ T: o.T, state: o.ev.state }));
+GHOSTS.sort((a, b) => (b.sister ? 1 : 0) - (a.sister ? 1 : 0));
+const A_REPS = [HERO, A2, A3, ...A_TILES.filter(T => T !== HERO && T !== A2 && T !== A3).sort((a, b) => Math.hypot(b.x - HERO.x, b.y - HERO.y) - Math.hypot(a.x - HERO.x, a.y - HERO.y)).slice(0, 5)];
+const ROW_P = [HERO, A2, A3, ...A_REPS.slice(3, 6)];
+const ROW_G = GHOSTS.slice(0, 6);
+const HX = HERO.x, HY = HERO.y;
+
+function tileLook(T, t) {
+  let st = T.base, boost = 0, dark = 0, persistent = false;
+  if (T.persist && t >= T.persist.t) { st = T.persist.state; persistent = true; boost = 1 - inv(T.persist.t, T.persist.t + 0.7, t); }
+  for (const e of T.trans) {
+    if (t < e.t0) continue;
+    const t1 = e.t0 + e.dur;
+    if (t < t1) { st = e.state; boost = e.t0 > 9 ? 1 - inv(e.t0, e.t0 + 0.45, t) : 0; }
+    else if (t < t1 + 1.7) { const k1 = inv(t1, t1 + 0.35, t), k2 = inv(t1 + 0.95, t1 + 1.7, t); if (k2 > 0) { st = T.base; dark = 1 - k2; } else { st = e.state; dark = k1; } }
+  }
+  return { st, boost, dark, persistent };
+}
+
+// ---------------------------------------------------------------- CAMERA
+const CAMK = [
+  [0.0, 0, 0, 1.62], [2.25, 0, 0, 1.62], [3.3, 0, 0, 1.0], [4.95, 0, 0, 0.92],
+  [5.6, -S, -S, 1.3], [6.95, -S, -S, 1.36], [8.2, -355, 0, 0.62], [9.7, -355, 0, 0.6],
+  [14.1, 60, 20, 0.145, eSine], [15.4, 80, 30, 0.14], [16.5, -120, -60, 0.3], [20.9, -90, -60, 0.31],
+  [21.8, HX, HY, 0.21], [24.8, HX, HY, 0.235], [27.75, HX, HY, 0.26], [28.6, HX, HY, 9.0, eIn]
+];
+function camAt(t) {
+  const K = CAMK; if (t <= K[0][0]) return { x: K[0][1], y: K[0][2], z: K[0][3] };
+  for (let i = 1; i < K.length; i++) if (t <= K[i][0]) {
+    const a = K[i - 1], b = K[i], e = (b[4] || eIO)(inv(a[0], b[0], t)), drift = eSine(inv(9.7, 11.5, t)) * (1 - eSine(inv(26.6, 27.7, t)));
+    return { x: lerp(a[1], b[1], e) + drift * 40 * Math.sin(t * 0.21), y: lerp(a[2], b[2], e) + drift * 26 * Math.sin(t * 0.17 + 1), z: Math.exp(lerp(Math.log(a[3]), Math.log(b[3]), e)) };
+  }
+  const L = K[K.length - 1]; return { x: L[1], y: L[2], z: L[3] };
+}
+const w2s = (x, y, c) => [(x - c.x) * c.z + W / 2, (y - c.y) * c.z + H / 2];
+
+// scene-4 annotation anchors (computed once from the synthetic mosaic)
+const CAM4 = { x: -105, y: -60, z: 0.305 };
+const TAGS = (() => {
+  const want = [[-1, -1, T => T.group === 'A' && T !== HERO], [1, 1, T => T.group === 'C'], [1, -1, T => T.group === 'B'], [-1, 1, T => T.group === 'A' && T !== HERO], [0, 0, T => T === HERO]];
+  const used = new Set();
+  return CONFIG.COPY.tags.map((label, i) => {
+    const [qx, qy, pred] = want[i];
+    const zx = W / 2 + qx * 420, zy = H / 2 + qy * 230;
+    let best = null, bd = 1e18;
+    for (const T of tiles) { if (!pred(T) || used.has(T)) continue; const [sx, sy] = w2s(T.x, T.y, CAM4); if (sx < 160 || sx > 1760 || sy < 140 || sy > 940) continue; const d = (sx - zx) ** 2 + (sy - zy) ** 2; if (d < bd) { bd = d; best = T; } }
+    if (!best) best = HERO; used.add(best);
+    const [sx, sy] = w2s(best.x, best.y, CAM4);
+    let dx = sx - W / 2, dy = sy - H / 2; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+    if (i === 4) { dx = 0.55; dy = -0.83; }
+    return { label, T: best, lx: clamp(sx + dx * 150, 140, 1780), ly: clamp(sy + dy * 110, 120, 960) };
+  });
+})();
+
+// ================================================================ WORLD DRAWING (scenes 1–5)
+const wob = (a, t, id) => 1 + 0.012 * Math.sin(3 * a + t * 1.1 + id * 1.7) + 0.007 * Math.sin(5 * a - t * 0.8 + id * 2.3);
+function cellPos(c, t) { if (!c.init) return [c.tx, c.ty]; const k = eIO(inv(c.bornT, c.bornT + 0.9, t)); return [lerp(c.bx, c.tx, k), lerp(c.by, c.ty, k)]; }
+function strokeChromatid(x, y, a, len) { const dx = Math.cos(a) * len / 2, dy = Math.sin(a) * len / 2; ctx.moveTo(x - dx, y - dy); ctx.lineTo(x + dx, y + dy); }
+
+function cassini(p) {
+  const s = eIO(inv(0.55, 0.9, p)), a = 1.15 * R * s, b = R, k = 1 + 0.5 * s, loops = [];
+  if (a < b * 0.999) {
+    const L = [], N = 96;
+    for (let j = 0; j < N; j++) { const th = j / N * TAU, s2 = Math.sin(2 * th); const r = Math.sqrt(Math.max(0, a * a * Math.cos(2 * th) + Math.sqrt(Math.max(0, b ** 4 - a ** 4 * s2 * s2)))) * k; L.push([r * Math.cos(th), r * Math.sin(th)]); }
+    loops.push({ pts: L, uc: 0 });
+  } else {
+    const thm = 0.5 * Math.asin(Math.min(1, (b / a) ** 2)), N = 48, L = [];
+    const rr = (th, sg) => Math.sqrt(Math.max(0, a * a * Math.cos(2 * th) + sg * Math.sqrt(Math.max(0, b ** 4 - a ** 4 * Math.sin(2 * th) ** 2)))) * k;
+    for (let j = 0; j <= N; j++) { const th = thm * Math.sin(-Math.PI / 2 + Math.PI * j / N), r = rr(th, 1); L.push([r * Math.cos(th), r * Math.sin(th)]); }
+    for (let j = N; j >= 0; j--) { const th = thm * Math.sin(-Math.PI / 2 + Math.PI * j / N), r = rr(th, -1); L.push([r * Math.cos(th), r * Math.sin(th)]); }
+    const uc = k * (Math.sqrt(a * a + b * b) + Math.sqrt(Math.max(0, a * a - b * b))) / 2;
+    loops.push({ pts: L, uc }, { pts: L.map(([u, v]) => [-u, v]), uc: -uc });
+  }
+  return loops;
+}
+
+function drawDividing(c, t, z) {
+  const D = c.div, p = (t - D.t0) / D.dur, cx = c.tx, cy = c.ty, cos = Math.cos(D.theta), sin = Math.sin(D.theta);
+  // membrane: Cassini oval → lemniscate → two daughters
+  const loops = cassini(p), wB = eIO(inv(0.8, 0.9, p));
+  ctx.lineWidth = 1.3 / z;
+  for (const L of loops) {
+    ctx.beginPath();
+    L.pts.forEach(([u, v], j) => {
+      const du = u - L.uc, dv = v, ang = Math.atan2(dv, du), w = wob(ang, t, c.id + (L.uc > 0 ? 1 : 0));
+      let pu = L.uc + du * w, pv = dv * w;
+      if (wB > 0 && L.uc !== 0) { const sg = Math.sign(L.uc), dl = Math.hypot(du, dv) || 1; pu = lerp(pu, sg * 1.57 * R + du / dl * 0.72 * R * w, wB); pv = lerp(pv, dv / dl * 0.72 * R * w, wB); }
+      const x = cx + pu * cos - pv * sin, y = cy + pu * sin + pv * cos; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.closePath(); ctx.fillStyle = rgba(INK, 0.028); ctx.fill(); ctx.strokeStyle = rgba(INK, 0.55); ctx.stroke();
+  }
+  // nuclear envelope breaks down
+  const nA = 0.13 * (1 - inv(0.03, 0.18, p));
+  if (nA > 0) { ctx.beginPath(); ctx.arc(cx, cy, 0.56 * R, 0, TAU); ctx.strokeStyle = rgba(INK, nA); ctx.lineWidth = 1 / z; ctx.stroke(); }
+  const n = c.chrom.length, pd = poleDist(p);
+  const spA = 0.08 * Math.min(inv(0.16, 0.3, p), 1 - inv(0.8, 0.9, p));
+  const pos = [];
+  for (let i = 0; i < n; i++) for (const sis of [-1, 1]) { const [x, y, a] = chromatid(c, i, sis, p); pos.push([cx + x, cy + y, a, i, sis]); }
+  if (spA > 0) { // spindle
+    ctx.beginPath();
+    for (const [x, y, , i, sis] of pos) { const side = i === D.errI ? D.errTo : sis; ctx.moveTo(cx + side * pd * cos, cy + side * pd * sin); ctx.lineTo(x, y); }
+    ctx.strokeStyle = rgba(CYA, spA); ctx.lineWidth = 0.9 / z; ctx.stroke();
+    ctx.fillStyle = rgba(INK, spA * 6);
+    for (const sg of [-1, 1]) { ctx.beginPath(); ctx.arc(cx + sg * pd * cos, cy + sg * pd * sin, 2.4, 0, TAU); ctx.fill(); }
+  }
+  ctx.lineCap = 'round'; ctx.lineWidth = 2.3;
+  ctx.beginPath();
+  for (const [x, y, a, i] of pos) if (i !== D.errI) strokeChromatid(x, y, a, chrLen(c.chrom[i].c));
+  ctx.strokeStyle = rgba(INK, 0.86); ctx.stroke();
+  if (D.errI >= 0) {
+    const redK = inv(0.4, 0.52, p);
+    ctx.beginPath(); for (const [x, y, a, i] of pos) if (i === D.errI) strokeChromatid(x, y, a, chrLen(c.chrom[i].c));
+    ctx.strokeStyle = rgba(mix(INK, RED, redK), 0.95); ctx.stroke();
+    const halo = 0.16 * env(p, 0.45, 0.55, 0.85, 0.95);
+    if (halo > 0) for (const [x, y, , i] of pos) if (i === D.errI) { ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.fillStyle = rgba(RED, halo); ctx.fill(); }
+  }
+  // count label fades while dividing
+  if (t >= 5.0 && c.gen >= 2) countLabel(c, cx, cy, R, z, (1 - inv(0.02, 0.12, p)) * inv(5.0, 5.5, t));
+}
+function countLabel(c, x, y, rc, z, a) {
+  if (a <= 0.01) return;
+  const bad = c.count !== 46, size = 15 / z;
+  ctx.font = `500 ${size}px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = rgba(bad ? RED : INK, (bad ? 0.95 : 0.45) * a); ctx.fillText(String(c.count), x, y + 0.79 * rc);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+function drawInterphase(c, t, z) {
+  const [cx, cy] = cellPos(c, t);
+  const grow = c.init ? eIO(inv(c.bornT, c.bornT + 0.9, t)) : 1;
+  let rc = lerp(0.72 * R, R, grow), prog = 1, intro = 1;
+  if (c.gen === 0) { prog = eIO(inv(0.25, 1.3, t)); intro = eOut(inv(0.2, 0.9, t)); rc *= lerp(0.9, 1, eOut(inv(0.2, 1.4, t))); if (prog <= 0) return; }
+  const T = c.gen === 4 ? tiles[c.tileK] : null, b = T ? eIO(inv(9.9, 11.0, t)) : 0;
+  // membrane (blends into its Voronoi tile in scene 3)
+  const N = 72, steps = Math.max(2, Math.ceil(N * prog));
+  ctx.beginPath();
+  for (let j = 0; j <= steps; j++) {
+    const jj = j % N, a = c.gen === 0 ? -Math.PI / 2 + jj / N * TAU : jj / N * TAU;
+    let r = rc * wob(a, t, c.id); if (b > 0) r = lerp(r, T.radial[jj], b);
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    if (j >= N * prog) break;
+  }
+  if (prog >= 1) {
+    ctx.closePath();
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rc); g.addColorStop(0, rgba(INK, 0.05 * intro)); g.addColorStop(1, rgba(INK, 0.014 * intro));
+    ctx.fillStyle = g; ctx.fill();
+    if (b > 0) { const L = tileLook(T, t); ctx.fillStyle = rgba(stateRGB(L.st), (L.st ? 0.4 : 0.055) * b * (1 - L.dark * 0.95)); ctx.fill(); }
+  }
+  ctx.strokeStyle = rgba(INK, lerp(0.55, 0.12, b) * intro); ctx.lineWidth = 1.3 / z; ctx.stroke();
+  // nucleus
+  const nA = 0.13 * (c.init ? inv(c.bornT + 0.35, c.bornT + 0.9, t) : intro) * (1 - b);
+  if (nA > 0) { ctx.beginPath(); ctx.arc(cx, cy, 0.56 * rc, 0, TAU); ctx.strokeStyle = rgba(INK, nA); ctx.lineWidth = 1 / z; ctx.stroke(); }
+  // chromosomes
+  const relax = c.init ? eIO(inv(c.bornT, c.bornT + 0.8, t)) : 1, ca = 1 - b;
+  if (ca > 0.01) {
+    ctx.lineCap = 'round'; ctx.lineWidth = 2.3;
+    const n = c.chrom.length, sc = rc / R;
+    for (let i = 0; i < n; i++) {
+      const L = c.layout[i], I = c.init ? c.init[i] : L;
+      const x = cx + lerp(I.x, L.x * sc, relax) + Math.sin(t * 1.3 + i * 1.7 + c.id) * 0.8, y = cy + lerp(I.y, L.y * sc, relax) + Math.cos(t * 1.1 + i * 2.1 + c.id) * 0.8;
+      const a = lerp(I.a, L.a, relax);
+      let al = 0.86 * ca; if (c.gen === 0) al *= eOut(inv(0.7 + i * 0.012, 1.15 + i * 0.012, t));
+      const redK = c.chrom[i].err ? 1 - inv(c.bornT + 0.8, c.bornT + 2.4, t) : 0;
+      ctx.beginPath(); strokeChromatid(x, y, a, chrLen(c.chrom[i].c)); ctx.strokeStyle = rgba(mix(INK, RED, redK), al); ctx.stroke();
+    }
+  }
+  if (t >= 5.0 && c.gen >= 2) countLabel(c, cx, cy, rc, z, inv(5.0, 5.5, t) * (c.init ? inv(c.bornT + 0.7, c.bornT + 1.1, t) : 1) * (1 - b));
+}
+function drawCells(t, cam) {
+  const z = cam.z, hw = W / 2 / z + 300, hh = H / 2 / z + 300;
+  for (const c of cells) {
+    if (t < c.bornT) continue;
+    if (Math.abs(c.tx - cam.x) > hw + 400 || Math.abs(c.ty - cam.y) > hh + 400) continue;
+    if (c.div && t >= c.div.t0) { if (t < c.div.t0 + 0.9 * c.div.dur) drawDividing(c, t, z); continue; }
+    drawInterphase(c, t, z);
+  }
+}
+
+const DIM_NON = [[0, 1], [14.0, 1], [14.45, 0.16], [15.4, 0.16], [16.2, 0.5], [17.1, 0.5], [17.55, 0.1], [20.8, 0.1], [21.6, 0.36], [24.8, 0.36], [25.3, 0.1], [26.0, 0.06]];
+const DIM_PER = [[0, 1], [17.1, 1], [17.55, 0.12], [20.8, 0.12], [21.6, 0.62], [24.8, 0.62], [25.3, 0.22], [26.0, 0.1]];
+function tilePath(T, sc) {
+  const P = T.poly; ctx.beginPath();
+  for (let i = 0; i < P.length; i++) { const x = T.x + (P[i][0] - T.x) * sc, y = T.y + (P[i][1] - T.y) * sc; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+  ctx.closePath();
+}
+function glyph(x, y, st, z, a, col, scaleK = 1) {
+  // copy-number ticks for the affected chromosome: ‖ = 2 copies, ||| = 3, | = 1
+  const n = st ? 2 + st.d : 2, h = 11 * scaleK / z, sp = 4.5 * scaleK / z;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) { const xx = x + (i - (n - 1) / 2) * sp; ctx.moveTo(xx, y - h / 2); ctx.lineTo(xx, y + h / 2); }
+  ctx.strokeStyle = rgba(col, a); ctx.lineWidth = 1.4 * scaleK / z; ctx.lineCap = 'butt'; ctx.stroke();
+}
+function drawTiles(t, cam) {
+  const z = cam.z, hw = W / 2 / z + PR * 1.3, hh = H / 2 / z + PR * 1.3;
+  const dn = kf(t, DIM_NON), dp = kf(t, DIM_PER), glyphOn = PR * z > 30, fade = 1 - eIO(inv(28.25, 28.65, t));
+  const lit = inv(22.6, 23.4, t) * (1 - inv(25.0, 25.4, t));
+  for (const T of tiles) {
+    if (Math.abs(T.x - cam.x) > hw || Math.abs(T.y - cam.y) > hh) continue;
+    if (T.k < 16 && t < 11.0) continue;
+    const ap = T.k < 16 ? 1 : eOut(inv(T.appearT, T.appearT + 0.7, t)); if (ap <= 0) continue;
+    const L = tileLook(T, t), isHero = T === HERO && t > 21.5;
+    let dim = L.persistent ? dp : dn;
+    if (L.persistent && T.group === 'A' && t > 21.5 && t < 25.4) dim = Math.max(dim, 0.62 + 0.38 * lit);
+    if (T === HERO && t > 21.5) dim = 1 - 0.8 * env(t, 24.95, 25.3, 26.05, 26.4);
+    const heroOn = T === HERO ? eIO(inv(21.7, 22.1, t)) : 0;
+    const col = heroOn > 0 ? mix(stateRGB(L.st), AMB, heroOn) : stateRGB(L.st);
+    let fa = ((L.st ? 0.4 : 0.05) + L.boost * 0.35) * (1 - L.dark * 0.95) * ap * dim;
+    if (heroOn > 0) fa = lerp(fa, 0.82, heroOn) * dim * (1 - eIO(inv(27.9, 28.35, t)));
+    const sa = (L.st ? 0.22 : 0.11) * (1 - L.dark * 0.6) * ap * dim;
+    tilePath(T, lerp(0.8, 1, ap));
+    ctx.fillStyle = rgba(col, fa * fade); ctx.fill();
+    ctx.lineWidth = 1 / z; ctx.strokeStyle = rgba(L.st ? col : INK, sa * fade); ctx.stroke();
+    if (heroOn > 0) { ctx.lineWidth = 2.2 / z; ctx.strokeStyle = rgba(AMB, 0.95 * heroOn * dim); ctx.stroke(); }
+    else if (T.group === 'A' && L.persistent && lit > 0) {
+      const my = inv(22.6 + Math.min(0.7, Math.hypot(T.x - HX, T.y - HY) / 9000), 23.0 + Math.min(0.7, Math.hypot(T.x - HX, T.y - HY) / 9000), t) * (1 - inv(25.0, 25.4, t));
+      if (my > 0) { ctx.lineWidth = 1.6 / z; ctx.strokeStyle = rgba(AMB, 0.8 * my); ctx.stroke(); }
+    }
+    if (glyphOn) {
+      let ga = (L.st ? 0.78 : 0.2) * (1 - L.dark) * ap * dim * fade;
+      if (T === HERO && t > 27.8) ga = 0; // replaced by the screen-space glyph during the dive
+      if (ga > 0.01) glyph(T.x, T.y, L.st, z, ga, heroOn > 0 ? mix(INK, [255, 236, 200], heroOn) : INK);
+    }
+  }
+}
+function drawWorld(t) {
+  const cam = camAt(t);
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
+  if (t >= 9.5) drawTiles(t, cam);
+  if (t < 11.05) drawCells(t, cam);
+  if (t > 23.3 && t < 25.6) drawGhosts(t, cam);
+  ctx.restore();
+  return cam;
+}
+function drawGhosts(t, cam) {
+  const z = cam.z;
+  ctx.setLineDash([5 / z, 5 / z]); ctx.lineWidth = 1.2 / z;
+  GHOSTS.forEach((g, i) => {
+    const a = env(t, 23.45 + i * 0.07, 23.8 + i * 0.07, 24.9, 25.4); if (a <= 0) return;
+    tilePath(g.T, 0.94); ctx.strokeStyle = rgba(INK, 0.55 * a); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  GHOSTS.forEach((g, i) => { const a = env(t, 23.45 + i * 0.07, 23.8 + i * 0.07, 24.9, 25.4); if (a > 0) glyph(g.T.x, g.T.y, g.state, z, 0.4 * a, INK); });
+}
+
+// ================================================================ OVERLAYS (screen space)
+function drawCounter(t) {
+  const segs = CONFIG.COPY.counter, times = [0.9, 2.35, 4.35, 6.95];
+  const full = segs.join(''), o = { size: 20, mono: true, weight: 400, track: 0.06 };
+  const f = `400 20px ${MONO}`, { xs } = charXs(full, f, 0.06 * 20), out = 1 - eIO(inv(7.6, 8.1, t));
+  if (out <= 0) return;
+  // the visible string stays centred and slides left as each new count is appended
+  let wVis = 0, end = 0;
+  segs.forEach((s, i) => { const k = eIO(inv(times[i] - 0.15, times[i] + 0.45, t)); wVis += (xs[end + s.length] - xs[end]) * k; end += s.length; });
+  const x0 = W / 2 - wVis / 2;
+  let idx = 0;
+  segs.forEach((s, i) => {
+    const a = eOut(inv(times[i], times[i] + 0.5, t)) * out;
+    if (a > 0) drawText(s, x0 + xs[idx], 1030, { ...o, alpha: a * (i === 3 ? 1 : 0.6), colors: i === 3 ? (k => (s[k] >= '0' && s[k] <= '9') ? RED : INK) : null, reveal: inv(times[i], times[i] + 0.4, t) });
+    idx += s.length;
+  });
+}
+function drawScene2Text(t) {
+  const L = CONFIG.COPY.s2; if (t < 7.9 || t > 10.3) return;
+  scrim(0, 360, 900, 320, env(t, 7.8, 8.3, 9.8, 10.3));
+  L.forEach((s, i) => drawText(s, 120, 470 + i * 72, { size: 62, weight: 500, track: -0.01, reveal: inv(7.95 + i * 0.2, 8.65 + i * 0.2, t), exit: inv(9.75, 10.2, t) }));
+}
+function drawScene3Text(t) {
+  const L = CONFIG.COPY.s3a;
+  if (t > 11.1 && t < 14.1) {
+    scrim(0, 800, 1300, 200, env(t, 11.1, 11.6, 13.5, 14.0));
+    L.forEach((s, i) => drawText(s, 120, 890 + i * 66, { size: 54, weight: 500, track: -0.01, reveal: inv(11.3 + i * 0.25, 12.0 + i * 0.25, t), exit: inv(13.55, 13.95, t) }));
+  }
+  if (t > 14.15 && t < 15.7) {
+    scrim(0, 840, 900, 160, env(t, 14.15, 14.5, 15.2, 15.6));
+    drawText(CONFIG.COPY.s3b, 120, 948, { size: 84, weight: 600, track: -0.015, reveal: inv(14.25, 14.9, t), exit: inv(15.2, 15.6, t), soft: 9 });
+  }
+}
+function drawScene4(t, cam) {
+  if (t < 15.8 || t > 21) return;
+  const C = CONFIG.COPY;
+  // annotations: the familiar vocabulary of instability
+  const tagOut = 1 - eIO(inv(20.3, 20.8, t));
+  TAGS.forEach((g, i) => {
+    const a0 = eOut(inv(15.95 + i * 0.2, 16.35 + i * 0.2, t)); if (a0 <= 0) return;
+    const a = a0 * (1 - eIO(inv(17.0, 17.45, t))) * tagOut;
+    const [sx, sy] = w2s(g.T.x, g.T.y, cam);
+    const lp = eIO(inv(15.95 + i * 0.2, 16.45 + i * 0.2, t));
+    ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(lerp(g.lx, sx, lp), lerp(g.ly, sy, lp));
+    ctx.strokeStyle = rgba(INK, 0.45 * a); ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, 3.2, 0, TAU); ctx.fillStyle = rgba(INK, 0.8 * a * lp); ctx.fill();
+    const right = g.lx >= sx;
+    drawText(g.label, g.lx + (right ? 8 : -8), g.ly + (g.ly > sy ? 20 : -8), { size: 19, mono: true, weight: 400, track: 0.04, alpha: 0.85 * a, align: right ? 'left' : 'right', reveal: inv(15.95 + i * 0.2, 16.4 + i * 0.2, t) });
+  });
+  // DISEASE → DRUG
+  const out = eIO(inv(20.3, 20.8, t));
+  drawText(C.s4ask, W / 2, 392, { size: 28, weight: 400, alpha: 0.62, align: 'center', reveal: inv(17.45, 18.0, t), exit: out, track: 0.01 });
+  const fx = 790, tx = 1130, y = 560;
+  drawText(C.s4from, fx, y + 11, { size: 30, mono: true, weight: 500, track: 0.22, align: 'right', reveal: inv(17.6, 18.0, t), exit: out, alpha: 0.9 });
+  drawText(C.s4to, tx, y + 11, { size: 30, mono: true, weight: 500, track: 0.22, reveal: inv(17.75, 18.15, t), exit: out, alpha: lerp(0.9, 0.35, eIO(inv(18.7, 19.2, t))) });
+  const x0 = fx + 28, x1 = tx - 28, prog = 0.6 * eOut(inv(17.95, 18.45, t)), brk = inv(18.62, 19.35, t);
+  if (prog > 0 && t < 20.3) {
+    if (brk <= 0) {
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(lerp(x0, x1, prog), y); ctx.strokeStyle = rgba(INK, 0.75); ctx.lineWidth = 1.6; ctx.stroke();
+      const blink = t > 18.45 ? 0.5 + 0.5 * Math.cos((t - 18.45) * 22) : 1;
+      ctx.beginPath(); ctx.arc(lerp(x0, x1, prog), y, 3.4, 0, TAU); ctx.fillStyle = rgba(INK, 0.9 * blink); ctx.fill();
+    } else {
+      const segN = 7, R2 = mulberry32(99), len = (x1 - x0) * 0.6;
+      for (let i = 0; i < segN; i++) {
+        const a0 = x0 + len * i / segN, a1 = x0 + len * (i + 0.72) / segN, dy = (R2() - 0.4) * 26 * eOut(brk), dx = (R2() - 0.5) * 16 * eOut(brk), rot = (R2() - 0.5) * 0.22 * eOut(brk);
+        const mx = (a0 + a1) / 2 + dx, my = y + dy, hl = (a1 - a0) / 2;
+        ctx.beginPath(); ctx.moveTo(mx - Math.cos(rot) * hl, my - Math.sin(rot) * hl); ctx.lineTo(mx + Math.cos(rot) * hl, my + Math.sin(rot) * hl);
+        ctx.strokeStyle = rgba(INK, 0.75 * (1 - eIO(brk)) * (1 - out)); ctx.lineWidth = 1.6; ctx.stroke();
+      }
+    }
+  }
+  drawText(C.s4q, W / 2, 770, { size: 62, weight: 500, align: 'center', track: -0.01, reveal: inv(18.95, 19.65, t), wipe: eIO(inv(20.15, 20.7, t)) });
+}
+function drawScene5(t, cam) {
+  if (t < 21.6 || t > 28.1) return;
+  const C = CONFIG.COPY, [hx, hy] = w2s(HX, HY, cam);
+  // hero ignites
+  const ig = inv(21.75, 22.7, t);
+  if (ig > 0 && ig < 1) { ctx.beginPath(); ctx.arc(hx, hy, 34 + 120 * eOut(ig), 0, TAU); ctx.strokeStyle = rgba(AMB, 0.5 * (1 - ig)); ctx.lineWidth = 1.2; ctx.stroke(); }
+  // others like it
+  A_REPS.slice(1).forEach((T, i) => {
+    const pr = eIO(inv(22.7 + i * 0.13, 23.35 + i * 0.13, t)), a = 1 - eIO(inv(24.8, 25.3, t)); if (pr <= 0 || a <= 0) return;
+    const [sx, sy] = w2s(T.x, T.y, cam), mx = (hx + sx) / 2, my = (hy + sy) / 2 - Math.hypot(sx - hx, sy - hy) * 0.22;
+    ctx.beginPath(); ctx.moveTo(hx, hy);
+    for (let k = 1; k <= 40 * pr; k++) { const u = k / 40, x = (1 - u) * (1 - u) * hx + 2 * u * (1 - u) * mx + u * u * sx, y = (1 - u) * (1 - u) * hy + 2 * u * (1 - u) * my + u * u * sy; ctx.lineTo(x, y); }
+    ctx.strokeStyle = rgba(AMB, 0.55 * a); ctx.lineWidth = 1.1; ctx.stroke();
+    if (pr >= 1) { ctx.beginPath(); ctx.arc(sx, sy, 3, 0, TAU); ctx.fillStyle = rgba(AMB, 0.9 * a); ctx.fill(); }
+  });
+  // headline
+  if (t < 24.9) { scrim(0, 80, 1200, 150, env(t, 22.0, 22.4, 24.3, 24.8)); drawText(C.s5a, 120, 176, { size: 56, weight: 500, track: -0.012, reveal: inv(22.1, 22.9, t), exit: inv(24.3, 24.75, t) }); }
+  // persisted vs disappeared
+  if (t > 24.9 && t < 26.8) drawComparison(t, cam);
+  // the question
+  if (t > 26.3) drawText(C.s5q, W / 2, 790, { size: 78, weight: 600, align: 'center', track: -0.015, reveal: inv(26.35, 27.05, t), exit: inv(27.6, 27.95, t), soft: 8 });
+}
+function drawComparison(t, cam) {
+  const C = CONFIG.COPY, fly = i => eIO(inv(24.95 + i * 0.05, 25.55 + i * 0.05, t)), out = eIO(inv(26.05, 26.45, t));
+  const rowY = [380, 700], slotX = i => W / 2 + (i - 2.5) * 132;
+  const lab = eOut(inv(25.3, 25.7, t)) * (1 - out);
+  drawText(C.s5rowA, slotX(0) - 88, rowY[0] + 7, { size: 17, mono: true, weight: 500, track: 0.08, align: 'right', color: AMB, alpha: lab });
+  drawText(C.s5rowB, slotX(0) - 88, rowY[1] + 7, { size: 17, mono: true, weight: 500, track: 0.08, align: 'right', alpha: 0.6 * lab });
+  const item = (T, st, i, row, ghost) => {
+    const k = fly(i), [sx, sy] = w2s(T.x, T.y, cam), x = lerp(sx, slotX(i), k), y = lerp(sy, rowY[row], k), sc = lerp(cam.z, 0.2, k), a = (1 - out);
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc); ctx.translate(-T.x, -T.y);
+    tilePath(T, 0.94);
+    if (ghost) { ctx.setLineDash([5 / sc, 5 / sc]); ctx.strokeStyle = rgba(INK, 0.55 * a); ctx.lineWidth = 1.2 / sc; ctx.stroke(); ctx.setLineDash([]); }
+    else { ctx.fillStyle = rgba(AMB, 0.6 * a); ctx.fill(); ctx.strokeStyle = rgba(AMB, 0.95 * a); ctx.lineWidth = 1.4 / sc; ctx.stroke(); }
+    glyph(T.x, T.y, st, sc, (ghost ? 0.45 : 0.95) * a, ghost ? INK : [255, 240, 210], 1.15);
+    ctx.restore();
+  };
+  ROW_P.forEach((T, i) => item(T, HERO_STATE, i, 0, false));
+  ROW_G.forEach((g, i) => item(g.T, g.state, i, 1, true));
+  // Δ copy-number profile between the rows: flat everywhere except the one chromosome that differs
+  const d = eIO(inv(25.45, 26.15, t)), dOut = eIO(inv(26.2, 26.6, t)); if (d <= 0) return;
+  const X0 = slotX(0) - 40, X1 = slotX(5) + 40, Y = 540, total = CHR_MB.reduce((a, b) => a + b, 0);
+  let acc = 0; ctx.lineWidth = 1.6;
+  drawText('Δ', X0 - 24, Y + 8, { size: 22, mono: true, weight: 500, alpha: 0.7 * (1 - dOut), align: 'right' });
+  for (let c = 0; c < 23; c++) {
+    const a0 = X0 + (X1 - X0) * acc / total + 2, a1 = X0 + (X1 - X0) * (acc + CHR_MB[c]) / total - 2; acc += CHR_MB[c];
+    const vis = inv(c / 23, c / 23 + 0.12, d), isK = c === HERO_CHR; if (vis <= 0) continue;
+    const lift = isK ? 56 * eOut(inv(0.55, 1, d)) : 0;
+    ctx.beginPath();
+    if (isK && lift > 1) { ctx.moveTo(a0 - 2, Y); ctx.lineTo(a0, Y - lift); ctx.lineTo(a1, Y - lift); ctx.lineTo(a1 + 2, Y); }
+    else { ctx.moveTo(a0, Y - lift); ctx.lineTo(lerp(a0, a1, vis), Y - lift); }
+    ctx.strokeStyle = rgba(isK && lift > 1 ? AMB : CYA, (isK && lift > 1 ? 0.95 : 0.55) * (1 - dOut)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a1 + 2, Y + 12); ctx.lineTo(a1 + 2, Y + 18); ctx.strokeStyle = rgba(INK, 0.22 * (1 - dOut)); ctx.lineWidth = 1; ctx.stroke(); ctx.lineWidth = 1.6;
+    if (isK && lift > 1) { const g = ctx.createRadialGradient((a0 + a1) / 2, Y - lift, 0, (a0 + a1) / 2, Y - lift, 60); g.addColorStop(0, rgba(AMB, 0.22 * (1 - dOut))); g.addColorStop(1, rgba(AMB, 0)); ctx.fillStyle = g; ctx.fillRect((a0 + a1) / 2 - 60, Y - lift - 60, 120, 120); }
+  }
+}
+function drawDiveGlyph(t) {
+  // the hero tile's ‖| ticks grow into the three copies of one chromosome
+  if (t < 27.8 || t > 28.62) return;
+  const e = eIO(inv(27.85, 28.55, t)), n = 3, h = lerp(11, 60, e), sp = lerp(4.5, 13, e), w = lerp(1.4, 8, e);
+  const a = 1 - inv(28.45, 28.62, t);
+  for (let i = 0; i < n; i++) { rrPath(W / 2 + (i - 1) * sp - w / 2, H / 2 - h / 2, w, h, w / 2); ctx.fillStyle = rgba(mix([255, 236, 200], AMB, e), a); ctx.fill(); }
+}
+
+// ================================================================ SCENE 6: MOSAIC → MECHANISM → FUNCTION → RESCUE → SAFETY
+const S6R = mulberry32(CONFIG.SEED ^ 0x6666);
+const KX0 = 330, KX1 = 1590, KX = c => KX0 + (c + 0.5) * (KX1 - KX0) / 23, KH = c => 36 + 128 * (CHR_MB[c] / 248);
+function drawRod(x, top, h, w, cen, bands, col, a) {
+  if (a <= 0.004) return;
+  const r = w / 2, yc = top + cen * h;
+  ctx.fillStyle = rgba(col, a);
+  rrPath(x - r, top, w, Math.max(w, cen * h - 1.4), r); ctx.fill();
+  rrPath(x - r, yc + 1.4, w, Math.max(w, (1 - cen) * h - 1.4), r); ctx.fill();
+  if (bands) { ctx.fillStyle = rgba(BG, 0.55 * a); for (const [p, bw] of bands) { const y = top + p * h; if (Math.abs(y - yc) < 3) continue; ctx.fillRect(x - r + 0.6, y, w - 1.2, Math.max(1, bw * h)); } }
+}
+const BASES = 'ACGT';
+const REFSEQ = Array.from({ length: 64 }, () => BASES[Math.floor(S6R() * 4)]);
+const ALTC = BASES[(BASES.indexOf(REFSEQ[32]) + 2) % 4];
+// synthetic ISM field: quiet at the centre column on purpose (no invented "hit" at the candidate)
+const ISM = [0, 1, 2, 3].map(r => Array.from({ length: 64 }, (_, c) => {
+  let v = (S6R() - 0.5) * 0.28;
+  if (c === 9) v += r === 2 ? 0.95 : -0.45;
+  if (c === 21) v += r === 3 ? 0.4 : -0.1;
+  if (c >= 52 && c <= 58) v += r === 3 ? 0.55 + 0.1 * Math.sin(c) : r === 1 ? 0.22 : -0.12;
+  if (c >= 3 && c <= 7) v -= r === 0 ? 0.35 : 0;
+  if (c === 32) v *= 0.25;
+  return clamp(v, -1, 1);
+}));
+const HM = { x0: 245.5, cw: 21, gap: 1, top: 468, rh: 26, rg: 2 };
+const hmX = c => HM.x0 + c * (HM.cw + HM.gap) + HM.cw / 2, hmY = r => HM.top + r * (HM.rh + HM.rg) + HM.rh / 2;
+const divCol = v => v >= 0 ? [206, 98, 82] : [92, 150, 200];
+// predicted contact maps (REF / ALT nearly identical — the honest look of a small predicted effect)
+const NB = 20, DW = 28;
+function contactVal(i, j) {
+  const hot = (a, b, amp) => amp * Math.exp(-((i - a) ** 2 + (j - b) ** 2) / 1.1);
+  return clamp(0.92 * Math.exp(-(j - i) / 2.3) + hot(4, 11, 0.75) + hot(9, 16, 0.6) + hot(2, 7, 0.45) + hot(13, 18, 0.35) + (i === 12 ? 0.16 * Math.exp(-(j - i) / 8) : 0));
+}
+const CONTACT = []; // {tri, i, j, v, x, y, sx, sy}
+[0, 1].forEach(tri => {
+  const xL = tri ? 1000 : 360;
+  for (let i = 0; i < NB; i++) for (let j = i; j < NB; j++) {
+    const v = clamp(contactVal(i, j) * (tri ? 1 + 0.03 * Math.exp(-((i - 10) ** 2 + (j - 10) ** 2) / 6) : 1) + (S6R() - 0.5) * 0.04);
+    const idx = CONTACT.length;
+    CONTACT.push({ tri, i, j, v, x: xL + (i + j + 1) * DW / 2, y: 690 - (j - i + 1) * DW / 2, sx: hmX(idx % 64), sy: hmY((idx >> 6) % 4), d: (idx % 29) / 29 });
+  }
+});
+const contactCol = v => v < 0.75 ? mix([26, 22, 18], AMB, clamp(v * 1.33)) : mix(AMB, INK, (v - 0.75) / 0.25);
+// mechanism graph
+const NODES = [[700, 520, 1], [820, 405, 0], [835, 640, 0], [985, 470, 1], [965, 705, 0], [1105, 565, 1], [1235, 430, 0], [1250, 680, 0], [1372, 545, 0], [615, 395, 0], [598, 655, 0], [1120, 330, 0], [1368, 372, 0]];
+const EDGES = [[0, 1], [0, 2], [0, 9], [0, 10], [1, 3], [2, 4], [3, 5], [4, 5], [3, 11], [5, 6], [5, 7], [6, 8], [7, 8], [6, 12], [11, 6], [1, 9], [2, 10], [3, 4]];
+const HOP = (() => { const h = new Array(NODES.length).fill(99); h[0] = 0; for (let k = 0; k < 6; k++) EDGES.forEach(([a, b]) => { h[b] = Math.min(h[b], h[a] + 1); h[a] = Math.min(h[a], h[b] + 1); }); return h; })();
+const NODE_SRC = (() => { // nodes are born from the strongest off-diagonal predicted contacts
+  const cand = CONTACT.filter(c => c.j - c.i >= 3).sort((a, b) => b.v - a.v), out = [];
+  for (const c of cand) { if (out.every(o => Math.hypot(o.x - c.x, o.y - c.y) > 40)) out.push(c); if (out.length >= NODES.length) break; }
+  while (out.length < NODES.length) out.push(cand[out.length]);
+  return out.sort((a, b) => a.x - b.x);
+})();
+const NODE_ORDER = NODES.map((n, i) => i).sort((a, b) => NODES[a][0] - NODES[b][0]);
+const VETO = 7;
+const WORD_T = [0.35, 1.55, 2.95, 4.35, 5.05];
+const WORD_O = () => [[KX(HERO_CHR), 540 - CHR_CEN[HERO_CHR] * KH(HERO_CHR) - 34], [960, 484], [1560, 452], [700, 474], [1250, 778]];
+const slotX = i => W / 2 + (i - 2) * 290;
+
+function nodePos(i, u) {
+  const src = NODE_SRC[NODE_ORDER.indexOf(i)], k = eIO(inv(4.15 + i * 0.015, 4.55 + i * 0.015, u));
+  return [lerp(src.x, NODES[i][0], k), lerp(src.y, NODES[i][1], k)];
+}
+function drawScene6(t) {
+  const u = t - 28, gOut = 1 - eIO(inv(5.55, 5.85, u));
+  const bg = eIO(inv(28.15, 28.55, t)); ctx.fillStyle = rgba(BG, bg); ctx.fillRect(0, 0, W, H);
+  const k = HERO_CHR, cenK = CHR_CEN[k], hK = KH(k);
+  // ---- MOSAIC: the state as a karyotype (three copies of one chromosome)
+  if (u > 0.25 && u < 1.0) {
+    const ap = eIO(inv(0.3, 0.95, u)), outO = eIO(inv(0.8, 1.0, u));
+    for (let c = 0; c < 23; c++) {
+      const cen = CHR_CEN[c], h = KH(c), xs = KX(c);
+      if (c === k) {
+        for (let j = 0; j < 3; j++) {
+          const x = lerp(W / 2 + (j - 1) * 13, xs + (j - 1) * 13, ap), hh = lerp(60, h, ap), top = lerp(H / 2 - 30, 540 - cen * h, ap);
+          drawRod(x, top, hh, 8, cen, ap > 0.3 ? BANDS[c] : null, AMB, (j === 1 ? 1 : 1 - eIO(inv(0.85, 1.0, u))) * 0.95);
+        }
+      } else {
+        const d = Math.abs(c - k), e = eOut(inv(0.32 + d * 0.018, 0.78 + d * 0.018, u)), x = lerp(W / 2 + (xs - W / 2) * 0.7, xs, e);
+        for (let j = 0; j < 2; j++) drawRod(x + (j - 0.5) * 13, 540 - cen * h + outO * 16, h, 8, cen, BANDS[c], INK, 0.8 * e * (1 - outO));
+      }
+    }
+  }
+  // ---- MECHANISM: one copy becomes an ideogram, a band becomes a locus
+  if (u >= 0.98 && u < 2.1) {
+    const r = eIO(inv(1.0, 1.42, u)), len = lerp(hK, 1400, eIO(inv(1.02, 1.45, u))), wd = lerp(8, 26, eIO(inv(1.02, 1.45, u)));
+    const cx = lerp(KX(k), W / 2, r), cy = lerp(540 - cenK * hK + hK / 2, 540, r);
+    const bf0 = 0.6, bf1 = 0.645, zk = eIO(inv(1.5, 1.95, u)), zf = Math.exp(Math.log(1 / (bf1 - bf0)) * zk);
+    const chrA = 1 - eIO(inv(1.72, 1.98, u));
+    const bcx = cx - len / 2 + (bf0 + bf1) / 2 * len, shift = lerp(bcx, W / 2, zk);
+    ctx.save();
+    ctx.translate(shift, cy); ctx.scale(zf, 1); ctx.translate(-bcx, 0); ctx.translate(cx, 0); ctx.rotate(-Math.PI / 2 * r);
+    drawRod(0, -len / 2, len, wd, cenK, r > 0.5 ? HERO_BANDS : BANDS[k], mix(AMB, INK, 0.35 * r), 0.95 * chrA);
+    ctx.restore();
+    const br = env(u, 1.3, 1.45, 1.8, 1.98);
+    if (br > 0) {
+      const X = x => shift + (x - bcx) * zf, xa = X(cx - len / 2 + bf0 * len), xb = X(cx - len / 2 + bf1 * len);
+      ctx.strokeStyle = rgba(CYA, 0.85 * br); ctx.lineWidth = 1.2; ctx.beginPath();
+      ctx.moveTo(xa, cy - 26); ctx.lineTo(xa, cy + 26); ctx.moveTo(xb, cy - 26); ctx.lineTo(xb, cy + 26);
+      ctx.moveTo(xa, cy - 26); ctx.lineTo(xa + 8, cy - 26); ctx.moveTo(xb, cy - 26); ctx.lineTo(xb - 8, cy - 26);
+      ctx.moveTo(xa, cy + 26); ctx.lineTo(xa + 8, cy + 26); ctx.moveTo(xb, cy + 26); ctx.lineTo(xb - 8, cy + 26); ctx.stroke();
+    }
+    // gene model inside the bracket
+    const gm = env(u, 1.76, 2.0, 2.05, 2.35) * (u < 2.1 ? 1 : 0);
+    if (gm > 0) drawGeneModel(u, gm);
+  }
+  if (u >= 2.1 && u < 2.4) drawGeneModel(u, 1 - eIO(inv(2.05, 2.35, u)));
+  // ---- REF / ALT
+  if (u > 2.05 && u < 3.05) {
+    const x0 = W / 2, lab = env(u, 2.15, 2.4, 2.7, 2.85);
+    drawText('REF', 282, 512, { size: 16, mono: true, weight: 500, align: 'right', alpha: 0.55 * lab, track: 0.1 });
+    drawText('ALT', 282, 592, { size: 16, mono: true, weight: 500, align: 'right', alpha: 0.55 * lab, track: 0.1 });
+    const box = env(u, 2.3, 2.45, 2.7, 2.85);
+    if (box > 0) { ctx.strokeStyle = rgba(AMB, 0.85 * box); ctx.lineWidth = 1.2; rrPath(x0 - 19, 468, 38, 140, 4); ctx.stroke(); }
+    for (let i = 0; i < 33; i++) {
+      const col = i + 16, ap = eOut(inv(2.08 + Math.abs(i - 16) * 0.013, 2.3 + Math.abs(i - 16) * 0.013, u));
+      const x = x0 + (i - 16) * 40, m = eIO(inv(2.7 + Math.abs(i - 16) * 0.006, 2.98, u));
+      const bx = hmX(col), by = hmY(BASES.indexOf(REFSEQ[col]));
+      const size = lerp(30, 9, m), a = ap * (1 - m * m);
+      if (a > 0.01) drawText(REFSEQ[col], lerp(x, bx, m), lerp(512, by + size * 0.35, m), { size, mono: true, weight: 500, align: 'center', alpha: 0.85 * a });
+      const altA = ap * (1 - eIO(inv(2.7, 2.85, u)));
+      if (altA > 0.01) drawText(i === 16 ? ALTC : REFSEQ[col], x, 592, { size: 30, mono: true, weight: 500, align: 'center', alpha: (i === 16 ? 1 : 0.85) * altA, color: i === 16 ? AMB : INK });
+    }
+  }
+  // ---- FUNCTION: in-silico mutagenesis field, then predicted contacts
+  if (u > 2.72 && u < 3.95) drawISM(u);
+  if (u > 3.4 && u < 4.6) drawContacts(u);
+  // ---- RESCUE + SAFETY: mechanism graph, perturbation, veto
+  if (u > 4.1 && u < 5.75) drawNetwork(u, gOut);
+  drawWordRow(u);
+  const na = env(u, 0.4, 0.9, 5.45, 5.8) * 0.4;
+  if (na > 0) drawText(CONFIG.COPY.s6note, 60, 1040, { size: 13, mono: true, weight: 400, alpha: na, track: 0.04 });
+}
+function drawGeneModel(u, a) {
+  const gz = Math.exp(Math.log(14) * eIO(inv(2.0, 2.4, u))), X = x => W / 2 + (x - W / 2) * gz;
+  ctx.strokeStyle = rgba(INK, 0.5 * a); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X(250), 540); ctx.lineTo(X(1670), 540); ctx.stroke();
+  const ex = [[0.05, 0.018], [0.14, 0.012], [0.21, 0.01], [0.33, 0.02], [0.41, 0.016], [0.58, 0.018], [0.67, 0.01], [0.79, 0.045], [0.9, 0.012]];
+  ctx.fillStyle = rgba(INK, 0.6 * a);
+  for (const [p, w] of ex) { const xa = X(250 + p * 1420), xb = X(250 + (p + w) * 1420); ctx.fillRect(xa, 530, Math.max(1, xb - xa), 20); }
+  ctx.fillStyle = rgba(AMB, 0.16 * a); ctx.fillRect(W / 2 - 9 * Math.min(gz, 3), 508, 18 * Math.min(gz, 3), 64);
+  ctx.fillStyle = rgba(AMB, 0.95 * a); ctx.fillRect(W / 2 - 1, 506, 2, 68);
+  drawText('locus', 250, 505, { size: 14, mono: true, weight: 400, alpha: 0.5 * a * (1 - inv(2.0, 2.2, u)), track: 0.1 });
+}
+function drawISM(u) {
+  const out = 1 - eIO(inv(3.45, 3.78, u)), lab = env(u, 2.85, 3.1, 3.45, 3.7);
+  drawText('in silico mutagenesis · predicted', HM.x0, 452, { size: 14, mono: true, weight: 400, alpha: 0.55 * lab, track: 0.06 });
+  for (let r = 0; r < 4; r++) drawText(BASES[r], HM.x0 - 14, hmY(r) + 5, { size: 14, mono: true, weight: 500, align: 'right', alpha: 0.5 * lab });
+  for (let c = 0; c < 64; c++) {
+    const e = eOut(inv(2.78 + Math.abs(c - 32) / 32 * 0.42, 2.94 + Math.abs(c - 32) / 32 * 0.42, u)) * out; if (e <= 0) continue;
+    const x = HM.x0 + c * (HM.cw + HM.gap);
+    for (let r = 0; r < 4; r++) {
+      const y = HM.top + r * (HM.rh + HM.rg), v = ISM[r][c];
+      ctx.fillStyle = rgba(INK, 0.045 * e); ctx.fillRect(x, y, HM.cw, HM.rh);
+      ctx.fillStyle = rgba(divCol(v), Math.min(0.92, Math.abs(v) * 1.05) * e); ctx.fillRect(x, y, HM.cw, HM.rh);
+    }
+    const rr = BASES.indexOf(REFSEQ[c]); ctx.fillStyle = rgba(INK, 0.85 * e * inv(2.85, 3.0, u)); ctx.fillRect(hmX(c) - 1.5, hmY(rr) - 1.5, 3, 3);
+    const v = ISM[rr][c]; ctx.fillStyle = rgba(divCol(v), 0.75 * e); ctx.fillRect(x + 3, 640, HM.cw - 6, -v * 30);
+  }
+  ctx.fillStyle = rgba(INK, 0.3 * out * inv(2.8, 3.0, u)); ctx.fillRect(HM.x0, 640, 64 * (HM.cw + HM.gap), 1);
+  const co = out * inv(2.8, 2.95, u);
+  if (co > 0) { ctx.strokeStyle = rgba(INK, 0.9 * co); ctx.lineWidth = 1.2; ctx.strokeRect(hmX(32) - HM.cw / 2 - 1.5, HM.top - 2, HM.cw + 3, 4 * (HM.rh + HM.rg) + 2); }
+}
+function drawContacts(u) {
+  const labA = env(u, 3.8, 4.0, 4.15, 4.4);
+  drawText('REF · predicted contacts', 640, 728, { size: 14, mono: true, weight: 400, align: 'center', alpha: 0.55 * labA, track: 0.06 });
+  drawText('ALT · predicted contacts', 1280, 728, { size: 14, mono: true, weight: 400, align: 'center', alpha: 0.55 * labA, track: 0.06 });
+  const out = 1 - eIO(inv(4.15, 4.45, u));
+  for (const c of CONTACT) {
+    const k = eIO(inv(3.45 + c.d * 0.3, 3.82 + c.d * 0.3, u)); if (k <= 0 || out <= 0) continue;
+    const x = lerp(c.sx, c.x, k), y = lerp(c.sy, c.y, k), s = lerp(18, DW / Math.SQRT2 - 0.8, k);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4 * k);
+    ctx.fillStyle = rgba(contactCol(c.v), (0.12 + 0.88 * Math.min(1, c.v * 1.25)) * lerp(0.4, 1, k) * out); ctx.fillRect(-s / 2, -s / 2, s, s);
+    ctx.restore();
+  }
+}
+function drawNetwork(u, gOut) {
+  const ea = gOut;
+  // edges
+  EDGES.forEach(([a, b], k) => {
+    const e = eIO(inv(4.35 + k * 0.012, 4.62 + k * 0.012, u)); if (e <= 0) return;
+    const [ax, ay] = nodePos(a, u), [bx, by] = nodePos(b, u);
+    const veto = (a === VETO || b === VETO) && (a === 8 || b === 8 || a === 5 || b === 5);
+    const vk = veto ? inv(5.3, 5.4, u) : 0;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(lerp(ax, bx, e), lerp(ay, by, e));
+    ctx.strokeStyle = rgba(mix(INK, RED, vk), (0.34 + 0.4 * vk) * ea); ctx.lineWidth = 1.2; ctx.stroke();
+    // perturbation pulses travel outward
+    const ha = HOP[a], hb = HOP[b]; if (ha !== hb) {
+      const from = ha < hb ? [ax, ay] : [bx, by], to = ha < hb ? [bx, by] : [ax, ay], h = Math.min(ha, hb);
+      const p = inv(4.55 + h * 0.16, 4.72 + h * 0.16, u);
+      if (p > 0 && p < 1 && h < 3) { ctx.beginPath(); ctx.arc(lerp(from[0], to[0], p), lerp(from[1], to[1], p), 2.6, 0, TAU); ctx.fillStyle = rgba(AMB, 0.95 * ea); ctx.fill(); }
+    }
+  });
+  // perturbation rings
+  const [px, py] = nodePos(0, u);
+  for (let ri = 0; ri < 2; ri++) {
+    const p = inv(4.5 + ri * 0.18, 5.1 + ri * 0.18, u); if (p <= 0 || p >= 1) continue;
+    ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.arc(px, py, 12 + 80 * eOut(p), 0, TAU); ctx.strokeStyle = rgba(AMB, 0.6 * (1 - p) * ea); ctx.lineWidth = 1.1; ctx.stroke(); ctx.setLineDash([]);
+  }
+  // safety scan
+  const sc = eIO(inv(5.0, 5.45, u)), sx = lerp(560, 1420, sc), sa = env(u, 5.0, 5.06, 5.45, 5.55);
+  if (sa > 0) {
+    const g = ctx.createLinearGradient(sx - 40, 0, sx, 0); g.addColorStop(0, rgba(CYA, 0)); g.addColorStop(1, rgba(CYA, 0.12 * sa));
+    ctx.fillStyle = g; ctx.fillRect(sx - 40, 300, 40, 480); ctx.fillStyle = rgba(CYA, 0.8 * sa); ctx.fillRect(sx - 0.6, 300, 1.2, 480);
+  }
+  // nodes (they later fly into the title's wells, see scene 7)
+  if (u < 5.7) NODES.forEach((n, i) => {
+    const [x, y] = nodePos(i, u), r = n[2] ? 9 : 6.5, reach = 4.72 + (HOP[i] - 1) * 0.16, aff = HOP[i] <= 2 ? inv(reach, reach + 0.12, u) : 0;
+    const passed = sa > 0 && sx > x ? 1 : 0, veto = i === VETO ? inv(5.3, 5.4, u) : 0;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = rgba(BG, 1); ctx.fill();
+    if (aff > 0) { ctx.fillStyle = rgba(mix(AMB, RED, veto), 0.75 * aff); ctx.fill(); }
+    ctx.strokeStyle = rgba(veto > 0 ? mix(INK, RED, veto) : INK, 0.85 + 0.15 * passed); ctx.lineWidth = 1.5; ctx.stroke();
+  });
+  // veto mark
+  const vk = inv(5.3, 5.42, u) * ea;
+  if (vk > 0) {
+    const [ax, ay] = nodePos(VETO, u), [bx, by] = nodePos(8, u), mx = (ax + bx) / 2, my = (ay + by) / 2, s = 6;
+    ctx.beginPath(); ctx.moveTo(mx - s, my - s); ctx.lineTo(mx + s, my + s); ctx.moveTo(mx + s, my - s); ctx.lineTo(mx - s, my + s);
+    ctx.strokeStyle = rgba(RED, 0.95 * vk); ctx.lineWidth = 1.8; ctx.stroke();
+    drawText('survival ≠ rescue', ax, ay + 44, { size: 15, mono: true, weight: 500, align: 'center', color: RED, alpha: 0.9 * vk, track: 0.04, reveal: inv(5.32, 5.55, u) });
+  }
+  drawText('in silico perturbation', px, py + 38, { size: 14, mono: true, weight: 400, align: 'center', alpha: 0.5 * env(u, 4.6, 4.8, 5.4, 5.6), track: 0.04 });
+  drawText('hypothesis, not result', NODES[8][0], NODES[8][1] - 26, { size: 14, mono: true, weight: 400, align: 'center', alpha: 0.5 * env(u, 4.85, 5.05, 5.45, 5.65), track: 0.04 });
+}
+function drawWordRow(u) {
+  const words = CONFIG.COPY.s6words, O = WORD_O(), rowOut = 1 - eIO(inv(5.6, 5.85, u)); if (rowOut <= 0) return;
+  let arrived = -1; WORD_T.forEach((wt, i) => { if (u >= wt + 0.8) arrived = i; });
+  const lineEnd = arrived >= 0 ? slotX(0) + (slotX(arrived) - slotX(0)) * 1 : slotX(0);
+  const lp = arrived >= 0 ? 1 : 0;
+  if (lp) { ctx.fillStyle = rgba(INK, 0.25 * rowOut); ctx.fillRect(slotX(0), 866, lineEnd - slotX(0), 1); }
+  words.forEach((w, i) => {
+    const t0 = WORD_T[i], ap = eOut(inv(t0, t0 + 0.25, u)); if (ap <= 0) return;
+    const fl = eIO(inv(t0 + 0.35, t0 + 0.8, u)), x = lerp(O[i][0], slotX(i), fl), y = lerp(O[i][1], 905, fl), size = lerp(17, 21, fl);
+    const latest = i === arrived || (fl < 1), a = (latest ? 1 : 0.38) * ap * rowOut;
+    drawText(w, x, y, { size, weight: 600, track: 0.2, align: 'center', alpha: a, color: i === 4 && fl < 1 ? mix(INK, RED, 0.35) : INK });
+    if (fl >= 1) { ctx.beginPath(); ctx.arc(slotX(i), 866.5, 2.6, 0, TAU); ctx.fillStyle = rgba(INK, (i === arrived ? 0.9 : 0.45) * rowOut); ctx.fill(); }
+  });
+}
+
+// ================================================================ SCENE 7: TITLE
+const MPAT = ['X...X', 'XX.XX', 'X.X.X', 'X...X', 'X...X'];
+const PITCH = 34, WELL = 10.5;
+function lockup() {
+  const tw = textWidth(CONFIG.COPY.title, { size: 96, weight: 600, track: 0.02 });
+  const markW = 4 * PITCH + 2 * WELL, gap = 56, total = markW + gap + tw, left = W / 2 - total / 2;
+  const mx0 = left + WELL, my0 = 500 - 2 * PITCH;
+  const wells = []; MPAT.forEach((row, j) => [...row].forEach((ch, i) => wells.push({ x: mx0 + i * PITCH, y: my0 + j * PITCH, on: ch === 'X', hero: i === 2 && j === 2 })));
+  return { tx: left + markW + gap, mx0, my0, wells, markW };
+}
+function drawScene7(t) {
+  const v = t - 34, L = lockup(), lift = -64 * eIO(inv(36.1, 36.75, t));
+  ctx.fillStyle = rgba(BG, 1); if (t > 34.2) ctx.fillRect(0, 0, W, H);
+  // the full plate: wells ripple outward from the persisting state — the patient as the screen
+  const rip = inv(36.2, 37.5, t);
+  if (rip > 0) {
+    const hw = L.wells.find(w => w.hero), cx = hw.x, cy = hw.y + lift, Rr = eOut(rip) * 2300;
+    ctx.strokeStyle = rgba(INK, 1); ctx.lineWidth = 1;
+    const i0 = Math.floor((0 - L.mx0) / PITCH), i1 = Math.ceil((W - L.mx0) / PITCH), j0 = Math.floor((0 - L.my0 - lift) / PITCH), j1 = Math.ceil((H - L.my0 - lift) / PITCH);
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      if (i >= 0 && i <= 4 && j >= 0 && j <= 4) continue;
+      const x = L.mx0 + i * PITCH, y = L.my0 + j * PITCH + lift, d = Math.hypot(x - cx, y - cy);
+      let a = 0.12 * clamp((Rr - d) / 260) * (1 - 0.6 * clamp(1 - d / 1400));
+      if (x > L.tx - 30 && y > 400 + lift && y < 620 + lift) a *= 0.25;
+      if (y > 720 && y < 800 && x > 420 && x < 1500) a *= 0.25;
+      if (a < 0.004) continue;
+      ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, WELL * 0.8, 0, TAU); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // empty wells of the mark
+  const ea = eIO(inv(34.3, 34.9, t));
+  L.wells.forEach(w => { if (w.on || ea <= 0) return; ctx.beginPath(); ctx.arc(w.x, w.y + lift, WELL, 0, TAU); ctx.strokeStyle = rgba(INK, 0.1 * ea); ctx.lineWidth = 1; ctx.stroke(); });
+  // lit wells: the mechanism graph's nodes (and pulses) fly home
+  const lit = L.wells.filter(w => w.on).sort((a, b) => a.x - b.x || a.y - b.y);
+  lit.forEach((w, m) => {
+    const ni = NODE_ORDER[Math.min(m, NODES.length - 1)], src = m < NODES.length ? NODES[ni] : NODES[NODE_ORDER[(m * 5) % NODES.length]];
+    const t0 = 33.7 + m * 0.03, e = eIO(inv(t0, 34.55 + m * 0.025, t));
+    const a = m < NODES.length ? 1 : inv(33.7, 34.1, t);
+    const x = lerp(src[0], w.x, e), y = lerp(src[1], w.y + lift, e), r = lerp(src[2] ? 9 : 6.5, WELL, e);
+    const col = w.hero ? mix(INK, AMB, eIO(inv(34.2, 34.8, t))) : INK;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = rgba(col, lerp(0.85, w.hero ? 1 : 0.92, e) * a); ctx.fill();
+  });
+  // title
+  drawText(CONFIG.COPY.title, L.tx, 535 + lift, { size: 96, weight: 600, track: 0.02, reveal: inv(35.0, 35.75, t), soft: 7, rise: 0.12 });
+  drawText(CONFIG.COPY.subtitle, L.tx + 3, 596 + lift, { size: 25, weight: 400, track: 0.03, alpha: 0.62 * eIO(inv(35.55, 36.1, t)) });
+  drawText(CONFIG.COPY.final, W / 2, 770, { size: 40, weight: 600, track: 0.24, align: 'center', reveal: inv(36.3, 36.95, t), soft: 10, rise: 0.15 });
+}
+
+// ================================================================ FINISHING
+const GRAIN = [0, 1, 2, 3].map(s => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), im = g.createImageData(256, 256), r = mulberry32(900 + s);
+  for (let i = 0; i < im.data.length; i += 4) { const v = r() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+  g.putImageData(im, 0, 0); return c;
+});
+let grainPats = null, vignette = null;
+function drawGrain(t) {
+  if (!CONFIG.GRAIN) return;
+  if (!grainPats) grainPats = GRAIN.map(c => ctx.createPattern(c, 'repeat'));
+  const f = Math.floor(t * 24), r = mulberry32(f * 7919 + 13);
+  ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = CONFIG.GRAIN;
+  ctx.translate(-r() * 256, -r() * 256); ctx.fillStyle = grainPats[f % 4]; ctx.fillRect(0, 0, W + 256, H + 256); ctx.restore();
+}
+function drawVignette() {
+  if (!vignette) { vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 1.05); vignette.addColorStop(0, 'rgba(0,0,0,0)'); vignette.addColorStop(1, 'rgba(0,0,0,0.55)'); }
+  ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
+}
+let fpsSm = 60, lastFrameT = 0;
+function drawDebug(tReal) {
+  const t = tReal / TS, y = H - 46, x0 = 60, x1 = W - 60, X = s => x0 + (x1 - x0) * s / 38;
+  ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, y - 30, W, 76);
+  SCENES.forEach((s, i) => {
+    const on = t >= s.a && t < s.b;
+    ctx.fillStyle = on ? 'rgba(127,196,214,0.45)' : (i % 2 ? 'rgba(236,233,226,0.1)' : 'rgba(236,233,226,0.16)'); ctx.fillRect(X(s.a) + 1, y, X(s.b) - X(s.a) - 2, 12);
+    ctx.font = `400 12px ${MONO}`; ctx.fillStyle = on ? '#dfe' : '#8a877f'; ctx.fillText(`${s.n} ${s.name}`, X(s.a) + 4, y - 8);
+  });
+  ctx.fillStyle = '#E8B25A'; ctx.fillRect(X(Math.min(t, 38)) - 1, y - 4, 2, 20);
+  ctx.font = `500 13px ${MONO}`; ctx.fillStyle = '#ddd';
+  ctx.fillText(`${tReal.toFixed(2)}s / ${CONFIG.DURATION.toFixed(2)}s   film ${t.toFixed(2)}   ${fpsSm.toFixed(0)} fps   ${playing ? '▶' : '❚❚'}   ${CONFIG.AUDIO ? 'sound' : 'muted'}`, x0, y + 32);
+  // title-safe guide
+  ctx.strokeStyle = 'rgba(127,196,214,0.25)'; ctx.setLineDash([6, 6]); ctx.strokeRect(96, 54, W - 192, H - 108); ctx.setLineDash([]);
+}
+
+function render(tReal) {
+  const t = tReal / TS;
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.setLineDash([]); ctx.lineCap = 'butt';
+  ctx.fillStyle = rgba(BG, 1); ctx.fillRect(0, 0, W, H);
+  let cam = null;
+  if (t < 28.7) cam = drawWorld(t);
+  if (t < 8.2) drawCounter(t);
+  drawScene2Text(t); drawScene3Text(t);
+  if (cam) { drawScene4(t, cam); drawScene5(t, cam); }
+  drawDiveGlyph(t);
+  if (t >= 28.1 && t < 34.25) drawScene6(t);
+  if (t >= 33.65) drawScene7(t);
+  drawGrain(t); drawVignette();
+  if (CONFIG.END_MODE === 'fade') { const e = eIO(inv(37.55, 38.0, t)); if (e > 0) { ctx.fillStyle = `rgba(0,0,0,${e})`; ctx.fillRect(0, 0, W, H); } }
+  if (t < 0.2) { ctx.fillStyle = `rgba(0,0,0,${1 - t / 0.2})`; ctx.fillRect(0, 0, W, H); }
+  if (CONFIG.DEBUG) drawDebug(tReal);
+}
+
+// ================================================================ AUDIO (procedural, Web Audio)
+function makeIR(ac) {
+  const len = Math.floor(ac.sampleRate * 3.2), ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch), r = mulberry32(11 + ch); for (let i = 0; i < len; i++) d[i] = (r() * 2 - 1) * Math.pow(1 - i / len, 3.4); }
+  return ir;
+}
+function makeGraph(ac, dest) {
+  const master = ac.createGain(); master.gain.value = CONFIG.VOLUME;
+  const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.008; comp.release.value = 0.3;
+  const gate = ac.createGain();   // hard silence gate (also mutes the reverb tail)
+  master.connect(gate); gate.connect(comp); comp.connect(dest);
+  const conv = ac.createConvolver(); conv.buffer = makeIR(ac); const wet = ac.createGain(); wet.gain.value = 0.34; conv.connect(wet); wet.connect(master);
+  const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), nd = nb.getChannelData(0), r = mulberry32(7); for (let i = 0; i < nd.length; i++) nd[i] = r() * 2 - 1;
+  return { ac, master, gate, comp, conv, noise: nb };
+}
+function A_out(g, lpF, send) {
+  const ac = g.ac, out = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = lpF;
+  out.connect(lp); lp.connect(g.dry); if (send) { const s = ac.createGain(); s.gain.value = send; lp.connect(s); s.connect(g.send); }
+  return out;
+}
+function A_tone(g, at, f, o = {}) {
+  const ac = g.ac, gain = o.gain ?? 0.08, att = o.attack ?? 0.005, dec = o.decay ?? 1.2, out = A_out(g, o.lp ?? 3000, o.send ?? 0.3);
+  out.gain.setValueAtTime(0, at); out.gain.linearRampToValueAtTime(gain, at + att); out.gain.exponentialRampToValueAtTime(0.0001, at + att + dec);
+  for (const [m, a] of (o.partials || [[1, 1]])) {
+    const osc = ac.createOscillator(); osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f * m, at);
+    if (o.glide) osc.frequency.exponentialRampToValueAtTime(o.glide * m, at + att + dec * 0.6);
+    const pg = ac.createGain(); pg.gain.value = a; osc.connect(pg); pg.connect(out); osc.start(at); osc.stop(at + att + dec + 0.05); g.nodes.push(osc);
+  }
+}
+function A_pad(g, at, end, freqs, o = {}) {
+  const ac = g.ac, s = Math.max(at, g.now); if (s >= end - 0.02) return;
+  const gain = o.gain ?? 0.04, att = o.attack ?? 1, rel = o.release ?? 1, out = A_out(g, o.lp ?? 500, o.send ?? 0.4);
+  const envAt = tt => tt < at ? 0 : tt < at + att ? gain * (tt - at) / att : tt < end - rel ? gain : tt < end ? gain * (end - tt) / rel : 0;
+  out.gain.setValueAtTime(envAt(s), s);
+  if (s < at + att) out.gain.linearRampToValueAtTime(gain, at + att);
+  if (end - rel > Math.max(s, at + att)) out.gain.setValueAtTime(gain, end - rel);
+  out.gain.linearRampToValueAtTime(0, end);
+  freqs.forEach((f, i) => [-4, 4].forEach(ct => {
+    const osc = ac.createOscillator(); osc.type = i === 0 ? 'sine' : 'triangle'; osc.frequency.value = f; osc.detune.value = ct;
+    const pg = ac.createGain(); pg.gain.value = (i === 0 ? 0.6 : 0.32) / freqs.length * 2; osc.connect(pg); pg.connect(out); osc.start(s); osc.stop(end + 0.05); g.nodes.push(osc);
+  }));
+}
+function A_noise(g, at, dur, o = {}) {
+  const ac = g.ac, src = ac.createBufferSource(); src.buffer = g.noise; src.loop = true;
+  const f = ac.createBiquadFilter(); f.type = o.type || 'bandpass'; f.Q.value = o.q ?? 0.8; f.frequency.setValueAtTime(o.f0 ?? 800, at); f.frequency.exponentialRampToValueAtTime(o.f1 ?? o.f0 ?? 800, at + dur);
+  const out = A_out(g, 12000, o.send ?? 0.4), gain = o.gain ?? 0.03, att = o.attack ?? dur * 0.4;
+  out.gain.setValueAtTime(0, at); out.gain.linearRampToValueAtTime(gain, at + att); out.gain.linearRampToValueAtTime(0, at + dur);
+  src.connect(f); f.connect(out); src.start(at, (o.off || 0) % 1.5); src.stop(at + dur + 0.05); g.nodes.push(src);
+}
+const A_tick = (g, at, o = {}) => A_noise(g, at, 0.02, { type: 'highpass', f0: o.f || 4000, f1: o.f || 4000, gain: o.gain ?? 0.02, attack: 0.002, send: 0.25, q: 0.5 });
+const A_thump = (g, at, o = {}) => A_tone(g, at, o.f0 || 72, { glide: o.f1 || 38, decay: o.decay || 0.9, gain: o.gain ?? 0.12, lp: 320, send: 0.2 });
+
+function scheduleAll(g, fromReal, base) {
+  const T = ft => base + ft * TS - fromReal, ok = ft => ft * TS >= fromReal - 0.01;
+  const tone = (ft, f, o) => { if (ok(ft)) A_tone(g, T(ft), f, o); };
+  const pad = (a, b, fs, o) => { if (b * TS > fromReal) A_pad(g, T(a), T(b), fs, o); };
+  const noise = (ft, d, o) => { if (ok(ft)) A_noise(g, T(ft), d * TS, o); };
+  const tick = (ft, o) => { if (ok(ft)) A_tick(g, T(ft), o); };
+  const thump = (ft, o) => { if (ok(ft)) A_thump(g, T(ft), o); };
+  // silence gate: "Some persist." lands in ~0.5 s of true silence
+  if (g.gate) {
+    const G = g.gate.gain, now = g.now, s0 = T(14.2), s1 = T(14.75);
+    G.cancelScheduledValues(0); G.setValueAtTime(fromReal / TS > 14.2 && fromReal / TS < 14.75 ? 0 : 1, now);
+    if (s0 > now) { G.setValueAtTime(1, s0); G.linearRampToValueAtTime(0, s0 + 0.06); }
+    if (s1 > now) { G.setValueAtTime(0, Math.max(now, s1)); G.linearRampToValueAtTime(1, s1 + 0.03); }
+  }
+  const PULSE = { gain: 0.1, decay: 2.4, partials: [[1, 1], [2, 0.35], [3, 0.1]], lp: 1500, send: 0.55 };
+  // 1 ORDER — a single clean pulse, then quiet divisions
+  tone(0.3, 110, PULSE);
+  pad(0.2, 14.18, [55, 82.41], { gain: 0.05, attack: 4, release: 0.12, lp: 360 });
+  cells.forEach(c => {
+    if (!c.div) return;
+    const at = c.div.t0 + 0.9 * c.div.dur, f = [330, 392, 440, 494][c.gen] || 494;
+    tone(at, f, { gain: c.gen < 2 ? 0.05 : 0.028, decay: 1.4, partials: [[1, 1], [2, 0.18]], send: 0.5, lp: 2600 });
+    if (c.div.errI >= 0) { const e = c.div.t0 + 0.62 * c.div.dur; tone(e, f * 1.0595, { gain: 0.04, decay: 1.8, partials: [[1, 1], [1.5, 0.15]], send: 0.6 }); tone(e + 0.02, f, { gain: 0.03, decay: 1.6, send: 0.6 }); noise(e - 0.1, 0.9, { f0: 300, f1: 900, gain: 0.018 }); }
+  });
+  // 3 THE MOSAIC — granular ticks as states appear; then silence
+  noise(10.0, 4.1, { f0: 900, f1: 2200, gain: 0.014, attack: 2.5, q: 0.6 });
+  TRANS.slice().sort((a, b) => a.ev.t0 - b.ev.t0).filter((_, i) => i % 2 === 0).slice(0, 75).forEach((o, i) => { if (o.ev.t0 < 14.05) tick(o.ev.t0, { f: 2400 + ((i * 977) % 3200), gain: 0.011 + ((i * 37) % 10) / 1000 }); });
+  tiles.filter(T => T.persist && T.persist.t > 10 && T.persist.t < 14).slice(0, 24).forEach((T, i) => tone(T.persist.t, [660, 740, 880, 990][i % 4], { gain: 0.007, decay: 0.7, send: 0.6 }));
+  // (silence 14.2 → 14.75 while "Some persist." lands)
+  tone(14.8, 110, { ...PULSE, gain: 0.06, decay: 1.6 });
+  // 4 CONVENTIONAL PATH
+  pad(14.85, 21.0, [73.42, 110], { gain: 0.036, attack: 1.4, release: 0.5, lp: 420 });
+  TAGS.forEach((_, i) => tick(15.95 + i * 0.2, { f: 3200, gain: 0.018 }));
+  tone(17.95, 220, { glide: 262, decay: 0.8, gain: 0.022, send: 0.4 });
+  noise(18.62, 0.75, { f0: 1800, f1: 380, gain: 0.03 });
+  noise(20.15, 0.55, { type: 'highpass', f0: 2600, f1: 6000, gain: 0.012 });
+  // 5 THE QUESTION FLIPS
+  pad(21.0, 24.45, [55, 82.41, 110], { gain: 0.042, attack: 1.8, release: 0.4, lp: 520 });
+  tone(21.75, 880, { gain: 0.05, decay: 3, partials: [[1, 1], [2.01, 0.25], [3.02, 0.08]], send: 0.75, lp: 5000 });
+  [660, 740, 880, 990, 1100, 1320, 990].forEach((f, i) => tone(22.7 + i * 0.13, f, { gain: 0.012, decay: 1.1, send: 0.7, lp: 5000 }));
+  GHOSTS.forEach((_, i) => tick(23.45 + i * 0.07, { f: 900, gain: 0.012 }));
+  pad(24.9, 26.3, [55, 82.41], { gain: 0.03, attack: 0.6, release: 0.3, lp: 420 });
+  noise(24.95, 1.1, { f0: 600, f1: 1400, gain: 0.016 });
+  tone(25.9, 330, { glide: 495, decay: 1.0, gain: 0.02, send: 0.5 });
+  pad(26.3, 28.1, [110, 164.81, 246.94, 329.63], { gain: 0.036, attack: 0.7, release: 0.4, lp: 1200 });
+  noise(27.75, 0.85, { f0: 300, f1: 3200, gain: 0.034 });
+  thump(28.55, { gain: 0.08 });
+  // 6 MOSAIC → MECHANISM …
+  pad(28.4, 33.9, [73.42, 110], { gain: 0.024, attack: 0.8, release: 0.5, lp: 380 });
+  WORD_T.forEach((wt, i) => { tone(28 + wt, 165, { gain: 0.045, decay: 0.5, lp: 900, send: 0.3 }); tick(28 + wt, { f: 5200, gain: 0.02 }); if (i === 4) tone(28 + wt + 0.25, 233, { gain: 0.03, decay: 0.9, partials: [[1, 1], [1.06, 0.8]], send: 0.5 }); });
+  for (let i = 0; i < 8; i++) tick(30.1 + i * 0.035, { f: 3000 + i * 250, gain: 0.012 });
+  tick(29.5, { f: 2200, gain: 0.015 }); tick(31.45, { f: 2600, gain: 0.015 });
+  tone(32.5, 660, { gain: 0.03, decay: 1.6, partials: [[1, 1], [2.01, 0.2]], send: 0.7 });
+  for (let i = 0; i < 4; i++) tick(32.6 + i * 0.16, { f: 4200, gain: 0.012 });
+  // 7 TITLE — a low settle, wells, an open chord, and the opening pulse returns
+  thump(34.05, { gain: 0.1 });
+  [440, 493.88, 554.37, 659.25, 739.99].forEach((f, i) => { for (let r = 0; r < 3; r++) if (i + r * 5 < 17) tone(34.3 + (i + r * 5) * 0.038, f * (r ? 2 : 1), { gain: 0.009, decay: 0.8, send: 0.7, lp: 6000 }); });
+  pad(34.9, 37.98, [110, 164.81, 220, 277.18, 329.63], { gain: 0.04, attack: 1.0, release: 0.45, lp: 1600 });
+  tone(36.3, 110, PULSE);
+}
+const Sound = {
+  ac: null, graph: null, sess: null, recDest: null,
+  ensure() {
+    if (this.ac) return true;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    this.ac = new AC(); this.graph = makeGraph(this.ac, this.ac.destination);
+    this.recDest = this.ac.createMediaStreamDestination(); this.graph.comp.connect(this.recDest); return true;
+  },
+  start(fromReal) {
+    this.stop(); if (!CONFIG.AUDIO || !this.ensure()) return;
+    const ac = this.ac; if (ac.state === 'suspended') ac.resume();
+    const dry = ac.createGain(), send = ac.createGain(); dry.connect(this.graph.master); send.connect(this.graph.conv);
+    const base = ac.currentTime + 0.03;
+    const g = this.sess = { ac, dry, send, gate: this.graph.gate, nodes: [], noise: this.graph.noise, now: base };
+    scheduleAll(g, fromReal, base);
+  },
+  stop() {
+    const s = this.sess; if (!s) return; this.sess = null; const now = s.ac.currentTime;
+    s.dry.gain.setTargetAtTime(0, now, 0.02); s.send.gain.setTargetAtTime(0, now, 0.02);
+    setTimeout(() => { s.nodes.forEach(n => { try { n.stop(); } catch (e) { } }); s.dry.disconnect(); s.send.disconnect(); }, 200);
+  }
+};
+async function exportWav() {
+  const sr = 48000, len = Math.ceil(sr * (CONFIG.DURATION + 0.5)), off = new OfflineAudioContext(2, len, sr), graph = makeGraph(off, off.destination);
+  const dry = off.createGain(), send = off.createGain(); dry.connect(graph.master); send.connect(graph.conv);
+  scheduleAll({ ac: off, dry, send, gate: graph.gate, nodes: [], noise: graph.noise, now: 0 }, 0, 0);
+  const buf = await off.startRendering(), n = buf.length, dv = new DataView(new ArrayBuffer(44 + n * 4));
+  const ws = (o, s) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true);
+  dv.setUint32(24, sr, true); dv.setUint32(28, sr * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, 'data'); dv.setUint32(40, n * 4, true);
+  const L = buf.getChannelData(0), Rr = buf.getChannelData(1);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, clamp(L[i], -1, 1) * 32767, true); dv.setInt16(46 + i * 4, clamp(Rr[i], -1, 1) * 32767, true); }
+  download(new Blob([dv], { type: 'audio/wav' }), 'mosaic-rescue-opening.wav');
+}
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+
+// ================================================================ PLAYBACK
+let playing = false, tNow = clamp(+(Q.get('t') || 0), 0, CONFIG.DURATION), playT0 = 0, playReal0 = 0, recorder = null, everPlayed = false;
+const hint = document.getElementById('hint');
+if (EXPORT) hint.style.display = 'none';
+function play() {
+  if (tNow >= CONFIG.DURATION - 0.01) tNow = 0;
+  playing = true; everPlayed = true; playT0 = tNow; playReal0 = performance.now();
+  Sound.start(tNow); document.body.classList.add('playing'); hint.classList.add('off');
+}
+function pause() { playing = false; Sound.stop(); document.body.classList.remove('playing'); }
+function seek(t) { tNow = clamp(t, 0, CONFIG.DURATION); if (playing) { playT0 = tNow; playReal0 = performance.now(); Sound.start(tNow); } }
+function onEnd() { playing = false; Sound.stop(); document.body.classList.remove('playing'); if (recorder && recorder.state === 'recording') setTimeout(() => recorder.stop(), 250); }
+function startRecording() {
+  if (!window.MediaRecorder) { alert('MediaRecorder not supported in this browser.'); return; }
+  const stream = cvs.captureStream(60);
+  if (CONFIG.AUDIO && Sound.ensure()) Sound.recDest.stream.getAudioTracks().forEach(tr => stream.addTrack(tr));
+  const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m));
+  const chunks = []; recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 24e6 });
+  recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recorder.onstop = () => download(new Blob(chunks, { type: 'video/webm' }), 'mosaic-rescue-opening.webm');
+  CONFIG.DEBUG = false; pause(); tNow = 0; recorder.start(); play();
+}
+function frame(now) {
+  if (playing) { tNow = playT0 + (now - playReal0) / 1000; if (tNow >= CONFIG.DURATION) { tNow = CONFIG.DURATION; onEnd(); } }
+  const dt = now - lastFrameT; lastFrameT = now; if (dt > 0 && dt < 500) fpsSm = lerp(fpsSm, 1000 / dt, 0.05);
+  render(tNow);
+  requestAnimationFrame(frame);
+}
+addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === ' ' || k === 'k') { e.preventDefault(); playing ? pause() : play(); }
+  else if (k === 'ArrowRight') seek(tNow + (e.shiftKey ? 5 : 1));
+  else if (k === 'ArrowLeft') seek(tNow - (e.shiftKey ? 5 : 1));
+  else if (k === 'Home' || k === '0') seek(0);
+  else if (k >= '1' && k <= '7') seek(SCENES[+k - 1].a * TS);
+  else if (k === 'd' || k === 'D') CONFIG.DEBUG = !CONFIG.DEBUG;
+  else if (k === 'm' || k === 'M') { CONFIG.AUDIO = !CONFIG.AUDIO; if (playing) Sound.start(tNow); }
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  else if (k === 'r' || k === 'R') startRecording();
+  else if (k === 'w' || k === 'W') exportWav();
+});
+cvs.addEventListener('click', e => {
+  const r = cvs.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * H, x = (e.clientX - r.left) / r.width * W;
+  if (CONFIG.DEBUG && y > H - 80) { seek(clamp((x - 60) / (W - 120)) * CONFIG.DURATION); return; }
+  playing ? pause() : play();
+});
+
+window.MOSAIC_RESCUE = { duration: CONFIG.DURATION, fps: 60, renderFrame: t => render(clamp(t, 0, CONFIG.DURATION)), seek, play, pause, config: CONFIG, scenes: SCENES };
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { measureCache.clear(); });
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/04_HIDDEN_SECOND_ALLELE.ipynb."""
+"""Builds notebooks/04_HIDDEN_SECOND_ALLELE.ipynb."""
 from __future__ import annotations
 import sys
 sys.path.insert(0, ".")
@@ -9,306 +9,309 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/04_HIDDEN_SECOND_ALLELE.ipynb"
 
 CELLS = [
-("md", """# 04 · Búsqueda del segundo alelo oculto
+("md", """# 04 · The search for a hidden second allele
 
-> **Lugar en el argumento:** Track 1, explicación alternativa. Intenta encontrar la parte de
-> un modelo bialélico que el filtro codificante podría haber dejado fuera.
->
-> **Salida principal:** funnel del locus + predicciones regulatorias REF/ALT. Un negativo aquí
-> se limita a SNV/indel en la ventana evaluada; no excluye SV/CNV.
+**Place in the argument.** Track 1, alternative explanation. It looks for the part of a
+biallelic model that the coding filter could have missed.
 
-> **Saneado:** sin coordenadas ni identidad de variantes. El locus se describe por tamaño y
-> por posición relativa.
+**Main output.** The locus filter, REF/ALT regulatory predictions for the one surviving
+candidate, and the structural closure from GO 2B. A negative here is bounded by what each assay
+can see.
 
-## Pregunta biológica
+> **Sanitised output.** No coordinates and no variant identities. The locus is described by size
+> and relative position.
 
-Si el análisis estándar encuentra **un solo** alelo claramente patogénico en un gen de MVA, el
-segundo puede ser una variante **reguladora**, **intrónica profunda** o **estructural**.
+## The biological question
 
-**¿Existe un segundo alelo que nuestro pipeline codificante no ve?**
+When standard analysis finds **only one** clearly damaging allele in an MVA gene, the second
+can be **regulatory**, **deep intronic** or **structural**. This disease has a history of exactly
+that: in early PCS families only one coding mutation per family was found
+([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)), and later cases located the
+hidden allele outside the exons, as an intronic insertion plus a promoter-region variant
+([Kato et al. 2017](https://doi.org/10.1038/hgv.2017.21)) or as an intronic insertion that
+short-read genome sequencing missed and RNA-seq plus long reads found
+([Kawakami et al. 2024](https://doi.org/10.1038/s10038-023-01211-8)).
 
-## Hipótesis y preregistro
+**Is there a second allele that our coding pipeline cannot see?**
 
-`docs/DECISIONS.md` § *Hidden Second Allele*. Ventana: cuerpo del gen ± ~100 kb, porque **hay
-precedente humano publicado** de un segundo alelo regulador decenas de kb aguas arriba;
-restringirse al cuerpo del gen sería conceptualmente incorrecto.
+## Hypothesis and preregistration
 
-Orden de matanza, del filtro barato al caro:
-frecuencia poblacional, calidad de la llamada, posición funcional, conservación y
-señal reguladora, y por último AlphaGenome
+`docs/DECISIONS.md` § *Hidden Second Allele*. Window: gene body ± ~100 kb, because **there is a
+published human precedent** of a regulatory second allele tens of kb upstream; restricting the
+search to the gene body would be conceptually wrong.
 
-**La predicción #4 decía que AlphaGenome daría Δ plano, y se escribió queriendo fallarla**,
-para que un negativo fuera reportable en vez de decepcionante."""),
+Order of elimination, from the cheapest filter to the most expensive: population frequency, call
+quality, functional position, conservation and regulatory signal, and finally AlphaGenome.
+
+**Prediction #4 said AlphaGenome would return a flat Δ, and it was written hoping to fail**, so
+that a negative would be reportable rather than disappointing."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Que se observa", "Alcance del resultado")'),
+("code", 'fl.labels("What is observed", "Scope of the result")'),
 
-("md", """## Método · el funnel del locus"""),
+("md", """## Method · the locus filter
 
-("code", '''LOCUS = [
-    ("variantes en el locus ampliado (~270 kb)", 321),
-    ("tras filtro de frecuencia poblacional",     4),
-    ("raras y de calidad, posicion funcional",    1),
-    ("enviadas a AlphaGenome",                    1),
-    ("con delta relevante",                       0),
-]
-for n, v in LOCUS:
-    print(f"  {n:<44}{v:>6}")
-print()
-print("  La prediccion #1 fallo por lo alto: se esperaban 800-2000 variantes y hubo 321.")
-print("  Se registra como fallo de calibracion de la prediccion, no como resultado.")'''),
+| Stage | Variants |
+|---|---:|
+| in the extended locus (~270 kb) | 321 |
+| after the population-frequency filter | 4 |
+| rare, good quality, functional position | 1 |
+| sent to AlphaGenome | 1 |
+| with a relevant predicted Δ | **0** |
 
-("code", '''fig, ax = plt.subplots(figsize=(9.0, 3.6))
-names = [s[0] for s in LOCUS][::-1]
-vals = [s[1] for s in LOCUS][::-1]
-mx = max(vals)
-cols = [fl.DEAD if v == 0 else fl.FLOW for v in vals]
-ax.barh(range(len(names)), [max(v, 0.6) for v in vals], color=cols, alpha=0.85, height=0.6)
-ax.set_yticks(range(len(names))); ax.set_yticklabels(names, fontsize=9)
-ax.set_xscale("symlog"); ax.set_xlabel("variantes (escala log)")
-for i, v in enumerate(vals):
-    ax.text(max(v, 0.6) * 1.25, i, str(v), va="center", fontsize=9.4, fontweight="bold",
-            color=fl.DEAD if v == 0 else fl.INK)
-ax.set_title("Funnel del locus ampliado de BUB1B")
+A single variant survived frequency, quality and functional position: a deep-intronic
+heterozygous PASS call absent from gnomAD, without an rsID, more than 1 kb from the nearest exon
+boundary. Prediction #1 failed on the high side (800 to 2 000 variants were expected; there were
+321); it is recorded as a calibration failure of the prediction, not as a result.
 
-fl.done(fig, "Figura principal 1 · el funnel del locus", "EXP-008", "MEASURED+DERIVED",
-        "DATA",
-        "de 321 variantes en 270 kb, una sola sobrevivio a frecuencia, calidad y posicion "
-        "funcional: una intronica profunda ausente de gnomAD, sin rsID, PASS, heterocigota, "
-        "a mas de 1 kb del borde de exon mas cercano.",
-        "que no exista un segundo alelo. Este funnel solo cubre SNV e indel dentro de la "
-        "ventana: no ve variantes estructurales, que son EXP-012 y estan bloqueadas.",
-        prov="docs/DECISIONS.md § Hidden Second Allele")'''),
+This filter covers SNVs and indels in the window only. Structural variants are handled
+separately below."""),
 
-("md", """## Resultado primario · AlphaGenome sobre el único candidato
+("md", """## Primary result · AlphaGenome on the single candidate
 
-Las pistas que se dibujan **se congelaron antes** de repetir la llamada, para que no se
-pudieran elegir las más favorecedoras después de verlas. Y las reglas de dibujo también: REF y
-ALT comparten escala Y, y el Δ va en su propio carril con el cero visible.
+The tracks drawn here **were frozen before** the call was repeated, so the most flattering ones
+could not be chosen after seeing them. So were the drawing rules: REF and ALT share their y
+scale, and Δ sits in its own lane with zero visible.
 
-**Fue la única transmisión de un dato del paciente fuera de la máquina en todo el proyecto**,
-prevista en `docs/03_ALPHAGENOME_ASSESSMENT.md` §7. Se envió la shortlist, nunca el VCF."""),
+**This was the only transmission of patient data off the machine in the whole project**,
+planned in `docs/03_ALPHAGENOME_ASSESSMENT.md` §7. The shortlist was sent, never the VCF."""),
 
 ("code", '''import glob
-AG = glob.glob("work/alphagenome/chr*_A_G.json")[0]      # ruta no impresa: lleva coordenada
+AG = glob.glob("work/alphagenome/chr*_A_G.json")[0]      # path not printed: it carries a coordinate
 ag = json.load(io.open(AG, encoding="utf-8"))
 mods = ag["modalities"]
-print(f"  estado de la llamada: {ag.get('status')}  ·  ventana: {ag.get('window_bp'):,} pb")
+print(f"  call status: {ag.get('status')}  ·  window: {ag.get('window_bp'):,} bp")
 print()
-print(f"  {'modalidad':<22}{'pistas':>8}{'delta rel %':>14}{'delta local max':>18}")
+print(f"  {'modality':<22}{'tracks':>8}{'rel. delta %':>14}{'max local delta':>18}")
 for m in sorted(mods, key=lambda x: -abs(x["delta_rel"])):
     print(f"  {m['modalidad']:<22}{m['pistas']:>8}{m['delta_rel']:>14.3f}"
           f"{m['delta_local_max']:>18.4f}")
-peor = max(abs(m["delta_rel"]) for m in mods)
+worst = max(abs(m["delta_rel"]) for m in mods)
 spl = [m for m in mods if "splic" in m["modalidad"]]
 print()
-print(f"  mayor delta relativo de cualquier modalidad : {peor:.2f} %")
+print(f"  largest relative delta of any modality : {worst:.2f} %")
 if spl:
-    print(f"  delta LOCAL de junciones de splicing        : "
+    print(f"  LOCAL delta of splice junctions        : "
           f"{min(m['delta_local_max'] for m in spl):.4f}")'''),
 
-("md", """### Figura principal 2 · navegador REF / ALT / Δ, pista a pista
+("md", """### Main figure 1 · REF / ALT / Δ browser, track by track
 
-La figura resumen agrega por modalidad. Esta **no agrega nada**: dibuja las nueve pistas
-congeladas tal y como salieron del modelo, sobre un **eje genómico compartido**, con el modelo
-del gen encima.
+The summary aggregates by modality. This view **aggregates nothing**: it draws the nine frozen
+tracks as they came out of the model, on a **shared genomic axis**, with the gene model on top.
 
-Dos reglas de dibujo, fijadas antes de mirar:
+Two drawing rules, fixed before looking:
 
-1. **REF y ALT comparten escala Y exacta** dentro de cada pista. Sin esto, cualquier diferencia
-   puede fabricarse reescalando.
-2. **El Δ va en su propio carril con el cero visible** y escala simétrica. Nunca superpuesto.
+1. **REF and ALT share the exact y scale** within each track. Without this, any difference could
+   be manufactured by rescaling.
+2. **Δ sits in its own lane with zero visible** and a symmetric scale. Never overlaid.
 
-> El eje X es **desplazamiento respecto a la variante**, no coordenada absoluta."""),
+> The x axis is **offset from the variant**, not an absolute coordinate."""),
 
 ("code", '''AR = glob.glob("work/alphagenome/arrays_*.json")[0]
 ar = json.load(io.open(AR, encoding="utf-8"))
 TRK = ar["tracks"]
 VPOS = ar["pos"]
 FL = ar["flank_bp"]
-print(f"  estado: {ar['status']}  ·  ventana: +/-{FL:,} pb  ·  pistas congeladas: {len(TRK)}")
+print(f"  status: {ar['status']}  ·  window: +/-{FL:,} bp  ·  frozen tracks: {len(TRK)}")
 for t in TRK:
-    print(f"    {t['mod']:<20}{t['bp_per_bin']:>8.0f} pb/bin  {len(t['ref']):>6} bins   "
+    print(f"    {t['mod']:<20}{t['bp_per_bin']:>8.0f} bp/bin  {len(t['ref']):>6} bins   "
           f"{str(t['meta'])[:52]}")
 
 from src.structure.transcript_model import fetch as fetch_tx
 TX = fetch_tx()
 EXW = [(e["start"] - VPOS, e["end"] - VPOS) for e in TX["exons"]
        if e["end"] > VPOS - FL and e["start"] < VPOS + FL]
-print(f"  exones de {TX['transcript']} dentro de la ventana: {len(EXW)}")'''),
+print(f"  exons of {TX['transcript']} inside the window: {len(EXW)}")'''),
 
 ("code", '''from src.figures import fig04_tracks as FT
 
 _figs, _ar = FT.load_and_build()
-for _which, _slug, _tag in (("main", "fig04_alphagenome_rna_splicing", "principal 2"),
-                            ("supp", "fig04S_alphagenome_accessibility_tf", "suplementaria 2S")):
+for _which, _slug, _tag in (("main", "fig04_alphagenome_rna_splicing", "Main figure 1"),
+                            ("supp", "fig04S_alphagenome_accessibility_tf", "Supplementary figure 1S")):
     _f, _st = _figs[_which]
-    fl.pub(_f, f"Figura {_tag}. Navegador REF / ALT / delta: {FT.GROUPS[_which]['title']}",
+    fl.pub(_f, f"{_tag} · REF / ALT / delta browser: {FT.GROUPS[_which]['title']}",
            "EXP-009", "PREDICTED", "MODEL_OUTPUT",
-           f"{_st['n_tracks']} de las nueve pistas congeladas sobre el mismo eje genomico, "
-           f"con el modelo del gen encima. REF y ALT comparten escala Y exacta dentro de "
-           f"cada pista y el delta va en su propio carril con el cero visible. El mayor "
-           f"|delta| de cualquier bin aqui es {_st['max_abs_delta']:.4g}.",
-           "que no exista un segundo alelo. Es una PREDICCION de un modelo sobre UN "
-           "candidato SNV/indel, no una medida y no un barrido. Estas pistas NO son datos "
-           "medidos del paciente ni de ningun tejido suyo.",
-           source="work/alphagenome/arrays_*.json · pistas congeladas antes de repetir la "
-                  "llamada; el reparto entre figura y suplemento es por MODALIDAD",
+           f"{_st['n_tracks']} of the nine frozen tracks on the same genomic axis, with the gene "
+           f"model on top. REF and ALT share the exact y scale within each track and delta has "
+           f"its own lane with zero visible. The largest |delta| of any bin here is "
+           f"{_st['max_abs_delta']:.4g}.",
+           "that no second allele exists. It is a model PREDICTION for ONE SNV/indel candidate, "
+           "not a measurement and not a scan. These tracks are NOT measured data from the "
+           "patient or from any of the patient's tissues.",
+           source="work/alphagenome/arrays_*.json · tracks frozen before the call was repeated; "
+                  "the split between main and supplementary figure is by MODALITY",
            lib="matplotlib", slug=_slug)'''),
 
-("md", """### Caracterización post-congelación · mutagénesis in silico y mapas de contacto
+("md", """### Post-freeze characterisation · in-silico mutagenesis and contact maps
 
-**Esto no es evidencia nueva ni reabre nada.** Cierra una pregunta que el navegador de arriba
-deja abierta: *¿el modelo responde a cambios de secuencia en este vecindario, y el candidato
-cae donde responde?* Y una segunda: *¿la arquitectura de contactos predicha cambia con ALT?*
+**This is not new evidence and it reopens nothing.** It closes a question the browser leaves
+open: *does the model respond to sequence changes in this neighbourhood, and does the candidate
+fall where it responds?* And a second one: *does the predicted contact architecture change with
+ALT?*
 
-Las dos salidas se produjeron **sobre el mismo candidato congelado**, con un manifest escrito
-y sellado con `sha256` **antes** de la primera llamada al modelo. Ese manifest fija ventana,
-contexto, scorers, ontología, biosample y la regla de lectura. Los runners rechazan ejecutarse
-si el manifest cambia; `src/verify.py` comprueba que las corridas citan ese mismo hash.
+Both outputs were produced **on the same frozen candidate**, with a manifest written and sealed
+with `sha256` **before** the first model call. The manifest fixes window, context, scorers,
+ontology, biosample and the reading rule. The runners refuse to run if the manifest changes;
+`src/verify.py` checks that the runs cite that same hash.
 
-- **ISM:** 256 posiciones × 3 alternativas = 768 sustituciones **sintéticas** de la referencia,
-  puntuadas con dos lecturas que replican el reparto por modalidad del bloque: *splice sites*
-  (primaria, la modalidad que decidió) y *DNase* sobre la pista ya congelada (secundaria).
-  Regla predeclarada: hay «sensibilidad local concentrada» si el candidato queda en el 5 %
-  superior de posiciones por |efecto|. Chequeo de contexto a 100 kb, sólo reportado.
-- **Contactos:** REF, ALT y ALT − REF a 2 048 pb en un biosample elegido por criterio antes de
-  predecir (fibroblasto primario, el tipo celular de los estudios funcionales de MVA). Los 28
-  biosamples disponibles se puntúan con el scorer oficial como contexto, nunca para elegir.
+- **ISM:** 256 positions × 3 alternatives = 768 **synthetic** substitutions of the reference,
+  scored with two readouts that mirror the block's split by modality: *splice sites* (primary,
+  the modality that decided) and *DNase* on the already-frozen track (secondary). Predeclared
+  rule: "concentrated local sensitivity" if the candidate is in the top 5 % of positions by
+  |effect|. Context check at 100 kb, reported only.
+- **Contacts:** REF, ALT and ALT − REF at 2 048 bp in a biosample chosen by criterion before
+  predicting (primary fibroblast, the cell type of MVA functional studies). The 28 available
+  biosamples are scored with the official scorer as context, never to choose.
 
-Ninguna de las dos puede subir la VUS, mover el ranking de Track 1 ni convertirse en evidencia
-del paciente. Un negativo aquí es tan reportable como un positivo, y es lo que salió."""),
+Neither can raise the VUS, move the Track 1 ranking or become patient evidence. A negative here is
+as reportable as a positive, and it is what came out."""),
 
 ("code", '''MI = json.load(io.open("work/alphagenome/ism/metadata.json", encoding="utf-8"))
 MC = json.load(io.open("work/alphagenome/contacts/metadata.json", encoding="utf-8"))
 MAN = io.open("work/alphagenome/run_manifest.json.sha256").read().strip()
-assert MI["manifest_sha256"] == MC["manifest_sha256"] == MAN, "corridas sobre manifests distintos"
-print(f"  manifest congelado : sha256 {MAN[:12]}...  (citado por las dos corridas)")
-print(f"  ISM                : {MI['primary']['n_variants']} sustituciones sinteticas, "
-      f"ventana {MI['primary']['ism_window_bp']} pb, contexto {MI['primary']['sequence_context_bp']:,} pb")
+assert MI["manifest_sha256"] == MC["manifest_sha256"] == MAN, "runs made on different manifests"
+print(f"  frozen manifest : sha256 {MAN[:12]}...  (cited by both runs)")
+print(f"  ISM             : {MI['primary']['n_variants']} synthetic substitutions, "
+      f"window {MI['primary']['ism_window_bp']} bp, context {MI['primary']['sequence_context_bp']:,} bp")
 for _r, _i in MI["primary"]["roles"].items():
     _k = _i["ranks"]
-    print(f"    {_r:<9} {_i['scorer']['output']:<13} candidato: posicion {_k['candidate_position_rank_of_L']:>3} de "
-          f"{MI['primary']['ism_window_bp']} · sustitucion {_k['candidate_substitution_rank_of_all']:>3} de "
-          f"{3 * MI['primary']['ism_window_bp']} · maximo de la ventana en {_k['window_argmax_offset']:+d} pb")
+    print(f"    {_r:<9} {_i['scorer']['output']:<13} candidate: position {_k['candidate_position_rank_of_L']:>3} of "
+          f"{MI['primary']['ism_window_bp']} · substitution {_k['candidate_substitution_rank_of_all']:>3} of "
+          f"{3 * MI['primary']['ism_window_bp']} · window maximum at {_k['window_argmax_offset']:+d} bp")
 _ip = MI["interpretation"]
-print(f"    lectura predeclarada: {_ip['reading']}")
-print(f"    contexto r(16 kb, 100 kb): " + ", ".join(f"{k} {v:.2f}" for k, v in _ip["context_pearson_r"].items()))
+print(f"    predeclared reading: {_ip['reading']}")
+print(f"    context r(16 kb, 100 kb): " + ", ".join(f"{k} {v:.2f}" for k, v in _ip["context_pearson_r"].items()))
 _ic = MC["interpretation"]
-print(f"  contactos          : {MC['biosample_name']} ({MC['ontology_curie']}), "
-      f"{MC['n_bins']}x{MC['n_bins']} bins de {MC['output_resolution_bp']} pb")
-print(f"    max |ALT-REF| / max REF = {100 * _ic['ratio']:.2f} % (umbral predeclarado 5 %) -> "
+print(f"  contacts        : {MC['biosample_name']} ({MC['ontology_curie']}), "
+      f"{MC['n_bins']}x{MC['n_bins']} bins of {MC['output_resolution_bp']} bp")
+print(f"    max |ALT-REF| / max REF = {100 * _ic['ratio']:.2f} % (predeclared threshold 5 %) -> "
       f"{_ic['reading']}")
-print(f"    robustez: la pista predeclarada ocupa el puesto {MC['robustness']['chosen_rank_of_n']} de "
-      f"{MC['robustness']['n_tracks']} con el scorer oficial")'''),
+print(f"    robustness: the predeclared track ranks {MC['robustness']['chosen_rank_of_n']} of "
+      f"{MC['robustness']['n_tracks']} under the official scorer")'''),
 
 ("code", '''from src.figures import fig04_ism as FI
 from src.figures import fig04_contacts as FC
 
 _f, _st = FI.load_and_build()
-fl.pub(_f, "Figura principal 2I. Mutagenesis in silico: sensibilidad local del modelo alrededor del candidato",
+fl.pub(_f, "Main figure 2 · in-silico mutagenesis: the model's local sensitivity around the candidate",
        "EXP-023", "PREDICTED", "MODEL_OUTPUT",
-       f"768 sustituciones sinteticas puntuadas con dos lecturas predeclaradas. Bajo la primaria "
-       f"(splice sites) el candidato ocupa la posicion {_st['readouts']['PRIMARY']['rank_pos']} de "
-       f"{_st['L']} por |efecto| y la sustitucion {_st['readouts']['PRIMARY']['rank_sub']} de "
-       f"{3 * _st['L']}; bajo la secundaria (DNase) la posicion {_st['readouts']['SECONDARY']['rank_pos']}. "
-       f"El maximo de la ventana esta a {_st['readouts']['PRIMARY']['argmax_offset']:+d} pb "
-       f"(primaria) y {_st['readouts']['SECONDARY']['argmax_offset']:+d} pb (secundaria). "
-       f"Lectura predeclarada: {_st['reading']}. "
-       f"El chequeo a 100 kb reproduce la matriz (r = {_st['context_r']['PRIMARY']:.2f}).",
-       "que la region sea funcional o no funcional, que la variante sea patogenica o benigna, "
-       "ni ningun mecanismo regulador en el paciente. Es ATRIBUCION de un modelo bajo un scorer y "
-       "un contexto concretos: informa la caracterizacion del negativo ya congelado y no cambia "
-       "ninguna clasificacion ni ranking.",
-       source="work/alphagenome/ism/*.json.gz + metadata.json · manifest sellado antes de la llamada",
+       f"768 synthetic substitutions scored with two predeclared readouts. Under the primary "
+       f"(splice sites) the candidate is position {_st['readouts']['PRIMARY']['rank_pos']} of "
+       f"{_st['L']} by |effect| and substitution {_st['readouts']['PRIMARY']['rank_sub']} of "
+       f"{3 * _st['L']}; under the secondary (DNase), position {_st['readouts']['SECONDARY']['rank_pos']}. "
+       f"The window maximum is at {_st['readouts']['PRIMARY']['argmax_offset']:+d} bp "
+       f"(primary) and {_st['readouts']['SECONDARY']['argmax_offset']:+d} bp (secondary). "
+       f"Predeclared reading: {_st['reading']}. "
+       f"The 100 kb check reproduces the matrix (r = {_st['context_r']['PRIMARY']:.2f}).",
+       "that the region is or is not functional, that the variant is pathogenic or benign, or any "
+       "regulatory mechanism in the patient. It is model ATTRIBUTION under a given scorer and "
+       "context: it characterises the already-frozen negative and changes no classification or "
+       "ranking.",
+       source="work/alphagenome/ism/*.json.gz + metadata.json · manifest sealed before the call",
        lib="matplotlib", slug="fig04I_alphagenome_ism")
 
 _f, _st = FC.load_and_build()
-fl.pub(_f, "Figura suplementaria 2C. Mapas de contacto predichos: REF, ALT y ALT - REF",
+fl.pub(_f, "Supplementary figure 2C · predicted contact maps: REF, ALT and ALT - REF",
        "EXP-023", "PREDICTED", "MODEL_OUTPUT",
-       f"ventana de 1 Mb a {MC['output_resolution_bp']} pb en el biosample predeclarado "
-       f"({MC['biosample_name']}). REF y ALT comparten escala y son indistinguibles a ojo; "
-       f"ALT - REF alcanza el {100 * _st['ratio']:.2f} % del maximo de REF, por debajo del 5 % "
-       f"fijado antes de predecir. La pista ocupa el puesto {_st['chosen_rank']} de "
-       f"{_st['n_tracks']} con el scorer oficial de disrupcion local.",
-       "que la cromatina del paciente sea asi, que exista o no un bucle enhancer-promotor, ni que "
-       "la expresion del gen cambie. No es Hi-C y no es un tejido: es la salida de un modelo "
-       "para un biosample. Una diferencia visible motivaria una hipotesis; no la demostraria.",
+       f"a 1 Mb window at {MC['output_resolution_bp']} bp in the predeclared biosample "
+       f"({MC['biosample_name']}). REF and ALT share a scale and are indistinguishable by eye; "
+       f"ALT - REF reaches {100 * _st['ratio']:.2f} % of the REF maximum, below the 5 % fixed "
+       f"before predicting. The track ranks {_st['chosen_rank']} of {_st['n_tracks']} under the "
+       f"official local-disruption scorer.",
+       "that the patient's chromatin looks like this, that an enhancer-promoter loop exists or "
+       "not, or that the gene's expression changes. It is not Hi-C and not a tissue: it is a "
+       "model's output for one biosample. A visible difference would motivate a hypothesis; it "
+       "would not demonstrate one.",
        source="work/alphagenome/contacts/*.json.gz + robustness_scores.json + metadata.json",
        lib="matplotlib", slug="fig04C_alphagenome_contact_maps")'''),
 
-("md", """### La figura resumen, que fue la que cerró la rama"""),
+("md", """### Robustness check · the individual tracks were reviewed
 
-("md", """### Control de robustez · se revisaron las pistas individuales
+To rule out a tissue-specific effect being diluted in the aggregate:
 
-Para descartar que un efecto específico de tejido se estuviera diluyendo en el agregado:
-
-- **El top por cambio relativo es ruido.** Las líneas base locales son ~0,0001–0,005; un 5 %
-  sobre cero es división por un número minúsculo.
-- **El top por cambio absoluto** son pistas de CTCF y RAD21, con cambios del 1,2–2,3 % sobre
-  líneas base de 1 400–7 900. Nada funcionalmente interpretable.
-- **Sin coherencia biológica**: los tejidos del top son un surtido disperso. No hay señal renal
-  ni hematopoyética."""),
+- **The top tracks by relative change are noise.** Local baselines are ~0.0001 to 0.005; 5 % of
+  nearly zero is a division by a tiny number.
+- **The top tracks by absolute change** are CTCF and RAD21, with changes of 1.2 to 2.3 % on
+  baselines of 1 400 to 7 900. Nothing functionally interpretable.
+- **No biological coherence**: the tissues at the top are a scattered assortment. There is no
+  renal or haematopoietic signal."""),
 
 ("code", '''TR = glob.glob("work/alphagenome/chr*_tracks.json")[0]
 tr = json.load(io.open(TR, encoding="utf-8"))
 top = [t for t in tr.get("top_rel", []) if t.get("rloc")]
 if top:
-    fig, ax = plt.subplots(figsize=(9.4, 3.8))
+    fig, ax = plt.subplots(figsize=(9.0, 3.6))
     rels = [abs(t["rel"]) * 100 for t in top]
     bases = [t["rloc"] for t in top]
-    ax.scatter(bases, rels, s=60, c=[fl.DEAD if b < 0.01 else fl.FLOW for b in bases],
-               alpha=0.85)
-    ax.set_xscale("log"); ax.set_xlabel("linea base local de la pista (escala log)")
-    ax.set_ylabel("|cambio relativo| %")
-    ax.axvline(0.01, color=fl.DEAD, ls="--", lw=1.2)
-    ax.text(0.0105, max(rels) * 0.85, "por debajo de este umbral,\\nun % alto es division\\npor "
-            "un numero minusculo", fontsize=7.6, color=fl.DEAD)
-    ax.set_title("Robustez · por que el top por cambio relativo es ruido")
-    fl.done(fig, "Figura de robustez · el % relativo enganya cuando la base es cero",
+    ax.axvspan(1e-6, 0.01, color=fl.DEAD, alpha=0.06, lw=0)
+    ax.scatter(bases, rels, s=46, c=[fl.DEAD if b < 0.01 else fl.FLOW for b in bases],
+               alpha=0.9, edgecolor="white", lw=0.5)
+    ax.set_xscale("log"); ax.set_xlim(min(bases) / 2, max(bases) * 2)
+    ax.set_xlabel("local baseline of the track (log scale)")
+    ax.set_ylabel("|relative change| (%)")
+    ax.axvline(0.01, color=fl.DEAD, ls="--", lw=1)
+    ax.text(0.0085, max(rels) * 0.98, "below this baseline a large percentage\\n"
+            "is a division by a tiny number", fontsize=7.8, color=fl.DEAD, ha="right", va="top")
+    ax.grid(axis="y")
+    fl.title(ax, "Most of the tracks with the largest relative change sit on near-zero baselines")
+    fl.done(fig, "Robustness figure · a relative % misleads when the baseline is near zero",
             "EXP-009", "PREDICTED", "MODEL_OUTPUT",
-            "cada punto es una de las pistas con mayor cambio relativo. Las que producen "
-            "porcentajes grandes tienen lineas base proximas a cero: el porcentaje es un "
-            "artefacto de la division, no senal.",
-            "que no exista efecto en ningun tejido. Es un argumento sobre la METRICA, no una "
-            "busqueda exhaustiva por tejido.",
+            "each point is one of the tracks with the largest relative change. Those producing "
+            "large percentages have baselines close to zero: the percentage is an artefact of "
+            "the division, not a signal.",
+            "that there is no effect in any tissue. It is an argument about the METRIC, not an "
+            "exhaustive tissue-by-tissue search.",
             prov="work/alphagenome/*_tracks.json")
 else:
-    print("  sin pistas individuales en el fichero; el argumento queda en el texto")'''),
+    print("  no individual tracks in the file; the argument stays in the text")'''),
 
-("md", """## Decisión
+("md", """## The structural search: GO 2B on the full alignment
 
-| Rama | Estado |
+This notebook first closed with the structural branch **blocked**: only a pilot lane existed.
+GO 2B then rebuilt the full-depth alignment from all four lanes and ran the preregistered
+structural callers. Its figures are read from frozen artifacts and fail closed on a hash
+mismatch; they carry case-specific breakpoint context, so they are linked here rather than
+embedded in this sanitised notebook.
+
+| Class of second allele | Assay (GO 2B) | What can be said, verbatim ceiling |
+|---|---|---|
+| Copy-number change | CNVpytor RD+BAF | *CNVpytor did not emit an RD+BAF CNV overlapping the BUB1B gene body* |
+| Mobile-element insertion | xTea + SCRAMble | *No xTea or SCRAMble MEI call overlapped the BUB1B gene body* |
+| Other SVs nearby | Manta + DELLY, adjudicated | None of the alternative loci overlaps the gene body or the two prioritised positions ([MEI/SV map](../figures/pub/fig11_mei_sv_adjudication_map.svg)) |
+| Breakpoint signal at the locus | read-level metrics, gene body vs flanks | Reported side by side; **no excess/no-excess threshold was defined** ([read-level assay](../figures/pub/fig10_bub1b_readlevel_assay.svg)) |
+| Both prioritised alleles | read-backed re-genotyping (EXP-025) | Recovered in the reads: technical replication |
+| Complex insertion | short reads | **Not excluded** |
+
+The regulatory SNV/indel branch and the structural branch are therefore both closed **within
+their protocols**. The case is not closed: the lesion that has hidden second alleles in this
+disease before, a complex intronic insertion, is exactly the class short reads cannot exclude.
+
+## Decision
+
+| Branch | Status |
 |---|---|
-| **Segundo alelo SNV/indel regulador** | **NEGATIVE** en el alcance evaluado |
-| **Segundo alelo estructural (SV/CNV)** | **BLOCKED**, falta BAM/CRAM de profundidad completa |
+| **Regulatory SNV/indel second allele** | **Negative** within the evaluated scope |
+| **Structural second allele (CNV, MEI, SV)** | **Not detected** by the GO 2B callers; complex insertion **not excluded** |
 
-**La formulación exacta:** *No candidate survived population filtering plus global and
-track-level AlphaGenome interrogation.*
+**The exact wording:** *No candidate survived population filtering plus global and track-level
+AlphaGenome interrogation; no CNV or MEI call from the preregistered GO 2B callers overlapped
+the BUB1B gene body.*
 
-**No:** «AlphaGenome demostró que no existe un segundo alelo».
+**Not:** "AlphaGenome showed that there is no second allele", or "structural variation was
+excluded".
 
-### Sobre la CNV grande
+### Falsifier
 
-Desde la profundidad y la heterocigosidad del VCF: la región no muestra pérdida de
-heterocigosidad ni caída de profundidad, se observa lo contrario. Pero **la profundidad del
-VCF no está normalizada para llamar número de copia**, así que lo defendible es *no evidence
-for a large heterozygous deletion*, no «CNV descartada».
+RNA-seq showing aberrant splicing or allelic imbalance of `BUB1B`, or targeted long reads across
+the gene body revealing an insertion. Either would supply the second allele this search could
+not see. They become the priority only if phase turns out *cis* or the missense proves normal
+in a functional assay.
 
-**Sigue sin resolverse:** CNV pequeñas que quepan entre variantes, eventos equilibrados que no
-cambian número de copia, inserciones, y todo lo local a un punto de rotura.
+### Next
 
-### Falsificador
-
-Con el BAM/CRAM de los cuatro carriles se llamarían variantes estructurales usando pares
-discordantes y *split reads*.
-**Prohibido cerrar un negativo estructural con L001**: un carril a ~13× es piloto, no ausencia.
-
-### Siguiente experimento
-
-`05_RESIDUAL_PHENOTYPE`. Si el segundo alelo no aparece, ¿y si parte del fenotipo no es de
-`BUB1B`?"""),
+`05_RESIDUAL_PHENOTYPE`. If the second allele does not appear, could part of the phenotype not
+be `BUB1B` at all?"""),
 ]
 
 if __name__ == "__main__":

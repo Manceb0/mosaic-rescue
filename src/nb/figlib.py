@@ -38,18 +38,27 @@ import matplotlib
 import matplotlib.pyplot as plt
 from IPython.display import display, Markdown, SVG
 
-INK, SOFT, RULE = "#14191E", "#5A646D", "#DCE0E3"
-ALIVE, DEAD, OPEN, FLOW, VOID = "#2E7D6B", "#B4453A", "#C07A2E", "#8C99A4", "#6B5F87"
-GROUND = "#FAFAF8"
+# Same palette as the publication figures (src/figures/style.py, Okabe-Ito), so the
+# inline figures and the embedded publication figures read as one set.
+INK, SOFT, RULE = "#1A1A1A", "#5B6670", "#D6DADD"
+ALIVE, DEAD, OPEN, FLOW, VOID = "#009E73", "#D55E00", "#E69F00", "#8C99A4", "#CC79A7"
+BLUE = "#0072B2"
+GROUND = "#FFFFFF"
 
-matplotlib.rcParams.update({
-    "figure.dpi": 118, "figure.facecolor": GROUND, "axes.facecolor": GROUND,
-    "savefig.facecolor": GROUND, "axes.edgecolor": RULE, "axes.labelcolor": INK,
-    "text.color": INK, "xtick.color": SOFT, "ytick.color": SOFT,
-    "axes.grid": True, "grid.color": RULE, "grid.linewidth": 0.55,
-    "axes.spines.top": False, "axes.spines.right": False,
-    "font.size": 9.5, "axes.titlesize": 11.5, "axes.titleweight": "bold",
-})
+# One rcParams set for everything: the publication style plus a few notebook extras.
+# Importing a publication renderer re-applies style.RC; applying it here first makes the
+# result independent of import order. No global grid: each figure asks for the grid it needs,
+# so heatmaps and maps never inherit one.
+from src.figures import style as _S
+_S.use()
+# Only settings that cannot change a publication renderer's layout. Title placement is
+# set per inline figure (see title()), never globally.
+matplotlib.rcParams.update({"figure.dpi": 120, "legend.frameon": False, "axes.axisbelow": True})
+
+
+def title(ax, text):
+    """Inline-figure panel title, left-aligned like the publication figures."""
+    ax.set_title(text, loc="left", fontsize=9.5, fontweight="semibold", pad=7.0)
 
 _EVID = {"MEASURED", "DERIVED", "EXTERNAL", "PREDICTED", "SIMULATED"}
 # CURATED_EVIDENCE: tabla de evidencia versionada, con fuente por celda. Es un
@@ -58,7 +67,7 @@ _EVID = {"MEASURED", "DERIVED", "EXTERNAL", "PREDICTED", "SIMULATED"}
 SCIENTIFIC = {"DATA", "MODEL_OUTPUT", "SIMULATION", "CURATED_EVIDENCE"}
 _CLASSES = SCIENTIFIC | {"SYNTHESIS", "NARRATIVE"}
 
-_BADGE = {"DATA": ALIVE, "MODEL_OUTPUT": FLOW, "SIMULATION": VOID,
+_BADGE = {"DATA": ALIVE, "MODEL_OUTPUT": BLUE, "SIMULATION": VOID,
           "CURATED_EVIDENCE": OPEN, "SYNTHESIS": OPEN, "NARRATIVE": SOFT}
 
 REGISTRY = []          # se vuelca al final del notebook para la tabla de HECHO
@@ -67,7 +76,7 @@ REGISTRY = []          # se vuelca al final del notebook para la tabla de HECHO
 # fijo los ocho salian calcados, como si vinieran de la misma plantilla, y la
 # disciplina de declarar el limite de la evidencia acababa leyendose como un
 # formulario. El contenido es el mismo; el encabezado cambia.
-LABELS = ["Lectura", "Limite de la evidencia"]
+LABELS = ["Reading", "Limit of the evidence"]
 
 
 def labels(reads: str, limits: str):
@@ -83,19 +92,19 @@ def _hash(path: str) -> str:
 
 def cap(title, exp, ev, cls, reads, not_proves, prov=None, source=None, lib=None):
     for e in ev.replace(" ", "").split("+"):
-        assert e in _EVID, f"clase de evidencia desconocida: {e}"
-    assert cls in _CLASSES, f"clase de figura desconocida: {cls}"
+        assert e in _EVID, f"unknown evidence origin: {e}"
+    assert cls in _CLASSES, f"unknown figure class: {cls}"
     REGISTRY.append({"title": title, "exp": exp, "cls": cls, "ev": ev,
                      "source": source or prov or "", "lib": lib or "matplotlib"})
-    tag = ("figura cientifica" if cls in SCIENTIFIC
-           else "no es un dato: " + cls.lower().replace("_", " "))
+    tag = ("scientific figure" if cls in SCIENTIFIC
+           else "not data: " + cls.lower().replace("_", " "))
     extra = []
     if source:
-        extra.append(f"datos: `{source}`")
+        extra.append(f"data: `{source}`")
     if lib:
-        extra.append(f"libreria: `{lib}`")
+        extra.append(f"library: `{lib}`")
     if prov:
-        extra.append(f"procedencia: `{prov}`")
+        extra.append(f"provenance: `{prov}`")
     tail = ("  \n> " + " · ".join(extra)) if extra else ""
     display(Markdown(
         f"> **{title}**  \n"
@@ -113,7 +122,11 @@ def _stamp(fig, cls):
 
 def done(fig, title, exp, ev, cls, reads, not_proves, prov=None, source=None, lib=None):
     _stamp(fig, cls)
-    fig.tight_layout(rect=(0, 0.012, 1, 1))
+    import warnings
+    with warnings.catch_warnings():
+        # The warning text carries an absolute local path; it must never reach a notebook.
+        warnings.simplefilter("ignore", UserWarning)
+        fig.tight_layout(rect=(0, 0.012, 1, 1))
     plt.show()
     cap(title, exp, ev, cls, reads, not_proves, prov, source, lib)
 
@@ -129,7 +142,7 @@ def pub(fig, title, exp, ev, cls, reads, not_proves, source=None, lib=None,
         Aqui solo se estampa la clase arriba a la derecha, fuera de los ejes, y
         se registra en la tabla de HECHO.
     """
-    assert cls in _CLASSES, f"clase de figura desconocida: {cls}"
+    assert cls in _CLASSES, f"unknown figure class: {cls}"
     fig.text(0.998, 0.999, cls.replace("_", " "), ha="right", va="top",
              fontsize=6.8, color=_BADGE[cls], alpha=0.95, fontweight="bold")
     display(fig)
@@ -139,21 +152,31 @@ def pub(fig, title, exp, ev, cls, reads, not_proves, source=None, lib=None,
         source=source, lib=lib)
 
 
+def image(path, title, exp, ev, cls, reads, not_proves, source=None, width=None):
+    """Embed an already-exported publication PNG with its caption. The figure is not
+    redrawn, so its QA card and hash in figures/pub stay the reference."""
+    from IPython.display import Image
+    assert os.path.exists(path), f"missing {path}"
+    display(Image(filename=path, width=width))
+    cap(title, exp, ev, cls, reads, not_proves,
+        prov=f"{path}, sha256[:12]={_hash(path)}", source=source, lib="matplotlib (publication render)")
+
+
 def svg(path, title, exp, ev, cls, reads, not_proves, generator=None, source=None):
-    assert os.path.exists(path), f"no existe {path}"
+    assert os.path.exists(path), f"missing {path}"
     display(SVG(filename=path))
-    prov = (f"{generator or 'ver src/'} genera {os.path.basename(path)}, sha256[:12]={_hash(path)}")
+    prov = (f"{generator or 'see src/'} renders {os.path.basename(path)}, sha256[:12]={_hash(path)}")
     cap(title, exp, ev, cls, reads, not_proves, prov, source, lib="SVG")
 
 
 def summary():
     """Tabla de figuras del notebook, para la definicion de HECHO."""
     sci = sum(1 for r in REGISTRY if r["cls"] in SCIENTIFIC)
-    print(f"  figuras: {len(REGISTRY)}  ·  cientificas: {sci}  ·  "
-          f"narrativa/sintesis: {len(REGISTRY) - sci}")
+    print(f"  figures: {len(REGISTRY)}  ·  scientific: {sci}  ·  "
+          f"narrative/synthesis: {len(REGISTRY) - sci}")
     print()
-    print(f"  {'clase':<14}{'evidencia':<22}{'libreria':<20}titulo")
+    print(f"  {'class':<14}{'evidence':<22}{'library':<20}title")
     print("  " + "-" * 96)
     for r in REGISTRY:
         print(f"  {r['cls']:<14}{r['ev']:<22}{r['lib']:<20}{r['title'][:44]}")
-    assert sci >= 1, "un notebook mayor necesita AL MENOS UNA figura cientifica"
+    assert sci >= 1, "a main notebook needs AT LEAST ONE scientific figure"

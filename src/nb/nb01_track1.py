@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/01_TRACK1_GENOME_WIDE.ipynb.
+"""Builds notebooks/01_TRACK1_GENOME_WIDE.ipynb.
 
-SUSTITUYE a 03_TRACK1_GENOME_WIDE.ipynb, que ejecutaba la ciencia correcta pero
-no ENSENABA nada: 40 print(), y la "Figura 6" solo imprimia el nombre del fichero
-que acababa de escribir fuera del notebook.
+Replaces the older 03_TRACK1_GENOME_WIDE.ipynb, which ran the right science but taught
+nothing: 40 print() calls, and its "Figure 6" only printed the name of a file written
+outside the notebook.
 
-Seis figuras obligatorias, todas INLINE:
-  QC        reconciliacion de alelos antes/despues
-  principal funnel genome-wide
-  principal estabilidad de rango, gen x analisis
-  principal A0 congelado frente a A0-FREQFIX
-  principal nuestro motor frente a Exomiser
-  robustez  ablaciones y leave-one-out
+Figures, all inline:
+  QC        allele reconciliation, before and after
+  main      genome-wide processing stages
+  main      genome-wide prioritisation map (publication figure)
+  main      rank stability, gene x analysis
+  main      frozen A0 against A0-FREQFIX, as a rank slopegraph
+  main      our engine against Exomiser
+  robustness leave-one-out
 """
 from __future__ import annotations
 import sys
@@ -22,44 +23,44 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/01_TRACK1_GENOME_WIDE.ipynb"
 
 CELLS = [
-("md", """# 01 · Búsqueda causal en todo el genoma codificante
+("md", """# 01 · Genome-wide causal search across the coding genome
 
-> **Lugar en el argumento:** Track 1, descubrimiento. Comprueba si la hipótesis `BUB1B`
-> sobrevive cuando compite contra todos los genes y no contra un panel elegido a mano.
+**Place in the argument.** Track 1, discovery. It tests whether the `BUB1B` hypothesis survives
+when it competes against every gene, not against a panel chosen by hand.
+
+**Main output.** A genome-wide ranking, its stability under perturbation, and a methodological
+comparison with Exomiser. It does not classify variants and does not demonstrate causality.
+
+> **This notebook re-runs the experiment from its inputs.** It does not display stored results:
+> it imports `src/`, which is the source of truth.
 >
-> **Salida principal:** ranking genome-wide, estabilidad frente a perturbaciones y comparación
-> metodológica con Exomiser. No clasifica variantes ni demuestra causalidad.
+> **Sanitised output.** Aggregates, counts and gene symbols only; never coordinates, genotypes or
+> variant identities. The notebook runs the sanitisation scanner at the end.
 
-> **Reproduce el experimento desde las entradas.** No muestra resultados guardados: reejecuta
-> el pipeline importando `src/`, que es la fuente de verdad.
->
-> **Saneado:** agregados, conteos y símbolos de gen. Nunca coordenadas, genotipos ni identidad
-> de variantes. El propio notebook corre el escáner al final.
+## The biological question
 
-## Pregunta biológica
+**Which gene best explains the case when the whole coding genome competes?**
 
-**¿Qué gen explica mejor el caso cuando compite todo el genoma codificante?**
+Until EXP-006, `BUB1B` looked strong **inside a panel we had chosen**. That is not the same as
+surviving a search without a panel.
 
-Hasta EXP-006, `BUB1B` aparecía fuerte **dentro de un panel que elegimos nosotros**. Eso no es
-lo mismo que sobrevivir a una búsqueda sin panel.
+## Hypothesis and preregistration
 
-## Hipótesis y preregistro
+`docs/DECISIONS.md` § EXP-006, written before execution. The prediction that matters is #4:
+**`BUB1B` ranks in the top 20** without a panel. Both outcomes were declared useful in advance:
+had it not ranked high, we would have avoided an error.
 
-`docs/DECISIONS.md` § EXP-006, escrito antes de ejecutar. La predicción que importa es la #4:
-**`BUB1B` queda entre los 20 primeros** del ranking sin panel. Los dos desenlaces se
-declararon buenos por adelantado: si no quedaba arriba, habríamos evitado un error.
-
-**Garantía de diseño:** `src/prioritization/extract_genomewide.py` no menciona ningún gen."""),
+**Design guarantee:** `src/prioritization/extract_genomewide.py` does not mention any gene."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Que muestra", "Lo que queda fuera")'),
+("code", 'fl.labels("What it shows", "What it leaves out")'),
 
-("md", """## Entradas y procedencia
+("md", """## Inputs and provenance
 
-Se verifican los hashes. La anotación con VEP 116.1 offline (caché de 27 GB, horas de cómputo)
-es un paso aguas arriba **no reejecutable aquí**: el notebook parte de su salida y comprueba
-su huella."""),
+Hashes are checked. Annotation with VEP 116.1 offline (a 27 GB cache and hours of compute) is
+an upstream step that **cannot be re-run here**: the notebook starts from its output and
+checks its fingerprint."""),
 
 ("code", '''import hashlib
 from src.paths import patient_vcf
@@ -68,36 +69,36 @@ def h(p, n=64 << 20):
     return hashlib.sha256(io.open(p, "rb").read(n)).hexdigest()[:16]
 
 VCF, ANN = patient_vcf(), "work/gw/highmod_ann.tsv"
-print(f"  VCF del paciente   sha256[:16] = {h(VCF)}   ({os.path.getsize(VCF)/2**20:.0f} MB)")
-print(f"  TSV anotado (VEP)  sha256[:16] = {h(ANN)}   ({os.path.getsize(ANN)/2**20:.0f} MB)")
-print(f"  python {sys.version.split()[0]}  ·  no se imprime ninguna ruta local")'''),
+print(f"  patient VCF        sha256[:16] = {h(VCF)}   ({os.path.getsize(VCF)/2**20:.0f} MB)")
+print(f"  annotated TSV (VEP) sha256[:16] = {h(ANN)}   ({os.path.getsize(ANN)/2**20:.0f} MB)")
+print(f"  python {sys.version.split()[0]}  ·  no local path is printed")'''),
 
-("md", """## QC · reconciliación exacta de alelos VEP ↔ VCF
+("md", """## QC · exact VEP ↔ VCF allele reconciliation
 
-**El error que este notebook destapó.** `allele_key.py` existía, tenía 17 tests que pasaban y
-estaba documentado como la corrección del cruce. **Ningún módulo lo importaba**: `load()`
-cruzaba por posición, justo lo que ese módulo venía a arreglar.
+**The error this notebook uncovered.** `allele_key.py` existed, had 17 passing tests and was
+documented as the fix for the join. **No module imported it**: `load()` still joined by
+position, exactly what that module was written to fix.
 
-VEP desplaza la coordenada de los indels respecto al VCF, así que un cruce por posición los
-pierde. La solución **no pudo ser** `Uploaded_variation` (este TSV no la tiene) sino reproducir
-las reglas de representación de VEP y cruzar por `(Location, Allele)`. Sin tolerancias: la
-proximidad no es una clave de unión, y ese arreglo ya se había rechazado antes por poder
-emparejar indels vecinos distintos."""),
+VEP shifts the coordinate of indels relative to the VCF, so a positional join loses them. The
+fix could not use `Uploaded_variation` (this TSV does not carry it); it reproduces VEP's
+representation rules and joins on `(Location, Allele)`. No tolerances: proximity is not a join
+key, and that shortcut had already been rejected because it can pair different neighbouring
+indels."""),
 
 ("code", '''os.environ["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
 import subprocess
 r = subprocess.run([sys.executable, "-m", "pytest", "tests/test_allele_key.py", "-q"],
                    capture_output=True, text=True)
-print("  tests del join:", r.stdout.strip().splitlines()[-1] if r.stdout.strip() else "sin salida")
-assert r.returncode == 0, "los tests del join fallan: nada de abajo es fiable"'''),
+print("  join tests:", r.stdout.strip().splitlines()[-1] if r.stdout.strip() else "no output")
+assert r.returncode == 0, "the join tests fail: nothing below can be trusted"'''),
 
 ("code", '''import gzip
 from src.prioritization.genome_wide import load, rank, haplotypic_events
 
-rows = load(ANN, VCF)                      # cruce ACTUAL: (Location, Allele)
+rows = load(ANN, VCF)                      # CURRENT join: (Location, Allele)
 hm = [v for v in rows if v.impact in ("HIGH", "MODERATE")]
 
-# Cruce ANTIGUO, reconstruido aqui para medir el tamano del bug: solo posicion.
+# The OLD join, rebuilt here only to measure the size of the bug: position alone.
 want = {v.loc.split(":")[0] + ":" + v.loc.split(":")[1].split("-")[0] for v in rows}
 seen_pos = set()
 with gzip.open(VCF, "rt", errors="replace") as f:
@@ -128,51 +129,42 @@ A = {"SNV": len({v.loc for v in after_lost if not is_indel(v)}),
      "HIGH": len([v for v in after_lost if v.impact == "HIGH"])}
 tot_before = len({v.loc for v in before_lost})
 tot_after = len({v.loc for v in after_lost})
-print(f"  posiciones HIGH/MODERATE sin genotipo, cruce por POSICION : {tot_before}")
-print(f"  posiciones HIGH/MODERATE sin genotipo, cruce (Location,Allele): {tot_after}")
-print(f"  recuperadas: {tot_before - tot_after}  ({100*(tot_before-tot_after)/tot_before:.0f} %)")'''),
+print(f"  HIGH/MODERATE positions without a genotype, positional join   : {tot_before}")
+print(f"  HIGH/MODERATE positions without a genotype, (Location, Allele): {tot_after}")
+print(f"  recovered: {tot_before - tot_after}  ({100*(tot_before-tot_after)/tot_before:.0f} %)")'''),
 
-("md", """### Figura QC · el tamaño del bug, y el de la corrección"""),
+("md", """### QC figure · the size of the bug, and of the fix"""),
 
-("code", '''fig, axes = plt.subplots(1, 2, figsize=(10.6, 3.9))
+("code", '''fig, ax = plt.subplots(figsize=(8.6, 3.2))
+cats = [("SNV positions", "SNV"), ("indel positions", "indel"), ("HIGH-impact annotations", "HIGH")]
+for i, (lab, k) in enumerate(cats[::-1]):
+    b, a = B[k], A[k]
+    ax.plot([a, b], [i, i], color=fl.RULE, lw=5, solid_capstyle="round", zorder=1)
+    ax.scatter([b], [i], s=70, color=fl.DEAD, zorder=3, label="joined by position" if i == 0 else None)
+    ax.scatter([a], [i], s=70, color=fl.ALIVE, zorder=3, label="joined by (Location, Allele)" if i == 0 else None)
+    ax.text(b + 6, i, f"{b}", va="center", fontsize=8.6, color=fl.DEAD)
+    ax.text(a - 6, i, f"{a}", va="center", ha="right", fontsize=8.6, color=fl.ALIVE)
+ax.set_yticks(range(len(cats))); ax.set_yticklabels([c[0] for c in cats[::-1]])
+ax.set_xlim(-25, max(B.values()) * 1.12); ax.set_ylim(-0.6, len(cats) - 0.4)
+ax.grid(axis="x"); ax.spines["left"].set_visible(False); ax.tick_params(axis="y", length=0)
+ax.set_xlabel("HIGH/MODERATE items left without a joined genotype")
+fl.title(ax, f"Positional join lost {tot_before} positions; the allele-aware join leaves {tot_after}")
+ax.legend(loc="lower right", ncol=1)
 
-cats = ["SNV", "indel", "anotaciones\\nHIGH"]
-bef = [B["SNV"], B["indel"], B["HIGH"]]
-aft = [A["SNV"], A["indel"], A["HIGH"]]
-x = np.arange(len(cats)); w = 0.36
-axes[0].bar(x - w/2, bef, w, label="cruce por posicion", color=fl.DEAD, alpha=0.9)
-axes[0].bar(x + w/2, aft, w, label="cruce (Location, Allele)", color=fl.ALIVE, alpha=0.9)
-for i, (b, a) in enumerate(zip(bef, aft)):
-    axes[0].text(i - w/2, b + 5, str(b), ha="center", fontsize=8.6, color=fl.DEAD)
-    axes[0].text(i + w/2, a + 5, str(a), ha="center", fontsize=8.6, color=fl.ALIVE)
-axes[0].set_xticks(x); axes[0].set_xticklabels(cats)
-axes[0].set_ylabel("sin genotipo cruzado")
-axes[0].set_title("Lo que el cruce por posicion perdia")
-axes[0].legend(fontsize=8, frameon=False)
-
-axes[1].barh([0], [tot_before], color=fl.DEAD, alpha=0.35, height=0.5)
-axes[1].barh([0], [tot_after], color=fl.ALIVE, height=0.5)
-axes[1].set_yticks([]); axes[1].set_xlabel("posiciones HIGH/MODERATE sin genotipo")
-axes[1].set_title("Antes y despues")
-axes[1].text(tot_before, 0.32, f"  {tot_before} perdidas", fontsize=9.4, color=fl.DEAD, va="center")
-axes[1].text(tot_after, -0.32, f"  {tot_after} restantes", fontsize=9.4, color=fl.ALIVE, va="center")
-axes[1].grid(False)
-
-fl.done(fig, "Figura QC · reconciliacion de alelos, antes y despues", "EXP-006", "DERIVED",
+fl.done(fig, "QC figure · allele reconciliation, before and after", "EXP-006", "DERIVED",
         "DATA",
-        f"el cruce por posicion perdia {tot_before} posiciones HIGH/MODERATE, la mayoria "
-        f"indels, porque VEP desplaza su coordenada, con {B['HIGH']} anotaciones de alto "
-        f"impacto entre ellas. Reproducir la representacion de VEP recupera "
-        f"{tot_before - tot_after}.",
-        "que el cruce sea perfecto: quedan " + str(tot_after) + " posiciones sin resolver, y "
-        "un alelo complejo se declara no resuelto en vez de adivinarse.",
+        f"the positional join lost {tot_before} HIGH/MODERATE positions, mostly indels, because "
+        f"VEP shifts their coordinate; {B['HIGH']} high-impact annotations were among them. "
+        f"Reproducing VEP's representation recovers {tot_before - tot_after}.",
+        f"a perfect join: {tot_after} positions remain unresolved, and a complex allele is "
+        "declared unresolved rather than guessed.",
         prov="src/prioritization/allele_key.py · genome_wide.load()")'''),
 
-("md", """## Método · funnel genome-wide
+("md", """## Method · genome-wide processing stages
 
-Tres decisiones congeladas en `config/ranking_v1.yaml` que cambian el resultado: regla de dos
-niveles para `FILTER`, normalización a alelo único, y **agregación haplotípica**, variantes
-con el mismo `PID` y `PGT` están probadas en *cis* y colapsan en un solo evento."""),
+Three decisions frozen in `config/ranking_v1.yaml` change the result: a two-level rule for
+`FILTER`, normalisation to single alleles, and **haplotypic aggregation**: variants sharing
+`PID` and `PGT` are proven to be in *cis* and collapse into one event."""),
 
 ("code", '''pos_all = {v.loc for v in rows}
 pos_hm = {v.loc for v in hm}
@@ -185,216 +177,167 @@ qc_ok = [v for v in rare if v.passes_quality]
 calls = rank(rows, male=True)
 
 STAGES = [
-    ("variantes en el VCF",              5_012_204),
-    ("anotadas a gen (VEP)",             4_943_948),
-    ("posiciones HIGH o MODERATE",       len(pos_hm)),
-    ("alelos unicos con genotipo",       len({(v.loc, v.allele) for v in hm if v.gt})),
-    ("raros (MAX_AF < 1e-3 o ausente)",  len({(v.loc, v.allele) for v in rare})),
-    ("+ QC de calidad y balance",        len({(v.loc, v.allele) for v in qc_ok})),
-    ("genes con modelo de herencia",     len(calls)),
+    ("variants in the VCF",                5_012_204),
+    ("annotated to a gene (VEP)",          4_943_948),
+    ("HIGH or MODERATE positions",         len(pos_hm)),
+    ("unique alleles with a genotype",     len({(v.loc, v.allele) for v in hm if v.gt})),
+    ("rare (MAX_AF < 1e-3 or absent)",     len({(v.loc, v.allele) for v in rare})),
+    ("+ quality and allele-balance QC",    len({(v.loc, v.allele) for v in qc_ok})),
+    ("genes with an inheritance model",    len(calls)),
 ]
 for n, v in STAGES:
     print(f"  {n:<36} {v:>10,}")'''),
 
-("md", """### Figura principal 1 · las etapas de procesamiento, con la aritmética a la vista
+("md", """### Main figure 1 · the processing stages, with the arithmetic visible
 
-No se llama *embudo*, y el motivo importa: **una de las etapas crece**. Al pasar de **posiciones**
-con consecuencia HIGH o MODERATE a **alelos únicos con genotipo**, el recuento sube, porque una
-posición multialélica aporta más de un alelo. Dibujarlo como un embudo insinuaba una reducción
-que ahí no ocurre. La etapa que expande va marcada en la figura."""),
+It is not called a *funnel*, for a reason: **one stage grows**. Going from **positions** with a
+HIGH or MODERATE consequence to **unique alleles with a genotype**, the count rises, because a
+multi-allelic position contributes more than one allele. Drawing it as a funnel implied a
+reduction that does not happen there. The expanding stage is marked."""),
 
-("code", '''fig, ax = plt.subplots(figsize=(9.6, 5.0))
+("code", '''fig, ax = plt.subplots(figsize=(9.2, 4.2))
 names = [s[0] for s in STAGES]
 vals = [s[1] for s in STAGES]
-logs = [np.log10(max(v, 1)) for v in vals]
-ymax = max(logs)
-for i, (n, v, lg) in enumerate(zip(names, vals, logs)):
-    wid = lg / ymax
-    ax.barh(len(STAGES) - i - 1, wid, height=0.62, color=fl.FLOW,
-            alpha=0.35 + 0.55 * (i / len(STAGES)))
-    ax.text(wid + 0.012, len(STAGES) - i - 1, f"{v:,}", va="center",
-            fontsize=9.6, fontweight="bold", color=fl.INK)
-# La etapa que EXPANDE se marca. Un grafico que se llama embudo y sube en un
-# paso enganya aunque los numeros sean correctos.
+y = np.arange(len(STAGES))[::-1]
+cols = [fl.FLOW] * len(vals)
 for i in range(1, len(vals)):
     if vals[i] > vals[i - 1]:
-        y = len(STAGES) - i - 1
-        ax.annotate("+" + format(vals[i] - vals[i - 1], ",") + " : ESTA ETAPA EXPANDE, no filtra"
-                    + chr(10) + "una posicion multialelica aporta mas de un alelo",
-                    xy=(logs[i] / ymax, y), xytext=(0.36, y - 0.62),
-                    fontsize=8.2, color=fl.DEAD,
-                    fontweight="bold", va="center",
-                    arrowprops=dict(arrowstyle="-|>", lw=0.9, color=fl.DEAD))
-ax.set_yticks(range(len(STAGES)))
-ax.set_yticklabels(names[::-1], fontsize=9.4)
-ax.set_xticks([]); ax.set_xlim(0, 1.22); ax.grid(False)
-ax.set_title("Etapas de procesamiento genome-wide · ancho proporcional a log10(n)")
-ax.text(0.0, -0.9, "sin panel: el unico filtro es consecuencia funcional. NO es un embudo: "
-        "una etapa expande",
-        fontsize=8.4, color=fl.SOFT)
+        cols[i] = fl.OPEN
+ax.barh(y, vals, height=0.62, color=cols)
+ax.set_xscale("log"); ax.set_xlim(50, 3e7)
+for yi, v in zip(y, vals):
+    ax.text(v * 1.18, yi, f"{v:,}", va="center", fontsize=8.8, fontweight="bold", color=fl.INK)
+for i in range(1, len(vals)):
+    if vals[i] > vals[i - 1]:
+        ax.annotate(f"+{vals[i] - vals[i - 1]:,}: this stage expands, it does not filter\\n"
+                    "(a multi-allelic position contributes several alleles)",
+                    xy=(vals[i], y[i]), xytext=(vals[i] * 6, y[i] - 0.9),
+                    fontsize=8, color=fl.OPEN, va="center",
+                    arrowprops=dict(arrowstyle="-|>", lw=0.8, color=fl.OPEN))
+ax.set_yticks(y); ax.set_yticklabels(names)
+ax.grid(axis="x"); ax.tick_params(axis="y", length=0)
+ax.set_xlabel("count (log scale)")
+fl.title(ax, "Genome-wide processing stages: no gene panel, only a consequence filter")
 
-fl.done(fig, "Figura principal 1 · etapas de procesamiento genome-wide", "EXP-006",
+fl.done(fig, "Main figure 1 · genome-wide processing stages", "EXP-006",
         "MEASURED+DERIVED", "DATA",
-        "el descenso real de 5,0 M variantes a los genes que compiten con un modelo de "
-        "herencia. Ninguna etapa es un panel: el unico filtro es consecuencia funcional. "
-        "OJO: la etapa marcada NO reduce, EXPANDE, al pasar de posiciones a alelos unicos.",
-        "que las etapas evaluen lo que no evaluan. No cubre variantes estructurales, "
-        "reguladoras ni intronicas profundas fuera del filtro de consecuencia, y no resuelve "
-        "la fase.",
-        prov="work/gw/highmod_ann.tsv + VCF, hashes arriba")'''),
+        "the real descent from 5.0 M variants to the genes that compete under an inheritance "
+        "model. No stage is a panel: the only filter is functional consequence. The marked "
+        "stage does not reduce, it expands, going from positions to unique alleles.",
+        "anything the stages do not evaluate. Structural, regulatory and deep-intronic variants "
+        "outside the consequence filter are not covered, and phase is not resolved.",
+        prov="work/gw/highmod_ann.tsv + VCF, hashes above")'''),
 
-("md", """## Figura principal 2 · el panorama genómico de la competición
+("md", """## Main figure 2 · where the competition happens on the genome
 
-El funnel dice **cuántos** genes compiten. No dice **dónde** ni **con qué puntuación**. Esta es
-la vista que falta: cada gen que recibió modelo de herencia, colocado en su cromosoma, con su
-puntuación `A0` **congelada** en el eje Y.
+The stages say **how many** genes compete. They do not say **where** or **with what score**.
+This view shows every gene that received an inheritance model, placed on its chromosome, with
+its **frozen** `A0` score on the y axis.
 
-> **Saneado por diseño.** El eje X es orden cromosómico en **bins de 1 Mb** derivados de la
-> posición del gen, no la coordenada de ninguna variante del paciente. Las longitudes de
-> cromosoma se leen de la cabecera del VCF, no se escriben a mano."""),
+> **Sanitised by design.** The x axis is chromosome order in **1 Mb bins** derived from the
+> gene's position, not the coordinate of any patient variant. Chromosome lengths are read from
+> the VCF header, not typed in."""),
 
-("code", '''# Longitudes de cromosoma: de la cabecera del VCF, no hardcodeadas.
-import gzip
-contigs = {}
-with gzip.open(VCF, "rt", errors="replace") as f:
-    for line in f:
-        if not line.startswith("#"):
-            break
-        if line.startswith("##contig="):
-            body = line.strip()[10:-1]
-            d = dict(kv.split("=", 1) for kv in body.split(",") if "=" in kv)
-            if "ID" in d and "length" in d:
-                contigs[d["ID"]] = int(d["length"])
-
-# La cabecera de este VCF nombra los contigs SIN prefijo "chr"; se aceptan las
-# dos convenciones para que el notebook no dependa de cual use el fichero.
-PLAIN = [str(i) for i in range(1, 23)] + ["X", "Y"]
-CH = [c for c in PLAIN if c in contigs]
-if not CH:
-    CH = [c for c in ("chr" + c for c in PLAIN) if c in contigs]
-
-BIN = 1_000_000                                  # resolucion del eje: 1 Mb
-off, acc = {}, 0
-for c in CH:
-    off[c] = acc
-    acc += contigs[c] // BIN + 1
-GENOME_BINS = acc
-
-def gene_bin(g):
-    """Bin de 1 Mb del gen = minimo de sus variantes HIGH/MODERATE. Nunca la
-    coordenada exacta de una variante: el bin se redondea antes de salir."""
-    vs = by_gene.get(g, [])
-    if not vs:
-        return None
-    ch = vs[0].loc.split(":")[0]
-    if ch not in off:
-        return None
-    p = min(int(v.loc.split(":")[1].split("-")[0]) for v in vs)
-    return ch, off[ch] + p // BIN
-
-res = pickle.load(io.open("work/gw/mode_b_results_v4.pkl", "rb"))
-A0 = res["A0_GENETICS"]                          # (gen, score, modelo, ...) CONGELADO
-pts = []
-for r, (g, sc, *_rest) in enumerate(A0, start=1):
-    gb = gene_bin(g)
-    if gb:
-        pts.append((g, gb[0], gb[1], sc, r))
-
-# Carga genomica de fondo: densidad de los genes HIGH/MODERATE por bin.
-# El recuento no se escribe a mano, se imprime desde len(by_gene).
-load_bins = collections.Counter()
-for g in by_gene:
-    gb = gene_bin(g)
-    if gb:
-        load_bins[gb[1]] += 1
-
-print(f"  cromosomas en la cabecera : {len(CH)}  ·  bins de {BIN//10**6} Mb: {GENOME_BINS:,}")
-print(f"  genes puntuados en A0     : {len(A0)}  ·  situados en el genoma: {len(pts)}")
-print(f"  genes HIGH/MODERATE       : {len(by_gene):,} repartidos en {len(load_bins):,} bins")
-print(f"  rango de puntuacion A0    : {min(p[3] for p in pts):.1f} a {max(p[3] for p in pts):.1f}")'''),
-
-("code", '''from src.figures import fig01_manhattan as FM
+("code", '''res = pickle.load(io.open("work/gw/mode_b_results_v4.pkl", "rb"))
+from src.figures import fig01_manhattan as FM
 
 M = FM.prepare(by_gene, res["A0_GENETICS"], FM.contig_lengths(VCF))
 fig = FM.build(M)
 _bub = next(s for s in M["scored"] if s["gene"] == "BUB1B")
 _tie = sum(1 for s in M["scored"] if s["score"] >= _bub["score"])
-fl.pub(fig, "Figura principal 2 · priorizacion genome-wide", "EXP-006",
+fl.pub(fig, "Main figure 2 · genome-wide prioritisation", "EXP-006",
        "MEASURED+DERIVED", "DATA",
-       f"la competicion completa vista sobre el genoma: los {M['n_universe']:,} genes con "
-       f"variante HIGH/MODERATE que forman el universo, dibujados como alfombra sobre la "
-       f"linea base y como densidad en el panel B, y los {M['n_scored']} que llegaron a "
-       f"tener modelo de herencia, con su puntuacion A0 CONGELADA. BUB1B esta marcado en su "
-       f"puesto real del A0 congelado, el #{_bub['rank']}, con {_tie} genes empatados o por "
-       f"encima. No solo compitieron 151: compitieron 6 321, y esa es la lectura que la "
-       f"figura esta construida para no permitir equivocar.",
-       "que la puntuacion sea una probabilidad ni un p-valor. El eje Y es una suma de "
-       "terminos con pesos elegidos por nosotros: NO es un estadistico, no tiene distribucion "
-       "nula y por eso la figura se niega a dibujar una linea de significacion. Tampoco cubre "
-       "variantes estructurales ni reguladoras, y la posicion en X es el bin de 1 Mb del gen, "
-       "no la de ninguna variante.",
-       source="work/gw/mode_b_results_v4.pkl (A0 congelado) + longitudes de contig del VCF",
+       f"the whole competition on the genome: the {M['n_universe']:,} genes carrying a "
+       f"HIGH/MODERATE variant form the universe (rug on the baseline and density in panel B), "
+       f"and the {M['n_scored']} that reached an inheritance model are plotted with their FROZEN "
+       f"A0 score. BUB1B is marked at its real frozen-A0 rank, #{_bub['rank']}, with {_tie} genes "
+       f"tied or above. It was not 151 genes that competed but {M['n_universe']:,}.",
+       "a probability or a p-value. The y axis is a sum of terms with weights we chose: it is "
+       "not a statistic, has no null distribution, and so the figure refuses to draw a "
+       "significance line. It does not cover structural or regulatory variants, and the x "
+       "position is the gene's 1 Mb bin, not that of any variant.",
+       source="work/gw/mode_b_results_v4.pkl (frozen A0) + VCF contig lengths",
        lib="matplotlib", slug="fig01_prioritization_genomewide")'''),
 
-("md", """## Resultado primario · estabilidad de rango
+("md", """## Primary result · rank stability
 
-Lo que el preregistro exige reportar **no es el ganador** sino la matriz gen × análisis. Un
-gen que solo gana en una configuración no es un resultado."""),
+What the preregistration requires is **not the winner** but the gene × analysis matrix. A gene
+that wins under one configuration only is not a result."""),
 
 ("code", '''ORDER = ["A0_GENETICS", "A1_GENETICS_CLINVAR", "B0_FULL_PROBAND",
          "B1_MINUS_RHABDOMYOSARCOMA", "B2_MINUS_RENAL", "B3_MINUS_GROWTH_PERINATAL",
          "B4_GENETICS_ONLY_CONTROL", "FH_ON"] + sorted(k for k in res if k.startswith("LOO_"))
 LEAD = [r[0] for r in res["B0_FULL_PROBAND"][:6]]
 
-M = np.full((len(LEAD), len(ORDER)), np.nan)
+RK = np.full((len(LEAD), len(ORDER)), np.nan)
 for j, an in enumerate(ORDER):
     pos = {r[0]: i + 1 for i, r in enumerate(res[an])}
     for i, g in enumerate(LEAD):
         if g in pos:
-            M[i, j] = pos[g]
-print(f"  {len(ORDER)} analisis · {len(LEAD)} genes lideres")
-print(f"  BUB1B es #1 en {int((M[LEAD.index('BUB1B')] == 1).sum())} de {len(ORDER)}")'''),
+            RK[i, j] = pos[g]
+print(f"  {len(ORDER)} analyses · {len(LEAD)} leading genes")
+print(f"  BUB1B is #1 in {int((RK[LEAD.index('BUB1B')] == 1).sum())} of {len(ORDER)}")'''),
 
-("md", """### Figura principal 3 · matriz de estabilidad de rango"""),
+("md", """### Main figure 3 · rank-stability matrix"""),
 
-("code", '''fig, ax = plt.subplots(figsize=(11.2, 3.5))
-im = ax.imshow(M, cmap="RdYlGn_r", vmin=1, vmax=8, aspect="auto")
-ax.set_yticks(range(len(LEAD))); ax.set_yticklabels(LEAD, fontsize=9.4)
+("code", '''from matplotlib.colors import ListedColormap, BoundaryNorm
+HPO_NAME = {"HP_0002859": "rhabdomyosarcoma", "HP_0000121": "nephrocalcinosis",
+            "HP_0004322": "short stature", "HP_0001508": "failure to thrive",
+            "HP_0003202": "muscle atrophy", "HP_0001622": "premature birth",
+            "HP_0001518": "small for gestational age"}
+def an_label(a):
+    if a.startswith("LOO_"):
+        return "without " + HPO_NAME.get(a[4:], a[4:])
+    return {"A0_GENETICS": "A0 · genetics only", "A1_GENETICS_CLINVAR": "A1 · + ClinVar",
+            "B0_FULL_PROBAND": "B0 · full phenotype", "B1_MINUS_RHABDOMYOSARCOMA": "B1 · − tumour",
+            "B2_MINUS_RENAL": "B2 · − renal", "B3_MINUS_GROWTH_PERINATAL": "B3 · − growth/perinatal",
+            "B4_GENETICS_ONLY_CONTROL": "B4 · genetics control", "FH_ON": "FH · family-history rule"}.get(a, a)
+
+# Discrete, colour-blind-safe scale: rank 1 dark, rank ≥ 8 pale. Ranks above 8 are clipped
+# for colour only; the printed number is always the true rank.
+cmap = ListedColormap(["#08306B", "#2171B5", "#6BAED6", "#9ECAE1", "#C6DBEF", "#DEEBF7", "#EEF4FA", "#F7FBFF"])
+norm = BoundaryNorm(np.arange(0.5, 9.5, 1), cmap.N)
+fig, ax = plt.subplots(figsize=(11.4, 3.9))
+im = ax.imshow(np.clip(RK, 1, 8), cmap=cmap, norm=norm, aspect="auto")
+ax.set_yticks(range(len(LEAD))); ax.set_yticklabels(LEAD, fontsize=9, fontstyle="italic")
 ax.set_xticks(range(len(ORDER)))
-ax.set_xticklabels([a.replace("_", " ").replace("LOO HP ", "LOO ") for a in ORDER],
-                   rotation=55, ha="right", fontsize=7.4)
+ax.set_xticklabels([an_label(a) for a in ORDER], rotation=40, ha="right", fontsize=7.8)
 for i in range(len(LEAD)):
     for j in range(len(ORDER)):
-        if not np.isnan(M[i, j]):
-            v = int(M[i, j])
-            ax.text(j, i, str(v), ha="center", va="center", fontsize=7.8,
-                    color="white" if v <= 2 or v >= 6 else fl.INK,
-                    fontweight="bold" if v == 1 else "normal")
-ax.grid(False)
-ax.set_title("Estabilidad de rango · puesto de cada gen lider en los 15 analisis")
-cb = plt.colorbar(im, ax=ax, fraction=0.02, pad=0.01); cb.set_label("puesto", fontsize=8)
+        if not np.isnan(RK[i, j]):
+            v = int(RK[i, j])
+            ax.text(j, i, str(v), ha="center", va="center", fontsize=8,
+                    color="white" if v <= 3 else fl.INK, fontweight="bold" if v == 1 else "normal")
+ax.axvline(7.5, color="white", lw=3)
+ax.text(3.5, -0.85, "configurations", ha="center", fontsize=8, color=fl.SOFT)
+ax.text(11.0, -0.85, "leave one phenotype term out", ha="center", fontsize=8, color=fl.SOFT)
+ax.tick_params(length=0); [s.set_visible(False) for s in ax.spines.values()]
+cb = plt.colorbar(im, ax=ax, fraction=0.018, pad=0.01, ticks=range(1, 9))
+cb.ax.set_yticklabels([str(i) for i in range(1, 8)] + ["≥8"]); cb.set_label("rank", fontsize=8)
+cb.outline.set_visible(False)
 
-fl.done(fig, "Figura principal 3 · estabilidad de rango, gen x analisis", "EXP-006", "DERIVED",
+fl.done(fig, "Main figure 3 · rank stability, gene x analysis", "EXP-006", "DERIVED",
         "DATA",
-        "BUB1B es #1 en 14 de los 15 analisis. La excepcion es A0_GENETICS, el control sin "
-        "fenotipo ni ClinVar, donde queda #4. El hallazgo no es el ganador de una formula: es "
-        "que el resultado es estable al quitar terminos, al quitar ClinVar y al cambiar pesos.",
-        "que la estabilidad sea independencia. Los 15 analisis comparten codigo, datos y "
-        "supuestos: no son 15 comprobaciones independientes.",
+        "BUB1B is #1 in 14 of the 15 analyses. The exception is A0, the control without "
+        "phenotype or ClinVar, where it is #4. The finding is not the winner of one formula: "
+        "the result is stable when terms are removed, when ClinVar is removed and when weights "
+        "change.",
+        "independence. The 15 analyses share code, data and assumptions: they are not 15 "
+        "independent checks.",
         prov="work/gw/mode_b_results_v4.pkl")'''),
 
-("md", """### Figura principal 4 · `A0` congelado frente a `A0-FREQFIX`
+("md", """### Main figure 4 · frozen `A0` against `A0-FREQFIX`
 
-Aquí está el episodio más importante del experimento, y **los dos números se enseñan juntos**.
+This is the most important episode of the experiment, and **both numbers are shown together**.
 
-Al conectar el cruce de alelos, `BUB1B` pasó de #1 a **#4** en `A0`. Su puntuación **no bajó**:
-emergieron tres deleciones homocigotas con `MAX_AF` ausente. La auditoría las resolvió
-localmente, son **polimorfismos comunes** que VEP no supo anotar.
+When the allele join was wired in, `BUB1B` moved from #1 to **#4** in `A0`. Its score **did not
+drop**: three homozygous deletions with no assignable `MAX_AF` rose above it. The audit
+resolved them locally as **common polymorphisms** that VEP had failed to annotate.
 
-**No se tocó la fórmula.** `A0-FREQFIX` es una sensibilidad **posterior al resultado**,
-aplicada a los 33 alelos afectados y no a los tres incómodos."""),
+**The formula was not touched.** `A0-FREQFIX` is a sensitivity analysis **run after seeing the
+result**, applied to all 33 affected alleles, not just the three inconvenient ones."""),
 
-("code", '''# A0-FREQFIX: se recalcula reparando la frecuencia de TODOS los que la tenian ausente
+("code", '''# A0-FREQFIX: recomputed after repairing the frequency of EVERY allele that lacked one
 from src.prioritization.freqfix_sensitivity import recovered_frequencies
 
 def a0_from(rws):
@@ -411,7 +354,6 @@ a0_frozen = a0_from(load(ANN, VCF))
 
 freq = recovered_frequencies()
 rows_fx = load(ANN, VCF)
-import copy
 patched = 0
 for v in rows_fx:
     if v.max_af is not None:
@@ -424,48 +366,73 @@ a0_fix = a0_from(rows_fx)
 
 rk_f = next(i for i, (_, g) in enumerate(a0_frozen, 1) if g == "BUB1B")
 rk_x = next(i for i, (_, g) in enumerate(a0_fix, 1) if g == "BUB1B")
-print(f"  frecuencias reparadas: {len(freq)} sitios · {patched} filas")
-print(f"  A0 CONGELADO  : BUB1B puesto {rk_f}")
-print(f"  A0-FREQFIX    : BUB1B puesto {rk_x}")'''),
+print(f"  frequencies repaired: {len(freq)} sites · {patched} rows")
+print(f"  FROZEN A0   : BUB1B rank {rk_f}")
+print(f"  A0-FREQFIX  : BUB1B rank {rk_x}")'''),
 
-("code", '''fig, axes = plt.subplots(1, 2, figsize=(11.0, 4.4), sharey=False)
-for ax, data, title, sub in (
-        (axes[0], a0_frozen, "A0 CONGELADO (preregistrado)", "resultado que manda"),
-        (axes[1], a0_fix, "A0-FREQFIX (sensibilidad POST-HOC)", "repara los 33 alelos sin MAX_AF")):
-    top = data[:8][::-1]
-    names = [g for _, g in top]
-    scores = [s for s, _ in top]
-    cols = [fl.ALIVE if g == "BUB1B" else fl.FLOW for g in names]
-    ax.barh(range(len(top)), scores, color=cols, alpha=0.9, height=0.62)
-    ax.set_yticks(range(len(top))); ax.set_yticklabels(names, fontsize=9)
-    ax.set_xlabel("puntuacion genetica")
-    ax.set_title(title, fontsize=11)
-    ax.text(0.02, -1.35, sub, fontsize=8.2, color=fl.SOFT, transform=ax.get_yaxis_transform(),
-            clip_on=False)
-    bi = names.index("BUB1B")
-    bs = scores[bi]
-    rank_label = rk_f if ax is axes[0] else rk_x
-    ax.text(bs + 0.08, bi, f"BUB1B  #{rank_label}", va="center", fontsize=9.4,
-            color=fl.ALIVE, fontweight="bold")
+("code", '''TOP = 8
+rf = {g: i for i, (_, g) in enumerate(a0_frozen, 1)}
+rx = {g: i for i, (_, g) in enumerate(a0_fix, 1)}
+genes = list(dict.fromkeys([g for _, g in a0_frozen[:TOP]] + [g for _, g in a0_fix[:TOP]]))
+OUTR = TOP + 1.6                                   # row used for "fell below the top 8"
+def ypos(r):
+    return r if r <= TOP else OUTR
 
-fl.done(fig, "Figura principal 4 · A0 congelado frente a A0-FREQFIX", "EXP-006 · EXP-021b",
+fig, ax = plt.subplots(figsize=(8.2, 5.2))
+dropped = [g for g in genes if rx.get(g, 10**6) > TOP]
+for g in genes:
+    a, b = ypos(rf.get(g, 10**6)), ypos(rx.get(g, 10**6))
+    if g == "BUB1B":
+        col, lw, z = fl.ALIVE, 2.6, 4
+    elif g in dropped:
+        col, lw, z = fl.DEAD, 1.6, 3
+    else:
+        col, lw, z = fl.FLOW, 1.1, 2
+    ax.plot([0, 1], [a, b], color=col, lw=lw, zorder=z, marker="o", ms=5)
+    if a <= TOP:
+        ax.text(-0.04, a, f"{g}  #{rf[g]}", ha="right", va="center", fontsize=8.6, color=col,
+                fontweight="bold" if g == "BUB1B" else "normal")
+    if b <= TOP:
+        ax.text(1.04, b, f"#{rx[g]}  {g}", ha="left", va="center", fontsize=8.6, color=col,
+                fontweight="bold" if g == "BUB1B" else "normal")
+def _r(d, g):
+    return f"#{d[g]}" if g in d else "no longer scored"
+ax.text(1.04, OUTR, f"fell below #{TOP}:\\n" + "\\n".join(f"{g} ({_r(rx, g)})" for g in dropped),
+        ha="left", va="center", fontsize=8, color=fl.DEAD)
+entered = [g for g in genes if rf.get(g, 10**6) > TOP]
+if entered:
+    ax.text(-0.04, OUTR, f"rose from below #{TOP}:\\n" + "\\n".join(f"{g} ({_r(rf, g)})" for g in entered),
+            ha="right", va="center", fontsize=8, color=fl.SOFT)
+ax.axhline(TOP + 0.8, color=fl.RULE, lw=0.8, ls=":")
+ax.set_xlim(-0.55, 1.75); ax.set_ylim(OUTR + 1.6, 0.3)
+ax.set_xticks([0, 1]); ax.set_xticklabels(["frozen A0\\n(preregistered, the result that stands)",
+                                           "A0-FREQFIX\\n(post-hoc sensitivity)"], fontsize=8.6)
+ax.set_yticks([]); ax.grid(False)
+for s in ("left", "bottom"):
+    ax.spines[s].set_visible(False)
+ax.tick_params(axis="x", length=0)
+fl.title(ax, "Repairing missing allele frequencies moves BUB1B from #4 to #1")
+
+fl.done(fig, "Main figure 4 · frozen A0 against A0-FREQFIX", "EXP-006 · EXP-021b",
         "DERIVED", "DATA",
-        f"en el A0 preregistrado BUB1B queda #{rk_f}, por detras de tres deleciones "
-        f"homocigotas sin frecuencia asignable. Reparando el defecto de anotacion en TODOS "
-        f"los alelos afectados, vuelve al #{rk_x} y los tres desaparecen del top.",
-        "que A0-FREQFIX sustituya a A0. Es una sensibilidad POSTERIOR a ver el resultado, y "
-        "ademas repara las frecuencias con la base local de Exomiser: NO es una linea "
-        "independiente de el.",
-        prov="ranking congelado + work/exomiser/runs/FREQFIX")'''),
+        f"in the preregistered A0, BUB1B is #{rk_f}, behind three homozygous deletions with no "
+        f"assignable frequency. Repairing the annotation defect in ALL affected alleles "
+        f"returns it to #{rk_x}: every gene whose rank rested on an allele without a frequency "
+        f"(vermilion) is no longer scored once the allele is recognised as common. BUB1B's own "
+        "score is unchanged: the others moved, not BUB1B.",
+        "that A0-FREQFIX replaces A0. It is a sensitivity analysis run AFTER seeing the result, "
+        "and it repairs frequencies with Exomiser's local database, so it is NOT independent "
+        "of Exomiser.",
+        prov="frozen ranking + work/exomiser/runs/FREQFIX")'''),
 
-("md", """## Comprobación externa · nuestro motor frente a Exomiser
+("md", """## External check · our engine against Exomiser
 
-Exomiser partió del **VCF original** y de los **mismos 7 términos HPO**, con su propia base de
-conocimiento. No recibió ninguna de nuestras candidatas, puntuaciones ni paneles.
+Exomiser started from the **original VCF** and the **same 7 HPO terms**, with its own knowledge
+base. It received none of our candidates, scores or panels.
 
-> **Es convergencia METODOLÓGICA sobre el MISMO VCF.** No es evidencia biológica independiente:
-> los dos motores leen el mismo genoma y los mismos errores de llamada. Hay prueba de que
-> importa, ambos señalan `SERPINA1`."""),
+> **This is METHODOLOGICAL convergence on the SAME VCF.** It is not independent biological
+> evidence: both engines read the same genome and the same calling errors. There is proof that
+> this matters: both flag `SERPINA1`."""),
 
 ("code", '''from src.baseline.compare_baseline import read_exomiser
 ext, path, nrows = read_exomiser("BASELINE-PRIMARY")
@@ -473,128 +440,129 @@ ext_rank = {g: r for r, g, _, _ in ext}
 our_rank = {r[0]: i + 1 for i, r in enumerate(res["B0_FULL_PROBAND"])}
 
 shared = [g for g in ext_rank if g in our_rank and (ext_rank[g] <= 25 or our_rank[g] <= 25)]
-print(f"  Exomiser: {len(ext)} genes unicos ({nrows} filas gen x herencia)")
-print(f"  BUB1B, nuestro puesto {our_rank.get('BUB1B')} · Exomiser puesto {ext_rank.get('BUB1B')}")
-print(f"  genes en el top-25 de alguno de los dos: {len(shared)}")'''),
+print(f"  Exomiser: {len(ext)} unique genes ({nrows} gene x inheritance rows)")
+print(f"  BUB1B: our rank {our_rank.get('BUB1B')} · Exomiser rank {ext_rank.get('BUB1B')}")
+print(f"  genes in the top 25 of either engine: {len(shared)}")'''),
 
-("md", """### Figura principal 5 · rango frente a rango"""),
+("md", """### Main figure 5 · rank against rank"""),
 
-("code", '''fig, ax = plt.subplots(figsize=(6.6, 6.2))
-xs = [our_rank[g] for g in shared]
-ys = [ext_rank[g] for g in shared]
-ax.scatter(xs, ys, s=44, color=fl.FLOW, alpha=0.55, edgecolor="none")
-# Solo se rotulan los dos puntos que el texto interpreta. Etiquetar seis genes
-# en la esquina superior derecha hacia ilegible precisamente la convergencia.
-# Los dos puntos caen casi sobre la diagonal, BUB1B arriba a la derecha y
-# SERPINA1 abajo a su izquierda. Los desplazamientos anteriores apuntaban uno
-# HACIA el otro y las etiquetas se tocaban. Ahora salen PERPENDICULARES a la
-# recta que los une, cada una hacia un lado.
-for g, c, off, ha in (("BUB1B", fl.ALIVE, (-16, 16), "right"),
-                      ("SERPINA1", fl.DEAD, (16, -16), "left")):
-    if g not in shared:
-        continue
-    ax.scatter([our_rank[g]], [ext_rank[g]], s=110, color=c, zorder=3)
-    ax.annotate(g, (our_rank[g], ext_rank[g]), fontsize=8.6, color=c,
-                xytext=off, textcoords="offset points", ha=ha, fontweight="bold",
-                arrowprops=dict(arrowstyle="-", color=c, lw=0.8))
-lim = max(max(xs), max(ys)) + 4
-ax.plot([0, lim], [0, lim], color=fl.RULE, ls="--", lw=1.2, zorder=0)
-ax.set_xlim(0, lim); ax.set_ylim(0, lim)
-ax.invert_xaxis(); ax.invert_yaxis()
-ax.set_xlabel("nuestro puesto  (B0_FULL_PROBAND)")
-ax.set_ylabel("puesto de Exomiser")
-ax.set_title("Método independiente · MISMO VCF del paciente")
+("code", '''fig, ax = plt.subplots(figsize=(6.4, 6.0))
+xs = np.array([our_rank[g] for g in shared]); ys = np.array([ext_rank[g] for g in shared])
+ax.axvspan(0.7, 25.5, color=fl.RULE, alpha=0.25, lw=0)
+ax.axhspan(0.7, 25.5, color=fl.RULE, alpha=0.25, lw=0)
+ax.scatter(xs, ys, s=38, color=fl.FLOW, alpha=0.8, edgecolor="white", lw=0.5, zorder=2)
+lim = max(xs.max(), ys.max()) * 1.4
+ax.plot([0.7, lim], [0.7, lim], color=fl.SOFT, ls="--", lw=0.9, zorder=1)
+ax.text(lim * 0.55, lim * 0.42, "perfect agreement", rotation=45, fontsize=7.6, color=fl.SOFT,
+        ha="center", va="center")
+# Only the two points the text interprets are labelled, on opposite sides of the diagonal.
+for g, c, off, ha in (("BUB1B", fl.ALIVE, (18, -4), "left"),
+                      ("SERPINA1", fl.DEAD, (-14, 14), "right")):
+    if g in shared:
+        ax.scatter([our_rank[g]], [ext_rank[g]], s=110, color=c, zorder=3, edgecolor="white")
+        ax.annotate(f"{g}  (#{our_rank[g]} · #{ext_rank[g]})", (our_rank[g], ext_rank[g]),
+                    fontsize=8.6, color=c, xytext=off, textcoords="offset points", ha=ha,
+                    fontweight="bold", arrowprops=dict(arrowstyle="-", color=c, lw=0.8))
+ax.set_xscale("log"); ax.set_yscale("log")
+ax.set_xlim(lim, 0.7); ax.set_ylim(lim, 0.7)
+ticks = [1, 2, 5, 10, 25, 50, 100]
+ax.set_xticks([t for t in ticks if t < lim]); ax.set_xticklabels([str(t) for t in ticks if t < lim])
+ax.set_yticks([t for t in ticks if t < lim]); ax.set_yticklabels([str(t) for t in ticks if t < lim])
+ax.minorticks_off(); ax.grid(True, which="major")
+ax.set_xlabel("our rank (B0, full phenotype) · log scale")
+ax.set_ylabel("Exomiser rank · log scale")
+fl.title(ax, "Two engines, the same patient VCF")
 
-fl.done(fig, "Figura principal 5 · nuestro ranking frente a Exomiser", "EXP-006b",
+fl.done(fig, "Main figure 5 · our ranking against Exomiser", "EXP-006b",
         "EXTERNAL+DERIVED", "MODEL_OUTPUT",
-        "cada punto es un gen en el top-25 de alguno de los dos motores; la diagonal seria "
-        "acuerdo perfecto. Coinciden fuertemente en BUB1B (#1 y #2) y poco en el resto: "
-        "el solapamiento del top-20 es de 6 de 20.",
-        "que sean dos observaciones biologicas independientes. Comparten el VCF, y un "
-        "artefacto compartido los engana a los dos: SERPINA1 esta alto en ambos por la "
-        "misma peculiaridad local de los datos.",
+        "each point is a gene in the top 25 of either engine (shaded bands); the dashed line "
+        "is perfect agreement. They agree strongly on BUB1B (#1 and #2) and weakly on the rest: "
+        "the top-20 overlap is 6 of 20.",
+        "two independent biological observations. They share the VCF, and a shared artefact "
+        "fools both: SERPINA1 ranks high in both because of the same local quirk of the data.",
         prov="work/exomiser/runs/BASELINE-PRIMARY")'''),
 
-("md", """## Robustez · qué términos del fenotipo sostienen de verdad el resultado
+("md", """## Robustness · which phenotype terms actually carry the result
 
-*Leave-one-out*: se retira un término y se mide el cambio en el soporte fenotípico del gen
-líder."""),
+*Leave-one-out*: one term is removed and the change in the leading gene's phenotypic support is
+measured."""),
 
 ("code", '''G = res["B0_FULL_PROBAND"][0][0]
 base = next(r for r in res["B0_FULL_PROBAND"] if r[0] == G)[5]
-LAB = {"HP_0002859": "Rabdomiosarcoma", "HP_0000121": "Nefrocalcinosis",
-       "HP_0004322": "Talla baja", "HP_0001508": "Fallo de medro",
-       "HP_0003202": "Atrofia muscular", "HP_0001622": "Parto prematuro",
-       "HP_0001518": "Peq. edad gestacional"}
 loo = []
 for k in sorted(k for k in res if k.startswith("LOO_")):
     v = next((r for r in res[k] if r[0] == G), None)
     if v:
-        loo.append((LAB.get(k.replace("LOO_", ""), k), base - v[5]))
+        loo.append((HPO_NAME.get(k.replace("LOO_", ""), k), base - v[5]))
 loo.sort(key=lambda t: t[1])
-print(f"  gen: {G} · soporte fenotipico completo = {base:.3f}")
+print(f"  gene: {G} · full phenotypic support = {base:.3f}")
 for n, d in loo:
-    print(f"    {n:<24}{d:+.3f}")'''),
+    print(f"    {n:<28}{d:+.3f}")'''),
 
-("code", '''fig, ax = plt.subplots(figsize=(8.4, 3.9))
+("code", '''fig, ax = plt.subplots(figsize=(8.2, 3.6))
 names = [n for n, _ in loo]; vals = [d for _, d in loo]
-cols = [fl.ALIVE if v > 0.05 else (fl.SOFT if v > -0.05 else fl.OPEN) for v in vals]
-ax.barh(range(len(names)), vals, color=cols, alpha=0.9, height=0.6)
-ax.axvline(0, color=fl.INK, lw=1.1)
-ax.set_yticks(range(len(names))); ax.set_yticklabels(names, fontsize=9)
-ax.set_xlabel("cambio en el soporte fenotipico al retirar el termino")
-ax.set_title("Robustez · leave-one-out sobre el gen lider")
+cols = [fl.ALIVE if v > 0.05 else (fl.FLOW if v > -0.05 else fl.OPEN) for v in vals]
+ax.barh(range(len(names)), vals, color=cols, height=0.6)
+ax.axvline(0, color=fl.INK, lw=0.9)
+for i, v in enumerate(vals):
+    ax.text(v + (0.012 if v >= 0 else -0.012), i, f"{v:+.2f}", va="center",
+            ha="left" if v >= 0 else "right", fontsize=8, color=fl.INK)
+ax.set_yticks(range(len(names))); ax.set_yticklabels(names)
+ax.set_xlim(min(vals) - 0.12, max(vals) + 0.12); ax.grid(axis="x")
+ax.tick_params(axis="y", length=0)
+ax.set_xlabel("support lost when the term is removed (positive = the term supports BUB1B)")
+fl.title(ax, f"Leave-one-out on the leading gene, {G}")
 
-fl.done(fig, "Figura de robustez · contribucion de cada termino", "EXP-006", "DERIVED", "DATA",
-        "solo el rabdomiosarcoma sostiene con fuerza el emparejamiento. El resto contribuye "
-        "poco o negativamente en el corpus HPO actual.",
-        "que un LOO negativo signifique que MVA no explica ese rasgo. Con Best Match Average, "
-        "retirar un termino que puntua por debajo de la media SUBE el promedio. EXP-019 lo "
-        "resolvio comprobando pertenencia al modelo anotado, no con estas contribuciones: "
-        "fallo de medro esta cubierto por la literatura al 93,5 % aunque HPO no lo anote.",
+fl.done(fig, "Robustness figure · contribution of each phenotype term", "EXP-006", "DERIVED", "DATA",
+        "only rhabdomyosarcoma carries the match strongly. The other terms contribute little or "
+        "negatively in the current HPO corpus.",
+        "that a negative value means MVA does not explain that trait. Under Best Match Average, "
+        "removing a term that scores below the mean RAISES the average. EXP-019 settled the "
+        "question by checking membership in the annotated disease model, not with these "
+        "contributions: failure to thrive is covered in 93.5 % of the literature even though HPO "
+        "does not annotate it.",
         prov="work/gw/mode_b_results_v4.pkl · docs/PHENOTYPE_RESIDUAL_AUDIT.md")'''),
 
-("md", """## Explicaciones alternativas y evidencia contradictoria
+("md", """## Alternative explanations and contradicting evidence
 
-| Alternativa | Estado |
+| Alternative | Status |
 |---|---|
-| `BUB1B` sube por el fenotipo que le dimos | **Descartada**: en `A0`, sin fenotipo ni ClinVar, sigue siendo el candidato creíble de mayor puntuación |
-| `BUB1B` sube por ClinVar | **Descartada**: `A0` retira los puntos de ClinVar |
-| Los tres genes que lo superan en `A0` son competidores reales | **Descartada**: polimorfismos comunes, hasta 313 150 homocigotos en gnomAD |
-| `FANCD2`, del top-10 externo | **NEGATIVE**: alelos al ~47 % y los tres heterocigotos |
-| Hay un competidor que ninguno de los dos motores ve | **Abierta**: ambos comparten el VCF y no ven SV |
+| `BUB1B` rises because of the phenotype we supplied | **Rejected**: in `A0`, without phenotype or ClinVar, it is still the highest-scoring credible candidate |
+| `BUB1B` rises because of ClinVar | **Rejected**: `A0` removes the ClinVar points |
+| The three genes above it in `A0` are real competitors | **Rejected**: common polymorphisms, with up to 313 150 homozygotes in gnomAD |
+| `FANCD2`, from the external top 10 | **Negative**: alleles at ~47 % and all three heterozygous |
+| A competitor that neither engine sees | **Open**: both share the VCF and neither sees structural variants |
 
-## Decisión
+## Decision
 
 | | |
 |---|---|
-| **Estado de EXP-006** | **SURVIVES** |
-| Predicción #4 | **Acertada**, pedía top-20; queda #1 en 14 de 15 análisis |
-| `A0` congelado | **#4**, y así se reporta |
-| `A0-FREQFIX` | **#1**, etiquetado como sensibilidad post-hoc no independiente de Exomiser |
+| **EXP-006 status** | **Survives** |
+| Prediction #4 | **Correct**: it asked for the top 20; `BUB1B` is #1 in 14 of 15 analyses |
+| Frozen `A0` | **#4**, and reported as such |
+| `A0-FREQFIX` | **#1**, labelled as a post-hoc sensitivity analysis not independent of Exomiser |
 
-### Qué NO establece
+### What it does not establish
 
-No resuelve la fase · no evalúa *de novo* sin padres · no cubre variantes estructurales
-(EXP-012, bloqueado) · no cubre reguladoras ni intrónicas profundas · **no clasifica nada como
-patogénico**.
+It does not resolve phase · it does not assess *de novo* status without parents · on its own it
+does not cover structural variants (addressed later in GO 2B) · it does not cover regulatory or
+deep-intronic variants · **it classifies nothing as pathogenic**.
 
-### Falsificador
+### Falsifier
 
-Que un gen con perfil de evidencia limpio (variantes raras, frecuencia asignable, modelo de
-herencia compatible) supere a `BUB1B` en el `A0` congelado. Ocurrió, se investigó, y los tres
-candidatos resultaron ser polimorfismos comunes.
+A gene with a clean evidence profile (rare variants, assignable frequency, a compatible
+inheritance model) outranking `BUB1B` in the frozen `A0`. It happened, it was investigated, and
+the three candidates turned out to be common polymorphisms.
 
-### Siguiente experimento
+### Next
 
-`02_BUB1B_ALLELE_CURATION`: qué dicen los dos alelos por separado, y por qué la fase decide."""),
+`02_BUB1B_ALLELE_CURATION`: what each allele supports on its own, and why phase decides."""),
 
-("code", '''# Se imprime SOLO el veredicto, nunca el cuerpo del informe.
+("code", '''# Print ONLY the verdict, never the body of the report.
 #
-# Volcar r.stdout aqui era un canal de fuga creado por el propio control: el
-# escaner CITA el texto que encuentra, asi que al imprimirlo dentro de un
-# notebook versionado se copiaba el hallazgo en un fichero versionado. Lo
-# destapo el escaner al detectar sus propias citas dentro de este notebook.
+# Dumping r.stdout here was a leak channel created by the control itself: the scanner QUOTES
+# the text it finds, so printing it inside a versioned notebook copied the finding into a
+# versioned file. The scanner found its own quotations inside this notebook.
 r = subprocess.run([sys.executable, "src/sanitize_scan.py"], capture_output=True, text=True,
                    env={**os.environ, "PYTHONIOENCODING": "utf-8"})
 out = r.stdout
@@ -603,10 +571,9 @@ for line in out.splitlines():
     t = line.strip()
     if t.endswith("COINCIDENCIAS:"):
         n = int(t.split()[0])
-print(f"  escaner de saneado sobre lo versionado: "
-      f"{'LIMPIO' if 'LIMPIO' in out else str(n) + ' coincidencia(s)'}")
-print("  el detalle NO se imprime aqui a proposito: se lee con "
-      "`python src/sanitize_scan.py`")'''),
+print(f"  sanitisation scan of versioned files: "
+      f"{'CLEAN' if 'LIMPIO' in out else str(n) + ' match(es)'}")
+print("  the detail is deliberately not printed here: run `python src/sanitize_scan.py`")'''),
 ]
 
 if __name__ == "__main__":

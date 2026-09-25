@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/05_RESIDUAL_PHENOTYPE.ipynb."""
+"""Builds notebooks/05_RESIDUAL_PHENOTYPE.ipynb."""
 from __future__ import annotations
 import sys
 sys.path.insert(0, ".")
@@ -9,71 +9,71 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/05_RESIDUAL_PHENOTYPE.ipynb"
 
 CELLS = [
-("md", """# 05 · Fenotipo residual, ¿hay un segundo diagnóstico?
+("md", """# 05 · Residual phenotype: is there a second diagnosis?
 
-> **Lugar en el argumento:** Track 1, comprobación clínica. Separa un rasgo realmente residual
-> de un hueco de anotación antes de proponer un segundo diagnóstico.
->
-> **Salida principal:** matriz término × enfermedad y barrido del panel renal. No demuestra
-> que un rasgo sin respaldo publicado sea incompatible con MVA.
+**Place in the argument.** Track 1, clinical check. It separates a genuinely residual trait
+from a gap in annotation before any second diagnosis is proposed.
 
-## Pregunta biológica
+**Main output.** A term × disease matrix and a sweep of the nephrocalcinosis gene panel. It
+does not show that a trait without published support is incompatible with MVA.
 
-**¿Qué rasgos del paciente NO explica MVA, y alguno exige un segundo diagnóstico?**
+## The biological question
 
-Importa porque la nefrocalcinosis está **presente desde el nacimiento**. La del prematuro es
-adquirida y postnatal (se desarrolla en semanas de furosemida, nutrición parenteral y carga de
-calcio). Si está al nacer es antenatal, y **el prior se invierte**.
+**Which of the patient's traits does MVA NOT explain, and does any of them demand a second
+diagnosis?**
 
-## La trampa que este notebook existe para evitar
+It matters because the nephrocalcinosis is **present from birth**. Nephrocalcinosis of
+prematurity is acquired and postnatal (it develops over weeks of furosemide, parenteral
+nutrition and calcium load). If it is present at birth it is antenatal, and **the prior flips**.
 
-El modo B midió que varios rasgos aportan poco soporte semántico al modelo MVA. La lectura
-tentadora sería: *«MVA no los explica, luego hay un segundo diagnóstico»*.
+## The trap this notebook exists to avoid
 
-**Sería convertir la incompletitud de una base de datos en biología.** El retraso de
-crecimiento aparece en el **93,5 %** de los casos de MVA1: no es un residual misterioso."""),
+The ranking measured that several traits add little semantic support to the MVA model. The
+tempting reading would be: *"MVA does not explain them, therefore there is a second diagnosis"*.
+
+**That would turn the incompleteness of a database into biology.** Growth retardation appears in
+**93.5 %** of MVA1 cases: it is not a mysterious residual."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Interpretacion", "Sesgos que no se corrigen")'),
+("code", 'fl.labels("Interpretation", "Biases that are not corrected")'),
 
-("md", """## Método · la pregunta correcta no es el score, es la pertenencia
+("md", """## Method · the right question is membership, not the score
 
-La contribución *leave-one-out* **no** es el soporte absoluto de un término: con Best Match
-Average, retirar un término que puntúa por debajo de la media **sube** el promedio. Así que la
-medida correcta es **si el término está anotado en el modelo de enfermedad**."""),
+The *leave-one-out* contribution is **not** a term's absolute support: under Best Match Average,
+removing a term that scores below the mean **raises** the average. So the right measure is
+**whether the term is annotated in the disease model**."""),
 
 ("code", '''PREP = pickle.load(io.open("work/hpo/prepared.pkl", "rb"))
 mva = [m for m in PREP["models"] if m.disease_id == "OMIM:257300"]
 terms = mva[0].terms if mva else set()
-print(f"  modelo OMIM:257300 (MVA1) · {mva[0].n_raw} terminos anotados antes de propagar")
+print(f"  model OMIM:257300 (MVA1) · {mva[0].n_raw} terms annotated before propagation")
 
 PROBAND = [
- ("HP:0002859", "Rabdomiosarcoma",           "38,7 % (malignidad)"),
- ("HP:0004322", "Talla baja",                "93,5 % (crecimiento)"),
- ("HP:0001518", "Pequeno para edad gest.",   "93,5 % (crecimiento)"),
- ("HP:0001508", "Fallo de medro",            "93,5 % (crecimiento)"),
- ("HP:0001622", "Parto prematuro",           "no cuantificado"),
- ("HP:0003202", "Atrofia muscular",          "no cuantificado"),
- ("HP:0000121", "Nefrocalcinosis",           "NO, la serie reporta disfuncion renal generica 12,9 %"),
+ ("HP:0002859", "Rhabdomyosarcoma",           "38.7 % (malignancy)"),
+ ("HP:0004322", "Short stature",              "93.5 % (growth)"),
+ ("HP:0001518", "Small for gestational age",  "93.5 % (growth)"),
+ ("HP:0001508", "Failure to thrive",          "93.5 % (growth)"),
+ ("HP:0001622", "Premature birth",            "not quantified"),
+ ("HP:0003202", "Muscle atrophy",             "not quantified"),
+ ("HP:0000121", "Nephrocalcinosis",           "NO; series report generic renal dysfunction, 12.9 %"),
 ]
 print()
-print(f"  {'rasgo':<26}{'anotado en HPO':>16}{'literatura MVA1':>44}")
+print(f"  {'trait':<28}{'annotated in HPO':>18}{'MVA1 literature':>46}")
 for hid, lab, lit in PROBAND:
-    print(f"  {lab:<26}{('SI' if hid in terms else 'NO'):>16}{lit:>44}")'''),
+    print(f"  {lab:<28}{('YES' if hid in terms else 'NO'):>18}{lit:>46}")'''),
 
-("md", """### Figura principal 1 · matriz término × modelo de enfermedad
+("md", """### Main figure 1 · HPO term × disease model matrix
 
-La barra de «anotado sí / no» responde en binario a una pregunta que no lo es. La medida
-correcta es la que usa el propio motor: **Resnik**, el contenido de información del ancestro
-común más informativo entre el término del probando y el término mejor emparejado del modelo,
-en bits.
+A yes/no bar answers in binary a question that is not binary. The right measure is the one the
+engine itself uses: **Resnik** similarity, the information content of the most informative common
+ancestor between the proband's term and the best-matching term of the model, in bits.
 
-> **Por qué no se clasifica por «ancestro».** Los modelos del corpus llevan sus términos
-> **propagados hacia la raíz**. Con esa representación, «el modelo anota un ancestro» es cierto
-> siempre (la raíz está en todos), así que esa categoría no distingue nada. Se probó, salió
-> uniforme, y por eso está descartada. Lo que sí distingue: si el término **está cubierto**
-> (anotado, o anotado en algo más específico) y **cuántos bits** vale el mejor emparejamiento."""),
+> **Why terms are not classified as "ancestor annotated".** The corpus models carry their terms
+> **propagated to the root**. In that representation "the model annotates an ancestor" is always
+> true (the root is in all of them), so the category distinguishes nothing. It was tried, came out
+> uniform, and was dropped. What does distinguish: whether the term **is covered** (annotated, or
+> annotated with something more specific) and **how many bits** the best match is worth."""),
 
 ("code", '''from src.phenotype.semantic import ancestors
 
@@ -83,8 +83,8 @@ cache = {}
 PT = [p[0] for p in PROBAND]
 
 def bestmatch(t, m):
-    """Resnik: IC del ancestro comun mas informativo, sobre el mejor termino
-    del modelo. Es exactamente el ingrediente del BMA que usa el ranking."""
+    """Resnik: IC of the most informative common ancestor, over the model's best term.
+    It is exactly the BMA ingredient the ranking uses."""
     at = ancestors(t, PAR, cache)
     best = 0.0
     for mt in m.terms:
@@ -100,8 +100,8 @@ byid = {}
 for m in MODELS:
     byid.setdefault(m.disease_id, m)
 
-# Columnas SIN eleccion manual: los tres modelos de MVA, y despues los que mas
-# se parecen al perfil COMPLETO del probando por BMA.
+# Columns are NOT chosen by hand: the three MVA models, then the models most similar to the
+# proband's COMPLETE profile by BMA.
 from src.phenotype.semantic import resnik_bma
 scored = sorted(((resnik_bma(PT, m.terms, IC, PAR, cache), m) for m in byid.values()),
                 key=lambda x: -x[0])
@@ -114,23 +114,15 @@ for sc, m in scored:
         break
     if m.disease_id not in seen_id:
         COLS.append(m); seen_id.add(m.disease_id)
-SC = {m.disease_id: resnik_bma(PT, m.terms, IC, PAR, cache) for m in COLS}
 
 BM = np.array([[bestmatch(t, m) for m in COLS] for t in PT])
 COV = np.array([[t in m.terms for m in COLS] for t in PT])
 ICT = {t: IC.get(t, 0.0) for t in PT}
 
-print(f"  modelos de enfermedad distintos en el corpus : {len(byid):,}")
-print(f"  columnas: {len(COLS)}  ({len(MVA_IDS)} de MVA + "
-      f"{len(COLS)-len(MVA_IDS)} por similitud al perfil completo)")
-print(f"  IC maximo del corpus: {max(IC.values()):.2f} bits")
-print()
-print(f"  {'rasgo':<26}{'IC propio':>10}   " +
-      "".join(f"{m.disease_id.split(':')[1][:6]:>8}" for m in COLS))
-for i, (hid, lab, _l) in enumerate(PROBAND):
-    fila = "".join(f"{BM[i][j]:>7.1f}{'*' if COV[i][j] else ' '}" for j in range(len(COLS)))
-    print(f"  {lab:<26}{ICT[hid]:>10.2f}   {fila}")
-print("  (* = el termino esta CUBIERTO por el modelo: anotado, o anotado en algo mas especifico)")'''),
+print(f"  distinct disease models in the corpus : {len(byid):,}")
+print(f"  columns: {len(COLS)}  ({len(MVA_IDS)} MVA + "
+      f"{len(COLS)-len(MVA_IDS)} by similarity to the complete profile)")
+print(f"  maximum IC in the corpus: {max(IC.values()):.2f} bits")'''),
 
 ("code", '''from src.figures import fig05_hpo as FH
 
@@ -141,71 +133,57 @@ _mv = [j for j, c in enumerate(MTX["cols"]) if c["id"] in FH.MVA_IDS]
 _cov1 = [MTX["term_labels"][_pt[i]] for i in range(len(_pt)) if _cov[i, _mv[0]]]
 _unc1 = [MTX["term_labels"][_pt[i]] for i in range(len(_pt)) if not _cov[i, _mv[0]]]
 _inef = MTX["nephro_index"]
-fl.pub(fig, "Figura principal 1 · matriz termino HPO x modelo de enfermedad",
+fl.pub(fig, "Main figure 1 · HPO term x disease model matrix",
        "EXP-018 · EXP-019", "EXTERNAL+DERIVED", "DATA",
-       f"donde encaja y donde no encaja cada rasgo, en bits y no en si/no, contra los "
-       f"{len(MTX['cols'])} modelos evaluados con su nombre de enfermedad real. MVA1 cubre "
-       f"{len(_cov1)} de los {len(_pt)} rasgos y deja {len(_unc1)} sin cubrir. La "
-       f"nefrocalcinosis no la cubre ninguno de los tres modelos de MVA. Su mejor "
-       f"emparejamiento {_bm[_inef, _mv[0]]:.1f} bits sobre un IC propio de "
-       f"{MTX['ic_terms'][_pt[_inef]]:.1f}, mientras que los modelos de Bartter si. El anillo "
-       f"discontinuo marca el soporte de LITERATURA de MVA1, que se mantiene separado del "
-       f"color y NUNCA se convierte en un score.",
-       "que haga falta un segundo diagnostico. El IC lo fija el corpus: una enfermedad poco "
-       "anotada puntua bajo aunque el rasgo ocurra en ella. Las columnas son los vecinos del "
-       "perfil COMPLETO, no una busqueda de modelos renales.",
-       source="work/hpo/prepared.pkl + work/hpo/phenotype.hpoa (nombres de enfermedad)",
+       f"where each trait fits and where it does not, in bits rather than yes/no, against the "
+       f"{len(MTX['cols'])} models evaluated, with their real disease names. MVA1 covers "
+       f"{len(_cov1)} of the {len(_pt)} traits and leaves {len(_unc1)} uncovered. None of the "
+       f"three MVA models covers nephrocalcinosis: its best match is {_bm[_inef, _mv[0]]:.1f} bits "
+       f"against its own IC of {MTX['ic_terms'][_pt[_inef]]:.1f}, whereas the Bartter models do "
+       f"cover it. The dashed ring marks MVA1 LITERATURE support, which is kept separate from the "
+       f"colour and is NEVER turned into a score.",
+       "that a second diagnosis is needed. IC is set by the corpus: a sparsely annotated disease "
+       "scores low even when the trait occurs in it. The columns are neighbours of the COMPLETE "
+       "profile, not a search for renal models.",
+       source="work/hpo/prepared.pkl + work/hpo/phenotype.hpoa (disease names)",
        lib="matplotlib", slug="fig05_hpo_disease_matrix")'''),
 
-("md", """### Figura principal 2 · las dos comprobaciones, cruzadas
+("md", """### The two checks, crossed
 
-Un rasgo solo es **residual de verdad** si falla las **dos**: no anotado en el modelo HPO **y**
-no respaldado por la literatura de MVA1."""),
+A trait is **truly residual** only if it fails **both** checks: not annotated in the HPO model
+**and** not supported by the MVA1 literature
+([Neurol Sci 2022 series](https://doi.org/10.1007/s10072-022-06247-w))."""),
 
-("code", '''LITOK = {"HP:0002859": 1, "HP:0004322": 1, "HP:0001518": 1, "HP:0001508": 1,
-         "HP:0001622": 0.5, "HP:0003202": 0.5, "HP:0000121": 0}
-fig, ax = plt.subplots(figsize=(9.6, 4.2))
-labels = [p[1] for p in PROBAND][::-1]
-ann = [1 if p[0] in terms else 0 for p in PROBAND][::-1]
-lit = [LITOK[p[0]] for p in PROBAND][::-1]
-y = np.arange(len(labels))
-status_color = lambda v: fl.ALIVE if v == 1 else (fl.OPEN if v == 0.5 else fl.DEAD)
-ax.scatter(ann, y - 0.17, marker="o", s=72, color=[status_color(v) for v in ann],
-           edgecolor="white", linewidth=0.8, zorder=3)
-ax.scatter(lit, y + 0.17, marker="s", s=72, color=[status_color(v) for v in lit],
-           edgecolor="white", linewidth=0.8, zorder=3)
-ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=9.4)
-ax.set_xticks([0, 0.5, 1]); ax.set_xticklabels(["no", "sin dato", "si"])
-ax.set_xlim(0, 1.15)
-ax.scatter([], [], marker="o", s=60, color=fl.SOFT, label="modelo HPO")
-ax.scatter([], [], marker="s", s=60, color=fl.SOFT, label="literatura MVA1")
-ax.legend(fontsize=8.2, frameon=False, loc="center left", bbox_to_anchor=(1.01, 0.5))
-ax.set_title("Residual solo si falla las DOS comprobaciones")
-ax.axhspan(-0.42, 0.42, color=fl.DEAD, alpha=0.06, zorder=0)
-ax.annotate("unico residual\\nen los dos sentidos", xy=(0.02, 0), xytext=(0.38, 0.62),
-            fontsize=8.6, color=fl.DEAD, fontweight="bold",
-            arrowprops=dict(arrowstyle="->", color=fl.DEAD, lw=1.3))
+("code", '''from IPython.display import Markdown, display
+LIT = {"HP:0002859": "yes · 38.7 %", "HP:0004322": "yes · 93.5 %", "HP:0001518": "yes · 93.5 %",
+       "HP:0001508": "yes · 93.5 %", "HP:0001622": "no data", "HP:0003202": "no data",
+       "HP:0000121": "**no**"}
+VERD = {"HP:0000121": "**residual on both checks**"}
+md = ["| Trait | In the MVA1 HPO model | In the MVA1 literature | Reading |", "|---|---|---|---|"]
+for hid, lab, _l in PROBAND:
+    ann = "yes" if hid in terms else "**no**"
+    lit = LIT[hid]
+    if hid in VERD:
+        r = VERD[hid]
+    elif hid in terms:
+        r = "explained"
+    elif lit.startswith("yes"):
+        r = "annotation gap"
+    else:
+        r = "undecided: no data"
+    md.append(f"| {lab} | {ann} | {lit} | {r} |")
+display(Markdown("\\n".join(md)))'''),
 
-fl.done(fig, "Figura principal 2 · anotacion HPO frente a literatura", "EXP-018 · EXP-019",
-        "EXTERNAL", "SYNTHESIS",
-        "de los cuatro rasgos con bajo soporte semantico, tres se explican por hueco de "
-        "anotacion o falta de dato. Fallo de medro NO esta anotado pero la literatura lo "
-        "cubre al 93,5 %. Solo la nefrocalcinosis carece de anotacion Y de respaldo.",
-        "que la nefrocalcinosis exija un segundo diagnostico. Que MVA no la describa no "
-        "implica que no pueda causarla: las series son pequenas y con sesgo de publicacion.",
-        prov="corpus HPO local + Neurol Sci 2022, DOI 10.1007/s10072-022-06247-w")'''),
+("md", """> **Consequence for the project:** the mixed-diagnosis argument **narrows from four traits to
+> one**. Weaker in number and much stronger in quality, because that one survives both checks.
 
-("md", """> **Consecuencia para el proyecto:** el argumento de diagnóstico mixto **se estrecha de
-> cuatro rasgos a uno**. Más débil en número y mucho más fuerte en calidad, porque ese sí
-> resiste las dos comprobaciones."""),
+## Primary result 2 · the renal panel sweep
 
-("md", """## Resultado primario 3 · el barrido del panel renal
+With the allele join **already fixed**, which was the real reason to repeat it: the fix recovered
+420 positions and could have uncovered a renal allele that was being lost before.
 
-Con el cruce de alelos **ya corregido**, que era la razón real para repetirlo: la corrección
-recuperó 420 posiciones y podía haber destapado un alelo renal que antes se perdía.
-
-Y con la comprobación explícita de `MAGED2` que el propio panel exige: es X-ligado recesivo y
-en un varón basta **una** variante hemicigota, un filtro «bialélico» la perdería."""),
+It includes the explicit `MAGED2` check the panel itself requires: it is X-linked recessive, and
+in a male **one** hemizygous variant is enough, so a "biallelic" filter would miss it."""),
 
 ("code", '''from src.paths import patient_vcf
 from src.prioritization.genome_wide import load
@@ -222,64 +200,68 @@ for v in hits:
 freqs = sorted([v.max_af for v in uniq if v.max_af is not None])
 rare = [v for v in uniq if v.max_af is None or v.max_af < 0.005]
 maged2 = [v for v in rows if v.gene == "MAGED2"]
-print(f"  genes del panel: {len(panel)}   alelos HIGH/MODERATE: {len(uniq)}")
-print(f"  alelo mas raro del panel: {min(freqs)*100:.1f} %")
-print(f"  raros al umbral del propio panel (AF < 0,005): {len(rare)}")
-print(f"  variantes de MAGED2, cualquier impacto: {len(maged2)}")'''),
+print(f"  panel genes: {len(panel)}   HIGH/MODERATE alleles: {len(uniq)}")
+print(f"  rarest allele in the panel: {min(freqs)*100:.1f} %")
+print(f"  rare at the panel's own threshold (AF < 0.005): {len(rare)}")
+print(f"  MAGED2 variants, any impact: {len(maged2)}")'''),
 
-("code", '''fig, ax = plt.subplots(figsize=(9.2, 3.6))
-vals = sorted([v.max_af * 100 for v in uniq if v.max_af is not None])
-ax.hist(vals, bins=22, color=fl.FLOW, alpha=0.8)
-ax.axvline(0.5, color=fl.DEAD, lw=1.8)
-ax.text(0.9, ax.get_ylim()[1] * 0.78,
-        "umbral del panel: 0,5 %\\nNINGUN alelo cae por debajo",
-        fontsize=8.6, color=fl.DEAD)
-ax.axvline(min(vals), color=fl.OPEN, ls="--", lw=1.3)
-ax.text(min(vals) + 0.6, ax.get_ylim()[1] * 0.45, f"el mas raro: {min(vals):.1f} %",
-        fontsize=8.2, color=fl.OPEN)
-ax.set_xlabel("frecuencia poblacional del alelo (%)")
-ax.set_ylabel("alelos del panel")
-ax.set_title(f"Panel renal · {len(panel)} genes, {len(uniq)} alelos, 0 raros")
+("code", '''fig, ax = plt.subplots(figsize=(9.0, 3.4))
+vals = np.array(sorted([v.max_af * 100 for v in uniq if v.max_af is not None]))
+bins = np.logspace(np.log10(0.1), np.log10(100), 25)
+ax.axvspan(0.1, 0.5, color=fl.DEAD, alpha=0.07, lw=0)
+ax.hist(vals, bins=bins, color=fl.FLOW, lw=0)
+ax.axvline(0.5, color=fl.DEAD, lw=1.6)
+ax.text(0.47, ax.get_ylim()[1] * 0.95, "panel threshold 0.5 %\\nno allele below it",
+        ha="right", va="top", fontsize=8.2, color=fl.DEAD)
+ax.axvline(vals.min(), color=fl.OPEN, ls="--", lw=1.2)
+ax.text(vals.min() * 1.08, ax.get_ylim()[1] * 0.6, f"rarest: {vals.min():.1f} %", fontsize=8,
+        color=fl.OPEN)
+ax.set_xscale("log"); ax.set_xlim(0.1, 100)
+ax.set_xticks([0.1, 0.5, 1, 5, 10, 50, 100]); ax.set_xticklabels(["0.1", "0.5", "1", "5", "10", "50", "100"])
+ax.set_xlabel("population allele frequency (%, log scale)")
+ax.set_ylabel("panel alleles"); ax.grid(axis="y")
+fl.title(ax, f"Nephrocalcinosis panel: {len(panel)} genes, {len(uniq)} coding alleles, none rare")
 
-fl.done(fig, "Figura principal 3 · el panel renal, en frecuencias", "EXP-017", "MEASURED", "DATA",
-        f"los {len(uniq)} alelos HIGH/MODERATE del panel son polimorfismos comunes. El mas "
-        f"raro esta al {min(vals):.1f} %, diez veces por encima del umbral del propio panel. "
-        "Las dos start_lost de alto impacto que llamaron la atencion estan al 51 % y 81 %. "
-        f"Y MAGED2 no aporta NINGUNA variante ({len(maged2)}).",
-        "que se haya descartado una tubulopatia. Es un barrido CODIFICANTE: no ve variantes "
-        "reguladoras, intronicas profundas ni estructurales, y esas dependen de EXP-012, "
-        "bloqueado.",
-        prov="config/panels/nephrocalcinosis.txt + cruce de alelos corregido")'''),
+fl.done(fig, "Main figure 2 · the renal panel, by allele frequency", "EXP-017", "MEASURED", "DATA",
+        f"all {len(uniq)} HIGH/MODERATE alleles in the panel are common polymorphisms. The rarest "
+        f"is at {vals.min():.1f} %, {vals.min()/0.5:.0f} times the panel's own 0.5 % threshold. The two high-impact "
+        f"start-lost calls that drew attention are at 51 % and 81 %. And MAGED2 contributes NO "
+        f"variant ({len(maged2)}).",
+        "that a tubulopathy has been ruled out. It is a CODING sweep: it does not see regulatory, "
+        "deep-intronic or structural variants in these genes, which were not adjudicated here.",
+        prov="config/panels/nephrocalcinosis.txt + corrected allele join")'''),
 
-("md", """## Robustez · la pregunta que decide no es computacional
+("md", """## Robustness · the question that decides is not computational
 
-`aBS` produce **poli**hidramnios severo desde la semana 18–22. La MVA se asocia a
-**oligo**hidramnios. **Son opuestos**: una línea de la historia obstétrica decide."""),
+Antenatal Bartter syndrome produces severe **poly**hydramnios from weeks 18 to 22. MVA is
+associated with **oligo**hydramnios. **They are opposites**: one line of the obstetric history
+decides.
 
-("md", """## Decisión
+## Decision
 
-| Rama | Estado |
+| Branch | Status |
 |---|---|
-| Barrido codificante del panel renal | **NEGATIVE** |
-| Crecimiento y fallo de medro como residual | **NEGATIVE**, hueco de anotación |
-| Parto prematuro | **PARKED**, contextual, sin cuantificar |
-| Atrofia muscular | **PARKED**, sin dato para decidir |
-| **Nefrocalcinosis** | **UNRESOLVED · residual prioritario** |
+| Coding sweep of the renal panel | **Negative** |
+| Growth and failure to thrive as residual | **Negative**: an annotation gap |
+| Premature birth | **Parked**: contextual, not quantified |
+| Muscle atrophy | **Parked**: no data to decide |
+| **Nephrocalcinosis** | **Unresolved · priority residual** |
 
-### Qué NO demuestra
+### What it does not show
 
-No descarta una tubulopatía: el barrido es **codificante**. Y no demuestra que la
-nefrocalcinosis sea un segundo diagnóstico, solo que MVA no la describe.
+It does not rule out a tubulopathy: the sweep is **coding**. And it does not show that the
+nephrocalcinosis is a second diagnosis, only that MVA series do not describe it.
 
-### Falsificador, y es gratis
+### Falsifier, and it is free
 
-Ya está en la historia clínica: alcalosis metabólica hipopotasémica e hipoclorémica, renina y
-aldosterona elevadas, cociente calcio/creatinina urinario alto. **Si son normales, la hipótesis
-muere sin gastar un core-hora.**
+It is already in the clinical record: hypokalaemic, hypochloraemic metabolic alkalosis, raised
+renin and aldosterone, a high urinary calcium/creatinine ratio. **If they are normal, the
+hypothesis dies without spending a core-hour.**
 
-### Siguiente movimiento: el de mayor valor de todo el proyecto
+### Next move: among the highest-value questions in the project
 
-**¿Hubo polihidramnios u oligohidramnios en el embarazo?** Es un email."""),
+**Was there polyhydramnios or oligohydramnios in the pregnancy?** It is a question to the
+clinical team, not a computation."""),
 ]
 
 if __name__ == "__main__":

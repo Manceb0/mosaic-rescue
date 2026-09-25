@@ -1,112 +1,100 @@
-# Los notebooks: la investigación, ejecutable y visible
+# The notebooks: the research, executable and visible
 
-> **Ocho notebooks con 30 figuras en sus salidas ejecutadas, 25 de ellas científicas.** No son un
-> registro de que algo ocurrió: son la investigación, y se leen de arriba abajo sin salir de
-> ellos.
+> **Eight notebooks with 27 figures in their executed outputs, 26 of them scientific.** They are
+> not a record that something happened: they are the research, and they read from top to bottom
+> without leaving them. GitHub renders them directly.
 >
-> Las figuras de publicación viven en `figures/pub/` (SVG vectorial + PNG 300 dpi) y se
-> regeneran con `python src/figures/render_all.py`. El objeto científico principal de cada
-> notebook, con su origen y su librería, está en
-> [`VISUAL_SCIENCE_PASS.md`](VISUAL_SCIENCE_PASS.md).
+> Publication figures live in `figures/pub/` (vector SVG + 300 dpi PNG) and are regenerated with
+> `python src/figures/render_all.py`. Every notebook follows the same palette and layout as those
+> figures, so an inline figure and an embedded publication figure read as one set.
 >
-> El README anterior describía una arquitectura de quince notebooks que presuponía RNA-seq,
-> single-cell, series longitudinales y cariotipo celular. **Ninguno de esos datos existe.** Se
-> conserva en `docs/history/notebooks_README_SUPERSEDED.md`.
+> An earlier README described a fifteen-notebook architecture that assumed RNA-seq,
+> single-cell data, longitudinal series and cellular karyotypes. **None of those data exist.**
+> It is kept in `docs/history/notebooks_README_SUPERSEDED.md`.
 
-## La regla que se aplica en todos
+## Reading order
 
-La integración de septiembre añade **10 imágenes adjuntas autocontenidas**: nueve
-paneles narrativos/de síntesis y el gráfico cromosómico RD/BAF congelado de GO 2B.
-Están dentro del archivo, visibles sin acceder al disco del autor. No se contabilizan
-como nuevas salidas de ejecución. Se regeneran con `python src/nb/story_integration.py`
-y también se incluyen al reconstruir los notebooks. Las celdas originales conservan
-su fecha y alcance; la introducción visual distingue el estado posterior.
-
-**Generar una figura y escribirla en `figures/` NO basta.** Aparece INLINE, en la misma celda o
-la siguiente, con un caption que declara cuatro cosas:
-
-```
-experimento · clase de evidencia · qué enseña · QUÉ NO DEMUESTRA
-```
-
-La última es la que más cuesta escribir y la que más vale.
-
-**Clases de evidencia:** `MEASURED` (observación directa sobre el caso) · `DERIVED` (calculado
-por nosotros) · `EXTERNAL` (base de datos o literatura) · `PREDICTED` (salida de un modelo) ·
-`SIMULATED` (modelo sin datos del paciente).
-
-## Estructura obligatoria
-
-Pregunta biológica, hipótesis y preregistro, entradas con su procedencia, QC, método y
-resultado primario. Después: visualización, robustez, explicaciones alternativas,
-evidencia contradictoria, el límite de lo que se demuestra, la decisión y el siguiente
-experimento.
-
-### El mínimo, y por qué cambió
-
-**Antes:** «un mínimo de tres figuras». Ese requisito produjo **relleno**, cajas, flechas y
-estados dibujados con Matplotlib para llegar al número.
-
-**Ahora:** cada notebook mayor necesita **al menos una figura CIENTÍFICA**, y toda figura
-declara su clase:
-
-| Clase | Qué es | ¿Puede ser la principal? |
-|---|---|---|
-| `DATA` | objeto o distribución calculada desde datos del caso | **Sí** |
-| `MODEL_OUTPUT` | salida de un modelo (AlphaFold, AlphaGenome, Exomiser) | **Sí** |
-| `SIMULATION` | distribución generada por simulación, sin datos del paciente | **Sí** |
-| `CURATED_EVIDENCE` | tabla de evidencia versionada, con fuente por celda | **Sí** |
-| `SYNTHESIS` | integra resultados ya obtenidos; no expone el dato crudo | No |
-| `NARRATIVE` | explica una conclusión; no contiene dato | No |
-
-`SYNTHESIS` y `NARRATIVE` siguen siendo legítimas y útiles. Lo que ya no pueden es **contar
-para el mínimo**. La clase va en el pie **y estampada en la propia imagen**, para que la
-etiqueta viaje con la figura si alguien la recorta y la pega en una diapositiva.
-
-La prueba que decide: *si le quito el título, el pie y la conclusión, ¿un experto reconoce qué
-objeto científico está mirando?* Si ve un transcrito, una distribución, una estructura, un
-alineamiento, BAF, un heatmap o cobertura, la respuesta es sí. Si ve «SURVIVES», cajas verdes y flechas, es que no.
-
-## Los ocho
-
-| # | Notebook | Pregunta | Objeto científico principal | fig · cient. |
+| # | Notebook | Question | Main scientific object | fig · sci. |
 |---|---|---|---|---|
-| **00** | `DATA_REALITY` | ¿Qué se puede y qué no responder con los datos que hay? | QC de FASTQ por ciclo, calculado sobre L001 | 1 · 1 |
-| **01** | `TRACK1_GENOME_WIDE` | ¿Qué gen explica el caso cuando compite todo el genoma? | Manhattan de priorización sobre `A0` congelado | **7 · 7** |
-| **02** | `BUB1B_ALLELE_CURATION` | ¿Qué sostiene cada alelo, y qué haría falta para que el par sea causal? | Navegador del gen: exones, dominios y 1 497 missense de ClinVar | 4 · 3 |
-| **03** | `BUBR1_MECHANISM` | El missense no se mueve por clasificación: ¿se mueve por mecanismo? | Bolsillo de AlphaFold con distancias reales + logo de conservación | 3 · 3 |
-| **04** | `HIDDEN_SECOND_ALLELE` | ¿Hay un segundo alelo que el pipeline codificante no ve? | Pistas REF/ALT/Δ, ISM y contactos de AlphaGenome, como predicciones | 6 · 6 |
-| **05** | `RESIDUAL_PHENOTYPE` | ¿Qué rasgos no explica MVA, y alguno exige un segundo diagnóstico? | Matriz término HPO × modelo de enfermedad, en bits de Resnik | 3 · 2 |
-| **06** | `MOSAIC_AND_MITOREAD` | ¿Qué le pasa a la señal cuando se rompe la clonalidad? | Distribuciones de BAF simuladas + curva de potencia | 3 · 1 |
-| **07** | `TRACK2_SAFE_RESCUE` | ¿Hay un mecanismo terapéutico plausible, falsable y seguro? | Matriz 8 puentes × 10 dimensiones de evidencia curada, más la cartera experimental de tres brazos | 3 · 2 |
+| **00** | `DATA_REALITY` | What can, and cannot, be answered with the data we have? | Per-cycle FASTQ QC computed on L001; modality inventory | 1 · 1 |
+| **01** | `TRACK1_GENOME_WIDE` | Which gene explains the case when the whole genome competes? | Genome-wide prioritisation on the frozen `A0`; rank stability; A0 → A0-FREQFIX slopegraph; Exomiser comparison | **7 · 7** |
+| **02** | `BUB1B_ALLELE_CURATION` | What supports each allele, and what would make the pair causal? | Gene browser with 1 497 ClinVar missense records; NMD and phase geometry; ACMG points ladder | 4 · 3 |
+| **03** | `BUBR1_MECHANISM` | The missense does not move by classification: does it move by mechanism? | AlphaFold pocket with real distances; conservation with its three controls | 2 · 2 |
+| **04** | `HIDDEN_SECOND_ALLELE` | Is there a second allele the coding pipeline cannot see? | AlphaGenome REF/ALT/Δ tracks, ISM and contact maps, as predictions; GO 2B structural closure | 5 · 5 |
+| **05** | `RESIDUAL_PHENOTYPE` | Which traits does MVA not explain, and does any demand a second diagnosis? | HPO term × disease model matrix in Resnik bits; renal panel sweep | 2 · 2 |
+| **06** | `MOSAIC_AND_MITOREAD` | What happens to the mosaicism signal when clonality breaks? | Simulated BAF distributions and power; the post-hoc ablation that corrected us; measured RD/BAF; MitoRead on the full alignment | 4 · 4 |
+| **07** | `TRACK2_SAFE_RESCUE` | Is there a plausible, falsifiable and safe therapeutic mechanism? | 8 bridges × 10 evidence dimensions; three-arm experimental portfolio | 2 · 2 |
 
-## Cómo reconstruirlos
+Every notebook ends with a **decision**, **what it does not establish**, a **falsifier** and the
+**next experiment**. The four questions that only new data can answer (phase, missense function,
+safe rescue, generality of the method) are collected in the
+[Track 1 conclusions](../reports/TRACK1_REPORT.md).
+
+Each notebook also opens with one reviewed synthesis panel (9 attachments in total), embedded as
+a self-contained image and labelled `SYNTHESIS` or `NARRATIVE`. They are regenerated with
+`python src/nb/story_integration.py` and are not counted as executed outputs.
+
+## The rule that applies to all of them
+
+**Writing a figure to `figures/` is not enough.** It appears INLINE, in the same cell or the
+next, with a caption that declares four things:
+
+```
+experiment · evidence origin · what it shows · WHAT IT DOES NOT SHOW
+```
+
+The last one is the hardest to write and the most valuable.
+
+**Evidence origins:** `MEASURED` (direct observation of the case) · `DERIVED` (computed by us) ·
+`EXTERNAL` (database or literature) · `PREDICTED` (model output) · `SIMULATED` (a model with no
+patient data).
+
+**Figure classes**, declared in the caption **and stamped on the image** so the label travels
+with the figure if it is cropped into a slide:
+
+| Class | What it is | Can it be the main figure? |
+|---|---|---|
+| `DATA` | an object or distribution computed from the case data | **Yes** |
+| `MODEL_OUTPUT` | output of a model (AlphaFold, AlphaGenome, Exomiser) | **Yes** |
+| `SIMULATION` | a distribution generated by simulation, without patient data | **Yes** |
+| `CURATED_EVIDENCE` | a versioned evidence table with a source per cell | **Yes** |
+| `SYNTHESIS` | integrates results already obtained; does not expose raw data | No |
+| `NARRATIVE` | explains a conclusion; contains no data | No |
+
+The test that decides: *remove the title, caption and conclusion; does an expert still recognise
+the scientific object?* A transcript, a distribution, a structure, an alignment, BAF, a heatmap
+or coverage: yes. Boxes, arrows and "SURVIVES": no. Where a chart would only restate a few
+numbers or categories, the notebook uses a table instead.
+
+## How to rebuild them
 
 ```bash
 python src/nb/build_all.py
 ```
 
-Reconstruye y ejecuta los ocho, y emite la matriz de verificación. **Los notebooks se generan
-desde `src/nb/`**: la fuente de verdad vive en `src/`, y generarlos garantiza que ejecutan las
-mismas funciones del pipeline en vez de una copia que puede divergir.
+It rebuilds and executes all eight and prints the verification matrix. **The notebooks are
+generated from `src/nb/`**: the source of truth lives in `src/`, so they run the same pipeline
+functions rather than a copy that can drift. Figures drawn from GO 2B and AlphaGenome artifacts
+check their hashes before drawing and refuse to render if a source changed.
 
-## Definición de HECHO
+## Definition of done
 
-Un notebook **no** está terminado porque corra sin errores. Lo está cuando:
+A notebook is **not** finished because it runs without errors. It is finished when it:
 
-1. ejecuta de arriba abajo · 2. usa las entradas correctas con su hash · 3. **muestra** sus
-resultados, no solo los escribe · 4. tiene QC + principal + robustez · 5. interpreta cada
-figura · 6. presenta la evidencia contradictoria · 7. dice qué NO demuestra · 8. termina en una
-decisión · 9. nombra el siguiente experimento · 10. está saneado · 11. no contiene afirmaciones
-obsoletas · 12. cualquier figura puede regenerarse.
+1. runs top to bottom · 2. uses the right inputs, with their hash · 3. **shows** its results,
+not only writes them · 4. has QC + main result + robustness · 5. interprets every figure ·
+6. presents contradicting evidence · 7. says what it does NOT show · 8. ends in a decision ·
+9. names the next experiment · 10. is sanitised · 11. contains no superseded claims · 12. every
+figure can be regenerated.
 
-`src/nb/build_all.py` comprueba 1, 3, 4 y 10 mecánicamente. El resto se audita con
-`src/audit_stale_claims.py`, que trata `notebooks/` como documentación **canónica**.
+`src/nb/build_all.py` checks 1, 3, 4 and 10 mechanically. The rest is audited by
+`src/audit_stale_claims.py`, which treats `notebooks/` as **canonical** documentation.
 
-## Saneado
+## Sanitisation
 
-Los notebooks se commitean **con sus salidas**, así que las salidas también se sanean: solo
-agregados, conteos y símbolos de gen. Nunca coordenadas, genotipos, identidad de variantes,
-rutas locales ni identificadores de muestra.
+Notebooks are committed **with their outputs**, so the outputs are sanitised too: aggregates,
+counts and gene symbols only. Never coordinates, genotypes, variant identities, local paths or
+sample identifiers. Figures that carry case-specific breakpoint context (the GO 2B MEI/SV map
+and read-level assay) are linked from notebook 04, not embedded.
 
-Los notebooks 00 y 01 ejecutan el escáner al final, sobre sí mismos.
+Notebooks 00 and 01 run the scanner on themselves at the end.

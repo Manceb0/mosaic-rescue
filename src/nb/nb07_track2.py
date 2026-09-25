@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Construye notebooks/07_TRACK2_SAFE_RESCUE.ipynb."""
+"""Builds notebooks/07_TRACK2_SAFE_RESCUE.ipynb."""
 from __future__ import annotations
 import sys
 sys.path.insert(0, ".")
@@ -9,93 +9,93 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/07_TRACK2_SAFE_RESCUE.ipynb"
 
 CELLS = [
-("md", """# 07 · Diseño de rescate con barrera de seguridad
+("md", """# 07 · Designing a rescue with a safety gate
 
-> **Lugar en el argumento:** Track 2. Convierte una idea terapéutica en una cadena auditable:
-> qué debe ser cierto, qué evidencia existe y qué medición puede matar la hipótesis.
+**Place in the argument.** Track 2. It turns a therapeutic idea into an auditable chain: what
+must be true, what evidence exists, and which measurement can kill the hypothesis.
+
+**Main output.** A matrix of eight bridges × ten evidence dimensions, a three-arm experimental
+portfolio, and the design of the next experiment. It is not clinical efficacy, a recommendation
+or a proof of safety.
+
+> An **experimental portfolio** is nominated: two pharmacological hypotheses (azithromycin,
+> arimoclomol) and an adversarial comparator (sirolimus), for **preclinical discrimination**.
+> **No therapeutic winner is nominated and no compound is recommended for administration.**
 >
-> **Salida principal:** matriz de ocho puentes × diez dimensiones y diseño del siguiente
-> experimento. No es eficacia clínica, recomendación ni prueba de seguridad.
-
-> Se nomina una **cartera experimental**: dos hipótesis farmacológicas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), para **discriminación preclínica**. **No se nomina un ganador terapéutico ni se recomienda administrar ningún compuesto.**
+> An earlier version of this header said "NO DRUG NOMINATION", and the notebook then nominated
+> three arms. Each sentence could pass as prudent on its own; together they were a contradiction.
 >
-> Una versión anterior de esta cabecera decía «NO HAY NOMINACIÓN DE FÁRMACO», y luego el
-> propio notebook nominaba tres brazos. Las dos frases podían pasar por prudentes por
-> separado; juntas eran una contradicción.
->
-> Toda la evidencia citada tiene identificador **verificado en el proyecto**. Donde falta
-> evidencia se escribe *hueco*, no una cita plausible.
+> Every piece of evidence cited has an identifier **verified within the project**. Where evidence
+> is missing the cell says *gap*, not a plausible citation.
 
-## Pregunta
+## The question
 
-**¿Existe un mecanismo terapéutico plausible, falsable y seguro para este paciente?**
+**Is there a plausible, falsifiable and safe therapeutic mechanism for this patient?**
 
-## La corrección que reorganiza todo
+## The correction that reorganises everything
 
-Agrupar la evidencia bajo «proteostasis» metía en la misma caja dos intervenciones con lógica
-terapéutica distinta y **consecuencias oncológicas potencialmente opuestas**:
+Grouping the evidence under "proteostasis" put two interventions with different therapeutic
+logic, and **potentially opposite oncological consequences**, in the same box:
 
-| | T2-A · aguas arriba | T2-B · aguas abajo |
+| | T2-A · upstream | T2-B · downstream |
 |---|---|---|
-| Cadena | La variante desestabilizaría BUBR1; subir su abundancia mejoraría el checkpoint | La célula ya aneuploide sufre estrés; subir HSP la haría tolerarlo mejor |
-| Efecto buscado | **menos** células aneuploides nuevas | las que existen **viven mejor** |
-| Riesgo | podría reducir CIN | podría aumentar la supervivencia de células inestables |
+| Chain | The variant would destabilise BUBR1; raising its abundance would improve the checkpoint | The already aneuploid cell is stressed; raising HSPs would help it tolerate that |
+| Intended effect | **fewer** new aneuploid cells | the existing ones **survive better** |
+| Risk | could reduce chromosomal instability (CIN) | could increase the survival of unstable cells |
 
-En un niño que ya tuvo un rabdomiosarcoma, **esa diferencia lo es todo**."""),
+In a child who has already had a rhabdomyosarcoma, **that difference is everything**."""),
 
 ("code", SETUP),
 
-("code", 'fl.labels("Inventario", "Lo que un hueco no significa")'),
+("code", 'fl.labels("Inventory", "What a gap does not mean")'),
 
-("md", """## Resultado primario 1 · la matriz de evidencia
+("md", """## Primary result 1 · the evidence matrix
 
-Un mapa de cajas y flechas explica **la idea**. No enseña **qué evidencia existe**. Esta matriz
-cruza los ocho puentes contra diez dimensiones de evidencia y dice, celda a celda, qué hay.
+A box-and-arrow map explains **the idea**. It does not show **what evidence exists**. This matrix
+crosses the eight bridges with ten evidence dimensions and says, cell by cell, what is there.
 
-Se lee de **`research/track2_evidence.tsv`**, un fichero versionado: cada celda es una fila con
-su fuente. **No hay ni una caja escrita dentro del código de la figura**, que es exactamente el
-defecto que esta pasada venía a corregir: una caja no se puede auditar ni comparar entre
-versiones; una fila sí.
+It is read from **`research/track2_evidence.tsv`**, a versioned file: each cell is a row with its
+source. **Not a single box is written inside the figure code**: a box cannot be audited or
+compared across versions; a row can.
 
-Regla dura del fichero: **ninguna celda distinta de `ABSENT` puede quedarse sin fuente**, y el
-notebook lo comprueba antes de dibujar."""),
+Hard rule of the file: **no cell other than `ABSENT` may lack a source**, and the notebook checks
+it before drawing."""),
 
 ("code", '''TSV = "research/track2_evidence.tsv"
 raw = [l.rstrip(chr(10)).split(chr(9)) for l in io.open(TSV, encoding="utf-8")
        if not l.startswith("#") and l.strip()]
 HDR, EV = raw[0], [dict(zip(raw[0], r + [""] * (len(raw[0]) - len(r)))) for r in raw[1:]]
 
+# Column and dimension keys are stored in the versioned file as written; they are data keys.
 DIMS = ["paciente", "mva_humana", "celulas_aneuploides", "otro_contexto",
         "perturbacion_genetica", "perturbacion_farmacologica",
         "abundancia_bubr1", "proteostasis", "cin", "supervivencia_clonogenica"]
 BR = sorted({int(e["puente"]) for e in EV})
-TIT = {int(e["puente"]): e["titulo"] for e in EV}
-RUTA = {int(e["puente"]): e["ruta"] for e in EV}
 CELL = {(int(e["puente"]), e["dimension"]): e for e in EV}
 
-# La regla dura, comprobada aqui y no solo escrita en el fichero
-huerf = [e for e in EV if e["clase"] != "ABSENT" and not e["fuente"].strip()]
-assert not huerf, f"celdas sin fuente: {[(e['puente'], e['dimension']) for e in huerf]}"
-assert len(EV) == len(BR) * len(DIMS), f"la matriz no esta completa: {len(EV)} filas"
+# The hard rule, checked here and not only written in the file
+orphans = [e for e in EV if e["clase"] != "ABSENT" and not e["fuente"].strip()]
+assert not orphans, f"cells without a source: {[(e['puente'], e['dimension']) for e in orphans]}"
+assert len(EV) == len(BR) * len(DIMS), f"the matrix is incomplete: {len(EV)} rows"
 
 import collections as _c
 cnt = _c.Counter(e["clase"] for e in EV)
-print(f"  {TSV}  ·  {len(EV)} celdas = {len(BR)} puentes x {len(DIMS)} dimensiones")
-print(f"  toda celda distinta de ABSENT lleva fuente: OK")
+print(f"  {TSV}  ·  {len(EV)} cells = {len(BR)} bridges x {len(DIMS)} dimensions")
+print(f"  every cell other than ABSENT carries a source: OK")
 print()
 for k in ("DIRECT", "GENETIC", "NEAR", "CONTRADICTORY", "ABSENT"):
     print(f"    {k:<16}{cnt.get(k,0):>4}  ({100*cnt.get(k,0)/len(EV):.0f} %)")
 print()
-fuentes = sorted({e["fuente"] for e in EV if e["fuente"].strip()})
+sources = sorted({e["fuente"] for e in EV if e["fuente"].strip()})
 from src.figures.fig07_evidence import publications as _pubs
-_p, _i = _pubs(fuentes)
-print(f"  publicaciones distintas citadas: {len(_p)}  ·  artefactos internos: {len(_i)}")
-print(f"  (cadenas de texto distintas: {len(fuentes)} -- un articulo citado con y sin su")
-print(f"   DOI son la MISMA publicacion, y contarlas dos veces inflaba el denominador)")
-for f in fuentes:
+_p, _i = _pubs(sources)
+print(f"  distinct publications cited: {len(_p)}  ·  internal artefacts: {len(_i)}")
+print(f"  (distinct text strings: {len(sources)}; an article cited with and without its DOI")
+print(f"   is ONE publication, and counting it twice inflated the denominator)")
+for f in sources:
     print(f"    {f}")'''),
 
-("md", """### Figura principal 1 · ocho puentes × diez dimensiones de evidencia"""),
+("md", """### Main figure 1 · eight bridges × ten evidence dimensions"""),
 
 ("code", '''from src.figures import fig07_evidence as FE
 
@@ -103,199 +103,180 @@ fig, _st = FE.build(EV)
 _n_abs = _st["counts"].get("ABSENT", 0)
 _n_dir = _st["counts"].get("DIRECT", 0)
 _n_con = _st["counts"].get("CONTRADICTORY", 0)
-fl.pub(fig, "Figura principal 1 · matriz de evidencia curada de Track 2",
+fl.pub(fig, "Main figure 1 · Track 2 curated evidence matrix",
        "EXP-016 · EXP-016b", "EXTERNAL", "CURATED_EVIDENCE",
-       f"que evidencia existe de verdad para cada puente. De las {len(EV)} celdas, "
-       f"{_n_abs} estan vacias, {_n_dir} tienen evidencia del tipo exacto que el puente "
-       f"necesita y {_n_con} apuntan EN CONTRA, sobre {len(_pubs(_st['sources'])[0])} "
-       f"publicaciones distintas mas {len(_pubs(_st['sources'])[1])} artefactos internos "
-       f"-- un articulo citado con y sin su DOI es UNA publicacion, y contarlo dos veces "
-       f"inflaba el denominador. La fila 8 esta vacia en las diez dimensiones, que es el hueco de seguridad, y "
-       f"la fila 1, la unica que conecta con este paciente, solo tiene una celda no vacia y "
-       f"es NEAR, no DIRECT. El puente 7 es el hueco TRASLACIONAL.",
-       "que Track 2 sea valido ni invalido. Es un inventario de evidencia curada (literatura "
-       "externa mas evidencia del proyecto), no observaciones experimentales del paciente, y "
-       "por eso no se etiqueta simplemente DATA. Una celda ABSENT dice que NUESTRA "
-       "busqueda acotada no encontro evidencia que cualifique, no que sea falso ni que "
-       "nadie lo haya mirado nunca. Y NO se calcula ninguna puntuacion global: combinar "
-       "evidencia heterogenea en un numero exigiria un metodo preregistrado que no existe.",
-       source="research/track2_evidence.tsv · 80 celdas versionadas, cada una con fuente",
+       f"what evidence really exists for each bridge. Of the {len(EV)} cells, {_n_abs} are "
+       f"empty, {_n_dir} hold evidence of exactly the type the bridge needs and {_n_con} point "
+       f"AGAINST it, over {len(_pubs(_st['sources'])[0])} distinct publications plus "
+       f"{len(_pubs(_st['sources'])[1])} internal artefacts. Row 8 is empty in all ten "
+       f"dimensions: that is the safety gap. Row 1, the only one that connects to this patient, "
+       f"has a single non-empty cell, and it is NEAR, not DIRECT. Bridge 7 is the TRANSLATIONAL "
+       f"gap.",
+       "that Track 2 is valid or invalid. It is an inventory of curated evidence (external "
+       "literature plus project evidence), not experimental observations of the patient, which "
+       "is why it is not labelled simply DATA. An ABSENT cell says that OUR bounded search found "
+       "no qualifying evidence, not that the claim is false or that nobody has ever looked. And "
+       "NO global score is computed: combining heterogeneous evidence into one number would need "
+       "a preregistered method that does not exist.",
+       source="research/track2_evidence.tsv · 80 versioned cells, each with a source",
        lib="matplotlib", slug="fig07_track2_evidence_matrix")'''),
 
-("md", """## Resultado primario 2 · los ocho puentes, como mapa
+("md", """## Primary result 2 · the eight bridges, as a chain
 
-Toda afirmación declara **qué puente sostiene**. La evidencia de un puente **no vale** para
-otro."""),
+Every claim declares **which bridge it supports**. Evidence for one bridge **does not count** for
+another.
 
-("code", '''BRIDGES = [
- (1, "variante de ESTE paciente\\n-> inestabilidad de BUBR1", "T2-A", "hueco",
-     "solo inferencia estructural y conservacion"),
- (2, "inestabilidad -> menos proteina", "T2-A", "ok",
-     "niveles bajos en pacientes, incluso con missense, pero de otros alelos"),
- (3, "subir chaperonas -> SUBIR BUBR1", "T2-A", "hueco",
-     "SIN RESOLVER: dependencia basal, la ganancia sin medir"),
- (4, "mas BUBR1 -> menos CIN", "T2-A", "ok",
-     "gradiente 8,5-77 %; aneuploidia clara < ~50 % (DOI 10.1007/s00439-008-0572-y)"),
- (5, "aneuploidia -> estres proteotoxico", "T2-B", "ok",
-     "p62 con precursores mitocondriales, ADNmt bajo (DOI 10.1038/s41467-025-60857-4)"),
- (6, "subir HSP (GENETICO) -> rescate", "T2-B", "parcial",
-     "rescata, PERO el efecto dependio del cariotipo: una linea no respondio"),
- (7, "coinduccion FARMACOLOGICA\\n-> el mismo rescate", "T2-B", "contra",
-     "cero evidencia directa; contraejemplo verificado (PMID 34481829)"),
- (8, "la intervencion -> efecto sobre CIN\\ny supervivencia clonogenica", "ambas", "vacio",
-     "SIN EVIDENCIA QUE CUALIFIQUE en ninguna direccion"),
-]
-COL = {"ok": fl.ALIVE, "parcial": fl.OPEN, "hueco": fl.DEAD, "contra": fl.DEAD,
-       "vacio": fl.VOID}
-for n, t, r, st, note in BRIDGES:
-    print(f"  {n}. [{r:<6}] {st.upper():<8} {t.splitlines()[0]:<44} {note[:52]}")'''),
+| # | Bridge | Route | Status | What exists |
+|---|---|---|---|---|
+| 1 | *this patient's* variant → BUBR1 instability | T2-A | **gap** | structural inference and conservation only |
+| 2 | instability → less protein | T2-A | supported | low levels in patients, including with missense, but from other alleles |
+| 3 | raising chaperones → RAISES BUBR1 | T2-A | **gap** | unresolved: basal dependence shown, the gain unmeasured |
+| 4 | more BUBR1 → less CIN | T2-A | supported | a gradient of 8.5 to 77 %; clear aneuploidy below ~50 % ([DOI](https://doi.org/10.1007/s00439-008-0572-y)) |
+| 5 | aneuploidy → proteotoxic stress | T2-B | supported | p62 with mitochondrial precursors, low mtDNA ([DOI](https://doi.org/10.1038/s41467-025-60857-4)) |
+| 6 | raising HSPs (GENETIC) → rescue | T2-B | partial | rescues, BUT the effect depended on karyotype: one line did not respond |
+| 7 | PHARMACOLOGICAL co-induction → the same rescue | T2-B | **against** | no direct evidence; a verified counterexample ([PMID 34481829](https://pubmed.ncbi.nlm.nih.gov/34481829/)) |
+| 8 | the intervention → effect on CIN and clonogenic survival | both | **empty** | NO qualifying evidence in either direction |
 
-("code", '''fl.svg("figures/fig10_track2_bridges.svg",
-       "Figura principal 2 · los ocho puentes y el corredor",
-       "EXP-016", "EXTERNAL+DERIVED", "SYNTHESIS",
-       "en rojo los puentes rotos, en morado el que nunca se midio. El panel B situa las dos "
-       "rutas en el plano beneficio/riesgo: T2-A puede caer en el corredor; T2-B, por "
-       "construccion, empuja hacia el eje de riesgo.",
-       "que T2-B este muerta ni que T2-A funcione. Ningun puente roto se ha cerrado como "
-       "NEGATIVE: estan UNRESOLVED, que es distinto.",
-       generator="src/make_fig10.py")'''),
+No broken bridge has been closed as negative: they are **unresolved**, which is different.
 
-("md", """## Resultado primario 3 · el puente 7, que es el corazón falsable
+## Primary result 3 · bridge 7, the falsifiable core
 
-Búsqueda acotada con clasificación fijada de antemano:
+A bounded search with a classification fixed in advance:
 
-| Clase | Encontrado |
+| Class | Found |
 |---|---|
-| `DIRECT`: células aneuploides, coinductor y rescate | Ninguna |
-| `NEAR`: coinducción en otro contexto proteotóxico | Sí, pero **no se admite como sustituto** |
-| `GENETIC`: solo sobreexpresión | Sí, y es toda la evidencia del puente 6 |
-| **CONTRADICTORY** | **Dos, verificadas** |
+| `DIRECT`: aneuploid cells, co-inducer and rescue | None |
+| `NEAR`: co-induction in another proteotoxic context | Yes, but **not admitted as a substitute** |
+| `GENETIC`: overexpression only | Yes, and it is all the evidence for bridge 6 |
+| **CONTRADICTORY** | **Two, verified** |
 
-**El contraejemplo (PMID 34481829).** En fibroblastos NPC1, la sobreexpresión de HSP70 redujo
-el almacenamiento de colesterol; el coinductor **no lo reprodujo** hasta 500 µM, y el detalle
-que más pesa: **no llegó a inducir HSP70**.
+**The counterexample ([PMID 34481829](https://pubmed.ncbi.nlm.nih.gov/34481829/)).** In NPC1
+fibroblasts, HSP70 overexpression reduced cholesterol storage; the co-inducer **did not reproduce
+it** up to 500 µM, and the detail that weighs most: **it did not even induce HSP70**.
 
-**La tensión (PMID 25205676).** En aneuploides humanos la inducción de la respuesta de choque
-térmico está **al 50–60 %** del control. Lo que rescató fue **HSF1 constitutivamente activo**."""),
+**The tension ([PMID 25205676](https://pubmed.ncbi.nlm.nih.gov/25205676/)).** In human aneuploid
+cells, induction of the heat-shock response runs at **50 to 60 %** of control. What rescued was
+**constitutively active HSF1**.
 
-("md", """> **Formulación congelada:**
+> **Frozen wording:**
 >
 > *HSF1 impairment makes the pathway both mechanistically relevant and pharmacologically
 > uncertain. Genetic augmentation can bypass the deficit; whether a stress-dependent
 > pharmacological co-inducer can amplify the impaired endogenous response sufficiently
-> remains unresolved.*"""),
+> remains unresolved.*
 
-("md", """## Robustez · «Try to Kill It», y por qué es la mejor diapositiva
+## Robustness · "try to kill it"
 
-**La señal de eficacia y la señal de riesgo oncológico son la misma medición.**
+**The efficacy signal and the oncological-risk signal are the same measurement.**
 
-Si una intervención rescata preferentemente a las células **más** aneuploides, eso es a la vez
-la prueba de que el mecanismo es el propuesto **y** la prueba de que se está mejorando la
-supervivencia clonogénica de células genómicamente inestables."""),
+If an intervention preferentially rescues the **most** aneuploid cells, that is at once the proof
+that the mechanism is the proposed one **and** the proof that the clonogenic survival of
+genomically unstable cells is being improved. That is why the assay reads chromosome
+segregation and clonogenic survival together, and why more survival of unstable cells is a
+**veto**, not a win.
 
-("md", """## Evidencia contradictoria, declarada
+## Contradicting evidence, declared
 
-| Afirmación | Contraevidencia |
+| Claim | Counter-evidence |
 |---|---|
-| Subir HSP es terapéutico | Un coinductor **no fue efectivo** en ELA |
-| Genético ≈ farmacológico | **PMID 34481829**: el genético rescató, el farmacológico no, y no indujo HSP70 |
-| El rescate genético es universal | Dependió del **cariotipo**; una línea aneuploide no respondió |
-| Ayudar a la célula aneuploide es bueno | **Es la definición oncológica de un paso temprano de tumorigénesis** |
-"""),
+| Raising HSPs is therapeutic | A co-inducer **was not effective** in ALS |
+| Genetic ≈ pharmacological | **PMID 34481829**: the genetic route rescued, the pharmacological one did not, and did not induce HSP70 |
+| Genetic rescue is universal | It depended on **karyotype**; one aneuploid line did not respond |
+| Helping the aneuploid cell is good | **It is the oncological definition of an early step of tumorigenesis** |
 
-("md", """## Resultado primario 4 · la cartera experimental, no un ganador
+## Primary result 4 · the experimental portfolio, not a winner
 
-Hasta aquí el notebook ha dicho qué evidencia **falta**. Esta sección dice qué se **haría con
-eso**, que es lo que pide el entregable oficial de Track 2: proponer fármaco o fármacos
-aprobados sustentados por el mecanismo.
+So far the notebook has said what evidence is **missing**. This section says what would be
+**done with that**, which is what the official Track 2 deliverable asks for: to propose approved
+drug or drugs supported by the mechanism.
 
-La respuesta honesta no es un nombre. Es una **cartera de tres brazos con tres papeles
-distintos**, más tres controles, formalizada en `research/track2_candidates.tsv` y validada
-por `src/verify.py`. No lleva puntuación global, ranking ni ganador, por la misma razón que
-no lo lleva la matriz de puentes: combinar evidencia heterogénea en un número exige un método
-preregistrado que no existe."""),
+The honest answer is not a name. It is a **three-arm portfolio with three different roles**, plus
+three controls, formalised in `research/track2_candidates.tsv` and validated by `src/verify.py`.
+It carries no global score, ranking or winner, for the same reason the bridge matrix does not:
+combining heterogeneous evidence into one number needs a preregistered method that does not
+exist."""),
 
 ("code", '''from src.figures import fig08_portfolio as FP
 
 _rows = FP.read()
 fig, _pt = FP.build(_rows)
 _cells = len(_rows) * len(FP.CLAIMS)
-fl.pub(fig, "Figura principal 3 · cartera experimental de Track 2",
+fl.pub(fig, "Main figure 2 · Track 2 experimental portfolio",
        "EXP-016 · EXP-016b", "EXTERNAL", "CURATED_EVIDENCE",
-       f"que los tres brazos no compiten por un primer puesto: ocupan papeles distintos y "
-       f"cada uno informa AL FALLAR. De las {_cells} celdas de afirmacion, {_pt['cited']} "
-       f"llevan identificador publicado y el resto son ausencias o huecos DECLARADOS. "
-       f"Azitromicina es el unico brazo dirigido al alelo truncante de ESTE paciente y no "
-       f"tiene ninguna evidencia directa. Arimoclomol es el unico con contraevidencia "
-       f"verificada, y por eso vale como centinela. Sirolimus es el unico con evidencia "
-       f"farmacologica directa, y esa evidencia es PARCIALMENTE NEGATIVA en el desenlace "
-       f"que importa.",
-       "que ninguno de los tres sirva, ni que alguno deba administrarse. NO es una "
-       "nominacion terapeutica: es el instrumento para decidir cual seria el PRIMER "
-       "experimento preclinico. Ningun candidato de esta tabla se propone para "
-       "administracion a ningun paciente, y este proyecto no emite recomendaciones clinicas.",
-       source="research/track2_candidates.tsv · 6 filas versionadas, cada afirmacion con "
-              "identificador o hueco declarado",
+       f"the three arms do not compete for first place: they fill different roles and each is "
+       f"informative WHEN IT FAILS. Of the {_cells} claim cells, {_pt['cited']} carry a "
+       f"published identifier and the rest are DECLARED absences or gaps. Azithromycin is the "
+       f"only arm aimed at THIS patient's truncating allele and has no direct evidence. "
+       f"Arimoclomol is the only one with verified counter-evidence, which is why it serves as a "
+       f"sentinel. Sirolimus is the only one with direct pharmacological evidence, and that "
+       f"evidence is PARTLY NEGATIVE on the outcome that matters.",
+       "that none of the three works, or that any of them should be given. It is NOT a "
+       "therapeutic nomination: it is the instrument to decide which would be the FIRST "
+       "preclinical experiment. No candidate in this table is proposed for administration to any "
+       "patient, and this project makes no clinical recommendations.",
+       source="research/track2_candidates.tsv · 6 versioned rows, each claim with an "
+              "identifier or a declared gap",
        lib="matplotlib", slug="fig08_track2_portfolio")'''),
 
-("md", """### Los tres papeles, y por qué el fallo de cada uno enseña algo distinto
+("md", """### The three roles, and why each failure teaches something different
 
-| Brazo | Papel | Por qué está | Qué muere si falla |
+| Arm | Role | Why it is there | What dies if it fails |
 |---|---|---|---|
-| **azitromicina** | `ALLELE` · dirigido al alelo | Es el **único** brazo que ataca el alelo truncante de este paciente, por lectura a través del codón de parada prematuro. El contexto tira en dos direcciones: la parada es **UGA**, en general permisiva, pero lleva **A en +4**, menos favorable que C o U. Y lo decisivo: el **contexto extendido** impide predecir la respuesta sin medirla (DOI 10.1038/s41467-024-46703-z) | La hipótesis de readthrough **para este alelo**. No toca el resto de Track 2 |
-| **arimoclomol** | `SENTINEL` · centinela de falsación | Es el único con **contraevidencia verificada**: en fibroblastos NPC1 el rescate genético funcionó y él no, sin llegar a inducir HSP70 (PMID 34481829). Está para **resolver el puente 7**, no para ganar | La traducción farmacológica *arimoclomol → coinducción de HSP* **en ese sistema**. **NO** cae el brazo de chaperonas: la vía HSP90 sigue abierta en el mismo trabajo que lo descarta |
-| **sirolimus** | `ADVERSARIAL` · comparador de seguridad | Es el único con evidencia farmacológica **directa** (rapamicina a 40 µM en larvas, DOI 10.1038/s41467-026-70521-0), y esa evidencia ya enseña el problema: rescató el número de neuroblastos aneuploides **sin** restaurar células Pros+ ni el tamaño cerebral | Nada, y ese es justo el punto. **Como comparador adversarial su fallo es el resultado**: prueba el límite del Safe Rescue Corridor |
+| **azithromycin** | `ALLELE` · allele-directed | The **only** arm that targets this patient's truncating allele, by read-through of the premature stop codon. The context pulls both ways: the stop is **UGA**, generally permissive, but carries **A at +4**, less favourable than C or U. And decisively, the **extended context** makes the response impossible to predict without measuring it ([DOI](https://doi.org/10.1038/s41467-024-46703-z)). Exposure and QT safety are known problems: it is not a clinical solution | The read-through hypothesis **for this allele**. The rest of Track 2 is untouched |
+| **arimoclomol** | `SENTINEL` · falsification sentinel | The only one with **verified counter-evidence**: in NPC1 fibroblasts the genetic rescue worked and it did not, without inducing HSP70 ([PMID 34481829](https://pubmed.ncbi.nlm.nih.gov/34481829/)). It is there to **resolve bridge 7**, not to win | The pharmacological translation *arimoclomol → HSP co-induction* **in that system**. The chaperone arm does **not** fall: the HSP90 route stays open in the same study that discards it |
+| **sirolimus** | `ADVERSARIAL` · safety comparator | The only one with **direct** pharmacological evidence (rapamycin at 40 µM in larvae, [DOI](https://doi.org/10.1038/s41467-026-70521-0)), and that evidence already shows the problem: it rescued the number of aneuploid neuroblasts **without** restoring Pros+ cells or brain size | Nothing, and that is the point. **As an adversarial comparator its failure is the result**: it tests the limit of the safe-rescue corridor |
 
-Y los tres controles, que no son decorativos:
+And the three controls, which are not decorative:
 
-| Control | Qué separa |
+| Control | What it separates |
 |---|---|
-| **vehículo** | El cero real de cada lectura. Es el **único control negativo verdadero**; ningún compuesto activo lo es |
-| **ca-HSF1** | Control positivo **contextual**, en células aneuploides isogénicas humanas. Sin él, un negativo de arimoclomol es ininterpretable: no se sabría si falló el fármaco o la biología. **Su rescate dependió del cariotipo**, y eso se declara |
-| **HSP70 sobreexpresión** | Comparador mecanístico secundario. **No** es el control positivo contextual: su evidencia viene de fibroblastos NPC1, no de células aneuploides |"""),
+| **vehicle** | The real zero of every readout. The **only true negative control**; no active compound is |
+| **ca-HSF1** | A **contextual** positive control, in isogenic human aneuploid cells. Without it, a negative arimoclomol result is uninterpretable: one could not tell whether the drug or the biology failed. **Its rescue depended on karyotype**, and that is declared |
+| **HSP70 overexpression** | A secondary mechanistic comparator. It is **not** the contextual positive control: its evidence comes from NPC1 fibroblasts, not aneuploid cells |
 
-("md", """## Decisión
+## Decision
 
 | | |
 |---|---|
-| **Clase superviviente principal** | Modulación de proteostasis y chaperonas, entre las seis evaluadas |
-| **T2-A, aguas arriba** | `UNRESOLVED`, bloqueada por los puentes 1 y 3 |
-| **T2-B, aguas abajo** | `UNRESOLVED`, bloqueada por los puentes 7 y 8 |
-| **Propuesta de Track 2** | **Una cartera de 3 intervenciones y 3 controles para un primer experimento preclínico**, con el papel de cada brazo declarado y su regla de descarte escrita por adelantado |
-| **Lo que SÍ se nomina** | **Tres brazos farmacológicos para discriminación preclínica**: dos hipótesis candidatas (azitromicina, arimoclomol) y un comparador adversarial (sirolimus), cada uno con su regla de descarte escrita por adelantado |
-| **Lo que NO se nomina** | Un ganador terapéutico, y ninguna recomendación clínica. Ninguno de los tres reúne las cinco condiciones de la compuerta, y el puente 8 está vacío para los tres |
-| Proteasoma · poda clonal | **NEGATIVE** |
-| Estabilización por acetilación · senolíticos | **PARKED** |
+| **Main surviving class** | Proteostasis and chaperone modulation, among the six evaluated |
+| **T2-A, upstream** | `UNRESOLVED`, blocked by bridges 1 and 3 |
+| **T2-B, downstream** | `UNRESOLVED`, blocked by bridges 7 and 8 |
+| **Track 2 proposal** | **A portfolio of 3 interventions and 3 controls for a first preclinical experiment**, with each arm's role declared and its discard rule written in advance |
+| **What IS nominated** | **Three pharmacological arms for preclinical discrimination**: two candidate hypotheses (azithromycin, arimoclomol) and an adversarial comparator (sirolimus) |
+| **What is NOT nominated** | A therapeutic winner, or any clinical recommendation. None of the three meets the five conditions of the drug gate, and bridge 8 is empty for all three |
+| Proteasome · clonal pruning | **Negative** |
+| Stabilisation by acetylation · senolytics | **Parked** |
 
-**La distinción que sostiene todo lo anterior.** Nominamos **brazos farmacológicos para
-discriminación preclínica**, no un ganador terapéutico ni una recomendación clínica.
-Proponer un experimento no es nominar un tratamiento. La compuerta del fármaco exige las cinco: estatus aprobado · proximidad
-mecanística a un puente nombrado · evidencia **de ese** puente · predicción de rescate
-falsable · contra-test explícito de CIN/tumor. **Hoy ninguna candidata las reúne**, y la
-cartera existe precisamente para averiguar cuál podría.
+**The distinction behind all of the above.** Proposing an experiment is not nominating a
+treatment. The drug gate requires all five: approved status · mechanistic proximity to a named
+bridge · evidence **for that** bridge · a falsifiable rescue prediction · an explicit CIN/tumour
+counter-test. **Today no candidate meets them**, and the portfolio exists precisely to find out
+which could.
 
-> **Ninguno de estos compuestos se propone para administración a ningún paciente.** Este
-> proyecto produce una hipótesis falsable para investigación preclínica y **no emite
-> recomendaciones clínicas** (`CLAUDE.md`, Regla Dura 3).
+> **None of these compounds is proposed for administration to any patient.** This project
+> produces a falsifiable hypothesis for preclinical research and **makes no clinical
+> recommendations**.
 
-### Qué NO demuestra este notebook
+### What this notebook does not show
 
-Que la clase sea la correcta · que exista un fármaco que sirva · que rescatar sea seguro. Y
-tampoco que se haya barrido el espacio terapéutico completo: se evaluaron **seis clases
-elegidas desde la cadena mecanística del caso**.
+That the class is the right one · that a drug that works exists · that rescuing is safe. Nor that
+the therapeutic space was swept completely: **six classes chosen from the case's mechanistic
+chain** were evaluated.
 
-### Falsificador
+### Falsifier
 
-El experimento de abajo, con sus desenlaces preescritos, y las tres reglas de descarte de la
-cartera. Cada brazo lleva escrito **por adelantado** qué resultado lo mata, y dos de los
-cuatro desenlaces del experimento matan la hipótesis. Eso es lo que la hace falsable.
+The experiment below, with its pre-written outcomes, and the portfolio's three discard rules.
+Each arm has written **in advance** which result kills it, and two of the four outcomes of the
+experiment kill the hypothesis. That is what makes it falsifiable.
 
-### Next Best Experiment
+### Next best experiment
 
-Par isogénico aneuploide/euploide ± coinductor candidato, con **control positivo genético**
-(HSF1 constitutivamente activo) y **lectura obligatoria de si el fármaco induce HSP**, porque
-el contraejemplo enseña que puede **no** inducir, y sin medirlo no se sabe si falló el
-fármaco o la hipótesis. Midiendo a la vez CIN y supervivencia clonogénica."""),
+An isogenic aneuploid/euploid pair ± the candidate co-inducer, with a **genetic positive control**
+(constitutively active HSF1) and a **mandatory readout of whether the drug induces HSPs**, because
+the counterexample shows it may **not**, and without measuring it one cannot tell whether the drug
+or the hypothesis failed. Measuring CIN and clonogenic survival together. This is open question 3
+of the [Track 1 conclusions](../reports/TRACK1_REPORT.md), and it is only worth running once the
+mechanism in this patient (phase and missense function) is confirmed."""),
 ]
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ results. The thirteen visual questions and their files are listed in [STORYBOARD
 
 ## 0:00–0:30 · The question
 
-Show [the cover](../figures/pub/story00_overview.svg).
+Show [the cover](assets/mosaic-00-project-map.png).
 
 "We have one blood genome from a child with a suspected chromosome-segregation disorder. We
 want to answer two questions: what best explains the case, and what experiment could test a
@@ -16,7 +16,7 @@ parental genotyping. GRCh38 is the reference.
 
 ## 0:30–1:10 · The hypothesis and its weak point
 
-Show [the causal card](../figures/pub/story02_variant_card.svg).
+Show [the causal card](assets/mosaic-02-phase-function.png).
 Optional detail: [the original ranking](../figures/pub/fig01_prioritization_genomewide.svg).
 
 "We searched without choosing a gene in advance. BUB1B came fourth in the frozen ranking. An
@@ -31,7 +31,7 @@ another patient.
 
 ## 1:10–1:40 · Trying to refute it
 
-Show [the second-allele search](../figures/pub/story03_second_allele.svg).
+Show [the second-allele search](assets/mosaic-04-hidden-allele.png).
 
 "In this disease the second allele has often hidden outside the exons. So we rebuilt the full
 alignment and searched the structural classes we had preregistered. No copy-number or
@@ -43,7 +43,7 @@ belonged to this patient. GO 2B details are for questions.
 
 ## 1:40–2:20 · The problem a rescue has to solve
 
-Show [the mechanism](../figures/pub/story10_mechanism.svg).
+Show [the mechanism](assets/mosaic-08-mechanism.png).
 If asked about compounds, open [the portfolio](../figures/pub/fig08_track2_portfolio.svg).
 
 "Better survival is not enough: we might be helping the wrong cells survive. We separate an
@@ -53,11 +53,11 @@ roles. They are not a therapeutic ranking."
 
 External evidence does not demonstrate efficacy in this case. The assay must measure molecular
 activity, chromosome segregation and clonogenic survival, as well as viability.
-[Rejection rules](../figures/pub/story12_safety_gates.svg).
+[Rejection rules](assets/mosaic-05-rescue-test.png).
 
 ## 2:20–3:00 · The useful result is a decision
 
-Show [the next experiment](../figures/pub/story13_next_experiment.svg).
+Show [the next experiment](assets/mosaic-06-next-experiments.png).
 
 "The most informative next step is phase: if both alleles are on the same copy, this pair no
 longer explains a recessive mechanism. Then we need variant-specific function, and RNA and long
@@ -87,3 +87,5 @@ of the whole package is still required.
 
 Complete the account and AI-use fields, the formal dataset citation and the submission review.
 A green `verify.py` is not a submitted package.
+
+Submission requirements and artifact status: [track deliverables](TRACK_DELIVERABLES.md).

@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mosaic Rescue · Presentation Film v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#050607;overflow:hidden}
+  canvas{position:absolute;inset:0;margin:auto;display:block;background:#07080a}
+  body.playing{cursor:none}
+  #hint{position:fixed;left:0;right:0;top:14px;text-align:center;font:12px/1.4 Montserrat,Arial,sans-serif;
+        color:#77736b;letter-spacing:.06em;transition:opacity .6s;pointer-events:none;user-select:none}
+  #hint b{color:#b9b4aa;font-weight:600}
+  #hint.off{opacity:0}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint"><b>SPACE</b> play · <b>→ / PageDown</b> release hold · <b>Shift+→</b> jump · <b>← / PageUp</b> previous hold · <b>H</b> holds on/off · <b>F</b> fullscreen · <b>M</b> sound · <b>D</b> timeline</div>
+<script>
+/* ============================================================================
+   MOSAIC RESCUE — presentation film v5
+   A presentation-background motion system: a cold open, then five chapters that follow
+   docs/JUDGE_PATH.md, each with a quiet HOLD the presenter releases with a clicker.
+   Everything is procedural; render(t) is deterministic for export.
+
+   EXPORT TIMELINE (MP4, 2:14; holds shortened. In the browser each hold waits for → / PageDown)
+     0   COLD OPEN          0.0 –  51.4   order → error → mosaic → persist → the question → research chain → title [hold 48.4]
+     1   ONE GENOME        51.4 –  61.3   4 lanes → 1 sample → 1 genome (patient data)                  [hold 58.3]
+     2   THE HYPOTHESIS    61.3 –  76.2   6 321 genes → 151 → A0 #4 → audit → #1 · two alleles · phase  [hold 73.2]
+     3   TRYING TO REFUTE  76.2 –  98.8   CNV / SV / MEI: no call · REF/ALT → ISM → contacts (model)    [holds 83.9, 95.3]
+     4   RESCUE VS RISK    98.8 – 117.2   mechanism · landscape · azithromycin / arimoclomol / sirolimus [holds 103.1, 113.7]
+     5   THE DECISION     117.2 – 126.0   phase first: trans / cis · safety readouts together           [hold 123.0]
+     6   CLOSE            126.0 – 134.0   clean final frame                                              [final hold]
+
+   KEYS  Space play/pause · →/PageDown next · ←/PageUp previous hold · 0–6 chapter · H holds · D timeline
+         M sound · F fullscreen
+   URL   ?t=90 · ?debug=1 · ?mute=1 · ?holds=0 · ?export=1
+   API   window.MOSAIC_RESCUE.renderFrame(t) · .audioWavBase64()  (used by ../render_mp4.py)
+   ========================================================================== */
+'use strict';
+
+const CONFIG = {
+  DURATION: 179,
+  SEED: 20260925,
+  LIVE_HOLDS: true,          // browser: stop at each hold until the presenter advances
+  DEBUG: false,
+  AUDIO: true,
+  VOLUME: 2.4,
+  GRAIN: 0.03,
+  SHOW_DRUG_NAMES: true,     // compound names from TRACK2 (they are said in the speech); false → roles only
+  FONT_SANS: 'Montserrat,"Helvetica Neue",Arial,sans-serif',
+  FONT_MONO: '"IBM Plex Mono",Menlo,Consolas,monospace',
+  COPY: {
+    s2: ['Not every cell', 'inherits the', 'same genome.'],
+    s3a: ['MVA creates many chromosomal states', 'inside one child.'],
+    s3b: 'Some persist.',
+    tags: ['+Chr', '−Chr', 'CIN', 'stress', 'missegregation'],
+    s4ask: 'Most systems ask:', s4from: 'DISEASE', s4to: 'DRUG', s4q: '“What treats the disease?”',
+    s5a: 'We asked a different question.', s5rowA: 'PERSISTED', s5rowB: 'DISAPPEARED', s5q: 'Why did this state persist?',
+    title: 'MOSAIC RESCUE', subtitle: 'Patient-specific rescue hypothesis engine',
+    openLine: 'THE PATIENT IS THE SCREEN.',
+    finalLine: 'One genome. A mechanism to test. A safer question.',   // README tagline
+    ch: ['COLD OPEN', 'ONE GENOME', 'THE HYPOTHESIS', 'TRYING TO REFUTE IT', 'RESCUE VS RISK', 'THE DECISION', 'CLOSE'],
+    ch4head: 'Survival is not rescue.',
+    ch5head: 'Phase comes first.'
+  }
+};
+const Q = new URLSearchParams(location.search);
+if (Q.has('debug')) CONFIG.DEBUG = Q.get('debug') !== '0';
+if (Q.has('mute')) CONFIG.AUDIO = false;
+if (Q.has('holds')) CONFIG.LIVE_HOLDS = Q.get('holds') !== '0';
+const EXPORT = Q.has('export');
+
+const CHAPTERS = [[0, 0, 60], [1, 60, 75], [2, 75, 97.5], [3, 97.5, 132.5], [4, 132.5, 162], [5, 162, 173], [6, 173, 184]];
+const HOLDS = [
+  { t: 54, d: 6, n: 'opening line' }, { t: 69, d: 6, n: 'the question' }, { t: 90.5, d: 7, n: 'hypothesis & weak point' },
+  { t: 107.5, d: 5, n: 'second-allele search' }, { t: 124, d: 7, n: 'model predictions' }, { t: 136.5, d: 5, n: 'mechanism' },
+  { t: 152, d: 7.5, n: 'rescue vs risk' }, { t: 167, d: 6, n: 'next experiment' }, { t: 176.5, d: 7.5, n: 'conclusion', final: true }
+];
+
+// ---------------------------------------------------------------- MATH
+const clamp = (x, a = 0, b = 1) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const inv = (a, b, x) => clamp((x - a) / (b - a));
+const eIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eOut = t => 1 - Math.pow(1 - t, 3);
+const eIn = t => t * t * t;
+const eSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+const env = (t, a, b, c, d) => Math.min(eIO(inv(a, b, t)), c == null ? 1 : 1 - eIO(inv(c, d, t)));
+const TAU = Math.PI * 2;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuffle(arr, rng) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+function kf(t, K) { if (t <= K[0][0]) return K[0][1]; for (let i = 1; i < K.length; i++) if (t <= K[i][0]) { const a = K[i - 1], b = K[i]; return lerp(a[1], b[1], eIO(inv(a[0], b[0], t))); } return K[K.length - 1][1]; }
+const mix = (c1, c2, k) => [lerp(c1[0], c2[0], k), lerp(c1[1], c2[1], k), lerp(c1[2], c2[2], k)];
+const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a < 0 ? 0 : a > 1 ? 1 : a})`;
+
+// ---------------------------------------------------------------- VISUAL GRAMMAR
+const BG = [7, 8, 10];   // graphite (the v1 base); only the prologue lives on warm paper
+const INK = [236, 233, 226];
+const AMB = [232, 178, 90];     // genomic / function layers, the persisting state
+const SAND = [212, 182, 132];
+const RED = [217, 89, 76];      // instability · risk · veto
+const CYA = [120, 196, 220];    // computational analysis / model predictions
+const GRN = [132, 200, 150];    // used once: the target zone of a rescue that would still have to be tested
+// Two worlds share one grammar: the scientific world (navy, luminous ink) and the human world (warm paper,
+// dark ink). Semantic colours keep their meaning in both; the arrays are mutated in place per frame.
+const TH = { BG, INK, AMB, RED, CYA, GRN, SAND }, DARK = {}, PAPER = { BG: [238, 229, 211], INK: [40, 32, 26], AMB: [168, 102, 24], RED: [176, 46, 34], CYA: [34, 102, 132], GRN: [50, 122, 70], SAND: [150, 110, 60] };
+for (const k in TH) DARK[k] = TH[k].slice();
+let PAPER_P = 0;
+function setTheme(pp) { PAPER_P = pp; for (const k in TH) for (let i = 0; i < 3; i++) TH[k][i] = lerp(DARK[k][i], PAPER[k][i], pp); }
+const WARM = [[196, 172, 142], [178, 152, 124], [204, 188, 162], [172, 142, 118], [190, 164, 152]];
+const COOL = [[132, 160, 176], [118, 142, 162], [150, 170, 182], [112, 134, 146]];
+
+// ---------------------------------------------------------------- CANVAS
+const W = 1920, H = 1080, VIEW_CY = 470;   // world content sits above the calm lower band
+const cvs = document.getElementById('c'), ctx = cvs.getContext('2d');
+let SCALE = 1;
+function resize() {
+  const s = Math.min(innerWidth / W, innerHeight / H), cw = Math.round(W * s), ch = Math.round(H * s);
+  cvs.style.width = cw + 'px'; cvs.style.height = ch + 'px';
+  if (EXPORT) { cvs.width = W; cvs.height = H; } else { const d = Math.min(devicePixelRatio || 1, 2); cvs.width = Math.round(cw * d); cvs.height = Math.round(ch * d); }
+  SCALE = cvs.width / W;
+}
+addEventListener('resize', resize); resize();
+
+// ---------------------------------------------------------------- TYPE
+const SANS = CONFIG.FONT_SANS, MONO = CONFIG.FONT_MONO;
+const measureCache = new Map();
+function charXs(text, f, track) {
+  const key = f + '|' + track + '|' + text; let r = measureCache.get(key); if (r) return r;
+  ctx.font = f; const xs = []; for (let i = 0; i <= text.length; i++) xs.push(ctx.measureText(text.slice(0, i)).width + i * track);
+  r = { xs, w: xs[text.length] - track }; measureCache.set(key, r); return r;
+}
+function textWidth(text, o) { const s = o.size || 32; return charXs(text, `${o.weight || 500} ${s}px ${o.mono ? MONO : SANS}`, (o.track || 0) * s).w; }
+function drawText(text, x, y, o = {}) {
+  const size = o.size || 32, f = `${o.weight || 500} ${size}px ${o.mono ? MONO : SANS}`, track = (o.track || 0) * size, { xs, w } = charXs(text, f, track);
+  const x0 = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
+  const a = o.alpha == null ? 1 : o.alpha, reveal = o.reveal == null ? 1 : o.reveal, exit = o.exit || 0;
+  if (a <= 0.003 || reveal <= 0 || exit >= 1) return w;
+  const n = text.length, k = o.soft || 6, rise = (o.rise == null ? 0.2 : o.rise) * size, ex = eIO(exit);
+  ctx.save();
+  if (o.wipe) { ctx.beginPath(); ctx.rect(x0 + o.wipe * (w + 8) - 4, y - size * 1.2, W, size * 2); ctx.clip(); }
+  ctx.font = f; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  for (let i = 0; i < n; i++) {
+    const ch = text[i]; if (ch === ' ') continue;
+    let ca = 1, dy = 0;
+    if (reveal < 1) { const c = clamp(reveal * (n + k) - i, 0, k) / k, e = eOut(c); ca = e; dy = (1 - e) * rise; }
+    ctx.globalAlpha = clamp(a * ca * (1 - ex)); ctx.fillStyle = rgba(o.colors ? o.colors(i) : (o.color || INK), 1);
+    ctx.fillText(ch, x0 + xs[i], y + dy - ex * size * 0.15);
+  }
+  ctx.restore();
+  if (o.strike) { ctx.fillStyle = rgba(o.strikeColor || RED, a * o.strike); ctx.fillRect(x0 - 4, y - size * 0.34, (w + 8) * o.strike, 2); }
+  if (o.wipe && o.wipe > 0 && o.wipe < 1) { ctx.fillStyle = rgba(INK, 0.8 * a); ctx.fillRect(x0 + o.wipe * (w + 8) - 5, y - size * 0.82, 1.5, size * 1.02); }
+  return w;
+}
+const makeScrim = (col) => { // feathered on all four sides so no band edge is ever visible
+  const BG = col, c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d'), im = g.createImageData(512, 128);
+  for (let y = 0; y < 128; y++) for (let x = 0; x < 512; x++) { const u = x / 511, ax = u < 0.65 ? lerp(0.82, 0.55, u / 0.65) : 0.55 * (1 - eSine((u - 0.65) / 0.35)), ay = eSine(clamp(Math.min(y, 127 - y) / 40)), i = (y * 512 + x) * 4; im.data[i] = BG[0]; im.data[i + 1] = BG[1]; im.data[i + 2] = BG[2]; im.data[i + 3] = 255 * ax * ay; }
+  g.putImageData(im, 0, 0); return c; };
+const SCRIMS = [makeScrim(DARK.BG), makeScrim(PAPER.BG)];
+function scrim(x, y, w, h, a) { if (a <= 0) return; ctx.globalAlpha = clamp(a); ctx.drawImage(SCRIMS[PAPER_P > 0.5 ? 1 : 0], x, y - h * 0.3, w, h * 1.6); ctx.globalAlpha = 1; }
+const PAPER_TEX = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'), r = mulberry32(512);
+  for (let i = 0; i < 26; i++) { const x = r() * 512, y = r() * 512, rr = 40 + r() * 120, gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, `rgba(120,80,40,${0.02 + r() * 0.03})`); gr.addColorStop(1, 'rgba(120,80,40,0)'); g.fillStyle = gr; g.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
+  g.lineCap = 'round'; for (let i = 0; i < 1600; i++) { const x = r() * 512, y = r() * 512, a = r() * TAU, l = 3 + r() * 14, dark = r() < 0.6; g.strokeStyle = dark ? `rgba(90,60,30,${0.03 + r() * 0.05})` : `rgba(255,255,250,${0.05 + r() * 0.08})`; g.lineWidth = 0.6 + r() * 0.8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+  return c; })();
+let paperPat = null;
+function drawPaperTex(a) { if (a <= 0.01) return; if (!paperPat) paperPat = ctx.createPattern(PAPER_TEX, 'repeat'); ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = paperPat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+function rrPath(x, y, w, h, r) { r = Math.max(0, Math.min(r, w / 2, h / 2)); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+const LABEL = (s, x, y, a, o = {}) => drawText(s, x, y, { size: 22, weight: 600, track: 0.02, alpha: a, ...o });
+const CAPS = (s, x, y, a, o = {}) => drawText(s, x, y, { size: 23, weight: 700, track: 0.16, alpha: a, ...o });
+
+/* provenance chips — subtle, always top-left, never in the lower band */
+const CHIP = {
+  DATA: { label: 'PATIENT DATA', col: AMB }, PRED: { label: 'MODEL PREDICTION', col: CYA },
+  EXT: { label: 'EXTERNAL EVIDENCE', col: INK }, AUDIT: { label: 'OUR OWN AUDIT', col: INK }, HYPO: { label: 'HYPOTHESIS', col: INK }, NEXT: { label: 'PROPOSED EXPERIMENT', col: INK }
+};
+function chipIcon(kind, x, y, a) {
+  const c = CHIP[kind].col; ctx.lineWidth = 1.6;
+  if (kind === 'DATA') { ctx.beginPath(); ctx.arc(x, y, 5.5, 0, TAU); ctx.fillStyle = rgba(c, a); ctx.fill(); }
+  else if (kind === 'PRED') { ctx.beginPath(); ctx.arc(x, y, 6.5, 0, TAU); ctx.strokeStyle = rgba(c, a); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, 2, 0, TAU); ctx.fillStyle = rgba(c, a); ctx.fill(); }
+  else if (kind === 'EXT') { ctx.strokeStyle = rgba(c, a); ctx.strokeRect(x - 5.5, y - 5.5, 11, 11); }
+  else if (kind === 'AUDIT') { ctx.strokeStyle = rgba(c, a); ctx.strokeRect(x - 6, y - 6, 12, 12); ctx.beginPath(); ctx.moveTo(x - 3.5, y); ctx.lineTo(x - 0.5, y + 3); ctx.lineTo(x + 4, y - 3.5); ctx.stroke(); }
+  else { ctx.setLineDash([2.5, 2.5]); ctx.beginPath(); ctx.arc(x, y, 6.5, 0, TAU); ctx.strokeStyle = rgba(c, a); ctx.stroke(); ctx.setLineDash([]); }
+}
+function chip(kind, x, y, a, note) {
+  if (a <= 0.01) return 0;
+  chipIcon(kind, x + 7, y - 7, 0.95 * a);
+  const w = CAPS(CHIP[kind].label, x + 24, y, 0.85 * a, { color: CHIP[kind].col === INK ? INK : mix(CHIP[kind].col, INK, 0.25) });
+  let tw = 24 + w;
+  if (note) tw += 18 + drawText(note, x + tw + 18, y, { size: 22, weight: 500, alpha: 0.78 * a });
+  return tw;
+}
+const hud = (t, a, b) => env(t, a, a + 0.5, b - 0.5, b);
+function chapterTag(n, a) { if (a > 0.01) CAPS(`0${n}  ·  ${CONFIG.COPY.ch[n]}`, W - 96, 86, 0.55 * a, { align: 'right' }); }
+function calmBand(a) {
+  if (a <= 0) return; const g = ctx.createLinearGradient(0, 790, 0, H);
+  g.addColorStop(0, rgba(BG, 0)); g.addColorStop(0.45, rgba(BG, 0.55 * a)); g.addColorStop(1, rgba(BG, 0.8 * a));
+  ctx.fillStyle = g; ctx.fillRect(0, 790, W, H - 790);
+}
+/* drafting layer: construction circle, cross-hair with ruler ticks (after the reference film) */
+function drafting(x, y, r, a, prog = 1, rot = 0) {
+  if (a <= 0.005) return;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.strokeStyle = rgba(INK, a); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 0, r, -Math.PI / 2, -Math.PI / 2 + TAU * prog); ctx.stroke();
+  const L = r * 1.45 * prog;
+  ctx.beginPath(); ctx.moveTo(-L, 0); ctx.lineTo(L, 0); ctx.moveTo(0, -L); ctx.lineTo(0, L); ctx.stroke();
+  ctx.beginPath(); for (let s = -L; s <= L; s += r / 8) { const k = Math.abs(Math.round(s / (r / 8))) % 4 === 0 ? 7 : 3.5; ctx.moveTo(s, -k); ctx.lineTo(s, k); ctx.moveTo(-k, s); ctx.lineTo(k, s); } ctx.stroke();
+  ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(-L * 0.8, L * 0.8); ctx.lineTo(L * 0.8, -L * 0.8); ctx.stroke();
+  ctx.restore();
+}
+/* stipple texture (the reference's dotted nuclei), kept in screen space */
+const STIP = (() => { const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'), r = mulberry32(77); for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(236,233,226,${0.35 + r() * 0.65})`; g.beginPath(); g.arc(r() * 160, r() * 160, 0.55 + r() * 0.75, 0, TAU); g.fill(); } return c; })();
+let stipPat = null;
+function stipple(z) { if (!stipPat) stipPat = ctx.createPattern(STIP, 'repeat'); if (stipPat.setTransform) stipPat.setTransform(new DOMMatrix().scale(1 / z)); return stipPat; }
+
+// ================================================================ ACT I DATA (authored on the v1 clock, played slower)
+// MASTER CLOCK (export seconds T). The cold open (incl. the restored research chain) is authored on the
+// v1 clock and played ~1.3x slower than v1; the title and chapters are authored on clock A and played
+// ~1.3x faster than before, with holds shortened in the MP4 (live, they wait for the clicker).
+const V1K = [[0, 0], [13, 10], [20.2, 15.5], [26.5, 21], [35.6, 28.0], [43.0, 33.7], [43.6, 34.3]];
+const PRO = 9;   // the prologue (human world) precedes everything
+V1K.forEach(k => { k[0] += PRO; });
+function toV1(T) { for (let i = 1; i < V1K.length; i++) if (T <= V1K[i][0]) { const a = V1K[i - 1], b = V1K[i]; return lerp(a[1], b[1], inv(a[0], b[0], T)); } return 34.3 + (T - V1K[V1K.length - 1][0]); }
+function fromV1(v) { for (let i = 1; i < V1K.length; i++) if (v <= V1K[i][1]) { const a = V1K[i - 1], b = V1K[i]; return lerp(a[0], b[0], inv(a[1], b[1], v)); } return V1K[V1K.length - 1][0] + (v - 34.3); }
+const AK = [[48.6, 43.0], [54, 48.4], [60, 51.4], [69, 58.3], [75, 61.3], [90.5, 73.2], [97.5, 76.2], [107.5, 83.9], [112.5, 86.4], [124, 95.3],
+  [131, 98.8], [136.5, 103.1], [141.5, 105.6], [152, 113.7], [159.5, 117.2], [167, 123.0], [173, 126.0], [176.5, 128.9], [184, 134.0]];
+AK.forEach(k => { k[1] += PRO; });
+function AtoT(a) { if (a <= AK[0][0]) return AK[0][1] + (a - AK[0][0]); for (let i = 1; i < AK.length; i++) if (a <= AK[i][0]) { const p = AK[i - 1], q = AK[i]; return lerp(p[1], q[1], inv(p[0], q[0], a)); } return AK[AK.length - 1][1] + (a - AK[AK.length - 1][0]); }
+function TtoA(T) { if (T <= AK[0][1]) return AK[0][0] + (T - AK[0][1]); for (let i = 1; i < AK.length; i++) if (T <= AK[i][1]) { const p = AK[i - 1], q = AK[i]; return lerp(p[0], q[0], inv(p[1], q[1], T)); } return AK[AK.length - 1][0] + (T - AK[AK.length - 1][1]); }
+const BLK0 = 131, BLK_D = 36;   // the interlude sits between the model reading and the rescue question
+{ const iB = AK.findIndex(k => k[0] === BLK0), T0b = AK[iB][1]; for (let i = iB + 1; i < AK.length; i++) { AK[i][0] += BLK_D; AK[i][1] += BLK_D; } AK.splice(iB + 1, 0, [BLK0 + BLK_D, T0b + BLK_D]); }
+const AtoTm = a => AtoT(a >= BLK0 ? a + BLK_D : a);
+HOLDS.forEach(h => { h.ta = h.t >= BLK0 ? h.t + BLK_D : h.t; });
+HOLDS.push({ t: BLK0 + 13.2, ta: BLK0 + 13.2, d: 1.8, n: 'no T0', bedA: 125 }, { t: BLK0 + 31.0, ta: BLK0 + 31.0, d: 1.8, n: 'a winning clone', bedA: 125 });
+HOLDS.sort((a, b) => a.ta - b.ta);
+HOLDS.forEach(h => { h.T = AtoT(h.ta); h.Tend = AtoT(h.ta + h.d); });
+
+const CHR_MB = [248, 242, 198, 190, 181, 171, 159, 145, 138, 134, 135, 133, 114, 107, 102, 90, 83, 80, 59, 64, 47, 51, 156];
+const CHR_CEN = [.50, .39, .46, .26, .27, .36, .39, .31, .33, .30, .39, .27, .14, .15, .16, .41, .28, .22, .45, .46, .30, .30, .39];
+const TOTAL_MB = CHR_MB.reduce((a, b) => a + b, 0);
+const HERO_CHR = 7;
+const chrLen = c => 6 + 16 * (CHR_MB[c] / 248);
+const BR = mulberry32(CONFIG.SEED ^ 0xB4D5);
+function makeBands(n) { const out = []; for (let i = 0; i < n; i++) out.push([0.07 + 0.86 * (i + BR() * 0.55) / n, 0.012 + BR() * 0.028]); return out; }
+const BANDS = CHR_MB.map(mb => makeBands(3 + Math.floor(mb / 34)));
+const sameState = (a, b) => a && b && a.c === b.c && a.d === b.d;
+const HERO_STATE = { c: HERO_CHR, d: 1 };
+function stateOf(chrom) { const n = new Array(23).fill(0); chrom.forEach(ch => n[ch.c]++); for (let c = 0; c < 23; c++) if (n[c] !== 2) return { c, d: n[c] - 2 }; return null; }
+function stateRGB(st, lit) { if (!st) return INK; if (sameState(st, HERO_STATE)) return lit ? AMB : SAND; const h = (st.c * 7 + (st.d > 0 ? 3 : 0)) % 5; return st.d > 0 ? WARM[h % WARM.length] : COOL[h % COOL.length]; }
+
+const R = 110, S = 352, LR = mulberry32(CONFIG.SEED ^ 0x51F);
+const cells = []; let cellId = 0;
+function makeLayout(n) { const pts = [], rN = 0.5 * R; for (let i = 0; i < n; i++) { let x = 0, y = 0, tries = 0; do { const a = LR() * TAU, rr = Math.sqrt(LR()) * rN; x = Math.cos(a) * rr; y = Math.sin(a) * rr; tries++; } while (tries < 40 && pts.some(p => (p.x - x) ** 2 + (p.y - y) ** 2 < 70)); pts.push({ x, y, a: LR() * Math.PI }); } return pts; }
+function newCell(gen, tx, ty, chrom) { const c = { id: cellId++, gen, tx, ty, chrom, layout: makeLayout(chrom.length), init: null, bornT: -10, bx: tx, by: ty, div: null, parent: null }; c.count = chrom.length; c.state = stateOf(chrom); cells.push(c); return c; }
+const poleDist = p => lerp(0.72 * R, 1.57 * R, eIO(inv(0.55, 0.9, p)));
+function chromatid(cell, i, sis, p) {
+  const D = cell.div, pl = D.plate[i], L = cell.layout[i], ax = D.ax, ay = D.ay, lu = L.x * ax + L.y * ay, lv = -L.x * ay + L.y * ax;
+  const q1 = eIO(inv(0.04, 0.36, p)), sep = 2.8 * eOut(inv(0.0, 0.22, p));
+  let u = lerp(lu, pl.d, q1), v = lerp(lv, pl.s, q1), ang = lerp(L.a - D.theta, Math.PI / 2 + pl.tilt, q1);
+  const isErr = i === D.errI, side = isErr ? D.errTo : sis, t0 = 0.46 + pl.lag + (isErr ? 0.07 : 0), t1 = 0.8 + pl.lag + (isErr ? 0.09 : 0), tr = eIO(inv(t0, t1, p));
+  u = lerp(u + sis * sep / 2, side * (poleDist(p) - 0.16 * R + pl.pj), tr); v = v * lerp(1, 0.46, tr); ang = lerp(ang, pl.tilt * 0.4, tr * 0.75);
+  return [u * ax - v * ay, u * ay + v * ax, ang + D.theta];
+}
+function divide(cell, t0, dur, axisX, targets, err) {
+  const ax = axisX ? 1 : 0, ay = axisX ? 0 : 1, n = cell.chrom.length, order = shuffle([...Array(n).keys()], LR), plate = new Array(n);
+  order.forEach((i, rank) => { plate[i] = { s: lerp(-0.64 * R, 0.64 * R, (rank + 0.5) / n) + (LR() - .5) * 7, d: (LR() - .5) * 9, tilt: (LR() - .5) * 0.6, lag: LR() * 0.05, pj: (LR() - .5) * 0.22 * R }; });
+  const errI = err ? cell.chrom.findIndex(ch => ch.c === err.c) : -1;
+  const D = cell.div = { t0, dur, ax, ay, theta: Math.atan2(ay, ax), plate, errI, errTo: err ? err.to : 0 };
+  const born = t0 + 0.9 * dur;
+  D.kids = [-1, 1].map((side, k) => {
+    const bx = cell.tx + ax * side * 1.57 * R, by = cell.ty + ay * side * 1.57 * R, chrom = [], init = [];
+    for (let i = 0; i < n; i++) for (const sis of [-1, 1]) { const dest = i === errI ? D.errTo : sis; if (dest !== side) continue; const [x, y, a] = chromatid(cell, i, sis, 0.9); chrom.push({ c: cell.chrom[i].c, err: i === errI }); init.push({ x: x + cell.tx - bx, y: y + cell.ty - by, a }); }
+    const kid = newCell(cell.gen + 1, targets[k][0], targets[k][1], chrom); Object.assign(kid, { init, bornT: born, bx, by, parent: cell }); return kid;
+  });
+  return D.kids;
+}
+const base46 = []; for (let c = 0; c < 23; c++) base46.push({ c }, { c });
+const root = newCell(0, 0, 0, base46);
+const g1 = divide(root, 0.95, 1.2, true, [[-S, 0], [S, 0]], null);
+const g2 = []; g1.forEach((c, i) => g2.push(...divide(c, 2.95 + i * 0.1, 1.2, false, [[c.tx, c.ty - S], [c.tx, c.ty + S]], null)));
+const g3 = []; const g2t = [5.2, 5.4, 5.52, 5.63], g2d = [1.55, 1.25, 1.25, 1.25];
+g2.forEach((c, i) => g3.push(...divide(c, g2t[i], g2d[i], true, [[c.tx - S / 2, c.ty], [c.tx + S / 2, c.ty]], i === 0 ? { c: HERO_CHR, to: 1 } : null)));
+const g3t = [7.74, 7.82, 7.9, 7.78, 7.96, 7.86, 8.03, 7.92], g3err = { 3: { c: 15, to: -1 }, 6: { c: 3, to: 1 } };
+const jit = () => (LR() - 0.5) * 110;
+g3.forEach((c, i) => divide(c, g3t[i], 1.1, false, [[c.tx + jit(), c.ty - S / 2 + jit()], [c.tx + jit(), c.ty + S / 2 + jit()]], g3err[i] || null));
+const leaves = cells.filter(c => c.gen === 4);
+const heroLeaf = g3[1].div.kids[1];
+
+// lineage tree layout (top-right) — the counts live here, as in the reference's lineage diagram
+const TREE = { x0: 1505, x1: 1830, y0: 128, dy: 46 };
+(() => { const order = []; (function dfs(c) { if (c.div) { dfs(c.div.kids[0]); dfs(c.div.kids[1]); } else order.push(c); })(root);
+  order.forEach((c, i) => { c.tX = TREE.x0 + (i + 0.5) * (TREE.x1 - TREE.x0) / order.length; });
+  (function up(c) { if (c.div) { up(c.div.kids[0]); up(c.div.kids[1]); c.tX = (c.div.kids[0].tX + c.div.kids[1].tX) / 2; } })(root);
+  cells.forEach(c => { c.tY = TREE.y0 + c.gen * TREE.dy; }); })();
+
+const TRng = mulberry32(CONFIG.SEED ^ 0xA11CE), PR = 330, GAP = 26;
+function poisson(w, h, r, fixed, rng) {
+  const cs = r / Math.SQRT2, gw = Math.ceil(w / cs), gh = Math.ceil(h / cs), grid = new Int32Array(gw * gh).fill(-1), pts = [], active = [];
+  const gi = (x, y) => [Math.floor((x + w / 2) / cs), Math.floor((y + h / 2) / cs)];
+  const add = (x, y) => { const [i, j] = gi(x, y); pts.push([x, y]); grid[j * gw + i] = pts.length - 1; active.push(pts.length - 1); };
+  const ok = (x, y) => { if (x < -w / 2 || x >= w / 2 || y < -h / 2 || y >= h / 2) return false; const [i, j] = gi(x, y); for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= gw || jj >= gh) continue; const k = grid[jj * gw + ii]; if (k >= 0) { const dx = pts[k][0] - x, dy = pts[k][1] - y; if (dx * dx + dy * dy < r * r) return false; } } return true; };
+  fixed.forEach(p => add(p[0], p[1]));
+  while (active.length) { const ai = Math.floor(rng() * active.length), [px, py] = pts[active[ai]]; let found = false; for (let k = 0; k < 24; k++) { const a = rng() * TAU, d = r * (1 + rng()), x = px + Math.cos(a) * d, y = py + Math.sin(a) * d; if (ok(x, y)) { add(x, y); found = true; break; } } if (!found) active.splice(ai, 1); }
+  return pts;
+}
+function clipPoly(poly, p, ux, uy, c) { const out = []; let cut = false; for (let i = 0; i < poly.length; i++) { const A = poly[i], B = poly[(i + 1) % poly.length], da = (A[0] - p[0]) * ux + (A[1] - p[1]) * uy - c, db = (B[0] - p[0]) * ux + (B[1] - p[1]) * uy - c; if (da <= 0) out.push(A); else cut = true; if ((da <= 0) !== (db <= 0)) { const tt = da / (da - db); out.push([A[0] + (B[0] - A[0]) * tt, A[1] + (B[1] - A[1]) * tt]); } } return { out, cut }; }
+function voronoi(pts, r, gap) {
+  const cs = r, map = new Map(), key = (i, j) => i * 100003 + j;
+  pts.forEach((p, k) => { const kk = key(Math.floor(p[0] / cs), Math.floor(p[1] / cs)); if (!map.has(kk)) map.set(kk, []); map.get(kk).push(k); });
+  return pts.map((p, k) => {
+    let poly = [[p[0] - 2.2 * r, p[1] - 2.2 * r], [p[0] + 2.2 * r, p[1] - 2.2 * r], [p[0] + 2.2 * r, p[1] + 2.2 * r], [p[0] - 2.2 * r, p[1] + 2.2 * r]];
+    const i0 = Math.floor(p[0] / cs), j0 = Math.floor(p[1] / cs), nb = [];
+    for (let dj = -4; dj <= 4; dj++) for (let di = -4; di <= 4; di++) { const L = map.get(key(i0 + di, j0 + dj)); if (L) for (const q of L) if (q !== k) nb.push(q); }
+    nb.sort((a, b) => ((pts[a][0] - p[0]) ** 2 + (pts[a][1] - p[1]) ** 2) - ((pts[b][0] - p[0]) ** 2 + (pts[b][1] - p[1]) ** 2));
+    const neighbors = [];
+    for (const q of nb) { const nx = pts[q][0] - p[0], ny = pts[q][1] - p[1], d = Math.hypot(nx, ny); if (d > 4.4 * r) break; const res = clipPoly(poly, p, nx / d, ny / d, d / 2 - gap / 2); if (res.cut) neighbors.push(q); poly = res.out; }
+    return { poly, neighbors };
+  });
+}
+function radialOf(poly, cx, cy, N) { const out = new Float32Array(N); for (let j = 0; j < N; j++) { const a = j / N * TAU, dx = Math.cos(a), dy = Math.sin(a); let best = 1e9; for (let i = 0; i < poly.length; i++) { const A = poly[i], B = poly[(i + 1) % poly.length], ex = B[0] - A[0], ey = B[1] - A[1], den = dx * ey - dy * ex; if (Math.abs(den) < 1e-9) continue; const ax = A[0] - cx, ay = A[1] - cy, tt = (ax * ey - ay * ex) / den, s = (ax * dy - ay * dx) / den; if (tt > 0 && s >= 0 && s <= 1 && tt < best) best = tt; } out[j] = best; } return out; }
+const tilePts = poisson(15200, 8800, PR, leaves.map(c => [c.tx, c.ty]), TRng);
+const vor = voronoi(tilePts, PR, GAP);
+const tiles = tilePts.map((p, k) => ({ k, x: p[0], y: p[1], poly: vor[k].poly, nb: vor[k].neighbors, appearT: k < 16 ? 9.9 : 9.6 + Math.max(0, Math.hypot(p[0], p[1]) - 600) / 2800, base: null, persist: null, trans: [], reserved: false, group: null }));
+leaves.forEach((c, k) => { c.tileK = k; tiles[k].radial = radialOf(tiles[k].poly, c.tx, c.ty, 72); tiles[k].leaf = c; });
+const HERO = tiles[heroLeaf.tileK];
+const nearestTile = (x, y, pred) => { let best = null, bd = 1e18; for (const T of tiles) { if (pred && !pred(T)) continue; const d = (T.x - x) ** 2 + (T.y - y) ** 2; if (d < bd) { bd = d; best = T; } } return best; };
+const GHOSTS = [], lineageVanish = [12.35, 12.8, 12.0, 13.2, 12.6, 11.75]; let lv = 0;
+leaves.forEach(c => { const T = tiles[c.tileK]; if (!c.state) return; if (sameState(c.state, HERO_STATE)) { T.persist = { t: 9.0, state: HERO_STATE }; T.group = 'A'; } else { const vt = lineageVanish[lv++ % lineageVanish.length]; T.trans.push({ t0: 8.0, dur: vt - 8.0, state: c.state }); T.reserved = true; GHOSTS.push({ T, state: c.state, sister: sameState(c.state, { c: HERO_CHR, d: -1 }) }); } });
+function grow(seeds, state, group, maxN, startT = 0) {
+  const q = []; let count = 0;
+  for (const [T, t] of seeds) { if (!T.persist) { T.persist = { t: Math.max(t, T.appearT + 0.2), state }; T.group = group; } q.push(T); count++; }
+  while (q.length && count < maxN) { const T = q.shift(); for (const nk of shuffle(T.nb.slice(), TRng)) { const N = tiles[nk]; if (N.persist || N.reserved || N.trans.length) continue; if (TRng() < 0.42) continue; const tt = Math.max(T.persist.t + 0.24 + TRng() * 0.34, N.appearT + 0.25, startT + TRng() * 0.3); if (tt > 14.0) continue; N.persist = { t: tt, state }; N.group = group; q.push(N); if (++count >= maxN) break; } }
+}
+const A2 = nearestTile(2700, 1300), A3 = nearestTile(-3000, 1700);
+grow(tiles.filter(T => T.group === 'A').map(T => [T, 9.0]), HERO_STATE, 'A', 15, 11.0);
+grow([[A2, 11.7]], HERO_STATE, 'A', 7); grow([[A3, 12.2]], HERO_STATE, 'A', 5);
+const STATE_B = { c: 17, d: 1 }, STATE_C = { c: 22, d: -1 };
+grow([[nearestTile(1500, -1000, T => !T.persist && !T.reserved), 11.1]], STATE_B, 'B', 10);
+grow([[nearestTile(-1700, 900, T => !T.persist && !T.reserved), 11.4]], STATE_C, 'C', 8);
+const TRANS = [];
+for (let n = 0, guard = 0; n < 170 && guard < 5000; guard++) {
+  const T = tiles[Math.floor(TRng() * tiles.length)];
+  if (T.k < 16 || T.persist || T.reserved || Math.abs(T.x) > 6600 || Math.abs(T.y) > 3700 || T.appearT > 13.3) continue;
+  const lo = Math.max(10.4, T.appearT + 0.25), t0 = lo + TRng() * (13.8 - lo), dur = 0.35 + TRng() * 1.0;
+  if (T.trans.some(e => Math.abs(e.t0 - t0) < 3)) continue;
+  let st; do { st = { c: Math.floor(TRng() * 23), d: TRng() < 0.55 ? 1 : -1 }; } while (sameState(st, HERO_STATE) || sameState(st, STATE_B) || sameState(st, STATE_C));
+  const ev = { t0, dur, state: st }; T.trans.push(ev); TRANS.push({ T, ev }); n++;
+}
+// the crayon child (prologue) re-appears as a mosaic figure when the camera pulls back — "inside one child"
+const KID = { k: 24, ox: 60 - 40 * 24, oy: 350 - 84 * 24 }, KID_SEG = [[[40, 22], [40, 120]], [[-30, 22], [40, 50]], [[40, 50], [100, 85]], [[15, 210], [40, 120]], [[40, 120], [68, 210]]];
+const segDist = (x, y, a, b) => { const vx = b[0] - a[0], vy = b[1] - a[1], k = clamp(((x - a[0]) * vx + (y - a[1]) * vy) / (vx * vx + vy * vy)); return Math.hypot(x - a[0] - k * vx, y - a[1] - k * vy); };
+tiles.forEach(T => { const lx = (T.x - KID.ox) / KID.k, ly = (T.y - KID.oy) / KID.k; let d = Math.hypot(lx - 40, ly + 10) - 32; for (const [a, b] of KID_SEG) d = Math.min(d, segDist(lx, ly, a, b) - 8); T.sil = clamp(1 - d / 5); });
+const A_TILES = tiles.filter(T => T.group === 'A');
+TRANS.slice().sort((a, b) => ((a.T.x - HERO.x) ** 2 + (a.T.y - HERO.y) ** 2) - ((b.T.x - HERO.x) ** 2 + (b.T.y - HERO.y) ** 2)).slice(0, 9).forEach(o => GHOSTS.push({ T: o.T, state: o.ev.state }));
+GHOSTS.sort((a, b) => (b.sister ? 1 : 0) - (a.sister ? 1 : 0));
+const A_REPS = [HERO, A2, A3, ...A_TILES.filter(T => T !== HERO && T !== A2 && T !== A3).sort((a, b) => Math.hypot(b.x - HERO.x, b.y - HERO.y) - Math.hypot(a.x - HERO.x, a.y - HERO.y)).slice(0, 5)];
+const ROW_P = [HERO, A2, A3, ...A_REPS.slice(3, 6)], ROW_G = GHOSTS.slice(0, 6), HX = HERO.x, HY = HERO.y;
+function tileLook(T, t) {
+  let st = T.base, boost = 0, dark = 0, persistent = false;
+  if (T.persist && t >= T.persist.t) { st = T.persist.state; persistent = true; boost = 1 - inv(T.persist.t, T.persist.t + 0.7, t); }
+  for (const e of T.trans) { if (t < e.t0) continue; const t1 = e.t0 + e.dur; if (t < t1) { st = e.state; boost = e.t0 > 9 ? 1 - inv(e.t0, e.t0 + 0.45, t) : 0; } else if (t < t1 + 1.7) { const k1 = inv(t1, t1 + 0.35, t), k2 = inv(t1 + 0.95, t1 + 1.7, t); if (k2 > 0) { st = T.base; dark = 1 - k2; } else { st = e.state; dark = k1; } } }
+  return { st, boost, dark, persistent };
+}
+const CAMK = [
+  [0.0, 0, 0, 1.62], [2.25, 0, 0, 1.62], [3.3, 0, 0, 1.0], [4.95, 0, 0, 0.92], [5.6, -S, -S, 1.3], [6.95, -S, -S, 1.36],
+  [8.2, -300, 0, 0.62], [9.7, -300, 0, 0.6], [14.1, 60, 20, 0.145, eSine], [15.4, 80, 30, 0.14], [16.5, -120, -60, 0.3], [20.9, -90, -60, 0.31],
+  [21.8, HX, HY, 0.21], [24.8, HX, HY, 0.235], [27.75, HX, HY, 0.26], [28.6, HX, HY, 9.0, eIn]
+];
+function camAt(t) {
+  const K = CAMK, ZF = lerp(0.86, 1, eIO(inv(9.7, 13.5, t)));
+  if (t <= K[0][0]) return { x: K[0][1], y: K[0][2], z: K[0][3] * ZF };
+  for (let i = 1; i < K.length; i++) if (t <= K[i][0]) { const a = K[i - 1], b = K[i], e = (b[4] || eIO)(inv(a[0], b[0], t)), drift = eSine(inv(9.7, 11.5, t)) * (1 - eSine(inv(26.6, 27.7, t))); return { x: lerp(a[1], b[1], e) + drift * 40 * Math.sin(t * 0.21), y: lerp(a[2], b[2], e) + drift * 26 * Math.sin(t * 0.17 + 1), z: Math.exp(lerp(Math.log(a[3]), Math.log(b[3]), e)) * ZF }; }
+  const L = K[K.length - 1]; return { x: L[1], y: L[2], z: L[3] };
+}
+const w2s = (x, y, c) => [(x - c.x) * c.z + W / 2, (y - c.y) * c.z + VIEW_CY];
+const CAM4 = { x: -105, y: -60, z: 0.305 };
+const TAGS = (() => {
+  const want = [[-1, -1, T => T.group === 'A' && T !== HERO], [1, 1, T => T.group === 'C'], [1, -1, T => T.group === 'B'], [-1, 1, T => T.group === 'A' && T !== HERO], [0, 0, T => T === HERO]], used = new Set();
+  return CONFIG.COPY.tags.map((label, i) => {
+    const [qx, qy, pred] = want[i], zx = W / 2 + qx * 420, zy = VIEW_CY + qy * 210; let best = null, bd = 1e18;
+    for (const T of tiles) { if (!pred(T) || used.has(T)) continue; const [sx, sy] = w2s(T.x, T.y, CAM4); if (sx < 180 || sx > 1740 || sy < 150 || sy > 740) continue; const d = (sx - zx) ** 2 + (sy - zy) ** 2; if (d < bd) { bd = d; best = T; } }
+    if (!best) best = HERO; used.add(best);
+    const [sx, sy] = w2s(best.x, best.y, CAM4); let dx = sx - W / 2, dy = sy - VIEW_CY; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+    if (i === 4) { dx = 0.55; dy = -0.83; }
+    return { label, T: best, lx: clamp(sx + dx * 160, 150, 1770), ly: clamp(sy + dy * 110, 130, 740) };
+  });
+})();
+
+// ================================================================ ACT I DRAWING (t = v1 clock)
+const wob = (a, t, id) => 1 + 0.012 * Math.sin(3 * a + t * 1.1 + id * 1.7) + 0.007 * Math.sin(5 * a - t * 0.8 + id * 2.3);
+function cellPos(c, t) { if (!c.init) return [c.tx, c.ty]; const k = eIO(inv(c.bornT, c.bornT + 0.9, t)); return [lerp(c.bx, c.tx, k), lerp(c.by, c.ty, k)]; }
+function strokeChromatid(x, y, a, len) { const dx = Math.cos(a) * len / 2, dy = Math.sin(a) * len / 2; ctx.moveTo(x - dx, y - dy); ctx.lineTo(x + dx, y + dy); }
+function cassini(p) {
+  const s = eIO(inv(0.55, 0.9, p)), a = 1.15 * R * s, b = R, k = 1 + 0.5 * s, loops = [];
+  if (a < b * 0.999) { const L = [], N = 96; for (let j = 0; j < N; j++) { const th = j / N * TAU, s2 = Math.sin(2 * th), r = Math.sqrt(Math.max(0, a * a * Math.cos(2 * th) + Math.sqrt(Math.max(0, b ** 4 - a ** 4 * s2 * s2)))) * k; L.push([r * Math.cos(th), r * Math.sin(th)]); } loops.push({ pts: L, uc: 0 }); }
+  else { const thm = 0.5 * Math.asin(Math.min(1, (b / a) ** 2)), N = 48, L = [], rr = (th, sg) => Math.sqrt(Math.max(0, a * a * Math.cos(2 * th) + sg * Math.sqrt(Math.max(0, b ** 4 - a ** 4 * Math.sin(2 * th) ** 2)))) * k;
+    for (let j = 0; j <= N; j++) { const th = thm * Math.sin(-Math.PI / 2 + Math.PI * j / N), r = rr(th, 1); L.push([r * Math.cos(th), r * Math.sin(th)]); }
+    for (let j = N; j >= 0; j--) { const th = thm * Math.sin(-Math.PI / 2 + Math.PI * j / N), r = rr(th, -1); L.push([r * Math.cos(th), r * Math.sin(th)]); }
+    const uc = k * (Math.sqrt(a * a + b * b) + Math.sqrt(Math.max(0, a * a - b * b))) / 2; loops.push({ pts: L, uc }, { pts: L.map(([u, v]) => [-u, v]), uc: -uc }); }
+  return loops;
+}
+function drawDividing(c, t, z) {
+  const D = c.div, p = (t - D.t0) / D.dur, cx = c.tx, cy = c.ty, cos = Math.cos(D.theta), sin = Math.sin(D.theta), loops = cassini(p), wB = eIO(inv(0.8, 0.9, p));
+  ctx.lineWidth = 1.6 / z;
+  for (const L of loops) {
+    ctx.beginPath();
+    L.pts.forEach(([u, v], j) => { const du = u - L.uc, dv = v, ang = Math.atan2(dv, du), w = wob(ang, t, c.id + (L.uc > 0 ? 1 : 0)); let pu = L.uc + du * w, pv = dv * w; if (wB > 0 && L.uc !== 0) { const sg = Math.sign(L.uc), dl = Math.hypot(du, dv) || 1; pu = lerp(pu, sg * 1.57 * R + du / dl * 0.72 * R * w, wB); pv = lerp(pv, dv / dl * 0.72 * R * w, wB); } const x = cx + pu * cos - pv * sin, y = cy + pu * sin + pv * cos; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.closePath(); ctx.fillStyle = rgba(INK, 0.03); ctx.fill(); ctx.globalAlpha = 0.07; ctx.fillStyle = stipple(z); ctx.fill(); ctx.globalAlpha = 1; ctx.strokeStyle = rgba(INK, 0.62); ctx.stroke();
+  }
+  const nA = 0.14 * (1 - inv(0.03, 0.18, p));
+  if (nA > 0) { ctx.beginPath(); ctx.arc(cx, cy, 0.56 * R, 0, TAU); ctx.strokeStyle = rgba(INK, nA); ctx.lineWidth = 1 / z; ctx.stroke(); }
+  const n = c.chrom.length, pd = poleDist(p), spA = 0.09 * Math.min(inv(0.16, 0.3, p), 1 - inv(0.8, 0.9, p)), pos = [];
+  for (let i = 0; i < n; i++) for (const sis of [-1, 1]) { const [x, y, a] = chromatid(c, i, sis, p); pos.push([cx + x, cy + y, a, i, sis]); }
+  if (spA > 0) {
+    ctx.beginPath(); for (const [x, y, , i, sis] of pos) { const side = i === D.errI ? D.errTo : sis; ctx.moveTo(cx + side * pd * cos, cy + side * pd * sin); ctx.lineTo(x, y); }
+    ctx.strokeStyle = rgba(CYA, spA); ctx.lineWidth = 0.9 / z; ctx.stroke();
+    for (const sg of [-1, 1]) { // spindle pole with aster rays (as in the reference's nuclear divisions)
+      const px = cx + sg * pd * cos, py = cy + sg * pd * sin;
+      ctx.beginPath(); for (let k = 0; k < 12; k++) { const a = k / 12 * TAU + t * 0.4; ctx.moveTo(px + Math.cos(a) * 4, py + Math.sin(a) * 4); ctx.lineTo(px + Math.cos(a) * (10 + (k % 3) * 4), py + Math.sin(a) * (10 + (k % 3) * 4)); }
+      ctx.strokeStyle = rgba(CYA, spA * 6); ctx.lineWidth = 1 / z; ctx.stroke();
+      ctx.beginPath(); ctx.arc(px, py, 2.6, 0, TAU); ctx.fillStyle = rgba(INK, spA * 8); ctx.fill();
+    }
+  }
+  ctx.lineCap = 'round'; ctx.lineWidth = 2.3;
+  ctx.beginPath(); for (const [x, y, a, i] of pos) if (i !== D.errI) strokeChromatid(x, y, a, chrLen(c.chrom[i].c)); ctx.strokeStyle = rgba(INK, 0.88); ctx.stroke();
+  if (D.errI >= 0) {
+    ctx.beginPath(); for (const [x, y, a, i] of pos) if (i === D.errI) strokeChromatid(x, y, a, chrLen(c.chrom[i].c)); ctx.strokeStyle = rgba(mix(INK, RED, inv(0.4, 0.52, p)), 0.95); ctx.stroke();
+    const halo = 0.18 * env(p, 0.45, 0.55, 0.85, 0.95); if (halo > 0) for (const [x, y, , i] of pos) if (i === D.errI) { ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.fillStyle = rgba(RED, halo); ctx.fill(); }
+  }
+  if (t >= 5.0 && c.gen >= 2) countLabel(c, cx, cy, R, z, (1 - inv(0.02, 0.12, p)) * inv(5.0, 5.5, t));
+}
+function countLabel(c, x, y, rc, z, a) {
+  if (a <= 0.01) return; const bad = c.count !== 46;
+  ctx.font = `600 ${18 / z}px ${SANS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = rgba(bad ? RED : INK, (bad ? 0.95 : 0.55) * a); ctx.fillText(String(c.count), x, y + 0.79 * rc); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+function drawInterphase(c, t, z) {
+  const [cx, cy] = cellPos(c, t), grow = c.init ? eIO(inv(c.bornT, c.bornT + 0.9, t)) : 1;
+  let rc = lerp(0.72 * R, R, grow), prog = 1, intro = 1;
+  if (c.gen === 0) { prog = eIO(inv(0.25, 1.3, t)); intro = eOut(inv(0.2, 0.9, t)); rc *= lerp(0.9, 1, eOut(inv(0.2, 1.4, t))); if (prog <= 0) return; }
+  const T = c.gen === 4 ? tiles[c.tileK] : null, b = T ? eIO(inv(9.9, 11.0, t)) : 0, N = 72, steps = Math.max(2, Math.ceil(N * prog));
+  ctx.beginPath();
+  for (let j = 0; j <= steps; j++) { const jj = j % N, a = c.gen === 0 ? -Math.PI / 2 + jj / N * TAU : jj / N * TAU; let r = rc * wob(a, t, c.id); if (b > 0) r = lerp(r, T.radial[jj], b); const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); if (j >= N * prog) break; }
+  if (prog >= 1) {
+    ctx.closePath();
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rc); g.addColorStop(0, rgba(INK, 0.055 * intro)); g.addColorStop(1, rgba(INK, 0.015 * intro)); ctx.fillStyle = g; ctx.fill();
+    ctx.globalAlpha = 0.08 * intro * (1 - b); ctx.fillStyle = stipple(z); ctx.fill(); ctx.globalAlpha = 1;
+    if (b > 0) { const L = tileLook(T, t); ctx.fillStyle = rgba(stateRGB(L.st), (L.st ? 0.4 : 0.055) * b * (1 - L.dark * 0.95)); ctx.fill(); }
+  }
+  ctx.strokeStyle = rgba(INK, lerp(0.62, 0.12, b) * intro); ctx.lineWidth = 1.6 / z; ctx.stroke();
+  const nA = 0.14 * (c.init ? inv(c.bornT + 0.35, c.bornT + 0.9, t) : intro) * (1 - b);
+  if (nA > 0) { ctx.beginPath(); ctx.arc(cx, cy, 0.56 * rc, 0, TAU); ctx.strokeStyle = rgba(INK, nA); ctx.lineWidth = 1 / z; ctx.stroke(); }
+  const relax = c.init ? eIO(inv(c.bornT, c.bornT + 0.8, t)) : 1, ca = 1 - b;
+  if (ca > 0.01) {
+    ctx.lineCap = 'round'; ctx.lineWidth = 2.3; const n = c.chrom.length, sc = rc / R;
+    for (let i = 0; i < n; i++) {
+      const L = c.layout[i], I = c.init ? c.init[i] : L, x = cx + lerp(I.x, L.x * sc, relax) + Math.sin(t * 1.3 + i * 1.7 + c.id) * 0.8, y = cy + lerp(I.y, L.y * sc, relax) + Math.cos(t * 1.1 + i * 2.1 + c.id) * 0.8, a = lerp(I.a, L.a, relax);
+      let al = 0.88 * ca; if (c.gen === 0) al *= eOut(inv(0.7 + i * 0.012, 1.15 + i * 0.012, t));
+      const redK = c.chrom[i].err ? 1 - inv(c.bornT + 0.8, c.bornT + 2.4, t) : 0;
+      ctx.beginPath(); strokeChromatid(x, y, a, chrLen(c.chrom[i].c)); ctx.strokeStyle = rgba(mix(INK, RED, redK), al); ctx.stroke();
+    }
+  }
+  if (t >= 5.0 && c.gen >= 2) countLabel(c, cx, cy, rc, z, inv(5.0, 5.5, t) * (c.init ? inv(c.bornT + 0.7, c.bornT + 1.1, t) : 1) * (1 - b));
+}
+function drawCells(t, cam) {
+  const z = cam.z, hw = W / 2 / z + 700, hh = H / 2 / z + 700;
+  if (t < 3.6) { const a = 0.13 * env(t, 0.2, 0.9, 2.4, 3.5), [dx, dy] = [0, 0]; ctx.save(); ctx.lineWidth = 1 / z; drafting(dx, dy, 1.95 * R, a, eIO(inv(0.2, 1.7, t)), -0.35); ctx.restore(); }
+  for (const c of cells) {
+    if (t < c.bornT || Math.abs(c.tx - cam.x) > hw || Math.abs(c.ty - cam.y) > hh) continue;
+    if (c.div && t >= c.div.t0) { if (t < c.div.t0 + 0.9 * c.div.dur) drawDividing(c, t, z); continue; }
+    drawInterphase(c, t, z);
+  }
+}
+const DIM_NON = [[0, 1], [14.0, 1], [14.45, 0.16], [15.4, 0.16], [16.2, 0.5], [17.1, 0.5], [17.55, 0.1], [20.8, 0.1], [21.6, 0.36], [24.8, 0.36], [25.3, 0.1], [26.0, 0.06]];
+const DIM_PER = [[0, 1], [17.1, 1], [17.55, 0.12], [20.8, 0.12], [21.6, 0.62], [24.8, 0.62], [25.3, 0.22], [26.0, 0.1]];
+function tilePath(T, sc) { const P = T.poly; ctx.beginPath(); for (let i = 0; i < P.length; i++) { const x = T.x + (P[i][0] - T.x) * sc, y = T.y + (P[i][1] - T.y) * sc; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); }
+function glyph(x, y, st, z, a, col, k = 1) { const n = st ? 2 + st.d : 2, h = 12 * k / z, sp = 4.8 * k / z; ctx.beginPath(); for (let i = 0; i < n; i++) { const xx = x + (i - (n - 1) / 2) * sp; ctx.moveTo(xx, y - h / 2); ctx.lineTo(xx, y + h / 2); } ctx.strokeStyle = rgba(col, a); ctx.lineWidth = 1.5 * k / z; ctx.lineCap = 'butt'; ctx.stroke(); }
+function drawTiles(t, cam) {
+  const z = cam.z, hw = W / 2 / z + PR * 1.3, hh = H / 2 / z + PR * 1.3, dn = kf(t, DIM_NON), dp = kf(t, DIM_PER), glyphOn = PR * z > 30, fade = 1 - eIO(inv(28.25, 28.65, t)), lit = inv(22.6, 23.4, t) * (1 - inv(25.0, 25.4, t)), sp = stipple(z), silA = env(t, 12.1, 13.3, 14.05, 14.6);
+  for (const T of tiles) {
+    if (Math.abs(T.x - cam.x) > hw || Math.abs(T.y - cam.y) > hh || (T.k < 16 && t < 11.0)) continue;
+    const ap = T.k < 16 ? 1 : eOut(inv(T.appearT, T.appearT + 0.7, t)); if (ap <= 0) continue;
+    const L = tileLook(T, t); let dim = L.persistent ? dp : dn;
+    if (L.persistent && T.group === 'A' && t > 21.5 && t < 25.4) dim = Math.max(dim, 0.62 + 0.38 * lit);
+    if (T === HERO && t > 21.5) dim = 1 - 0.8 * env(t, 24.95, 25.3, 26.05, 26.4);
+    const heroOn = T === HERO ? eIO(inv(21.7, 22.1, t)) : 0, col = heroOn > 0 ? mix(stateRGB(L.st), AMB, heroOn) : stateRGB(L.st);
+    const kid = T.sil * silA * (L.st ? 0 : 1); dim *= 1 - 0.45 * silA * (1 - T.sil);
+    let fa = ((L.st ? 0.4 : 0.05 + 0.42 * kid) + L.boost * 0.35) * (1 - L.dark * 0.95) * ap * dim;
+    if (heroOn > 0) fa = lerp(fa, 0.82, heroOn) * dim * (1 - eIO(inv(27.9, 28.35, t)));
+    const sa = (L.st ? 0.22 : 0.11) * (1 - L.dark * 0.6) * ap * dim;
+    tilePath(T, lerp(0.8, 1, ap)); ctx.fillStyle = rgba(kid > 0 ? mix(col, [248, 218, 176], kid) : col, fa * fade); ctx.fill(); if (kid > 0.2) { ctx.lineWidth = 2 / z; ctx.strokeStyle = rgba([255, 226, 186], 0.5 * kid * fade); ctx.stroke(); }
+    if (L.st && fa > 0.05) { ctx.globalAlpha = fa * fade * 0.28; ctx.fillStyle = sp; ctx.fill(); ctx.globalAlpha = 1; }
+    ctx.lineWidth = 1 / z; ctx.strokeStyle = rgba(L.st ? col : INK, sa * fade); ctx.stroke();
+    if (heroOn > 0) { ctx.lineWidth = 2.4 / z; ctx.strokeStyle = rgba(AMB, 0.95 * heroOn * dim); ctx.stroke(); }
+    else if (T.group === 'A' && L.persistent && lit > 0) { const dd = Math.min(0.7, Math.hypot(T.x - HX, T.y - HY) / 9000), my = inv(22.6 + dd, 23.0 + dd, t) * (1 - inv(25.0, 25.4, t)); if (my > 0) { ctx.lineWidth = 1.7 / z; ctx.strokeStyle = rgba(AMB, 0.8 * my); ctx.stroke(); } }
+    if (glyphOn) { let ga = (L.st ? 0.78 : 0.2) * (1 - L.dark) * ap * dim * fade; if (T === HERO && t > 27.8) ga = 0; if (ga > 0.01) glyph(T.x, T.y, L.st, z, ga, heroOn > 0 ? mix(INK, [255, 236, 200], heroOn) : INK); }
+  }
+}
+function drawGhosts(t, cam) {
+  const z = cam.z; ctx.setLineDash([5 / z, 5 / z]); ctx.lineWidth = 1.3 / z;
+  GHOSTS.forEach((g, i) => { const a = env(t, 23.45 + i * 0.07, 23.8 + i * 0.07, 24.9, 25.4); if (a <= 0) return; tilePath(g.T, 0.94); ctx.strokeStyle = rgba(INK, 0.6 * a); ctx.stroke(); });
+  ctx.setLineDash([]); GHOSTS.forEach((g, i) => { const a = env(t, 23.45 + i * 0.07, 23.8 + i * 0.07, 24.9, 25.4); if (a > 0) glyph(g.T.x, g.T.y, g.state, z, 0.45 * a, INK); });
+}
+function drawWorld(t, camO) {
+  const cam = camO || camAt(t);
+  ctx.save(); ctx.translate(W / 2, VIEW_CY); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
+  if (t >= 9.5) drawTiles(t, cam);
+  if (t < 11.05) drawCells(t, cam);
+  if (t > 23.3 && t < 25.6) drawGhosts(t, cam);
+  ctx.restore(); return cam;
+}
+function drawTree(t) {
+  const out = 1 - eIO(inv(9.5, 10.2, t)), a0 = eIO(inv(0.6, 1.2, t)) * out; if (a0 <= 0) return;
+  CAPS('CELL LINEAGE', TREE.x0, TREE.y0 - 40, 0.55 * a0);
+  for (const c of cells) {
+    const born = c.gen === 0 ? 0.8 : c.bornT; if (t < born) continue;
+    const g = eIO(inv(born, born + 0.6, t)) * out, bad = c.count !== 46, col = bad ? RED : INK;
+    if (c.parent) {
+      const p = c.parent, ym = p.tY + TREE.dy * 0.5; ctx.beginPath(); ctx.moveTo(p.tX, p.tY);
+      const L1 = ym - p.tY, L2 = Math.abs(c.tX - p.tX), L3 = c.tY - ym, tot = L1 + L2 + L3; let d = g * tot;
+      ctx.lineTo(p.tX, p.tY + Math.min(d, L1)); d -= L1;
+      if (d > 0) { ctx.lineTo(p.tX + Math.sign(c.tX - p.tX) * Math.min(d, L2), ym); d -= L2; }
+      if (d > 0) ctx.lineTo(c.tX, ym + Math.min(d, L3));
+      ctx.strokeStyle = rgba(col, (bad ? 0.85 : 0.45) * out); ctx.lineWidth = bad ? 1.6 : 1.1; ctx.stroke();
+    }
+    if (g > 0.95 || c.gen === 0) { ctx.beginPath(); ctx.arc(c.tX, c.tY, c.gen < 3 ? 4 : 3, 0, TAU); ctx.fillStyle = rgba(col, (bad ? 1 : 0.8) * g * out); ctx.fill(); }
+    if (bad && c.gen === 3) drawText(String(c.count), c.tX, c.tY + 30, { size: 20, weight: 700, align: 'center', color: RED, alpha: g * out });
+  }
+  // the counts, as a caption: 46 → 46 → 46 → 45 · 47
+  const segs = ['46', ' → 46', ' → 46', ' → 45 · 47'], times = [0.9, 2.35, 4.35, 6.95], f = `500 24px ${SANS}`, full = segs.join(''), { xs } = charXs(full, f, 0.04 * 24);
+  let idx = 0; const x0 = TREE.x1 - xs[full.length];
+  segs.forEach((s, i) => { const a = eOut(inv(times[i], times[i] + 0.5, t)) * out; if (a > 0) drawText(s, x0 + xs[idx], TREE.y0 + 4 * TREE.dy + 64, { size: 24, weight: 500, track: 0.04, alpha: a * (i === 3 ? 1 : 0.72), colors: i === 3 ? (k => (s[k] >= '0' && s[k] <= '9') ? RED : INK) : null, reveal: inv(times[i], times[i] + 0.45, t) }); idx += s.length; });
+}
+function drawS2Text(t) {
+  if (t < 7.9 || t > 10.3) return; scrim(0, 320, 900, 300, env(t, 7.8, 8.3, 9.8, 10.3));
+  CONFIG.COPY.s2.forEach((s, i) => drawText(s, 120, 408 + i * 76, { size: 64, weight: 600, track: -0.01, reveal: inv(7.95 + i * 0.2, 8.65 + i * 0.2, t), exit: inv(9.75, 10.2, t) }));
+}
+function drawS3Text(t) {
+  if (t > 11.1 && t < 14.1) { scrim(0, 90, 1350, 170, env(t, 11.1, 11.6, 13.5, 14.0)); CONFIG.COPY.s3a.forEach((s, i) => drawText(s, 120, 156 + i * 66, { size: 56, weight: 600, track: -0.01, reveal: inv(11.3 + i * 0.25, 12.0 + i * 0.25, t), exit: inv(13.55, 13.95, t) })); }
+  if (t > 14.15 && t < 15.7) { scrim(0, 110, 950, 150, env(t, 14.15, 14.5, 15.2, 15.6)); drawText(CONFIG.COPY.s3b, 120, 215, { size: 92, weight: 700, track: -0.015, reveal: inv(14.25, 14.9, t), exit: inv(15.2, 15.6, t), soft: 9 }); }
+}
+function drawS4(t, cam) {
+  if (t < 15.8 || t > 21) return; const C = CONFIG.COPY, tagOut = 1 - eIO(inv(20.3, 20.8, t));
+  TAGS.forEach((g, i) => {
+    const a0 = eOut(inv(15.95 + i * 0.2, 16.35 + i * 0.2, t)); if (a0 <= 0) return;
+    const a = a0 * (1 - eIO(inv(17.0, 17.45, t))) * tagOut, [sx, sy] = w2s(g.T.x, g.T.y, cam), lp = eIO(inv(15.95 + i * 0.2, 16.45 + i * 0.2, t));
+    ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(lerp(g.lx, sx, lp), lerp(g.ly, sy, lp)); ctx.strokeStyle = rgba(INK, 0.5 * a); ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, 3.6, 0, TAU); ctx.fillStyle = rgba(INK, 0.85 * a * lp); ctx.fill();
+    const right = g.lx >= sx; drawText(g.label, g.lx + (right ? 8 : -8), g.ly + (g.ly > sy ? 24 : -10), { size: 24, weight: 600, alpha: 0.9 * a, align: right ? 'left' : 'right', reveal: inv(15.95 + i * 0.2, 16.4 + i * 0.2, t) });
+  });
+  const out = eIO(inv(20.3, 20.8, t));
+  drawText(C.s4ask, W / 2, 330, { size: 32, weight: 500, alpha: 0.75, align: 'center', reveal: inv(17.45, 18.0, t), exit: out });
+  const fx = 800, tx = 1120, y = 500;
+  drawText(C.s4from, fx, y + 12, { size: 34, weight: 700, track: 0.2, align: 'right', reveal: inv(17.6, 18.0, t), exit: out, alpha: 0.92 });
+  drawText(C.s4to, tx, y + 12, { size: 34, weight: 700, track: 0.2, reveal: inv(17.75, 18.15, t), exit: out, alpha: lerp(0.92, 0.35, eIO(inv(18.7, 19.2, t))) });
+  const x0 = fx + 28, x1 = tx - 28, prog = 0.6 * eOut(inv(17.95, 18.45, t)), brk = inv(18.62, 19.35, t);
+  if (prog > 0 && t < 20.3) {
+    if (brk <= 0) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(lerp(x0, x1, prog), y); ctx.strokeStyle = rgba(INK, 0.8); ctx.lineWidth = 2; ctx.stroke(); const blink = t > 18.45 ? 0.5 + 0.5 * Math.cos((t - 18.45) * 22) : 1; ctx.beginPath(); ctx.arc(lerp(x0, x1, prog), y, 3.8, 0, TAU); ctx.fillStyle = rgba(INK, 0.9 * blink); ctx.fill(); }
+    else { const R2 = mulberry32(99), len = (x1 - x0) * 0.6; for (let i = 0; i < 7; i++) { const a0 = x0 + len * i / 7, a1 = x0 + len * (i + 0.72) / 7, dy = (R2() - 0.4) * 26 * eOut(brk), dx = (R2() - 0.5) * 16 * eOut(brk), rot = (R2() - 0.5) * 0.22 * eOut(brk), mx = (a0 + a1) / 2 + dx, my = y + dy, hl = (a1 - a0) / 2; ctx.beginPath(); ctx.moveTo(mx - Math.cos(rot) * hl, my - Math.sin(rot) * hl); ctx.lineTo(mx + Math.cos(rot) * hl, my + Math.sin(rot) * hl); ctx.strokeStyle = rgba(INK, 0.8 * (1 - eIO(brk)) * (1 - out)); ctx.lineWidth = 2; ctx.stroke(); } }
+  }
+  drawText(C.s4q, W / 2, 690, { size: 66, weight: 600, align: 'center', track: -0.01, reveal: inv(18.95, 19.65, t), wipe: eIO(inv(20.15, 20.7, t)) });
+}
+function drawS5(t, cam) {
+  if (t < 21.6 || t > 28.1) return; const C = CONFIG.COPY, [hx, hy] = w2s(HX, HY, cam), ig = inv(21.75, 22.7, t);
+  if (ig > 0 && ig < 1) { ctx.beginPath(); ctx.arc(hx, hy, 34 + 120 * eOut(ig), 0, TAU); ctx.strokeStyle = rgba(AMB, 0.5 * (1 - ig)); ctx.lineWidth = 1.4; ctx.stroke(); }
+  A_REPS.slice(1).forEach((T, i) => {
+    const pr = eIO(inv(22.7 + i * 0.13, 23.35 + i * 0.13, t)), a = 1 - eIO(inv(24.8, 25.3, t)); if (pr <= 0 || a <= 0) return;
+    const [sx, sy] = w2s(T.x, T.y, cam), mx = (hx + sx) / 2, my = (hy + sy) / 2 - Math.hypot(sx - hx, sy - hy) * 0.22;
+    ctx.beginPath(); ctx.moveTo(hx, hy); for (let k = 1; k <= 40 * pr; k++) { const u = k / 40; ctx.lineTo((1 - u) * (1 - u) * hx + 2 * u * (1 - u) * mx + u * u * sx, (1 - u) * (1 - u) * hy + 2 * u * (1 - u) * my + u * u * sy); }
+    ctx.strokeStyle = rgba(AMB, 0.6 * a); ctx.lineWidth = 1.3; ctx.stroke(); if (pr >= 1) { ctx.beginPath(); ctx.arc(sx, sy, 3.4, 0, TAU); ctx.fillStyle = rgba(AMB, 0.9 * a); ctx.fill(); }
+  });
+  if (t < 24.9) { scrim(0, 80, 1250, 150, env(t, 22.0, 22.4, 24.3, 24.8)); drawText(C.s5a, 120, 172, { size: 60, weight: 600, track: -0.012, reveal: inv(22.1, 22.9, t), exit: inv(24.3, 24.75, t) }); }
+  if (t > 24.9 && t < 26.8) drawComparison(t, cam);
+  if (t > 26.3) drawText(C.s5q, W / 2, 730, { size: 84, weight: 700, align: 'center', track: -0.015, reveal: inv(26.35, 27.05, t), exit: inv(27.6, 27.95, t), soft: 8 });
+}
+function drawComparison(t, cam) {
+  const C = CONFIG.COPY, fly = i => eIO(inv(24.95 + i * 0.05, 25.55 + i * 0.05, t)), out = eIO(inv(26.05, 26.45, t)), rowY = [310, 630], slotX = i => W / 2 + (i - 2.5) * 136, lab = eOut(inv(25.3, 25.7, t)) * (1 - out);
+  CAPS(C.s5rowA, slotX(0) - 92, rowY[0] + 7, lab, { align: 'right', color: AMB }); CAPS(C.s5rowB, slotX(0) - 92, rowY[1] + 7, 0.7 * lab, { align: 'right' });
+  const item = (T, st, i, row, ghost) => {
+    const k = fly(i), [sx, sy] = w2s(T.x, T.y, cam), x = lerp(sx, slotX(i), k), y = lerp(sy, rowY[row], k), sc = lerp(cam.z, 0.21, k), a = 1 - out;
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc); ctx.translate(-T.x, -T.y); tilePath(T, 0.94);
+    if (ghost) { ctx.setLineDash([5 / sc, 5 / sc]); ctx.strokeStyle = rgba(INK, 0.6 * a); ctx.lineWidth = 1.3 / sc; ctx.stroke(); ctx.setLineDash([]); }
+    else { ctx.fillStyle = rgba(AMB, 0.6 * a); ctx.fill(); ctx.strokeStyle = rgba(AMB, 0.95 * a); ctx.lineWidth = 1.5 / sc; ctx.stroke(); }
+    glyph(T.x, T.y, st, sc, (ghost ? 0.5 : 0.95) * a, ghost ? INK : [255, 240, 210], 1.2); ctx.restore();
+  };
+  ROW_P.forEach((T, i) => item(T, HERO_STATE, i, 0, false)); ROW_G.forEach((g, i) => item(g.T, g.state, i, 1, true));
+  const d = eIO(inv(25.45, 26.15, t)), dOut = eIO(inv(26.2, 26.6, t)); if (d <= 0) return;
+  const X0 = slotX(0) - 40, X1 = slotX(5) + 40, Y = VIEW_CY; let acc = 0;
+  drawText('Δ', X0 - 24, Y + 9, { size: 26, weight: 600, alpha: 0.75 * (1 - dOut), align: 'right' });
+  for (let c = 0; c < 23; c++) {
+    const a0 = X0 + (X1 - X0) * acc / TOTAL_MB + 2, a1 = X0 + (X1 - X0) * (acc + CHR_MB[c]) / TOTAL_MB - 2; acc += CHR_MB[c];
+    const vis = inv(c / 23, c / 23 + 0.12, d), isK = c === HERO_CHR; if (vis <= 0) continue; const lift = isK ? 60 * eOut(inv(0.55, 1, d)) : 0;
+    ctx.beginPath(); if (isK && lift > 1) { ctx.moveTo(a0 - 2, Y); ctx.lineTo(a0, Y - lift); ctx.lineTo(a1, Y - lift); ctx.lineTo(a1 + 2, Y); } else { ctx.moveTo(a0, Y); ctx.lineTo(lerp(a0, a1, vis), Y); }
+    ctx.lineWidth = 1.8; ctx.strokeStyle = rgba(isK && lift > 1 ? AMB : CYA, (isK && lift > 1 ? 0.95 : 0.6) * (1 - dOut)); ctx.stroke();
+  }
+}
+function drawDiveGlyph(t) {
+  if (t < 27.8 || t > 28.62) return; const e = eIO(inv(27.85, 28.55, t)), h = lerp(12, 60, e), sp = lerp(4.8, 13, e), w = lerp(1.5, 8, e);
+  for (let i = 0; i < 3; i++) { rrPath(W / 2 + (i - 1) * sp - w / 2, VIEW_CY - h / 2, w, h, w / 2); ctx.fillStyle = rgba(mix([255, 236, 200], AMB, e), 1); ctx.fill(); }
+}
+function drawActI(tv) {
+  const cam = tv < 28.7 ? drawWorld(tv) : null;
+  calmBand(0.7 * env(tv, 9.8, 11, 28.2, 28.6));
+  drawTree(tv); drawS2Text(tv); drawS3Text(tv);
+  if (cam) { drawS4(tv, cam); drawS5(tv, cam); }
+  drawDiveGlyph(tv);
+  if (tv > 10.2 && tv < 21) chip('HYPO', 96, 86, 0.8 * env(tv, 10.4, 11.2, 20.4, 21), 'conceptual simulation · not measured cells');
+  if (tv > 21 && tv < 28.4) chip('HYPO', 96, 86, 0.8 * env(tv, 21.6, 22.4, 27.5, 28.2), 'the research question');
+  if (tv >= 28.1 && tv < 34.3) S6.draw(tv);
+  if (tv > 28.3 && tv < 34.1) chip('HYPO', 96, 86, 0.85 * env(tv, 28.4, 28.9, 33.4, 33.9), 'the research chain · synthetic data, model-style views');
+}
+
+// ================================================================ THE RESEARCH CHAIN (restored from v1)
+// MOSAIC → MECHANISM → FUNCTION → RESCUE → SAFETY: karyotype → locus → REF/ALT → ISM → contacts → network → veto.
+const S6 = (() => {
+  const R6 = mulberry32(CONFIG.SEED ^ 0x6666), DY = VIEW_CY - 540;
+  const KX0 = 330, KX1 = 1590, KX = c => KX0 + (c + 0.5) * (KX1 - KX0) / 23, KH = c => 36 + 128 * (CHR_MB[c] / 248);
+  const HERO_BANDS = makeBands(17).map(([p, w]) => [p, w * 0.7]);
+  const BASES = 'ACGT', REF = Array.from({ length: 64 }, () => BASES[Math.floor(R6() * 4)]), ALT = BASES[(BASES.indexOf(REF[32]) + 2) % 4];
+  const ISM = [0, 1, 2, 3].map(r => Array.from({ length: 64 }, (_, c) => { let v = (R6() - 0.5) * 0.28; if (c === 9) v += r === 2 ? 0.95 : -0.45; if (c === 21) v += r === 3 ? 0.4 : -0.1; if (c >= 52 && c <= 58) v += r === 3 ? 0.55 + 0.1 * Math.sin(c) : r === 1 ? 0.22 : -0.12; if (c >= 3 && c <= 7) v -= r === 0 ? 0.35 : 0; if (c === 32) v *= 0.25; return clamp(v, -1, 1); }));
+  const HM = { x0: 245.5, cw: 21, gap: 1, top: 468, rh: 26, rg: 2 }, hmX = c => HM.x0 + c * (HM.cw + HM.gap) + HM.cw / 2, hmY = r => HM.top + r * (HM.rh + HM.rg) + HM.rh / 2;
+  const divC = v => v >= 0 ? [206, 98, 82] : [92, 150, 200];
+  const NB = 20, DW = 28;
+  const cv = (i, j) => { const hot = (a, b, amp) => amp * Math.exp(-((i - a) ** 2 + (j - b) ** 2) / 1.1); return clamp(0.92 * Math.exp(-(j - i) / 2.3) + hot(4, 11, 0.75) + hot(9, 16, 0.6) + hot(2, 7, 0.45) + hot(13, 18, 0.35) + (i === 12 ? 0.16 * Math.exp(-(j - i) / 8) : 0)); };
+  const CT = [];
+  [0, 1].forEach(tri => { const xL = tri ? 1000 : 360; for (let i = 0; i < NB; i++) for (let j = i; j < NB; j++) { const v = clamp(cv(i, j) * (tri ? 1 + 0.03 * Math.exp(-((i - 10) ** 2 + (j - 10) ** 2) / 6) : 1) + (R6() - 0.5) * 0.04), idx = CT.length; CT.push({ tri, i, j, v, x: xL + (i + j + 1) * DW / 2, y: 690 - (j - i + 1) * DW / 2, sx: hmX(idx % 64), sy: hmY((idx >> 6) % 4), d: (idx % 29) / 29 }); } });
+  const ccol = v => v < 0.75 ? mix([26, 22, 18], AMB, clamp(v * 1.33)) : mix(AMB, INK, (v - 0.75) / 0.25);
+  const NODES = [[700, 520, 1], [820, 405, 0], [835, 640, 0], [985, 470, 1], [965, 705, 0], [1105, 565, 1], [1235, 430, 0], [1250, 680, 0], [1372, 545, 0], [615, 395, 0], [598, 655, 0], [1120, 330, 0], [1368, 372, 0]];
+  const EDGES = [[0, 1], [0, 2], [0, 9], [0, 10], [1, 3], [2, 4], [3, 5], [4, 5], [3, 11], [5, 6], [5, 7], [6, 8], [7, 8], [6, 12], [11, 6], [1, 9], [2, 10], [3, 4]];
+  const HOP = (() => { const h = new Array(NODES.length).fill(99); h[0] = 0; for (let k = 0; k < 6; k++) EDGES.forEach(([a, b]) => { h[b] = Math.min(h[b], h[a] + 1); h[a] = Math.min(h[a], h[b] + 1); }); return h; })();
+  const SRC = (() => { const cand = CT.filter(c => c.j - c.i >= 3).sort((a, b) => b.v - a.v), out = []; for (const c of cand) { if (out.every(o => Math.hypot(o.x - c.x, o.y - c.y) > 40)) out.push(c); if (out.length >= NODES.length) break; } while (out.length < NODES.length) out.push(cand[out.length]); return out.sort((a, b) => a.x - b.x); })();
+  const ORDER = NODES.map((n, i) => i).sort((a, b) => NODES[a][0] - NODES[b][0]), VETO = 7;
+  const WORD_T = [0.35, 1.55, 2.95, 4.35, 5.05], slotX = i => W / 2 + (i - 2) * 290;
+  const WORD_O = () => [[KX(HERO_CHR), 540 - CHR_CEN[HERO_CHR] * KH(HERO_CHR) - 34], [960, 484], [1560, 448], [700, 474], [1250, 790]];
+  const nodePos = (i, u) => { const src = SRC[ORDER.indexOf(i)], k = eIO(inv(4.15 + i * 0.015, 4.55 + i * 0.015, u)); return [lerp(src.x, NODES[i][0], k), lerp(src.y, NODES[i][1], k)]; };
+  const small = (s, x, y, a, o = {}) => drawText(s, x, y, { size: 20, weight: 600, track: 0.02, alpha: a, ...o });
+  function geneModel(u, a) {
+    const gz = Math.exp(Math.log(14) * eIO(inv(2.0, 2.4, u))), X = x => W / 2 + (x - W / 2) * gz;
+    ctx.strokeStyle = rgba(INK, 0.5 * a); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X(250), 540); ctx.lineTo(X(1670), 540); ctx.stroke();
+    const ex = [[0.05, 0.018], [0.14, 0.012], [0.21, 0.01], [0.33, 0.02], [0.41, 0.016], [0.58, 0.018], [0.67, 0.01], [0.79, 0.045], [0.9, 0.012]];
+    ctx.fillStyle = rgba(INK, 0.6 * a); for (const [p, w] of ex) { const xa = X(250 + p * 1420), xb = X(250 + (p + w) * 1420); ctx.fillRect(xa, 530, Math.max(1, xb - xa), 20); }
+    ctx.fillStyle = rgba(AMB, 0.16 * a); ctx.fillRect(W / 2 - 9 * Math.min(gz, 3), 508, 18 * Math.min(gz, 3), 64); ctx.fillStyle = rgba(AMB, 0.95 * a); ctx.fillRect(W / 2 - 1, 506, 2, 68);
+    small('chr15 · BUB1B locus', 250, 500, 0.7 * a * (1 - inv(2.0, 2.2, u)));
+  }
+  function ism(u) {
+    const out = 1 - eIO(inv(3.45, 3.78, u)), lab = env(u, 2.85, 3.1, 3.45, 3.7);
+    small('in silico mutagenesis · predicted', HM.x0, 448, 0.75 * lab);
+    for (let r = 0; r < 4; r++) drawText(BASES[r], HM.x0 - 14, hmY(r) + 6, { size: 18, mono: true, weight: 500, align: 'right', alpha: 0.6 * lab });
+    for (let c = 0; c < 64; c++) {
+      const e = eOut(inv(2.78 + Math.abs(c - 32) / 32 * 0.42, 2.94 + Math.abs(c - 32) / 32 * 0.42, u)) * out; if (e <= 0) continue; const x = HM.x0 + c * (HM.cw + HM.gap);
+      for (let r = 0; r < 4; r++) { const y = HM.top + r * (HM.rh + HM.rg), v = ISM[r][c]; ctx.fillStyle = rgba(INK, 0.045 * e); ctx.fillRect(x, y, HM.cw, HM.rh); ctx.fillStyle = rgba(divC(v), Math.min(0.92, Math.abs(v) * 1.05) * e); ctx.fillRect(x, y, HM.cw, HM.rh); }
+      const rr = BASES.indexOf(REF[c]); ctx.fillStyle = rgba(INK, 0.85 * e * inv(2.85, 3.0, u)); ctx.fillRect(hmX(c) - 1.5, hmY(rr) - 1.5, 3, 3);
+      const v = ISM[rr][c]; ctx.fillStyle = rgba(divC(v), 0.75 * e); ctx.fillRect(x + 3, 640, HM.cw - 6, -v * 30);
+    }
+    ctx.fillStyle = rgba(INK, 0.3 * out * inv(2.8, 3.0, u)); ctx.fillRect(HM.x0, 640, 64 * (HM.cw + HM.gap), 1);
+    const co = out * inv(2.8, 2.95, u); if (co > 0) { ctx.strokeStyle = rgba(INK, 0.9 * co); ctx.lineWidth = 1.2; ctx.strokeRect(hmX(32) - HM.cw / 2 - 1.5, HM.top - 2, HM.cw + 3, 4 * (HM.rh + HM.rg) + 2); }
+  }
+  function contacts(u) {
+    const labA = env(u, 3.8, 4.0, 4.15, 4.4);
+    small('REF · predicted contacts', 640, 732, 0.7 * labA, { align: 'center' }); small('ALT · predicted contacts', 1280, 732, 0.7 * labA, { align: 'center' });
+    const out = 1 - eIO(inv(4.15, 4.45, u));
+    for (const c of CT) { const k = eIO(inv(3.45 + c.d * 0.3, 3.82 + c.d * 0.3, u)); if (k <= 0 || out <= 0) continue; const x = lerp(c.sx, c.x, k), y = lerp(c.sy, c.y, k), sz = lerp(18, DW / Math.SQRT2 - 0.8, k);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4 * k); ctx.fillStyle = rgba(ccol(c.v), (0.12 + 0.88 * Math.min(1, c.v * 1.25)) * lerp(0.4, 1, k) * out); ctx.fillRect(-sz / 2, -sz / 2, sz, sz); ctx.restore(); }
+  }
+  function network(u, ea) {
+    EDGES.forEach(([a, b], k) => {
+      const e = eIO(inv(4.35 + k * 0.012, 4.62 + k * 0.012, u)); if (e <= 0) return; const [ax, ay] = nodePos(a, u), [bx, by] = nodePos(b, u);
+      const veto = (a === VETO || b === VETO) && (a === 8 || b === 8 || a === 5 || b === 5), vk = veto ? inv(5.3, 5.4, u) : 0;
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(lerp(ax, bx, e), lerp(ay, by, e)); ctx.strokeStyle = rgba(mix(INK, RED, vk), (0.34 + 0.4 * vk) * ea); ctx.lineWidth = 1.3; ctx.stroke();
+      const ha = HOP[a], hb = HOP[b]; if (ha !== hb) { const from = ha < hb ? [ax, ay] : [bx, by], to = ha < hb ? [bx, by] : [ax, ay], h = Math.min(ha, hb), p = inv(4.55 + h * 0.16, 4.72 + h * 0.16, u); if (p > 0 && p < 1 && h < 3) { ctx.beginPath(); ctx.arc(lerp(from[0], to[0], p), lerp(from[1], to[1], p), 2.8, 0, TAU); ctx.fillStyle = rgba(AMB, 0.95 * ea); ctx.fill(); } }
+    });
+    const [px, py] = nodePos(0, u);
+    for (let ri = 0; ri < 2; ri++) { const p = inv(4.5 + ri * 0.18, 5.1 + ri * 0.18, u); if (p <= 0 || p >= 1) continue; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.arc(px, py, 12 + 80 * eOut(p), 0, TAU); ctx.strokeStyle = rgba(AMB, 0.6 * (1 - p) * ea); ctx.lineWidth = 1.1; ctx.stroke(); ctx.setLineDash([]); }
+    const sc = eIO(inv(5.0, 5.45, u)), sx = lerp(560, 1420, sc), sa = env(u, 5.0, 5.06, 5.45, 5.55);
+    if (sa > 0) { const g = ctx.createLinearGradient(sx - 40, 0, sx, 0); g.addColorStop(0, rgba(CYA, 0)); g.addColorStop(1, rgba(CYA, 0.12 * sa)); ctx.fillStyle = g; ctx.fillRect(sx - 40, 300, 40, 480); ctx.fillStyle = rgba(CYA, 0.8 * sa); ctx.fillRect(sx - 0.6, 300, 1.2, 480); }
+    if (u < 5.7) NODES.forEach((n, i) => { const [x, y] = nodePos(i, u), r = n[2] ? 9 : 6.5, reach = 4.72 + (HOP[i] - 1) * 0.16, aff = HOP[i] <= 2 ? inv(reach, reach + 0.12, u) : 0, veto = i === VETO ? inv(5.3, 5.4, u) : 0;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = rgba(BG, 1); ctx.fill(); if (aff > 0) { ctx.fillStyle = rgba(mix(AMB, RED, veto), 0.75 * aff); ctx.fill(); } ctx.strokeStyle = rgba(veto > 0 ? mix(INK, RED, veto) : INK, 0.9); ctx.lineWidth = 1.6; ctx.stroke(); });
+    const vk = inv(5.3, 5.42, u) * ea;
+    if (vk > 0) { const [ax, ay] = nodePos(VETO, u), [bx, by] = nodePos(8, u), mx = (ax + bx) / 2, my = (ay + by) / 2, z = 6; ctx.beginPath(); ctx.moveTo(mx - z, my - z); ctx.lineTo(mx + z, my + z); ctx.moveTo(mx + z, my - z); ctx.lineTo(mx - z, my + z); ctx.strokeStyle = rgba(RED, 0.95 * vk); ctx.lineWidth = 2; ctx.stroke();
+    }
+    small('in silico perturbation', px, py + 42, 0.62 * env(u, 4.6, 4.8, 5.4, 5.6), { align: 'center', weight: 500 });
+    small('hypothesis, not result', NODES[8][0], NODES[8][1] - 28, 0.62 * env(u, 4.85, 5.05, 5.45, 5.65), { align: 'center', weight: 500 });
+  }
+  function wordRow(u) {
+    const words = ['MOSAIC', 'MECHANISM', 'FUNCTION', 'RESCUE', 'SAFETY'], O = WORD_O(), rowOut = 1 - eIO(inv(5.6, 5.85, u)); if (rowOut <= 0) return;
+    let arrived = -1; WORD_T.forEach((wt, i) => { if (u >= wt + 0.8) arrived = i; });
+    if (arrived >= 0) { ctx.fillStyle = rgba(INK, 0.28 * rowOut); ctx.fillRect(slotX(0), 862, slotX(arrived) - slotX(0), 1); }
+    words.forEach((w, i) => {
+      const t0 = WORD_T[i], ap = eOut(inv(t0, t0 + 0.25, u)); if (ap <= 0) return;
+      const fl = eIO(inv(t0 + 0.35, t0 + 0.8, u)), x = lerp(O[i][0], slotX(i), fl), y = lerp(O[i][1], 905, fl), latest = i === arrived || fl < 1;
+      drawText(w, x, y, { size: lerp(21, 27, fl), weight: 700, track: 0.18, align: 'center', alpha: (latest ? 1 : 0.42) * ap * rowOut, color: i === 4 && fl < 1 ? mix(INK, RED, 0.35) : INK });
+      if (fl >= 1) { ctx.beginPath(); ctx.arc(slotX(i), 862.5, 3, 0, TAU); ctx.fillStyle = rgba(INK, (i === arrived ? 0.9 : 0.45) * rowOut); ctx.fill(); }
+    });
+  }
+  function draw(t) {
+    const u = t - 28, gOut = 1 - eIO(inv(5.55, 5.85, u)), k = HERO_CHR, cenK = CHR_CEN[k], hK = KH(k);
+    ctx.fillStyle = rgba(BG, eIO(inv(28.15, 28.55, t))); ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.translate(0, DY);
+    if (u > 0.25 && u < 1.0) { // MOSAIC: the persisting state as a karyotype (three copies)
+      const ap = eIO(inv(0.3, 0.95, u)), outO = eIO(inv(0.8, 1.0, u));
+      for (let c = 0; c < 23; c++) { const cen = CHR_CEN[c], h = KH(c), xs = KX(c);
+        if (c === k) { for (let j = 0; j < 3; j++) { const x = lerp(W / 2 + (j - 1) * 13, xs + (j - 1) * 13, ap), hh = lerp(60, h, ap), top = lerp(H / 2 - 30, 540 - cen * h, ap); drawRod(x, top, hh, 8, cen, ap > 0.3 ? BANDS[c] : null, AMB, (1 - eIO(inv(0.85, 1.0, u))) * 0.95); } }
+        else if (c === 14) { const e = eOut(inv(0.446, 0.906, u)), x = lerp(W / 2 + (xs - W / 2) * 0.7, xs, e), hl = inv(0.6, 0.78, u), mg = eIO(inv(0.8, 0.98, u)); for (let j = 0; j < 2; j++) drawRod(x + (j - 0.5) * 13 * (1 - mg), 540 - cen * h, h, 8, cen, BANDS[c], mix(INK, CYA, hl), 0.85 * e); if (hl > 0) small('chr15 · BUB1B', xs, 540 - cen * h - 26, 0.95 * hl * (1 - inv(0.92, 1.0, u)), { align: 'center', color: CYA }); }
+        else { const d = Math.abs(c - k), e = eOut(inv(0.32 + d * 0.018, 0.78 + d * 0.018, u)), x = lerp(W / 2 + (xs - W / 2) * 0.7, xs, e); for (let j = 0; j < 2; j++) drawRod(x + (j - 0.5) * 13, 540 - cen * h + outO * 16, h, 8, cen, BANDS[c], INK, 0.8 * e * (1 - outO)); } }
+    }
+    if (u >= 0.98 && u < 2.1) { // MECHANISM: one copy becomes an ideogram, a band becomes the locus
+      const k2 = 14, cen2 = CHR_CEN[k2], h2 = KH(k2), r = eIO(inv(1.0, 1.42, u)), len = lerp(h2, 1400, eIO(inv(1.02, 1.45, u))), wd = lerp(8, 26, eIO(inv(1.02, 1.45, u))), cx = lerp(KX(k2), W / 2, r), cy = lerp(540 - cen2 * h2 + h2 / 2, 540, r);
+      const bf0 = 0.37, bf1 = 0.41, zk = eIO(inv(1.5, 1.95, u)), zf = Math.exp(Math.log(1 / (bf1 - bf0)) * zk), chrA = 1 - eIO(inv(1.72, 1.98, u)), bcx = cx - len / 2 + (bf0 + bf1) / 2 * len, shift = lerp(bcx, W / 2, zk);
+      ctx.save(); ctx.translate(shift, cy); ctx.scale(zf, 1); ctx.translate(-bcx, 0); ctx.translate(cx, 0); ctx.rotate(-Math.PI / 2 * r); drawRod(0, -len / 2, len, wd, cen2, r > 0.5 ? HERO_BANDS : BANDS[k2], mix(CYA, INK, 0.45 * r), 0.95 * chrA); ctx.restore();
+      const br = env(u, 1.3, 1.45, 1.8, 1.98);
+      if (br > 0) { const X = x => shift + (x - bcx) * zf, xa = X(cx - len / 2 + bf0 * len), xb = X(cx - len / 2 + bf1 * len); ctx.strokeStyle = rgba(CYA, 0.85 * br); ctx.lineWidth = 1.3; ctx.beginPath(); for (const [x0, dx] of [[xa, 8], [xb, -8]]) { ctx.moveTo(x0, cy - 26); ctx.lineTo(x0, cy + 26); ctx.moveTo(x0, cy - 26); ctx.lineTo(x0 + dx, cy - 26); ctx.moveTo(x0, cy + 26); ctx.lineTo(x0 + dx, cy + 26); } ctx.stroke(); }
+      const gm = env(u, 1.76, 2.0, 2.05, 2.35); if (gm > 0) geneModel(u, gm);
+    }
+    if (u >= 2.1 && u < 2.4) geneModel(u, 1 - eIO(inv(2.05, 2.35, u)));
+    if (u > 2.05 && u < 3.05) { // REF / ALT
+      const lab = env(u, 2.15, 2.4, 2.7, 2.85), box = env(u, 2.3, 2.45, 2.7, 2.85);
+      small('REF', 282, 513, 0.75 * lab, { align: 'right', size: 22 }); small('ALT', 282, 593, 0.75 * lab, { align: 'right', size: 22 });
+      if (box > 0) { ctx.strokeStyle = rgba(AMB, 0.85 * box); ctx.lineWidth = 1.3; rrPath(W / 2 - 20, 466, 40, 144, 4); ctx.stroke(); }
+      for (let i = 0; i < 33; i++) { const col = i + 16, ap = eOut(inv(2.08 + Math.abs(i - 16) * 0.013, 2.3 + Math.abs(i - 16) * 0.013, u)), x = W / 2 + (i - 16) * 40, m = eIO(inv(2.7 + Math.abs(i - 16) * 0.006, 2.98, u)), bx = hmX(col), by = hmY(BASES.indexOf(REF[col])), sz = lerp(32, 9, m), a = ap * (1 - m * m);
+        if (a > 0.01) drawText(REF[col], lerp(x, bx, m), lerp(514, by + sz * 0.35, m), { size: sz, mono: true, weight: 500, align: 'center', alpha: 0.88 * a });
+        const altA = ap * (1 - eIO(inv(2.7, 2.85, u))); if (altA > 0.01) drawText(i === 16 ? ALT : REF[col], x, 594, { size: 32, mono: true, weight: 500, align: 'center', alpha: (i === 16 ? 1 : 0.85) * altA, color: i === 16 ? AMB : INK }); }
+    }
+    if (u > 2.72 && u < 3.95) ism(u);
+    if (u > 3.4 && u < 4.6) contacts(u);
+    if (u > 4.1 && u < 5.75) network(u, gOut);
+    wordRow(u);
+    ctx.restore();
+  }
+  return { draw, wellFrom: m => { const n = NODES[ORDER[Math.min(m, NODES.length - 1)]]; return [n[0], n[1] + DY]; } };
+})();
+
+// ================================================================ TITLE / CLOSE LOCKUP
+const MPAT = ['X...X', 'XX.XX', 'X.X.X', 'X...X', 'X...X'], PITCH = 34, WELL = 10.5;
+function lockup(cy) {
+  const tw = textWidth(CONFIG.COPY.title, { size: 96, weight: 700, track: 0.02 }), markW = 4 * PITCH + 2 * WELL, gap = 56, total = markW + gap + tw, left = W / 2 - total / 2, mx0 = left + WELL, my0 = cy - 2 * PITCH, wells = [];
+  MPAT.forEach((row, j) => [...row].forEach((ch, i) => wells.push({ x: mx0 + i * PITCH, y: my0 + j * PITCH, on: ch === 'X', hero: i === 2 && j === 2 })));
+  return { tx: left + markW + gap, mx0, my0, wells, cy };
+}
+const SCAT = (() => { const r = mulberry32(4242); return Array.from({ length: 13 }, () => { const a = r() * TAU, d = 380 + r() * 520; return [W / 2 + Math.cos(a) * d * 1.5, VIEW_CY + Math.sin(a) * d * 0.7]; }); })();
+function plate(L, a, age, lift) {
+  if (a <= 0.003) return; const hw = L.wells.find(w => w.hero), cx = hw.x, cy = hw.y + lift;
+  ctx.strokeStyle = rgba(INK, 1); ctx.lineWidth = 1;
+  const i0 = Math.floor(-L.mx0 / PITCH) - 1, i1 = Math.ceil((W - L.mx0) / PITCH), j0 = Math.floor((-L.my0 - lift) / PITCH) - 1, j1 = Math.ceil((800 - L.my0 - lift) / PITCH);
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+    if (i >= 0 && i <= 4 && j >= 0 && j <= 4) continue;
+    const x = L.mx0 + i * PITCH, y = L.my0 + j * PITCH + lift, d = Math.hypot(x - cx, y - cy);
+    let al = a * 0.11 * (1 - 0.55 * clamp(1 - d / 1300)) * clamp((800 - y) / 120);
+    if (age >= 0) al *= 0.75 + 0.35 * Math.sin(d / 90 - age * 1.6);
+    if (x > L.tx - 30 && x < L.tx + 900 && Math.abs(y - L.cy) < 120) al *= 0.2;
+    if (al < 0.004) continue; ctx.globalAlpha = clamp(al); ctx.beginPath(); ctx.arc(x, y, WELL * 0.8, 0, TAU); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawLockup(t, o) {
+  // o: {cy, tWell, tTitle, tSub, tLine, line, from: fn(m)->[x,y], lift, out, age, ripple}
+  const L = lockup(o.cy), lift = o.lift || 0, out = o.out || 0, A = 1 - eIO(out);
+  if (A <= 0) return L;
+  plate(L, o.ripple * A, o.age, lift);
+  const ea = eIO(inv(o.tWell + 0.4, o.tWell + 1.0, t)) * A;
+  L.wells.forEach(w => { if (w.on || ea <= 0) return; ctx.beginPath(); ctx.arc(w.x, w.y + lift, WELL, 0, TAU); ctx.strokeStyle = rgba(INK, 0.12 * ea); ctx.lineWidth = 1; ctx.stroke(); });
+  L.wells.filter(w => w.on).sort((a, b) => a.x - b.x || a.y - b.y).forEach((w, m) => {
+    const src = o.from(m, w), t0 = o.tWell + m * 0.05, e = eIO(inv(t0, t0 + 0.9, t)); if (t < o.tWell) return;
+    const x = lerp(src[0], w.x, e), y = lerp(src[1], w.y + lift, e), col = w.hero ? mix(INK, AMB, eIO(inv(o.tWell + 0.5, o.tWell + 1.2, t))) : INK;
+    ctx.beginPath(); ctx.arc(x, y, lerp(5, WELL, e), 0, TAU); ctx.fillStyle = rgba(col, (w.hero ? 1 : 0.92) * A); ctx.fill();
+  });
+  drawText(CONFIG.COPY.title, L.tx, o.cy + 35 + lift, { size: 96, weight: 700, track: 0.02, reveal: inv(o.tTitle, o.tTitle + 0.9, t), soft: 7, rise: 0.12, alpha: A });
+  if (!o.noSub) drawText(CONFIG.COPY.subtitle, L.tx + 3, o.cy + 88 + lift, { size: 26, weight: 500, track: 0.02, alpha: 0.72 * eIO(inv(o.tSub, o.tSub + 0.6, t)) * A });
+  if (o.line) drawText(o.line, W / 2, o.cy + 250, { size: o.lineSize || 40, weight: 600, track: o.lineTrack == null ? 0.22 : o.lineTrack, align: 'center', reveal: inv(o.tLine, o.tLine + 0.9, t), soft: 10, rise: 0.15, alpha: A });
+  return L;
+}
+function drawTitle(t) {
+  if (t < 48.4 || t > 61.6) return;
+  const L0 = lockup(420), hero = L0.wells.find(w => w.hero), HA = holdAmb(54, 6);
+  drawLockup(t, { cy: 420, tWell: 48.6, tTitle: 50.2, tSub: 51.1, tLine: 52.2, line: CONFIG.COPY.openLine, lift: -40 * eIO(inv(51.8, 52.5, t)),
+    from: (m) => S6.wellFrom(m), out: inv(60.0, 61.4, t), age: HA.age >= 0 ? HA.age * HA.amp : -1, ripple: eIO(inv(52.4, 54.0, t)) });
+  void hero;
+}
+
+// ================================================================ ACT II · CHAPTERS
+function holdAmb(ht, d) { // deterministic ambient envelope inside a hold (export) / live hold state
+  const h = HOLDS.find(x => x.t === ht);
+  if (!EXPORT && LIVE.holding === h) { const age = (performance.now() - LIVE.enter) / 1000; return { age, amp: eSine(inv(0, 1.5, age)) }; }
+  if (!EXPORT && LIVE.released === h) { const k = 1 - eSine(inv(0, 0.9, (performance.now() - LIVE.relAt) / 1000)); return { age: LIVE.relAge, amp: LIVE.relAmp * k }; }
+  const age = TNOW - ht; if (age < 0 || age > d) return { age: -1, amp: 0 };
+  return { age, amp: eSine(inv(0, 1.5, age)) * (1 - eSine(inv(d - 1.2, d, age))) };
+}
+let TNOW = 0, AMB_T = 0;
+
+// ---- CH1 · ONE GENOME
+const LANE_Y = [352, 412, 472, 532], MERGE = [640, 442], KX0 = 760, KX1 = 1790;
+const READS = LANE_Y.map((_, i) => { const r = mulberry32(300 + i); return Array.from({ length: 22 }, () => ({ o: r(), l: 14 + r() * 30, v: 120 + r() * 60 })); });
+const lanePt = (i, u) => { // lane i: straight then a bezier into the merge point
+  const y = LANE_Y[i]; if (u < 0.6) return [lerp(180, 470, u / 0.6), y];
+  const k = (u - 0.6) / 0.4, p0 = [470, y], p1 = [560, y], p2 = [590, MERGE[1]], p3 = MERGE, mt = 1 - k;
+  return [mt ** 3 * p0[0] + 3 * mt * mt * k * p1[0] + 3 * mt * k * k * p2[0] + k ** 3 * p3[0], mt ** 3 * p0[1] + 3 * mt * mt * k * p1[1] + 3 * mt * k * k * p2[1] + k ** 3 * p3[1]];
+};
+const KXc = c => KX0 + (c + 0.5) * (KX1 - KX0) / 23, KHc = c => 44 + 150 * (CHR_MB[c] / 248);
+function drawRod(x, top, h, w, cen, bands, col, a) {
+  if (a <= 0.004) return; const r = w / 2, yc = top + cen * h; ctx.fillStyle = rgba(col, a);
+  rrPath(x - r, top, w, Math.max(w, cen * h - 1.4), r); ctx.fill(); rrPath(x - r, yc + 1.4, w, Math.max(w, (1 - cen) * h - 1.4), r); ctx.fill();
+  if (bands) { ctx.fillStyle = rgba(BG, 0.55 * a); for (const [p, bw] of bands) { const y = top + p * h; if (Math.abs(y - yc) < 3) continue; ctx.fillRect(x - r + 0.6, y, w - 1.2, Math.max(1, bw * h)); } }
+}
+function drawCH1(t) {
+  if (t < 59.8 || t > 77.5) return;
+  const inA = env(t, 60.4, 61.4, 75.2, 76.6), laneOut = 1 - eIO(inv(75.0, 76.0, t));
+  const hA = hud(t, 60.6, 74.9); chip('DATA', 96, 86, hA, 'schematic · no patient values shown'); chapterTag(1, hA);
+  // four technical lanes of reads flowing into one sample
+  for (let i = 0; i < 4; i++) {
+    const g = eIO(inv(60.9 + i * 0.15, 63.2 + i * 0.15, t)) * laneOut; if (g <= 0) continue;
+    ctx.beginPath(); for (let k = 0; k <= 60 * g; k++) { const [x, y] = lanePt(i, k / 60); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = rgba(INK, 0.22); ctx.lineWidth = 1; ctx.stroke();
+    ctx.lineCap = 'round'; ctx.lineWidth = 2.2;
+    for (const r of READS[i]) { const u = ((r.o + AMB_T * r.v / 900) % 1), u2 = Math.min(1, u + r.l / 900); if (u2 > g) continue; const [x0, y0] = lanePt(i, u), [x1, y1] = lanePt(i, u2); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.strokeStyle = rgba(INK, 0.75 * laneOut * clamp(u * 6) * clamp((1 - u) * 6)); ctx.stroke(); }
+    drawText(`L${i + 1}`, 160, LANE_Y[i] + 7, { size: 20, mono: true, weight: 500, align: 'right', alpha: 0.6 * g });
+  }
+  LABEL('4 sequencing lanes', 180, 312, 0.8 * eIO(inv(61.6, 62.4, t)) * laneOut);
+  const nodeA = eIO(inv(63.3, 64.0, t)) * laneOut;
+  if (nodeA > 0) { ctx.beginPath(); ctx.arc(MERGE[0], MERGE[1], 11 * nodeA, 0, TAU); ctx.fillStyle = rgba(AMB, 0.95 * nodeA); ctx.fill(); ctx.beginPath(); ctx.arc(MERGE[0], MERGE[1], 20, 0, TAU * nodeA); ctx.strokeStyle = rgba(AMB, 0.5 * nodeA); ctx.lineWidth = 1.2; ctx.stroke(); ctx.beginPath(); ctx.moveTo(MERGE[0], MERGE[1] + 22); ctx.lineTo(MERGE[0], MERGE[1] + 92); ctx.strokeStyle = rgba(AMB, 0.4 * nodeA); ctx.lineWidth = 1; ctx.stroke(); LABEL('1 blood sample', MERGE[0], MERGE[1] + 122, 0.92 * nodeA, { align: 'center' }); }
+  // one genome in reference coordinates: 23 ideograms (single copies — a coordinate frame, not a karyotype)
+  const g0 = eIO(inv(63.8, 64.6, t)) * laneOut; if (g0 > 0) { ctx.beginPath(); ctx.moveTo(MERGE[0] + 20, MERGE[1]); ctx.lineTo(lerp(MERGE[0] + 20, KX1, eIO(inv(63.8, 66.6, t))), MERGE[1]); ctx.strokeStyle = rgba(AMB, 0.35 * laneOut); ctx.lineWidth = 1; ctx.stroke(); }
+  const morph = eIO(inv(75.0, 76.8, t));
+  for (let c = 0; c < 23; c++) {
+    const a = eOut(inv(64.2 + c * 0.1, 64.9 + c * 0.1, t)); if (a <= 0 || t >= 75.0) continue;
+    const h = KHc(c), cen = CHR_CEN[c]; drawRod(KXc(c), MERGE[1] - cen * h, h, 10, cen, BANDS[c], INK, 0.85 * a * (1 - morph));
+  }
+  LABEL('1 genome · GRCh38 coordinates', KX0 - 4, 300, 0.85 * eIO(inv(65.2, 66.0, t)) * laneOut);
+  drafting(KX0 + 30, MERGE[1], 70, 0.1 * eIO(inv(64, 65.5, t)) * laneOut, eIO(inv(64, 65.5, t)));
+}
+
+// ---- CH2 · THE HYPOTHESIS
+const AX0 = 200, AX1 = 1720, AXY = 720, CUM = []; { let a = 0; CHR_MB.forEach((m, c) => { CUM[c] = a; a += m; }); }
+const segX = (c, f) => AX0 + (CUM[c] + f * CHR_MB[c]) / TOTAL_MB * (AX1 - AX0);
+const GENES = (() => {
+  const r = mulberry32(CONFIG.SEED ^ 0x6321), G = [];
+  for (let i = 0; i < 6321; i++) { let u = r() * TOTAL_MB, c = 0; while (c < 22 && u > CUM[c] + CHR_MB[c]) c++; const s = Math.pow(r(), 3.2) * 0.42; G.push({ x: segX(c, 0.03 + 0.94 * r()), s, keep: false }); }
+  const idx = shuffle([...Array(6321).keys()], r).slice(0, 151); idx.forEach(i => { G[i].keep = true; G[i].s = 0.3 + r() * 0.34; });
+  const top = idx.slice(0, 6), sc = [0.97, 0.94, 0.91, 0.87, 0.82, 0.78];
+  top.forEach((i, k) => { G[i].s = sc[k]; G[i].rank = k; });
+  G[top[3]].x = segX(14, 0.37); G[top[3]].bub = true;   // BUB1B sits on chromosome 15 (public gene location)
+  G.forEach(g => { g.y = AXY - 24 - g.s * 440; g.t0 = 76.2 + (g.x - AX0) / (AX1 - AX0) * 1.8; });
+  return { G, top: top.map(i => G[i]) };
+})();
+const SLOT = { x: 1290, y0: 238, dy: 56 };
+const TX_T = 843, TX_M = 1379, HOM_Y = [430, 510], GX0 = 250, GX1 = 1670;
+function drawCH2(t) {
+  if (t < 74.8 || t > 100.5) return;
+  const inA = env(t, 75.4, 76.4, 97.4, 98.6), C = CONFIG.COPY, hA = hud(t, 75.6, 97.3); chapterTag(2, hA);
+  chip('DATA', 96, 86, hA * (1 - eIO(inv(85.0, 85.4, t))), 'genome-wide ranking · no gene panel'); chip('DATA', 96, 86, hA * eIO(inv(85.6, 86.0, t)), 'research curation · phase unresolved');
+  const axOut = 1 - eIO(inv(85.6, 86.6, t));
+  // karyotype rods lie down to become the genome axis
+  const m = eIO(inv(75.0, 76.8, t));
+  if (axOut > 0) for (let c = 0; c < 23; c++) {
+    const h0 = KHc(c), cen = CHR_CEN[c], len = CHR_MB[c] / TOTAL_MB * (AX1 - AX0) - 5, cx = lerp(KXc(c), segX(c, 0.5), m), cy = lerp(MERGE[1] - cen * h0 + h0 / 2, AXY, m), L = lerp(h0, len, m);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-Math.PI / 2 * m); drawRod(0, -L / 2, L, lerp(10, 8, m), cen, m > 0.6 ? null : BANDS[c], INK, lerp(0.85, 0.45, m) * axOut * (t < 75.0 ? 0 : 1)); ctx.restore();
+  }
+  // 6 321 gene dots → 151 → ranking
+  const filt = eIO(inv(78.6, 80.0, t)), dotsOut = 1 - eIO(inv(84.8, 85.8, t));
+  if (t > 76 && dotsOut > 0) {
+    for (const g of GENES.G) {
+      if (t < g.t0 || g.rank != null && t > 80.2) continue; const k = eOut(inv(g.t0, g.t0 + 0.5, t)), y = lerp(AXY, g.y, k);
+      const a = (g.keep ? lerp(0.55, 1, filt) : lerp(0.45, 0.05, filt)) * k * dotsOut * lerp(1, 0.3, eIO(inv(80.2, 81, t)));
+      ctx.fillStyle = rgba(g.bub ? AMB : g.keep ? mix(INK, CYA, filt * 0.55) : INK, a); const s = g.keep ? lerp(2, 4.5, filt) : 2; ctx.fillRect(g.x - s / 2, y - s / 2, s, s);
+    }
+    const n1 = Math.round(6321 * eOut(inv(76.2, 78.2, t))), txt = filt < 0.5 ? n1.toLocaleString('en-US').replace(',', ' ') : '151';
+    const cA = eIO(inv(76.3, 76.9, t)) * dotsOut * (1 - 0.8 * eIO(inv(80.4, 81.2, t))), sw = Math.abs(filt - 0.5) * 2;
+    drawText(txt, AX0, 262, { size: 72, weight: 700, alpha: cA * (filt > 0 && filt < 1 ? sw : 1) });
+    LABEL(filt < 0.5 ? 'genes with a high- or moderate-impact variant' : 'fit an inheritance model', AX0, 306, 0.75 * cA * (filt > 0 && filt < 1 ? sw : 1));
+  }
+  // ranking column: A0 (frozen) → frequency audit → A0-FREQFIX
+  const colA = env(t, 80.2, 81.0, 85.6, 86.4);
+  if (colA > 0) {
+    const audit = eIO(inv(83.6, 84.8, t));
+    CAPS(audit < 0.5 ? 'A0 · FROZEN RANKING' : 'A0-FREQFIX · AFTER FREQUENCY AUDIT', SLOT.x - 40, SLOT.y0 - 44, 0.65 * colA * Math.abs(audit - 0.5) * 2);
+    for (let i = 0; i < 6; i++) drawText(`#${i + 1}`, SLOT.x - 40, SLOT.y0 + i * SLOT.dy + 8, { size: 22, mono: true, weight: 500, align: 'right', alpha: 0.6 * colA });
+    const flag = env(t, 82.3, 82.9, 84.4, 84.9);
+    if (flag > 0) { const yT = SLOT.y0 - 6, yB = SLOT.y0 + 2 * SLOT.dy + 6, bx = SLOT.x - 76; ctx.beginPath(); ctx.moveTo(bx, yT); ctx.lineTo(bx - 10, yT); ctx.lineTo(bx - 10, yB); ctx.lineTo(bx, yB); ctx.strokeStyle = rgba(INK, 0.6 * flag); ctx.lineWidth = 1.2; ctx.stroke(); scrim(bx - 330, (yT + yB) / 2 - 20, 320, 40, flag); LABEL('allele frequency missing', bx - 24, (yT + yB) / 2 + 8, 0.9 * flag, { align: 'right' }); }
+    GENES.top.forEach((g, k) => {
+      const fk = eIO(inv(80.2 + k * 0.12, 81.2 + k * 0.12, t)), slotBefore = k, slotAfter = g.bub ? 0 : k < 3 ? 7 : k - 3, slot = lerp(slotBefore, slotAfter, audit), drop = k < 3 ? audit : 0;
+      const x = lerp(g.x, SLOT.x, fk), y = lerp(g.y, SLOT.y0 + slot * SLOT.dy, fk), a = colA * (1 - drop), bar = eIO(inv(81.0 + k * 0.1, 81.8 + k * 0.1, t)) * (120 + g.s * 170);
+      ctx.fillStyle = rgba(g.bub ? AMB : INK, (g.bub ? 0.95 : 0.55) * a); ctx.fillRect(x + 16, y - 3, bar, 6);
+      ctx.beginPath(); ctx.arc(x, y, g.bub ? 6.5 : 5, 0, TAU); ctx.fillStyle = rgba(g.bub ? AMB : INK, (g.bub ? 1 : 0.7) * a); ctx.fill();
+      if (g.bub) drawText('BUB1B', x + 32 + bar, y + 8, { size: 24, weight: 700, color: AMB, alpha: a * eIO(inv(81.4, 82.0, t)) });
+    });
+    const gh = eIO(inv(84.2, 84.9, t)) * colA;
+    if (gh > 0) { ctx.setLineDash([4, 4]); rrPath(SLOT.x - 12, SLOT.y0 + 3 * SLOT.dy - 14, 330, 28, 6); ctx.strokeStyle = rgba(AMB, 0.55 * gh); ctx.lineWidth = 1.2; ctx.stroke(); ctx.setLineDash([]); LABEL('A0 #4 · frozen, reported with #1', SLOT.x + 330, SLOT.y0 + 3 * SLOT.dy + 8, 0.8 * gh, { align: 'right', size: 20, weight: 500 }); }
+    LABEL('Exomiser: #2 of 398 · same VCF, another method', SLOT.x - 40, SLOT.y0 + 6 * SLOT.dy + 20, 0.62 * eIO(inv(84.8, 85.4, t)) * colA, { size: 20, weight: 500 });
+  }
+  // BUB1B: two copies, two candidate alleles, phase unresolved
+  if (t > 85.8) {
+    const z = eIO(inv(85.8, 87.2, t)), out = 1 - eIO(inv(97.5, 99.2, t)), split = eIO(inv(86.6, 87.6, t)), bub = GENES.top[3];
+    const y1 = lerp(SLOT.y0, HOM_Y[0], z), y2 = lerp(SLOT.y0, lerp(HOM_Y[0], HOM_Y[1], split), z), x0 = lerp(SLOT.x + 16, GX0, z), x1 = lerp(SLOT.x + 16 + 120 + bub.s * 170, GX1, z);
+    const merge = eIO(inv(97.5, 99.2, t)), Y1 = lerp(y1, 470, merge), Y2 = lerp(y2, 470, merge);
+    ctx.lineCap = 'round'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(x0, Y1); ctx.lineTo(x1, Y1); ctx.strokeStyle = rgba(AMB, 0.7 * (t < 99.2 ? 1 : 0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, Y2); ctx.lineTo(x1, Y2); ctx.strokeStyle = rgba(AMB, 0.7 * split * out); ctx.stroke(); ctx.lineCap = 'butt';
+    const lab = env(t, 87.0, 87.6, 97.2, 98.0);
+    drawText('BUB1B', GX0, 360, { size: 40, weight: 700, color: AMB, alpha: lab }); LABEL('leading causal hypothesis', GX0 + 160, 358, 0.8 * lab, { weight: 500 }); CAPS('TWO CANDIDATE ALLELES  ·  PHASE UNRESOLVED', GX0, 306, 0.72 * lab);
+    // alleles
+    const aT = eOut(inv(87.8, 88.4, t)), aM = eOut(inv(88.4, 89.0, t)), HA = holdAmb(90.5, 7);
+    const cis = HA.age >= 0 ? (0.5 - 0.5 * Math.cos(HA.age * 0.9)) * HA.amp : 0;
+    const yM = lerp(Y2, Y1, cis);
+    if (aT > 0) { ctx.fillStyle = rgba(INK, aT); ctx.fillRect(TX_T - 4, Y1 - 22 * aT, 8, 44 * aT); LABEL('truncating · likely pathogenic', TX_T - 60, Y1 - 38, 0.9 * aT * lab, { align: 'center' }); }
+    if (aM > 0) {
+      const dia = (x, y, s, fill) => { ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y); ctx.closePath(); if (fill) { ctx.fillStyle = rgba(BG, 1); ctx.fill(); } ctx.stroke(); };
+      ctx.lineWidth = 2.2; ctx.strokeStyle = rgba(INK, aM); dia(TX_M, yM, 13 * aM, true);
+      const ghostA = eIO(inv(89.4, 90.2, t)) * aM * out; if (ghostA > 0) { ctx.setLineDash([3, 4]); ctx.lineWidth = 1.3; ctx.strokeStyle = rgba(INK, 0.5 * ghostA); dia(TX_M, lerp(Y1, Y2, cis), 13, false); ctx.setLineDash([]); }
+      LABEL('missense · uncertain significance (VUS)', TX_M, Y2 + 58, 0.9 * aM * lab, { align: 'center' });
+    }
+    const ph = env(t, 89.4, 90.2, 97.2, 98.0); drawText('phase unresolved', (TX_T + TX_M) / 2 + 40, HOM_Y[0] - 34, { size: 26, weight: 700, color: AMB, align: 'center', alpha: ph });
+    CAPS('IN TRANS?  ·  IN CIS?', (TX_T + TX_M) / 2 + 40, (HOM_Y[0] + HOM_Y[1]) / 2 + 7, 0.6 * ph, { align: 'center' });
+  }
+}
+
+// ---- CH3 · TRYING TO REFUTE IT  (then the functional-genomics anchor)
+const EXONS = [[0.05, 0.018], [0.14, 0.012], [0.21, 0.01], [0.33, 0.02], [0.41, 0.016], [0.58, 0.018], [0.67, 0.01], [0.79, 0.012], [0.9, 0.012]];
+const SCANS = [['copy number · CNVpytor, depth + allele balance', 99.9, 'no CNV call in the gene body'], ['mobile elements · xTea, SCRAMble', 101.8, 'no MEI call in the gene body'], ['breakpoint reads · read-level assay', 103.7, 'descriptive only · no threshold defined']];
+function geneModel(t, a, X, yc) {
+  ctx.strokeStyle = rgba(INK, 0.55 * a); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(X(GX0), yc); ctx.lineTo(X(GX1), yc); ctx.stroke();
+  ctx.fillStyle = rgba(INK, 0.62 * a); for (const [p, w] of EXONS) { const xa = X(GX0 + p * (GX1 - GX0)), xb = X(GX0 + (p + w) * (GX1 - GX0)); ctx.fillRect(xa, yc - 12, Math.max(1.5, xb - xa), 24); }
+}
+function drawCH3(t) {
+  if (t < 97.2 || t > 133) return;
+  const inA = env(t, 97.8, 98.8, 131.2, 132.6), hA = hud(t, 97.9, 131.9); chapterTag(3, hA);
+  chip('DATA', 96, 86, hA * (1 - eIO(inv(112.4, 112.9, t))), 'short-read structural search · protocol closed');
+  chip('PRED', 96, 86, hA * eIO(inv(113.0, 113.5, t)), 'predicted by a sequence model · not measured');
+  // gene model with both allele markers
+  const gA = eIO(inv(98.2, 99.4, t)), zk = eIO(inv(113.9, 115.4, t)), gz = Math.exp(Math.log(3.2) * zk), X = x => lerp(TX_R, W / 2, zk) + (x - TX_R) * gz, gOut = 1 - eIO(inv(115.8, 116.8, t));
+  if (gA * gOut > 0) {
+    geneModel(t, gA * gOut, X, 470);
+    ctx.fillStyle = rgba(INK, gA * gOut); ctx.fillRect(X(TX_T) - 4, 448, 8, 44);
+    ctx.save(); ctx.translate(X(TX_M), 470); ctx.rotate(Math.PI / 4); ctx.fillStyle = rgba(BG, 1); ctx.fillRect(-9, -9, 18, 18); ctx.strokeStyle = rgba(AMB, gA * gOut); ctx.lineWidth = 2.2; ctx.strokeRect(-9, -9, 18, 18); ctx.restore();
+  }
+  // three independent structural scans across the gene body
+  const listOut = 1 - eIO(inv(112.2, 113.2, t));
+  SCANS.forEach(([name, t0, res], k) => {
+    const la = eIO(inv(t0, t0 + 0.4, t)) * listOut * inA, y = 238 + k * 48; if (la <= 0) return;
+    LABEL(name, GX0, y, 0.9 * la); const done = eIO(inv(t0 + 1.5, t0 + 1.9, t)) * la;
+    if (done > 0) { ctx.beginPath(); ctx.arc(GX0 + 600, y - 8, 8, 0, TAU); ctx.strokeStyle = rgba(INK, 0.85 * done); ctx.lineWidth = 1.6; ctx.stroke(); LABEL(res, GX0 + 620, y, 0.8 * done, { weight: 500 }); }
+    const p = inv(t0 + 0.1, t0 + 1.5, t);
+    if (p > 0 && p < 1) { const sx = lerp(GX0, GX1, eIO(p)), g = ctx.createLinearGradient(sx - 70, 0, sx, 0); g.addColorStop(0, rgba(CYA, 0)); g.addColorStop(1, rgba(CYA, 0.16)); ctx.fillStyle = g; ctx.fillRect(sx - 70, 390, 70, 160); ctx.fillStyle = rgba(CYA, 0.9); ctx.fillRect(sx - 0.8, 390, 1.6, 160); }
+  });
+  const ins = env(t, 105.6, 106.4, 112.0, 112.8);
+  if (ins > 0) { const pulse = 0.75 + 0.25 * Math.sin(AMB_T * 2.2); ctx.setLineDash([3, 5]); rrPath(905, 440, 150, 60, 8); ctx.strokeStyle = rgba(AMB, 0.9 * ins * pulse); ctx.lineWidth = 1.6; ctx.stroke(); ctx.setLineDash([]); LABEL('complex insertion · not excluded', 980, 560, 0.92 * ins, { align: 'center', color: AMB }); LABEL('short reads cannot rule it out', 980, 592, 0.6 * ins, { align: 'center', weight: 500, size: 20 }); }
+  // anchor B: AlphaGenome as a lens on the hidden-second-allele candidate (EXP-009 → EXP-023)
+  if (t > 112.5) drawLens(t);
+}
+const S6R = mulberry32(CONFIG.SEED ^ 0x6666), BASES = 'ACGT', REFSEQ = Array.from({ length: 64 }, () => BASES[Math.floor(S6R() * 4)]), ALTC = BASES[(BASES.indexOf(REFSEQ[32]) + 2) % 4];
+const ISMV = [0, 1, 2, 3].map(r => Array.from({ length: 64 }, (_, c) => { let v = (S6R() - 0.5) * 0.28; if (c === 9) v += r === 2 ? 0.95 : -0.45; if (c === 21) v += r === 3 ? 0.4 : -0.1; if (c >= 52 && c <= 58) v += r === 3 ? 0.55 + 0.1 * Math.sin(c) : r === 1 ? 0.22 : -0.12; if (c >= 3 && c <= 7) v -= r === 0 ? 0.35 : 0; if (c === 32) v *= 0.25; return clamp(v, -1, 1); }));
+const HM = { x0: 245.5, cw: 21, gap: 1, top: 418, rh: 30, rg: 2 }, hmX = c => HM.x0 + c * (HM.cw + HM.gap) + HM.cw / 2, hmY = r => HM.top + r * (HM.rh + HM.rg) + HM.rh / 2;
+const divCol = v => v >= 0 ? [206, 98, 82] : [92, 150, 200];
+function drawRefAlt(t) {
+  if (t > 118.6) return; const lab = env(t, 114.4, 115.0, 117.4, 118.0), box = env(t, 115.4, 115.9, 117.4, 118.0);
+  LABEL('REF', 282, 452, 0.7 * lab, { align: 'right', size: 22 }); LABEL('ALT', 282, 542, 0.7 * lab, { align: 'right', size: 22 });
+  LABEL('the missense position · synthetic sequence', 320, 392, 0.55 * lab, { weight: 500, size: 20 });
+  if (box > 0) { ctx.strokeStyle = rgba(AMB, 0.9 * box); ctx.lineWidth = 1.4; rrPath(W / 2 - 21, 412, 42, 150, 5); ctx.stroke(); }
+  for (let i = 0; i < 33; i++) {
+    const col = i + 16, d = Math.abs(i - 16), ap = eOut(inv(114.4 + d * 0.035, 114.9 + d * 0.035, t)), x = W / 2 + (i - 16) * 40, m = eIO(inv(117.4 + d * 0.02, 118.5, t));
+    const size = lerp(34, 10, m), a = ap * (1 - m * m);
+    if (a > 0.01) drawText(REFSEQ[col], lerp(x, hmX(col), m), lerp(462, hmY(BASES.indexOf(REFSEQ[col])) + size * 0.35, m), { size, mono: true, weight: 500, align: 'center', alpha: 0.9 * a });
+    const altA = ap * (1 - eIO(inv(117.4, 117.9, t))); if (altA > 0.01) drawText(i === 16 ? ALTC : REFSEQ[col], x, 552, { size: 34, mono: true, weight: 500, align: 'center', alpha: (i === 16 ? 1 : 0.85) * altA, color: i === 16 ? AMB : INK });
+  }
+}
+function drawISM(t) {
+  if (t < 117.5 || t > 122.4) return; const out = 1 - eIO(inv(120.6, 121.8, t)), lab = env(t, 117.8, 118.4, 120.6, 121.2);
+  LABEL('in silico mutagenesis · all four bases', HM.x0, 392, 0.8 * lab);
+  for (let r = 0; r < 4; r++) drawText(BASES[r], HM.x0 - 14, hmY(r) + 7, { size: 20, mono: true, weight: 500, align: 'right', alpha: 0.65 * lab });
+  for (let c = 0; c < 64; c++) {
+    const e = eOut(inv(117.7 + Math.abs(c - 32) / 32 * 1.3, 118.1 + Math.abs(c - 32) / 32 * 1.3, t)) * out; if (e <= 0) continue; const x = HM.x0 + c * (HM.cw + HM.gap);
+    for (let r = 0; r < 4; r++) { const y = HM.top + r * (HM.rh + HM.rg), v = ISMV[r][c]; ctx.fillStyle = rgba(INK, 0.045 * e); ctx.fillRect(x, y, HM.cw, HM.rh); ctx.fillStyle = rgba(divCol(v), Math.min(0.92, Math.abs(v) * 1.05) * e); ctx.fillRect(x, y, HM.cw, HM.rh); }
+    const rr = BASES.indexOf(REFSEQ[c]); ctx.fillStyle = rgba(INK, 0.9 * e * inv(118.2, 118.6, t)); ctx.fillRect(hmX(c) - 1.5, hmY(rr) - 1.5, 3, 3);
+    const v = ISMV[rr][c]; ctx.fillStyle = rgba(divCol(v), 0.75 * e); ctx.fillRect(x + 3, 600, HM.cw - 6, -v * 34);
+  }
+  ctx.fillStyle = rgba(INK, 0.3 * out * inv(117.8, 118.2, t)); ctx.fillRect(HM.x0, 600, 64 * (HM.cw + HM.gap), 1);
+  const co = out * inv(117.8, 118.1, t); if (co > 0) { ctx.strokeStyle = rgba(INK, 0.9 * co); ctx.lineWidth = 1.3; ctx.strokeRect(hmX(32) - HM.cw / 2 - 1.5, HM.top - 2, HM.cw + 3, 4 * (HM.rh + HM.rg) + 2); }
+  LABEL('the candidate column is quiet — no compelling local sensitivity', HM.x0, 668, 0.65 * env(t, 118.8, 119.4, 120.6, 121.2), { weight: 500, size: 20 });
+}
+const NB = 18, TW = 470, DW = TW / NB, TBASE = 640, TRI_X = [215, 725, 1235];
+function contactVal(i, j) { const hot = (a, b, amp) => amp * Math.exp(-((i - a) ** 2 + (j - b) ** 2) / 1.1); return clamp(0.92 * Math.exp(-(j - i) / 2.3) + hot(4, 10, 0.75) + hot(8, 15, 0.6) + hot(2, 7, 0.45) + hot(12, 16, 0.35) + (i === 11 ? 0.16 * Math.exp(-(j - i) / 8) : 0)); }
+const CONTACT = [];
+[0, 1, 2].forEach(tri => { for (let i = 0; i < NB; i++) for (let j = i; j < NB; j++) {
+  const ref = clamp(contactVal(i, j) + (S6R() - 0.5) * 0.04), bump = 0.03 * Math.exp(-((i - 9) ** 2 + (j - 9) ** 2) / 6) * (S6R() - 0.3);
+  const v = tri === 0 ? ref : tri === 1 ? clamp(ref + bump) : bump, idx = CONTACT.length;
+  CONTACT.push({ tri, i, j, v, x: TRI_X[tri] + (i + j + 1) * DW / 2, y: TBASE - (j - i + 1) * DW / 2, sx: hmX(idx % 64), sy: hmY((idx >> 6) % 4), d: (idx % 29) / 29 });
+} });
+// EXP-023 looked at the notebook-04 hidden-second-allele candidate (intronic), NOT at the missense.
+const TX_R = GX0 + 0.625 * (GX1 - GX0), LENS_SEQ = (() => { const r = mulberry32(CONFIG.SEED ^ 0x1E45); return Array.from({ length: 21 }, () => 'ACGT'[Math.floor(r() * 4)]); })();
+CONTACT.forEach((c, idx) => { const col = idx % 64, b = (idx >> 6) % 4, ang = -Math.PI / 2 + (col - 32) / 64 * TAU, rad = 300 + b * 34; c.rx = W / 2 + Math.cos(ang) * rad; c.ry = 470 + Math.sin(ang) * rad * 0.82; });
+function drawLens(t) {
+  if (t < 112.5 || t > 133) return;
+  const HA = holdAmb(124, 7);
+  // 1 · a lens finds the intronic candidate and opens on it
+  const la = eIO(inv(112.7, 113.3, t)) * (1 - eIO(inv(118.6, 119.4, t))), mv = eIO(inv(112.9, 113.9, t)), gr = eIO(inv(113.9, 115.4, t));
+  const cx = lerp(lerp(560, TX_R, mv), W / 2, gr), cy = 470, r = lerp(64, 240, gr), mk = env(t, 112.6, 113.2, 114.3, 114.9);
+  if (mk > 0) { ctx.fillStyle = rgba(CYA, mk); ctx.fillRect(TX_R - 1.5, 440, 3, 60); LABEL('hidden-allele candidate · intronic', TX_R, 424, 0.92 * mk, { align: 'center', color: CYA }); }
+  if (la > 0) {
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fillStyle = rgba(BG, 0.9 * la * gr); ctx.fill(); ctx.clip();
+    const flip = eIO(inv(114.9, 115.3, t));
+    for (let i = 0; i < 21; i++) { const x = cx + (i - 10) * 34 * lerp(0.4, 1, gr), isC = i === 10, ch = isC ? (flip > 0.5 ? ALTC : REFSEQ[32]) : LENS_SEQ[i];
+      drawText(ch, x, cy + 11, { size: lerp(14, 32, gr), mono: true, weight: 500, align: 'center', alpha: la * gr * (isC ? 1 : 0.55), color: isC && flip > 0.5 ? AMB : INK }); }
+    ctx.restore();
+    ctx.strokeStyle = rgba(CYA, 0.9 * la); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+    ctx.beginPath(); for (let k = 0; k < 72; k++) { const a = k / 72 * TAU, l = k % 6 === 0 ? 10 : 5; ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); ctx.lineTo(cx + Math.cos(a) * (r + l), cy + Math.sin(a) * (r + l)); } ctx.lineWidth = 1; ctx.stroke();
+    LABEL('REF → ALT · sequence shown is synthetic', cx, cy + r + 44, 0.7 * la * gr, { align: 'center', weight: 500, size: 20 });
+  }
+  // 2 · the substitution propagates; the model's predicted sensitivity field appears — quiet at the candidate
+  const rp = inv(115.3, 118.6, t), R0 = 80 + 820 * eOut(rp), fA = inv(115.4, 116.0, t) * (1 - eIO(inv(119.4, 120.6, t)));
+  if (rp > 0 && rp < 1) for (let k = 0; k < 3; k++) { const rr = R0 - k * 60; if (rr > 0) { ctx.beginPath(); ctx.ellipse(W / 2, 470, rr, rr * 0.82, 0, 0, TAU); ctx.strokeStyle = rgba(AMB, 0.5 * (1 - rp) * (1 - k * 0.3)); ctx.lineWidth = 1.4; ctx.stroke(); } }
+  if (fA > 0) {
+    for (let c = 0; c < 64; c++) for (let b = 0; b < 4; b++) {
+      const ang = -Math.PI / 2 + (c - 32) / 64 * TAU, rad = 300 + b * 34; if (rad > R0 + 20) continue; const v = ISMV[b][c];
+      ctx.save(); ctx.translate(W / 2 + Math.cos(ang) * rad, 470 + Math.sin(ang) * rad * 0.82); ctx.rotate(ang + Math.PI / 2);
+      ctx.fillStyle = rgba(INK, 0.06 * fA); ctx.fillRect(-12, -14, 24, 28); ctx.fillStyle = rgba(divCol(v), Math.min(0.92, Math.abs(v) * 1.05) * fA); ctx.fillRect(-12, -14, 24, 28); ctx.restore();
+    }
+    const cA = fA * inv(116.4, 117.0, t); ctx.strokeStyle = rgba(INK, 0.9 * cA); ctx.lineWidth = 1.4; ctx.strokeRect(W / 2 - 16, 470 - 402 * 0.82 - 18, 32, (402 - 300) * 0.82 + 36);
+    const lA = fA * inv(117.0, 117.8, t);
+    LABEL('in silico mutagenesis', 96, 214, 0.92 * lA, { size: 28, weight: 700 });
+    LABEL('768 substitutions · 256 positions', 96, 252, 0.78 * lA, { weight: 500 });
+    LABEL('candidate ranks 62 / 256 — not in the top 5 %', 96, 290, 0.9 * lA, { color: AMB });
+  }
+  // 3 · the field folds into predicted contacts; the difference is read against the pre-registered rule (EXP-023)
+  if (t > 119.2) {
+    const out = 1 - eIO(inv(131.2, 132.2, t)), labA = env(t, 121.0, 121.8, 131.0, 131.8);
+    ['REF · predicted', 'ALT · predicted'].forEach((n, k) => LABEL(n, TRI_X[k] + TW / 2, TBASE + 44, 0.85 * labA, { align: 'center' }));
+    LABEL('predicted chromatin contacts · skin fibroblast track · not patient Hi-C', TRI_X[0], 330, 0.72 * labA, { weight: 500, size: 20 });
+    for (const c of CONTACT) {
+      if (c.tri === 2) continue; const k = eIO(inv(119.3 + c.d * 1.1, 120.5 + c.d * 1.1, t)); if (k <= 0) continue;
+      const aO = t > 131 && HOT.includes(c) ? 1 : out; if (aO <= 0) continue;
+      const x = lerp(c.rx, c.x, k), y = lerp(c.ry, c.y, k), sz = lerp(20, DW / Math.SQRT2 - 0.8, k), sh = HA.age >= 0 ? 1 + 0.12 * Math.sin(HA.age * 1.7 + c.i * 0.9 - c.j * 0.6) * HA.amp : 1;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4 * k); ctx.fillStyle = rgba(contactCol(c.v), (0.12 + 0.88 * Math.min(1, c.v * 1.25)) * lerp(0.4, 1, k) * aO * sh); ctx.fillRect(-sz / 2, -sz / 2, sz, sz); ctx.restore();
+    }
+    const gA = env(t, 121.4, 122.2, 131.0, 131.8), fill = eOut(inv(122.2, 123.4, t)), bx = 1300, bw = 420, by = 600;
+    if (gA > 0) {
+      CAPS('ALT − REF', bx, 420, 0.85 * gA);
+      drawText(`${(1.09 * fill).toFixed(2)} %`, bx, 500, { size: 72, weight: 700, alpha: gA });
+      LABEL('of the maximum predicted contact signal', bx, 540, 0.75 * gA, { weight: 500, size: 20 });
+      ctx.fillStyle = rgba(INK, 0.16 * gA); ctx.fillRect(bx, by, bw, 8); ctx.fillStyle = rgba(CYA, 0.95 * gA); ctx.fillRect(bx, by, bw * 1.09 / 6 * fill, 8);
+      const tx5 = bx + bw * 5 / 6; ctx.fillStyle = rgba(AMB, 0.95 * gA); ctx.fillRect(tx5 - 1, by - 16, 2, 40);
+      LABEL('pre-registered threshold 5 %', tx5, by - 26, 0.88 * gA, { align: 'center', size: 20, color: AMB });
+      LABEL('below threshold → negative, and reported', bx, by + 56, 0.92 * gA * inv(123.4, 124.0, t), { weight: 700 });
+    }
+  }
+}
+const contactCol = v => v < 0.75 ? mix([26, 22, 18], AMB, clamp(v * 1.33)) : mix(AMB, INK, (v - 0.75) / 0.25);
+const HOT = CONTACT.filter(c => c.tri === 0 && c.j - c.i >= 3).sort((a, b) => b.v - a.v).filter((c, k, arr) => arr.slice(0, k).every(o => Math.hypot(o.x - c.x, o.y - c.y) > 40)).slice(0, 5).sort((a, b) => a.x - b.x);
+function drawContacts(t) {
+  if (t < 120.4 || t > 134) return; const out = 1 - eIO(inv(131.4, 132.8, t)), HA = holdAmb(124, 7), labA = env(t, 122.2, 122.9, 131.2, 131.9);
+  const names = ['REF · predicted', 'ALT · predicted', 'ALT − REF'];
+  names.forEach((n, k) => LABEL(n, TRI_X[k] + TW / 2, TBASE + 44, 0.85 * labA, { align: 'center' }));
+  LABEL('weak under the pre-registered rule', TRI_X[2] + TW / 2, TBASE + 76, 0.6 * labA, { align: 'center', weight: 500, size: 20 });
+  LABEL('predicted chromatin contacts · not patient Hi-C', TRI_X[0], 330, 0.7 * labA, { weight: 500, size: 20 });
+  for (const c of CONTACT) {
+    if (c.tri === 2) { // difference panel fades in place: almost empty, on purpose
+      const k = eIO(inv(122.4, 123.4, t)) * out; if (k <= 0) continue; const s = DW / Math.SQRT2 - 0.8;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = rgba(INK, 0.035 * k); ctx.fillRect(-s / 2, -s / 2, s, s);
+      if (Math.abs(c.v) > 0.004) { ctx.fillStyle = rgba(c.v > 0 ? [206, 98, 82] : [92, 150, 200], Math.min(0.6, Math.abs(c.v) * 14) * k); ctx.fillRect(-s / 2, -s / 2, s, s); } ctx.restore(); continue;
+    }
+    const k = eIO(inv(120.6 + c.d * 1.2, 121.7 + c.d * 1.2, t)); if (k <= 0) continue;
+    const isHot = t > 131 && HOT.includes(c) && c.tri === 0; const aOut = isHot ? 1 : out; if (aOut <= 0) continue;
+    const x = lerp(c.sx, c.x, k), y = lerp(c.sy, c.y, k), s = lerp(18, DW / Math.SQRT2 - 0.8, k);
+    const shimmer = HA.age >= 0 ? 1 + 0.12 * Math.sin(HA.age * 1.7 + c.i * 0.9 - c.j * 0.6) * HA.amp : 1;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4 * k); ctx.fillStyle = rgba(contactCol(c.v), (0.12 + 0.88 * Math.min(1, c.v * 1.25)) * lerp(0.4, 1, k) * aOut * shimmer); ctx.fillRect(-s / 2, -s / 2, s, s); ctx.restore();
+  }
+}
+
+// ---- CH4 · RESCUE VS RISK
+const CHAIN_X = [330, 650, 960, 1270, 1590], CHAIN_Y = 430;
+const CHAIN = [
+  { name: 'candidate alleles', chip: 'DATA' }, { name: 'residual BUBR1', chip: 'HYPO', sub: 'to measure' },
+  { name: 'spindle checkpoint', chip: 'EXT' }, { name: 'segregation errors', chip: 'EXT' }, { name: 'mosaic aneuploidy', chip: 'HYPO', sub: 'suspected' }
+];
+const PLOT = { x0: 400, x1: 1500, y0: 240, y1: 760 }, P = (u, v) => [lerp(PLOT.x0, PLOT.x1, u), lerp(PLOT.y1, PLOT.y0, v)];
+const LAND = (u, v) => 0.62 * Math.exp(-((u - 0.15) ** 2 / 0.05 + (v - 0.8) ** 2 / 0.06)) - 0.7 * Math.exp(-((u - 0.86) ** 2 / 0.06 + (v - 0.36) ** 2 / 0.12)) + 0.08 * Math.sin(3.1 * u + 2.3 * v) + 0.05 * Math.cos(5 * u - 3 * v);
+const CONTOURS = (() => { // marching squares on the rescue–risk landscape
+  const NX = 72, NY = 40, F = []; for (let j = 0; j <= NY; j++) { F.push([]); for (let i = 0; i <= NX; i++) F[j].push(LAND(i / NX, j / NY)); }
+  const levels = [-0.55, -0.42, -0.3, -0.18, -0.07, 0.04, 0.15, 0.27, 0.39, 0.51], out = [];
+  for (const lv of levels) { const segs = [];
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const a = F[j][i], b = F[j][i + 1], c = F[j + 1][i + 1], d = F[j + 1][i], idx = (a > lv ? 8 : 0) | (b > lv ? 4 : 0) | (c > lv ? 2 : 0) | (d > lv ? 1 : 0); if (idx === 0 || idx === 15) continue;
+      const it = (p, q) => (lv - p) / (q - p), T = [i + it(a, b), j], Rt = [i + 1, j + it(b, c)], B = [i + it(d, c), j + 1], Lf = [i, j + it(a, d)];
+      const map = { 1: [[Lf, B]], 2: [[B, Rt]], 3: [[Lf, Rt]], 4: [[T, Rt]], 5: [[Lf, T], [B, Rt]], 6: [[T, B]], 7: [[Lf, T]], 8: [[Lf, T]], 9: [[T, B]], 10: [[T, Rt], [Lf, B]], 11: [[T, Rt]], 12: [[Lf, Rt]], 13: [[B, Rt]], 14: [[Lf, B]] };
+      for (const [p, q] of map[idx]) segs.push([p[0] / NX, p[1] / NY, q[0] / NX, q[1] / NY]);
+    } out.push({ lv, segs }); }
+  return out;
+})();
+const ARMS = [
+  { key: 'A', role: 'allele-directed hypothesis', drug: 'Azithromycin', end: [0.25, 0.52], via: [0.13, 0.36], col: INK, bar: 62 },
+  { key: 'B', role: 'falsification sentinel', drug: 'Arimoclomol', end: [0.27, 0.26], via: [0.32, 0.12], col: INK, bar: 46 },
+  { key: 'C', role: 'adversarial safety comparator', drug: 'Sirolimus', end: [0.84, 0.38], via: [0.55, 0.12], col: INK, bar: 150 }
+];
+const START = [0.16, 0.14], GATE_U = 0.68;
+const armPt = (A, k) => { const [a, b, c] = [START, A.via, A.end], m = 1 - k; return P(m * m * a[0] + 2 * m * k * b[0] + k * k * c[0], m * m * a[1] + 2 * m * k * b[1] + k * k * c[1]); };
+function drawCH4(t) {
+  if (t < 131 || t > 164) return;
+  const shk = t > 148.6 && t < 149.3 ? 1 - inv(148.6, 149.3, t) : 0; if (shk > 0) ctx.translate(Math.sin(t * 91) * 8 * shk, Math.cos(t * 73) * 5 * shk);
+  const inA = env(t, 132.6, 133.6, 160.2, 161.6), hA = hud(t, 132.6, 161.3); chapterTag(4, hA);
+  chip('HYPO', 96, 86, hA * (1 - eIO(inv(141.4, 141.9, t))), 'mechanism for this case: L0–L1');
+  chip('NEXT', 96, 86, hA * eIO(inv(142.0, 142.5, t)), 'Track 2 portfolio · roles, not a ranking · untested');
+  // mechanism chain — born from the strongest predicted contacts
+  const chainOut = 1 - eIO(inv(141.4, 142.6, t)), HA = holdAmb(136.5, 5);
+  CHAIN.forEach((n, k) => {
+    const src = HOT[k] || HOT[0], fk = eIO(inv(132.6 + k * 0.12, 133.9 + k * 0.12, t)), x = lerp(src.x, CHAIN_X[k], fk), y = lerp(src.y, CHAIN_Y, fk), a = fk * chainOut; if (a <= 0) return;
+    if (k < 4) { const e = eIO(inv(134.0 + k * 0.35, 134.6 + k * 0.35, t)) * chainOut; if (e > 0) { const xa = CHAIN_X[k] + 40, xb = lerp(xa, CHAIN_X[k + 1] - 40, e); ctx.beginPath(); if (k === 0) ctx.setLineDash([6, 6]); ctx.moveTo(xa, CHAIN_Y); ctx.lineTo(xb, CHAIN_Y); ctx.strokeStyle = rgba(INK, 0.55 * e); ctx.lineWidth = 1.6; ctx.stroke(); ctx.setLineDash([]); if (e > 0.98) { ctx.beginPath(); ctx.moveTo(xb, CHAIN_Y); ctx.lineTo(xb - 10, CHAIN_Y - 6); ctx.lineTo(xb - 10, CHAIN_Y + 6); ctx.closePath(); ctx.fillStyle = rgba(INK, 0.7 * e); ctx.fill(); } } }
+    const dashed = n.chip === 'HYPO' && k === 1; ctx.beginPath(); ctx.arc(x, y, 30, 0, TAU); ctx.fillStyle = rgba(BG, a); ctx.fill(); if (dashed) ctx.setLineDash([4, 5]); ctx.strokeStyle = rgba(k === 0 ? AMB : k === 3 ? RED : INK, 0.9 * a); ctx.lineWidth = 1.8; ctx.stroke(); ctx.setLineDash([]);
+    chainIcon(k, x, y, a, t);
+    const la = eIO(inv(133.8 + k * 0.2, 134.5 + k * 0.2, t)) * chainOut;
+    LABEL(n.name, CHAIN_X[k], CHAIN_Y + 70, 0.92 * la, { align: 'center' });
+    if (n.sub) LABEL(n.sub, CHAIN_X[k], CHAIN_Y + 100, 0.6 * la, { align: 'center', weight: 500, size: 20 });
+    const short = { DATA: 'PATIENT DATA', HYPO: 'HYPOTHESIS', EXT: 'EXTERNAL' }[n.chip], cw = textWidth(short, { size: 19, weight: 600, track: 0.18 }) + 24; chipIcon(n.chip, CHAIN_X[k] - cw / 2 + 7, CHAIN_Y - 73, 0.9 * la); CAPS(short, CHAIN_X[k] - cw / 2 + 24, CHAIN_Y - 66, 0.8 * la, { color: n.chip === 'DATA' ? mix(AMB, INK, 0.25) : INK });
+  });
+  if (HA.age >= 0 && chainOut > 0) { const p = (HA.age * 0.22) % 1, x = lerp(CHAIN_X[0], CHAIN_X[4], p); ctx.beginPath(); ctx.arc(x, CHAIN_Y, 3.2, 0, TAU); ctx.fillStyle = rgba(AMB, 0.9 * HA.amp * chainOut); ctx.fill(); }
+  if (t < 141.4) return;
+  // the rescue–risk landscape (conceptual): up = segregation fidelity, right = survival of unstable cells
+  const LA = eIO(inv(141.8, 143.2, t)) * (1 - eIO(inv(160.4, 161.8, t))), HB = holdAmb(152, 7.5);
+  ctx.save(); ctx.beginPath(); ctx.rect(PLOT.x0, 0, (PLOT.x1 - PLOT.x0) * eIO(inv(141.8, 143.6, t)), H); ctx.clip();
+  { const gx0 = P(GATE_U, 0)[0]; ctx.save(); ctx.beginPath(); ctx.rect(gx0, PLOT.y0, PLOT.x1 - gx0, PLOT.y1 - PLOT.y0); ctx.clip(); ctx.strokeStyle = rgba(RED, 0.2 * LA); ctx.lineWidth = 1; ctx.beginPath(); for (let x = gx0 - 600; x < PLOT.x1; x += 11) { ctx.moveTo(x, PLOT.y1); ctx.lineTo(x + 520, PLOT.y0); } ctx.stroke(); ctx.restore(); }
+  for (const { lv, segs } of CONTOURS) {
+    const col = lv > 0.1 ? mix(INK, GRN, 0.45) : lv < -0.1 ? mix(INK, RED, 0.5) : INK; ctx.beginPath();
+    for (const [a, b, c, d] of segs) { const [x1, y1] = P(a, 1 - b), [x2, y2] = P(c, 1 - d); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); }
+    ctx.strokeStyle = rgba(col, (0.16 + 0.12 * PAPER_P) * LA); ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.restore();
+  ctx.strokeStyle = rgba(INK, 0.6 * LA); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(PLOT.x0, PLOT.y0 - 10); ctx.lineTo(PLOT.x0, PLOT.y1); ctx.lineTo(PLOT.x1 + 10, PLOT.y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PLOT.x0, PLOT.y0 - 18); ctx.lineTo(PLOT.x0 - 6, PLOT.y0 - 6); ctx.lineTo(PLOT.x0 + 6, PLOT.y0 - 6); ctx.closePath(); ctx.moveTo(PLOT.x1 + 18, PLOT.y1); ctx.lineTo(PLOT.x1 + 6, PLOT.y1 - 6); ctx.lineTo(PLOT.x1 + 6, PLOT.y1 + 6); ctx.closePath(); ctx.fillStyle = rgba(INK, 0.6 * LA); ctx.fill();
+  ctx.save(); ctx.translate(PLOT.x0 - 30, (PLOT.y0 + PLOT.y1) / 2); ctx.rotate(-Math.PI / 2); LABEL('chromosome segregation fidelity', 0, 0, 0.8 * LA, { align: 'center' }); ctx.restore();
+  LABEL('survival of unstable cells', PLOT.x1, PLOT.y1 + 38, 0.8 * LA, { align: 'right' });
+  // target zone — the only green in the film, and it is still a hypothesis
+  const tz = eIO(inv(143.0, 144.0, t)) * LA, [tx, ty] = P(0.15, 0.8);
+  if (tz > 0) { const gg = ctx.createRadialGradient(tx, ty, 0, tx, ty, 150); gg.addColorStop(0, rgba(GRN, 0.16 * tz)); gg.addColorStop(1, rgba(GRN, 0)); ctx.fillStyle = gg; ctx.beginPath(); ctx.ellipse(tx, ty, 150, 95, 0, 0, TAU); ctx.fill(); ctx.setLineDash([4, 5]); ctx.strokeStyle = rgba(GRN, 0.7 * tz); ctx.lineWidth = 1.4; ctx.stroke(); ctx.setLineDash([]); LABEL('fewer errors, no extra', tx, ty - 8, 0.9 * tz, { align: 'center', color: mix(GRN, INK, 0.35) }); LABEL('survival of unstable cells', tx, ty + 22, 0.9 * tz, { align: 'center', color: mix(GRN, INK, 0.35) }); CAPS('TARGET · TO BE TESTED', tx, ty + 58, 0.6 * tz, { align: 'center' }); }
+  // the three experimental roles
+  const [sx, sy] = P(START[0], START[1]), stA = eIO(inv(144.0, 144.6, t)) * LA;
+  if (stA > 0) { ctx.beginPath(); ctx.arc(sx, sy, 5, 0, TAU); ctx.fillStyle = rgba(INK, 0.7 * stA); ctx.fill(); LABEL('untreated', sx - 16, sy + 8, 0.55 * stA, { align: 'right', weight: 500, size: 20 }); }
+  const veto = eIO(inv(149.2, 149.8, t)), gate = eIO(inv(148.6, 149.4, t)) * LA;
+  ARMS.forEach((A, k) => {
+    const t0 = 144.6 + k * 0.5, g = eIO(inv(t0, t0 + (k === 2 ? 2.2 : 1.6), t)); if (g <= 0 || LA <= 0) return;
+    const isC = k === 2, dim = isC ? lerp(1, 0.6, veto) : 1, col = isC ? mix(INK, RED, veto) : A.col;
+    // onion-skin trail (as in the reference's flight paths)
+    for (let s = 1; s <= 7; s++) { const kk = g - s * 0.05; if (kk <= 0) break; const [x, y] = armPt(A, kk); ctx.beginPath(); ctx.arc(x, y, 7 - s * 0.6, 0, TAU); ctx.strokeStyle = rgba(col, (0.35 - s * 0.04) * dim * LA); ctx.lineWidth = 1; ctx.stroke(); }
+    ctx.setLineDash([5, 6]); ctx.beginPath(); for (let s = 0; s <= 40 * g; s++) { const [x, y] = armPt(A, s / 40); s ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = rgba(col, 0.6 * dim * LA); ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
+    const [x, y] = armPt(A, g); ctx.beginPath(); ctx.arc(x, y, 10, 0, TAU); ctx.fillStyle = rgba(BG, 1); ctx.fill(); ctx.strokeStyle = rgba(col, 0.95 * dim * LA); ctx.lineWidth = 2.2; ctx.stroke();
+    drawText(A.key, x, y + 6, { size: 16, weight: 700, align: 'center', color: col, alpha: dim * LA });
+    const la = eIO(inv(t0 + 1.0, t0 + 1.6, t)) * LA, lx = isC ? x : x + 22, al = isC ? 'center' : 'left';
+    if (CONFIG.SHOW_DRUG_NAMES) { LABEL(A.drug, lx, isC ? y + 50 : y - 18, 0.95 * la * dim, { color: col, strike: isC ? veto : 0, align: al, size: 26, weight: 700 }); LABEL(A.role, lx, isC ? y + 78 : y + 8, 0.72 * la * dim, { color: col, align: al, weight: 500, size: 20 }); }
+    else LABEL(A.role, lx, isC ? y + 46 : y - 18, 0.9 * la * dim, { color: col, strike: isC ? veto : 0, align: al });
+    if (k === 0) { const e = eIO(inv(146.2, 147.0, t)) * LA, b = HB.age >= 0 ? 1 + 0.06 * Math.sin(HB.age * 1.4) * HB.amp : 1; if (e > 0) { ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.ellipse(x, y, 74 * b, 46 * b, -0.3, 0, TAU); ctx.strokeStyle = rgba(INK, 0.4 * e); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]); LABEL('uncertain · untested for this allele', x + 22, y + 36, 0.6 * e, { weight: 500, size: 20 }); } }
+    if (k === 1) { const e = eIO(inv(146.6, 147.2, t)) * LA; if (e > 0) { const r = 18 + 6 * Math.sin(AMB_T * 2); ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.strokeStyle = rgba(CYA, 0.5 * e); ctx.lineWidth = 1; ctx.stroke(); LABEL('does it engage at all?', x + 22, y + 36, 0.6 * e, { weight: 500, size: 20 }); } }
+  });
+  // viability — the readout that makes C look like the strongest rescue
+  const va = eIO(inv(146.4, 147.2, t)) * LA, VX = 1610, VB = 470;
+  if (va > 0) {
+    CAPS('VIABILITY ALONE', VX, 240, 0.7 * va);
+    ARMS.forEach((A, k) => { const isC = k === 2, h = A.bar * eIO(inv(146.8 + k * 0.15, 147.8 + k * 0.15, t)), x = VX + k * 62, col = isC ? mix(INK, RED, veto) : INK;
+      ctx.fillStyle = rgba(col, (isC ? lerp(0.9, 0.3, veto) : 0.7) * va); ctx.fillRect(x, VB - h, 30, h); drawText(A.key, x + 15, VB + 30, { size: 20, weight: 700, align: 'center', alpha: 0.8 * va, color: col });
+      if (isC && veto > 0) { ctx.strokeStyle = rgba(RED, veto * va); ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x - 6, VB - h - 6); ctx.lineTo(x + 36, VB + 6); ctx.stroke(); } });
+    LABEL('deprioritized for safety', VX, VB + 70, 0.9 * veto * va, { color: RED, size: 20 });
+  }
+  // the safety gate
+  const win = env(t, 147.3, 147.9, 148.5, 148.7);
+  if (win > 0 && LA > 0) { const [wx, wy] = armPt(ARMS[2], 1), pr = 1 + 0.08 * Math.sin(AMB_T * 5), g2 = ctx.createRadialGradient(wx, wy, 0, wx, wy, 90); g2.addColorStop(0, rgba(AMB, 0.28 * win)); g2.addColorStop(1, rgba(AMB, 0)); ctx.fillStyle = g2; ctx.fillRect(wx - 90, wy - 90, 180, 180); ctx.beginPath(); ctx.arc(wx, wy, 24 * pr, 0, TAU); ctx.strokeStyle = rgba(AMB, 0.85 * win); ctx.lineWidth = 2; ctx.stroke(); drawText('strongest apparent effect', wx, wy - 40, { size: 24, weight: 700, align: 'center', color: AMB, alpha: win }); }
+  if (gate > 0) {
+    const gx = P(GATE_U, 0)[0]; ctx.fillStyle = rgba(RED, 0.85 * gate); ctx.fillRect(gx - 1, PLOT.y0, 2, (PLOT.y1 - PLOT.y0) * gate);
+    for (let y = PLOT.y0; y < PLOT.y0 + (PLOT.y1 - PLOT.y0) * gate; y += 18) { ctx.fillRect(gx + 1, y, 7, 1.2); }
+    CAPS('SAFETY GATE', gx, PLOT.y0 - 18, 0.95 * gate, { align: 'center', color: RED });
+    if (veto > 0) { const [cx, cy] = armPt(ARMS[2], 1); drawText('VETO', cx, cy - 26, { size: 26, weight: 700, track: 0.2, align: 'center', color: RED, alpha: veto, reveal: veto }); }
+  }
+  const fl = t > 148.6 ? 1 - inv(148.6, 148.95, t) : 0; if (fl > 0) { ctx.fillStyle = rgba(RED, 0.12 * fl); ctx.fillRect(-40, -40, W + 80, H + 80); }
+  const head = eIO(inv(150.0, 150.8, t)) * (1 - eIO(inv(160.2, 161.2, t)));
+  if (head > 0) { scrim(0, 110, 1100, 100, head * 0.8); drawText(CONFIG.COPY.ch4head, PLOT.x0, 176, { size: 56, weight: 700, track: -0.01, reveal: inv(150.0, 150.9, t), alpha: head }); }
+}
+function chainIcon(k, x, y, a, t) {
+  ctx.lineWidth = 1.6;
+  if (k === 0) { ctx.fillStyle = rgba(AMB, a); ctx.fillRect(x - 9, y - 11, 5, 22); ctx.strokeStyle = rgba(AMB, a); ctx.save(); ctx.translate(x + 7, y); ctx.rotate(Math.PI / 4); ctx.strokeRect(-5, -5, 10, 10); ctx.restore(); }
+  else if (k === 1) { ctx.fillStyle = rgba(INK, 0.3 * a); ctx.beginPath(); ctx.arc(x, y, 10, 0, TAU); ctx.fill(); drawText('?', x, y + 7, { size: 18, weight: 700, align: 'center', alpha: a }); }
+  else if (k === 2) { ctx.strokeStyle = rgba(CYA, 0.9 * a); ctx.beginPath(); for (let s = -2; s <= 2; s++) { ctx.moveTo(x - 16, y); ctx.quadraticCurveTo(x, y + s * 7, x + 16, y); } ctx.stroke(); ctx.fillStyle = rgba(INK, a); ctx.beginPath(); ctx.arc(x - 16, y, 2.5, 0, TAU); ctx.arc(x + 16, y, 2.5, 0, TAU); ctx.fill(); }
+  else if (k === 3) { ctx.strokeStyle = rgba(INK, 0.9 * a); ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - 14, y - 7); ctx.lineTo(x - 14, y + 7); ctx.moveTo(x + 14, y - 7); ctx.lineTo(x + 14, y + 7); ctx.stroke(); ctx.strokeStyle = rgba(RED, a); ctx.beginPath(); ctx.moveTo(x - 2, y - 9); ctx.lineTo(x + 3, y + 9); ctx.stroke(); ctx.lineCap = 'butt'; }
+  else { const s = 9; for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { ctx.fillStyle = rgba(i === 1 && j === 0 ? AMB : INK, (i === 1 && j === 0 ? 0.9 : 0.45) * a); ctx.fillRect(x - s - 1 + i * (s + 2), y - s - 1 + j * (s + 2), s, s); } }
+}
+
+// ---- CH5 · THE DECISION
+function drawCH5(t) {
+  if (t < 161.4 || t > 175.4) return;
+  const out = 1 - eIO(inv(173.0, 174.4, t)), hud5 = hud(t, 162.2, 173.2); chapterTag(5, hud5);
+  chip('NEXT', 96, 86, hud5, 'decisive observations, cheapest first');
+  drawText(CONFIG.COPY.ch5head, 200, 190, { size: 64, weight: 700, track: -0.01, reveal: inv(162.4, 163.3, t), alpha: out });
+  // mini homologs with the two alleles
+  const hA = eIO(inv(162.6, 163.6, t)) * out, Y1 = 400, Y2 = 470, x0 = 200, x1 = 620;
+  if (hA > 0) {
+    ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = rgba(AMB, 0.7 * hA); ctx.beginPath(); ctx.moveTo(x0, Y1); ctx.lineTo(x1, Y1); ctx.moveTo(x0, Y2); ctx.lineTo(x1, Y2); ctx.stroke(); ctx.lineCap = 'butt';
+    ctx.fillStyle = rgba(INK, hA); ctx.fillRect(330 - 4, Y1 - 16, 8, 32);
+    const HA = holdAmb(167, 6), cis = HA.age >= 0 ? (0.5 - 0.5 * Math.cos(HA.age * 0.9)) * HA.amp : 0;
+    ctx.save(); ctx.translate(520, lerp(Y2, Y1, cis)); ctx.rotate(Math.PI / 4); ctx.fillStyle = rgba(BG, 1); ctx.fillRect(-8, -8, 16, 16); ctx.strokeStyle = rgba(INK, hA); ctx.lineWidth = 2; ctx.strokeRect(-8, -8, 16, 16); ctx.restore();
+    LABEL('BUB1B · two candidate alleles', x0, Y1 - 44, 0.8 * hA, { weight: 500 });
+  }
+  const nA = eIO(inv(163.4, 164.0, t)) * out, NX = 760, NY = 435;
+  if (nA > 0) { ctx.beginPath(); ctx.moveTo(x1 + 20, NY); ctx.lineTo(NX - 52, NY); ctx.strokeStyle = rgba(INK, 0.5 * nA); ctx.lineWidth = 1.4; ctx.stroke(); ctx.beginPath(); ctx.arc(NX, NY, 50, 0, TAU); ctx.strokeStyle = rgba(AMB, 0.95 * nA); ctx.lineWidth = 2; ctx.stroke(); CAPS('PHASE', NX + 2, NY + 7, nA, { align: 'center', color: AMB }); LABEL('decided by parental genotypes or long-read phasing', 200, 560, 0.62 * nA, { weight: 500, size: 20 }); }
+  const br = (k, yT, t0, head, l1) => {
+    const e = eIO(inv(t0, t0 + 0.9, t)) * out; if (e <= 0) return; const bx = NX + 50, mx = NX + 140, ex = NX + 200;
+    ctx.beginPath(); ctx.moveTo(bx, NY); ctx.lineTo(mx, NY); ctx.lineTo(mx, lerp(NY, yT, e)); if (e > 0.6) ctx.lineTo(lerp(mx, ex, inv(0.6, 1, e)), yT); ctx.strokeStyle = rgba(INK, 0.55 * e); ctx.lineWidth = 1.4; ctx.stroke();
+    const la = eIO(inv(t0 + 0.6, t0 + 1.2, t)) * out; drawText(head, ex + 16, yT + 10, { size: 30, weight: 700, alpha: la, color: k === 0 ? AMB : INK }); LABEL(l1, ex + 16, yT + 48, 0.8 * la, { weight: 500 });
+  };
+  br(0, 300, 164.0, 'in trans', 'the canonical MVA1 configuration → test the missense function');
+  br(1, 570, 164.6, 'in cis', 'this pair cannot explain it → hidden-allele search: RNA + long reads');
+  const gA = eIO(inv(165.6, 166.4, t)) * out;
+  if (gA > 0) { ctx.fillStyle = rgba(RED, 0.9 * gA); ctx.fillRect(200, 682, 2, 30); for (let y = 682; y < 712; y += 8) ctx.fillRect(202, y, 6, 1.2); LABEL('any rescue arm: segregation errors and clonogenic survival, measured together', 226, 704, 0.9 * gA); }
+}
+
+// ---- CLOSE
+function drawClose(t) {
+  if (t < 173.4) return; const HA = holdAmb(176.5, 7.5);
+  const ends = [[950, 300], [950, 570], [760, 435], [520, 470], [330, 400], [226, 700], [1300, 300], [1300, 570], [620, 400], [620, 470], [200, 400], [200, 470], [760, 500]];
+  drawLockup(t, { cy: 400, tWell: 173.6, tTitle: 174.4, tSub: 175.1, tLine: 175.6, line: CONFIG.COPY.openLine, noSub: true,
+    from: (m) => ends[m % ends.length], age: !EXPORT && LIVE.holding && LIVE.holding.final ? (performance.now() - LIVE.enter) / 1000 : (t >= 176.5 ? t - 176.5 : -1), ripple: eIO(inv(175.4, 177.0, t)) });
+  void HA;
+}
+
+// ================================================================ PROLOGUE — the human world first (warm illustrated paper)
+// A child's crayon drawing, one EDTA blood tube, a dive into the blood to the white blood cell whose DNA was
+// sequenced — its nucleus becomes the first cell of the film. Generic, non-identifying imagery only.
+const PINK = [44, 33, 26], WOOD = [205, 152, 94], WOODD = [120, 76, 38], SHEET = [245, 239, 227];
+const PRNG = mulberry32(CONFIG.SEED ^ 0x9A9E);
+const GRAIN_LINES = Array.from({ length: 72 }, (_, i) => ({ y: -60 + i * 17 + PRNG() * 10, a: 0.08 + PRNG() * 0.16, ph: PRNG() * TAU, amp: 2 + PRNG() * 6, f: 0.002 + PRNG() * 0.004 }));
+const RBC = Array.from({ length: 26 }, () => ({ x: PRNG() * W, y: PRNG() * H * 0.9, r: 40 + PRNG() * 34, rot: PRNG() * TAU, vx: (PRNG() - 0.5) * 26, vy: (PRNG() - 0.5) * 14, z: 0.6 + PRNG() * 0.8, tilt: 0.5 + PRNG() * 0.5 }));
+const JIT = Array.from({ length: 4096 }, () => PRNG() - 0.5);
+function crayon(pts, col, w, prog, seed, a) { // hand-drawn crayon polyline: jittered passes, drawn up to `prog`
+  if (prog <= 0 || a <= 0.01) return;
+  const seg = []; let L = 0; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); L += d; }
+  const upto = L * prog; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let pass = 0; pass < 3; pass++) {
+    ctx.beginPath(); let acc = 0, k = (seed * 131 + pass * 977) % 3000, started = false;
+    for (let i = 1; i < pts.length && acc < upto; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], d = seg[i - 1], n = Math.max(2, Math.ceil(d / 6));
+      for (let j = 0; j <= n; j++) { const f = j / n; if (acc + f * d > upto) break; const x = lerp(x0, x1, f) + JIT[(k++) % 4096] * w, y = lerp(y0, y1, f) + JIT[(k++) % 4096] * w; if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y); }
+      acc += d;
+    }
+    ctx.strokeStyle = rgba(col, a * (pass === 0 ? 0.85 : 0.4)); ctx.lineWidth = w * (pass === 0 ? 1 : 0.5); ctx.stroke();
+  }
+}
+const circPts = (cx, cy, r, n = 30) => Array.from({ length: n + 1 }, (_, i) => [cx + Math.cos(-Math.PI / 2 + i / n * TAU) * r, cy + Math.sin(-Math.PI / 2 + i / n * TAU) * r]);
+function crayonFamily(t, t0, a) { // local coordinates around the drawing's centre
+  const pr = (st, d) => clamp((t - t0 - st) / d), BLUE = [64, 104, 186], ORANGE = [214, 92, 56], YEL = [232, 172, 36], GREEN = [80, 150, 78], ROSE = [206, 60, 72];
+  crayon([[-380, 230], [-200, 222], [0, 232], [200, 224], [380, 230]], GREEN, 6, pr(0, 0.5), 1, a);
+  for (let g = 0; g < 14; g++) { const x = -360 + g * 55; crayon([[x, 232], [x + 6, 212], [x + 12, 232]], GREEN, 3, pr(0.3 + g * 0.02, 0.2), 40 + g, a); }
+  crayon(circPts(-90, -110, 42), BLUE, 5, pr(0.3, 0.4), 2, a);
+  crayon([[-90, -68], [-90, 90]], BLUE, 6, pr(0.6, 0.25), 3, a);
+  crayon([[-160, 30], [-90, -30], [-30, 22]], BLUE, 5, pr(0.8, 0.3), 4, a);
+  crayon([[-130, 210], [-90, 90], [-50, 210]], BLUE, 5, pr(1.0, 0.3), 5, a);
+  crayon(circPts(40, -10, 32), ORANGE, 5, pr(1.1, 0.35), 6, a);
+  crayon([[40, 22], [40, 120]], ORANGE, 6, pr(1.4, 0.2), 7, a);
+  crayon([[-30, 22], [40, 50], [100, 85]], ORANGE, 5, pr(1.55, 0.3), 8, a);
+  crayon([[15, 210], [40, 120], [68, 210]], ORANGE, 5, pr(1.75, 0.3), 9, a);
+  const sp = []; for (let i = 0; i <= 64; i++) { const rr = 52 * (1 - i / 72), an = i * 0.5; sp.push([260 + Math.cos(an) * rr, -190 + Math.sin(an) * rr]); }
+  crayon(sp, YEL, 6, pr(1.8, 0.6), 10, a);
+  for (let r = 0; r < 10; r++) { const an = r / 10 * TAU; crayon([[260 + Math.cos(an) * 68, -190 + Math.sin(an) * 68], [260 + Math.cos(an) * 98, -190 + Math.sin(an) * 98]], YEL, 4, pr(2.2 + r * 0.03, 0.15), 20 + r, a); }
+  const hp = []; for (let i = 0; i <= 32; i++) { const th = i / 32 * TAU; hp.push([-25 + 1.2 * 16 * Math.sin(th) ** 3, -176 - 1.2 * (13 * Math.cos(th) - 5 * Math.cos(2 * th) - 2 * Math.cos(3 * th) - Math.cos(4 * th))]); }
+  crayon(hp, ROSE, 4, pr(2.5, 0.4), 30, a);
+}
+function bloodTube(a) { // lying along x, EDTA (lavender) cap at +x; label carries no identifiers
+  const L = 430, r = 31, x0 = -L / 2, x1 = L / 2 - 70;
+  ctx.save(); ctx.beginPath(); ctx.ellipse(12, r + 16, L * 0.5, 16, 0, 0, TAU); ctx.clip(); ctx.strokeStyle = rgba(PINK, 0.35 * a); ctx.lineWidth = 1.2; ctx.beginPath(); for (let x = -L * 0.6; x < L * 0.6; x += 7) { ctx.moveTo(x, r - 6); ctx.lineTo(x + 16, r + 38); } ctx.stroke(); ctx.restore();
+  const body = () => { ctx.beginPath(); ctx.moveTo(x1, -r); ctx.lineTo(x0 + r, -r); ctx.arc(x0 + r, 0, r, -Math.PI / 2, Math.PI / 2, true); ctx.lineTo(x1, r); ctx.closePath(); };
+  body(); ctx.fillStyle = rgba([250, 248, 244], 0.55 * a); ctx.fill();
+  ctx.save(); body(); ctx.clip(); const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, rgba([150, 20, 30], a)); g.addColorStop(1, rgba([84, 8, 16], a)); ctx.fillStyle = g; ctx.fillRect(x0, -r, x1 - 60 - x0, 2 * r); ctx.restore();
+  body(); ctx.strokeStyle = rgba(PINK, 0.9 * a); ctx.lineWidth = 2.2; ctx.stroke();
+  ctx.fillStyle = rgba([252, 250, 244], 0.96 * a); ctx.fillRect(-110, -r + 4, 150, 2 * r - 8); ctx.strokeStyle = rgba(PINK, 0.5 * a); ctx.lineWidth = 1; ctx.strokeRect(-110, -r + 4, 150, 2 * r - 8);
+  ctx.fillStyle = rgba(PINK, 0.8 * a); for (let i = 0; i < 22; i++) ctx.fillRect(-100 + i * 5.5, -r + 11, Math.max(1, (JIT[i * 7] + 0.6) * 3), 20);
+  drawText('blood · WGS', -35, r - 11, { size: 15, weight: 600, align: 'center', color: PINK, alpha: 0.9 * a });
+  ctx.fillStyle = rgba([146, 116, 196], a); rrPath(x1 - 4, -r - 6, 82, 2 * r + 12, 8); ctx.fill(); ctx.strokeStyle = rgba(PINK, 0.85 * a); ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = rgba([90, 66, 130], 0.7 * a); ctx.lineWidth = 1.4; ctx.beginPath(); for (let i = 0; i < 7; i++) { const x = x1 + 10 + i * 10; ctx.moveTo(x, -r - 2); ctx.lineTo(x, r + 2); } ctx.stroke();
+  ctx.strokeStyle = rgba([255, 255, 255], 0.7 * a); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0 + r + 10, -r + 7); ctx.lineTo(x1 - 10, -r + 7); ctx.stroke();
+}
+function drawPrologue(T) {
+  if (T > PRO + 0.9) return;
+  const p = T, Zk = eIn(inv(4.9, 6.45, p)), Z = Math.exp(Math.log(30) * Zk);
+  const slide = eOut(inv(2.6, 3.9, p)), tx = 1300 + (1 - slide) * 900, ty = 700 - (1 - slide) * 40, ta = lerp(0.35, -0.28, slide);
+  const fx = tx + (-168) * Math.cos(ta) - 6 * Math.sin(ta), fy = ty + (-168) * Math.sin(ta) + 6 * Math.cos(ta);
+  const worldA = 1 - inv(6.35, 6.6, p);
+  if (worldA > 0) {
+    ctx.save(); ctx.globalAlpha = worldA; ctx.translate(fx, fy); ctx.scale(Z, Z); ctx.translate(-fx, -fy);
+    ctx.fillStyle = rgba(WOOD, 1); ctx.fillRect(-300, -300, W + 600, H + 600);
+    ctx.lineWidth = 1.2; for (const gl of GRAIN_LINES) { ctx.beginPath(); for (let x = -240; x <= W + 240; x += 24) { const y = gl.y + Math.sin(x * gl.f + gl.ph) * gl.amp; x === -240 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.strokeStyle = rgba(WOODD, gl.a); ctx.stroke(); }
+    ctx.strokeStyle = rgba(WOODD, 0.35); for (let k = 1; k <= 5; k++) { ctx.beginPath(); ctx.ellipse(1640, 960, 10 + k * 9, 4 + k * 3.5, 0.05, 0, TAU); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(255,246,224,0.13)'; for (let i = 0; i < 4; i++) { const x = -300 + i * 540; ctx.beginPath(); ctx.moveTo(x, -200); ctx.lineTo(x + 230, -200); ctx.lineTo(x + 930, H + 200); ctx.lineTo(x + 700, H + 200); ctx.fill(); }
+    ctx.save(); ctx.translate(760, 470); ctx.rotate(-0.045);
+    ctx.fillStyle = 'rgba(60,35,15,0.22)'; ctx.fillRect(-448, -318, 912, 652); ctx.fillStyle = rgba(SHEET, 1); ctx.fillRect(-460, -330, 900, 640);
+    crayonFamily(p, 0.25, 1); ctx.restore();
+    if (p > 2.55) { ctx.save(); ctx.translate(tx, ty); ctx.rotate(ta); bloodTube(1); ctx.restore(); }
+    ctx.restore();
+    drawPaperTex(0.55 * worldA);
+    drawText('One child.', 1290, 190, { size: 64, weight: 700, color: PINK, reveal: inv(0.9, 1.7, p), exit: inv(4.7, 5.2, p) });
+    drawText('One blood sample.', 1292, 262, { size: 44, weight: 600, color: PINK, alpha: 0.88, reveal: inv(3.3, 4.1, p), exit: inv(4.7, 5.2, p) });
+  }
+  // inside the blood: red cells drift past a white blood cell — the source of the sequenced DNA
+  const inA = inv(6.3, 6.6, p); if (inA <= 0) return;
+  const deep = eIO(inv(7.4, 8.8, p)), out = 1 - inv(PRO, PRO + 0.8, T), cx = W / 2, cy = VIEW_CY;
+  ctx.fillStyle = rgba(mix([72, 10, 18], BG, deep), inA); ctx.fillRect(0, 0, W, H);
+  for (const c of RBC) {
+    const sc = 1 + deep * 2.6 * c.z, a = inA * (1 - deep), x = cx + (c.x + c.vx * p - cx) * sc, y = cy + (c.y + c.vy * p - cy) * sc; if (a <= 0.01) break;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(c.rot + p * 0.1); ctx.scale(sc, sc * c.tilt);
+    ctx.beginPath(); ctx.arc(0, 0, c.r, 0, TAU); ctx.fillStyle = rgba([176, 36, 42], 0.95 * a); ctx.fill(); ctx.strokeStyle = rgba([54, 6, 10], 0.8 * a); ctx.lineWidth = 2 / sc; ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, c.r * 0.46, 0, TAU); ctx.fillStyle = rgba([212, 96, 90], 0.6 * a); ctx.fill(); ctx.restore();
+  }
+  const cellA = inA * (1 - deep), nr = lerp(82, 140, deep);
+  if (cellA > 0.01) { ctx.beginPath(); ctx.arc(cx, cy, 128, 0, TAU); ctx.fillStyle = rgba([232, 222, 236], 0.92 * cellA); ctx.fill(); ctx.strokeStyle = rgba([70, 40, 90], 0.8 * cellA); ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 0.25 * cellA; ctx.fillStyle = stipple(1); ctx.fill(); ctx.globalAlpha = 1; }
+  ctx.beginPath(); ctx.arc(cx, cy, nr, 0, TAU); ctx.fillStyle = rgba([118, 84, 160], 0.9 * inA * (1 - deep)); ctx.fill();
+  ctx.strokeStyle = rgba(mix([60, 34, 92], INK, deep), 0.9 * inA * out); ctx.lineWidth = lerp(2.4, 1.6, deep); ctx.stroke();
+  const lab = cellA * (1 - inv(7.6, 8.0, p));
+  if (lab > 0.01) { ctx.beginPath(); ctx.moveTo(cx + 96, cy - 88); ctx.lineTo(cx + 190, cy - 170); ctx.lineTo(cx + 250, cy - 170); ctx.strokeStyle = rgba([245, 225, 225], 0.7 * lab); ctx.lineWidth = 1.2; ctx.stroke();
+    CAPS('WHITE BLOOD CELL', cx + 262, cy - 164, 0.95 * lab, { color: [245, 228, 228] }); drawText('the sequenced DNA comes from cells like this', cx + 262, cy - 132, { size: 20, weight: 500, alpha: 0.75 * lab, color: [245, 228, 228] }); }
+}
+
+// ================================================================ INTERLUDE — THE PATIENT AS A SCREEN? (our own audit)
+// Source: research/agent_findings/2026-08-28_patient-as-screen_agent-a.md and docs/00_ESTADO_Y_OBSOLESCENCIA.md.
+// External papers verified in PubMed: Klaasen 2022 (10.1038/s41586-022-04938-0), Ya 2025 (10.1016/j.stemcr.2025.102506),
+// Villarroya-Beltri 2022 (10.1126/sciadv.abq5914).
+const BR5 = mulberry32(CONFIG.SEED ^ 0x5C4E);
+const TERR = [...Array(23).keys()].sort((a, b) => CHR_MB[b] - CHR_MB[a]).map((c, i) => { const rad = lerp(250, 40, i / 22), ang = i * 2.39996 + 0.4; return { c, x: Math.cos(ang) * rad, y: Math.sin(ang) * rad * 0.82, r: 16 + 26 * (CHR_MB[c] / 248) }; });
+const SPARKS = []; for (let i = 0; i < 60; i++) SPARKS.push({ k: Math.floor(Math.pow(BR5(), 1.9) * 23), t: 16.8 + BR5() * 6.4 });
+const HEX = (() => { const out = []; for (let q = -3; q <= 3; q++) for (let r = -3; r <= 3; r++) { const s3 = -q - r; if (Math.abs(s3) > 3) continue; out.push({ q, r, x: 960 + 46 * Math.sqrt(3) * (q + r / 2), y: 470 + 46 * 1.5 * r, d: Math.max(Math.abs(q), Math.abs(r), Math.abs(s3)) }); } return out; })();
+function hexPath(x, y, sz) { ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3, px = x + Math.cos(a) * sz, py = y + Math.sin(a) * sz; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); }
+function drawScreenBlock(A) {
+  const u = A - BLK0; if (u < 0 || u > BLK_D) return;
+  ctx.fillStyle = rgba(BG, env(u, 0, 1.0, BLK_D - 0.8, BLK_D)); ctx.fillRect(-40, -40, W + 80, H + 80);
+  CAPS('INTERLUDE  ·  THE PATIENT AS A SCREEN?', W - 96, 86, 0.55 * env(u, 0.6, 1.2, BLK_D - 1.2, BLK_D - 0.6), { align: 'right' });
+  // A · the mosaic, seen as a screening plate
+  const aA = env(u, 0.6, 1.8, 6.0, 6.8);
+  if (aA > 0) {
+    drawWorld(14.6, { x: HX + 300 * Math.sin(u * 0.1), y: HY, z: lerp(0.1, 0.135, eSine(inv(0, 6.8, u))) });
+    ctx.fillStyle = rgba(BG, 1 - aA); ctx.fillRect(-40, -40, W + 80, H + 80);
+    const pl = env(u, 3.0, 4.2, 6.0, 6.8); if (pl > 0) { ctx.strokeStyle = rgba(INK, 0.13 * pl); ctx.lineWidth = 1; for (let y = 60; y < 800; y += 38) for (let x = 40; x < W; x += 38) { ctx.beginPath(); ctx.arc(x, y, 12, 0, TAU); ctx.stroke(); } }
+    chip('HYPO', 96, 86, aA, 'the idea we started from');
+    const q = 'THE PATIENT IS THE SCREEN?'; scrim(0, 120, W, 90, 0.8 * aA);
+    drawText(q, W / 2, 192, { size: 60, weight: 700, align: 'center', track: 0.04, reveal: inv(1.6, 2.5, u), exit: inv(5.8, 6.4, u), colors: i => (i === q.length - 1 ? AMB : INK) });
+    LABEL('each persisting island read as a “hit” of a natural screen', W / 2, 250, 0.75 * aA * inv(3.6, 4.4, u), { align: 'center', weight: 500 });
+  }
+  // B · a screen needs its input library (T0): "lost" and "never made" look identical at the end
+  const bA = env(u, 6.6, 7.4, 14.8, 15.6);
+  if (bA > 0) {
+    chip('AUDIT', 96, 86, bA, 'research/agent_findings · patient-as-screen');
+    drawText('A screen needs a starting point.', 120, 190, { size: 56, weight: 700, reveal: inv(6.8, 7.6, u), alpha: bA });
+    const cs = 26, gp = 4, fw = 5 * (cs + gp), fh = 4 * (cs + gp), merge = eIO(inv(11.2, 12.4, u));
+    [{ x0: 250, name: 'HISTORY A  ·  MADE, THEN LOST', ev: 1 }, { x0: 1030, name: 'HISTORY B  ·  NEVER MADE', ev: 0 }].forEach(S => {
+      CAPS(S.name, S.x0, 320, 0.85 * bA * inv(7.4, 8.0, u));
+      ['T0', 'T1', 'NOW'].forEach((fn, fi) => {
+        const ap = eOut(inv(7.8 + fi * 1.0, 8.4 + fi * 1.0, u)) * bA; if (ap <= 0) return;
+        let fx = S.x0 + fi * (fw + 60), fy = 380; if (fi === 2) { fx = lerp(fx, W / 2 - fw / 2, merge); fy = lerp(fy, 540, merge); }
+        const noT0 = fi === 0 ? inv(12.3, 12.9, u) : 0;
+        CAPS(fn, fx, fy - 14, 0.62 * ap);
+        for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++) { const lost = S.ev && fi === 1 && i === 2 && j === 1; ctx.fillStyle = rgba(lost ? RED : INK, (lost ? 0.85 : 0.15) * ap * (1 - noT0 * 0.7)); ctx.fillRect(fx + i * (cs + gp), fy + j * (cs + gp), cs, cs); }
+        if (S.ev && fi === 1) LABEL('−chr', fx + 2 * (cs + gp) + cs / 2, fy + fh + 26, 0.85 * ap, { align: 'center', color: RED, size: 20 });
+        if (noT0 > 0) { ctx.setLineDash([5, 5]); ctx.strokeStyle = rgba(RED, 0.85 * noT0 * bA); ctx.lineWidth = 1.5; ctx.strokeRect(fx - 8, fy - 8, fw + 12, fh + 12); ctx.setLineDash([]); LABEL('not observed', fx + fw / 2, fy + fh + 30, 0.9 * noT0 * bA, { align: 'center', color: RED, size: 20 }); }
+      });
+    });
+    LABEL('what one blood sample sees', W / 2, 540 + fh + 34, 0.88 * bA * inv(12.2, 12.8, u), { align: 'center' });
+    drawText('Without T0, “lost” and “never made” look identical.', W / 2, 770, { size: 34, weight: 700, align: 'center', color: AMB, alpha: bA, reveal: inv(12.6, 13.2, u) });
+  }
+  // C · inside the nucleus: generation itself is biased by position, not by fitness
+  const cA = env(u, 15.4, 16.4, 23.8, 24.6);
+  if (cA > 0) {
+    chip('EXT', 96, 86, cA, 'Klaasen et al., Nature 2022 · single-cell DNA sequencing');
+    drawText('Mis-segregation is not random.', 120, 190, { size: 56, weight: 700, reveal: inv(16.0, 16.8, u), alpha: cA });
+    const zin = eOut(inv(15.4, 16.8, u)), NR = 300 * zin, ncx = 820, ncy = 500;
+    for (const sg of [-1, 1]) { const py = ncy + sg * (NR * 0.82 + 70); ctx.beginPath(); for (let k = 0; k < 12; k++) { const a = k / 12 * TAU; ctx.moveTo(ncx + Math.cos(a) * 4, py + Math.sin(a) * 4); ctx.lineTo(ncx + Math.cos(a) * 14, py + Math.sin(a) * 14); } ctx.strokeStyle = rgba(CYA, 0.6 * cA * zin); ctx.lineWidth = 1; ctx.stroke(); }
+    ctx.beginPath(); ctx.ellipse(ncx, ncy, NR, NR * 0.82, 0, 0, TAU); ctx.fillStyle = rgba(INK, 0.03 * cA); ctx.fill(); ctx.strokeStyle = rgba(INK, 0.6 * cA); ctx.lineWidth = 1.6; ctx.stroke();
+    TERR.forEach((tr, i) => { const e = eOut(inv(16.2 + i * 0.03, 16.8 + i * 0.03, u)) * cA; ctx.beginPath(); ctx.arc(ncx + tr.x * zin, ncy + tr.y * zin, tr.r * zin, 0, TAU); ctx.fillStyle = rgba(INK, 0.08 * e); ctx.fill(); ctx.strokeStyle = rgba(INK, 0.36 * e); ctx.lineWidth = 1; ctx.stroke(); });
+    SPARKS.forEach(sp => { const p = inv(sp.t, sp.t + 0.8, u); if (p <= 0 || p >= 1) return; const tr = TERR[sp.k], x = ncx + tr.x * zin, y = ncy + tr.y * zin; ctx.beginPath(); ctx.arc(x, y, tr.r * (1 + p * 0.6), 0, TAU); ctx.fillStyle = rgba(RED, 0.22 * (1 - p) * cA); ctx.fill(); ctx.strokeStyle = rgba(RED, 0.9 * (1 - p) * cA); ctx.lineWidth = 2; ctx.stroke(); });
+    const rA = inv(19.0, 19.8, u) * cA, lx = ncx + NR + 70;
+    if (rA > 0) { ctx.strokeStyle = rgba(INK, 0.5 * rA); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(ncx, ncy); ctx.lineTo(ncx + NR, ncy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(ncx + NR, ncy); ctx.lineTo(ncx + NR - 10, ncy - 6); ctx.lineTo(ncx + NR - 10, ncy + 6); ctx.closePath(); ctx.fillStyle = rgba(INK, 0.6 * rA); ctx.fill();
+      LABEL('farther from the nuclear centre', lx, ncy - 34, 0.8 * rA, { weight: 500 }); LABEL('→ more segregation errors', lx, ncy, 0.95 * rA, { color: RED });
+      LABEL('a mechanical bias — not a fitness signal', lx, ncy + 48, 0.85 * rA * inv(20.4, 21.2, u), { weight: 700 }); }
+  }
+  // D · persistence is decided by neighbours — and a winning clone points to tumour risk, not rescue
+  const dA = env(u, 24.4, 25.2, 32.8, 33.6);
+  if (dA > 0) {
+    chip('EXT', 96, 86, dA, 'Ya et al. 2025 · Villarroya-Beltri et al. 2022');
+    drawText('Persistence is decided by neighbours.', 120, 190, { size: 56, weight: 700, reveal: inv(24.8, 25.6, u), alpha: dA });
+    const el = inv(26.0, 27.4, u), B = { q: 1, r: -1 };
+    HEX.forEach(h => {
+      const ap = eOut(inv(24.6 + h.d * 0.12, 25.2 + h.d * 0.12, u)) * dA; if (ap <= 0) return;
+      let col = INK, fa = 0.1, sz = 42;
+      if (h.q === 0 && h.r === 0) { col = el < 0.5 ? AMB : INK; fa = el < 0.5 ? 0.7 : 0.1; sz = el < 0.5 ? lerp(42, 6, eIO(el * 2)) : lerp(6, 42, eIO((el - 0.5) * 2)); }
+      const dB = Math.max(Math.abs(h.q - B.q), Math.abs(h.r - B.r), Math.abs(h.q + h.r - B.q - B.r)), cl = dB <= 2 ? inv(28.2 + dB * 0.55, 28.7 + dB * 0.55, u) : 0;
+      if (h.q === B.q && h.r === B.r) { const mk = inv(27.5, 27.9, u); col = mix(col, AMB, mk); fa = lerp(fa, 0.7, mk); }
+      if (cl > 0) { col = mix(col, RED, cl); fa = lerp(fa, 0.72, cl); }
+      hexPath(h.x, h.y, sz); ctx.fillStyle = rgba(col, fa * ap); ctx.fill(); hexPath(h.x, h.y, 42); ctx.strokeStyle = rgba(INK, 0.3 * ap); ctx.lineWidth = 1.1; ctx.stroke();
+    });
+    const lx = 1330, l1 = env(u, 25.6, 26.2, 27.3, 27.8), l2 = inv(27.9, 28.5, u) * dA;
+    if (l1 > 0) { LABEL('aneuploid cell with lower MYC /', lx, 440, 0.85 * l1 * dA, { weight: 500 }); LABEL('higher p53 than its neighbours', lx, 472, 0.85 * l1 * dA, { weight: 500 }); LABEL('→ outcompeted, any chromosome', lx, 512, 0.95 * l1 * dA, { color: AMB }); }
+    if (l2 > 0) { LABEL('when the relative balance flips,', lx, 440, 0.85 * l2, { weight: 500 }); LABEL('the aneuploid clone wins', lx, 480, 0.95 * l2, { color: RED }); }
+    drawText('A winning clone signals tumour risk — not rescue.', W / 2, 770, { size: 34, weight: 700, align: 'center', color: RED, alpha: dA, reveal: inv(30.0, 30.8, u) });
+  }
+  // E · the turn
+  drawText('So we turn the question into an experiment.', W / 2, 490, { size: 54, weight: 700, align: 'center', reveal: inv(33.6, 34.4, u), exit: inv(35.2, 35.8, u) });
+}
+
+// ================================================================ FINISHING
+const GRAIN = [0, 1, 2, 3].map(s => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), im = g.createImageData(256, 256), r = mulberry32(900 + s); for (let i = 0; i < im.data.length; i += 4) { const v = r() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } g.putImageData(im, 0, 0); return c; });
+let grainPats = null, vignette = null;
+function drawGrain(a) { if (!CONFIG.GRAIN) return; if (!grainPats) grainPats = GRAIN.map(c => ctx.createPattern(c, 'repeat')); const f = Math.floor(a * 24), r = mulberry32(f * 7919 + 13); ctx.save(); const paperish = PAPER_P > 0.5 || TNOW_T < 6.6; ctx.globalCompositeOperation = paperish ? 'multiply' : 'screen'; ctx.globalAlpha = paperish ? 0.07 : CONFIG.GRAIN; ctx.translate(-r() * 256, -r() * 256); ctx.fillStyle = grainPats[((f % 4) + 4) % 4]; ctx.fillRect(0, 0, W + 256, H + 256); ctx.restore(); }
+let vignetteW = null;
+function drawVignette() { if (!vignette) { vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 1.05); vignette.addColorStop(0, 'rgba(0,0,0,0)'); vignette.addColorStop(1, 'rgba(0,0,0,0.55)'); vignetteW = ctx.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, H * 1.1); vignetteW.addColorStop(0, 'rgba(90,55,20,0)'); vignetteW.addColorStop(1, 'rgba(90,55,20,0.28)'); }
+  const w = Math.max(PAPER_P, TNOW_T < 6.6 ? 1 : 0); ctx.globalAlpha = 1 - w; ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = w; ctx.fillStyle = vignetteW; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+let fpsSm = 60, lastFrameT = 0;
+function drawDebug(t) {
+  const y = 20, x0 = 60, x1 = W - 60, X = s => x0 + (x1 - x0) * s / CONFIG.DURATION;
+  ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, 64);
+  CHAPTERS.forEach(([n, a0, b0]) => { const a = a0 ? AtoTm(a0) : 0, b = AtoTm(b0), on = t >= a && t < b; ctx.fillStyle = on ? 'rgba(120,196,220,0.45)' : (n % 2 ? 'rgba(236,233,226,0.1)' : 'rgba(236,233,226,0.17)'); ctx.fillRect(X(a) + 1, y, X(b) - X(a) - 2, 10); ctx.font = `500 12px ${SANS}`; ctx.fillStyle = on ? '#dfe' : '#8a877f'; ctx.fillText(`${n} ${CONFIG.COPY.ch[n]}`, X(a) + 4, y + 26); });
+  HOLDS.forEach(h => { ctx.fillStyle = 'rgba(232,178,90,0.5)'; ctx.fillRect(X(h.T), y - 4, Math.max(2, X(h.Tend) - X(h.T)), 3); });
+  ctx.fillStyle = '#E8B25A'; ctx.fillRect(X(t) - 1, y - 6, 2, 22);
+  ctx.font = `600 13px ${MONO}`; ctx.fillStyle = '#ddd'; ctx.fillText(`${t.toFixed(2)} / ${CONFIG.DURATION}s  ${fpsSm.toFixed(0)}fps  ${LIVE.holding ? 'HOLD · ' + LIVE.holding.n : playing ? '▶' : '❚❚'}  holds:${CONFIG.LIVE_HOLDS ? 'on' : 'off'}`, x1 - 520, y + 38);
+  ctx.strokeStyle = 'rgba(120,196,220,0.3)'; ctx.setLineDash([6, 6]); ctx.strokeRect(96, 54, W - 192, H - 108); ctx.beginPath(); ctx.moveTo(0, 810); ctx.lineTo(W, 810); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(120,196,220,0.5)'; ctx.font = `500 12px ${SANS}`; ctx.fillText('calm zone — presenter / captions', 100, 830);
+}
+let TNOW_T = 0;
+function render(T) {
+  const Araw = TtoA(T), t = Araw < BLK0 ? Araw : Araw <= BLK0 + BLK_D ? BLK0 : Araw - BLK_D, t3 = Araw < BLK0 ? Araw : Araw < BLK0 + 1.5 ? BLK0 : 133.5;
+  TNOW = t; TNOW_T = T; AMB_T = EXPORT ? T : performance.now() / 1000;
+  setTheme(0);
+  ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.setLineDash([]); ctx.lineCap = 'butt';
+  ctx.fillStyle = rgba(BG, 1); ctx.fillRect(0, 0, W, H); drawPaperTex(PAPER_P * 0.9);
+  if (T < 43.7 + PRO) drawActI(toV1(T));
+  drawPrologue(T);
+  drawTitle(t);
+  // chapters breathe very slightly so held frames stay alive
+  ctx.save(); if (t > 60) ctx.translate(Math.sin(AMB_T * 0.13) * 3, Math.cos(AMB_T * 0.11) * 2);
+  drawCH1(t); drawCH2(t); drawCH3(t3); drawCH4(t); drawCH5(t); drawClose(t);
+  ctx.restore();
+  drawScreenBlock(Araw);
+  drawGrain(AMB_T); drawVignette();
+  if (T < 0.25) { ctx.fillStyle = `rgba(0,0,0,${1 - T / 0.25})`; ctx.fillRect(0, 0, W, H); }
+  if (CONFIG.DEBUG) drawDebug(T);
+}
+
+// ================================================================ AUDIO (procedural; a quiet bed under live narration)
+function makeIR(ac) { const len = Math.floor(ac.sampleRate * 3.2), ir = ac.createBuffer(2, len, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch), r = mulberry32(11 + ch); for (let i = 0; i < len; i++) d[i] = (r() * 2 - 1) * Math.pow(1 - i / len, 3.4); } return ir; }
+function makeGraph(ac, dest) {
+  const master = ac.createGain(); master.gain.value = CONFIG.VOLUME; const gate = ac.createGain(), comp = ac.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.008; comp.release.value = 0.3; const clip = ac.createWaveShaper(), cv = new Float32Array(2049); for (let i = 0; i < cv.length; i++) { const x = i / 1024 - 1; cv[i] = 0.95 * Math.tanh(x / 0.95); } clip.curve = cv;   // soft safety limiter
+  master.connect(gate); gate.connect(comp); comp.connect(clip); clip.connect(dest);
+  const conv = ac.createConvolver(); conv.buffer = makeIR(ac); const wet = ac.createGain(); wet.gain.value = 0.34; conv.connect(wet); wet.connect(master);
+  const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), nd = nb.getChannelData(0), r = mulberry32(7); for (let i = 0; i < nd.length; i++) nd[i] = r() * 2 - 1;
+  return { ac, master, gate, comp, conv, noise: nb };
+}
+function A_out(g, lpF, send) { const ac = g.ac, out = ac.createGain(), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = lpF; out.connect(lp); lp.connect(g.dry); if (send) { const s = ac.createGain(); s.gain.value = send; lp.connect(s); s.connect(g.send); } return out; }
+// schedule times are quantised: a float like 64.60000000000001 destabilised a biquad in Chromium (measured +2 dBFS spike)
+const qT = x => Math.round(x * 1e4) / 1e4;
+function A_tone(g, at, f, o = {}) {
+  at = qT(at); const ac = g.ac, gain = o.gain ?? 0.08, att = o.attack ?? 0.005, dec = o.decay ?? 1.2, out = A_out(g, o.lp ?? 3000, o.send ?? 0.3);
+  out.gain.setValueAtTime(0, at); out.gain.linearRampToValueAtTime(gain, at + att); out.gain.exponentialRampToValueAtTime(0.0001, at + att + dec);
+  for (const [m, a] of (o.partials || [[1, 1]])) { const osc = ac.createOscillator(); osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f * m, at); if (o.glide) osc.frequency.exponentialRampToValueAtTime(o.glide * m, at + att + dec * 0.6); const pg = ac.createGain(); pg.gain.value = a; osc.connect(pg); pg.connect(out); osc.start(at); osc.stop(at + att + dec + 0.05); g.nodes.push(osc); }
+}
+function A_pad(g, at, end, freqs, o = {}) {
+  at = qT(at); end = qT(end); const ac = g.ac, s = Math.max(at, g.now); if (s >= end - 0.02) return;
+  const gain = o.gain ?? 0.04, att = o.attack ?? 1, rel = o.release ?? 1, out = A_out(g, o.lp ?? 500, o.send ?? 0.4);
+  const envAt = tt => tt < at ? 0 : tt < at + att ? gain * (tt - at) / att : tt < end - rel ? gain : tt < end ? gain * (end - tt) / rel : 0;
+  out.gain.setValueAtTime(envAt(s), s); if (s < at + att) out.gain.linearRampToValueAtTime(gain, at + att); if (end - rel > Math.max(s, at + att)) out.gain.setValueAtTime(gain, end - rel); out.gain.linearRampToValueAtTime(0, end);
+  freqs.forEach((f, i) => [-4, 4].forEach(ct => { const osc = ac.createOscillator(); osc.type = i === 0 ? 'sine' : 'triangle'; osc.frequency.value = f; osc.detune.value = ct; const pg = ac.createGain(); pg.gain.value = (i === 0 ? 0.6 : 0.32) / freqs.length * 2; osc.connect(pg); pg.connect(out); osc.start(s); osc.stop(end + 0.05); g.nodes.push(osc); }));
+  return out;
+}
+function A_noise(g, at, dur, o = {}) {
+  at = qT(at); dur = qT(dur); const ac = g.ac, src = ac.createBufferSource(); src.buffer = g.noise; src.loop = true; const f = ac.createBiquadFilter(); f.type = o.type || 'bandpass'; f.Q.value = o.q ?? 0.8;
+  const f0 = o.f0 ?? 800, f1 = o.f1 ?? f0; f.frequency.setValueAtTime(f0, at); if (f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, at + dur);
+  const out = A_out(g, 12000, o.send ?? 0.4), gain = o.gain ?? 0.03, att = o.attack ?? dur * 0.4; out.gain.setValueAtTime(0, at); out.gain.linearRampToValueAtTime(gain, at + att); out.gain.linearRampToValueAtTime(0, at + dur);
+  src.connect(f); f.connect(out); src.start(at); src.stop(at + dur + 0.05); g.nodes.push(src);
+}
+// ticks are short tonal clicks: filtered-noise ticks through the full graph triggered biquad instability in Chromium
+const A_tick = (g, at, o = {}) => A_tone(g, at, o.f || 4000, { gain: (o.gain ?? 0.02) * 1.4, attack: 0.0015, decay: 0.035, partials: [[1, 1], [1.51, 0.35]], lp: 9000, send: 0.25 });
+const A_thump = (g, at, o = {}) => A_tone(g, at, o.f0 || 72, { glide: o.f1 || 38, decay: o.decay || 0.9, gain: o.gain ?? 0.12, lp: 320, send: 0.2 });
+// beds: [start, end, freqs, gain]; cold-open beds on the v1 clock, the rest on clock A — quieter under narration
+const BEDS_V1 = [[0.2, 14.18, [55, 82.41], 0.05], [14.85, 21, [73.42, 110], 0.036], [21, 24.45, [55, 82.41, 110], 0.042], [24.9, 26.3, [55, 82.41], 0.03], [26.3, 28.1, [110, 164.81, 246.94, 329.63], 0.036], [28.4, 33.9, [73.42, 110], 0.026]];
+const BEDS = [
+  [49.8, 60.4, [110, 164.81, 220, 277.18, 329.63], 0.036], [60.2, 75.4, [110, 164.81], 0.022], [75.2, 97.8, [87.31, 130.81, 220], 0.02],
+  [97.6, 113.8, [73.42, 110, 174.61], 0.02], [113.6, 132.8, [110, 164.81, 246.94], 0.024], [132.6, 148.4, [82.41, 123.47, 196], 0.02],
+  [148.3, 162.4, [77.78, 116.54, 155.56], 0.018], [162.2, 173.4, [87.31, 130.81, 220], 0.02], [173.2, 184.5, [110, 164.81, 220, 277.18], 0.03]
+];
+function scheduleAll(g, from, base) {
+  // every cue time is converted to the master clock: M(v1 time) for the cold open, TA(A time) for the rest
+  const T = ft => base + ft - from, ok = ft => ft >= from - 0.01, M = fromV1, TA = AtoTm, TB = x => AtoT(BLK0 + x);
+  const tone = (ft, f, o) => { if (ok(ft)) A_tone(g, T(ft), f, o); }, noise = (ft, d, o) => { if (ok(ft)) A_noise(g, T(ft), d, o); }, tick = (ft, o) => { if (ok(ft)) A_tick(g, T(ft), o); }, thump = (ft, o) => { if (ok(ft)) A_thump(g, T(ft), o); };
+  const pad = (a, b, fs, gain) => { if (b > from) A_pad(g, T(a), T(b), fs, { gain, attack: Math.min(3, (b - a) / 3), release: Math.min(1.2, (b - a) / 4), lp: gain > 0.03 ? 480 : 700 }); };
+  for (const [a, b, fs, gain] of BEDS_V1) pad(M(a), M(b), fs, gain);
+  for (const [a, b, fs, gain] of BEDS) pad(TA(a), TA(b), fs, gain);
+  if (g.gate) { const G = g.gate.gain, s0 = M(14.2), s1 = s0 + 0.55; G.cancelScheduledValues(0); G.setValueAtTime(from > s0 && from < s1 ? 0 : 1, g.now); if (T(s0) > g.now) { G.setValueAtTime(1, T(s0)); G.linearRampToValueAtTime(0, T(s0) + 0.06); } if (T(s1) > g.now) { G.setValueAtTime(0, Math.max(g.now, T(s1))); G.linearRampToValueAtTime(1, T(s1) + 0.03); } }
+  const PULSE = { gain: 0.1, decay: 2.4, partials: [[1, 1], [2, 0.35], [3, 0.1]], lp: 1500, send: 0.55 };
+  // PROLOGUE — warm and human: crayon, a glass tube, a dive into the blood, a heartbeat
+  pad(0.3, 6.4, [220, 277.18, 329.63, 440], 0.028);
+  for (let i = 0; i < 9; i++) noise(0.5 + i * 0.27, 0.22, { f0: 2600 + (i % 3) * 400, f1: 2200, gain: 0.006, attack: 0.05 });
+  tone(3.75, 2350, { gain: 0.025, decay: 0.7, partials: [[1, 1], [2.76, 0.45], [5.4, 0.2]], send: 0.6, lp: 9000 });
+  noise(4.9, 2.0, { type: 'lowpass', f0: 400, f1: 2400, gain: 0.03 });
+  [6.5, 6.82, 7.55, 7.87].forEach((b, i) => thump(b, { gain: i % 2 ? 0.05 : 0.075, f0: 60, f1: 40, decay: 0.5 }));
+  // COLD OPEN
+  tone(M(0) + 0.3, 110, PULSE);
+  cells.forEach(c => { if (!c.div) return; const at = M(c.div.t0 + 0.9 * c.div.dur), f = [330, 392, 440, 494][c.gen] || 494; tone(at, f, { gain: c.gen < 2 ? 0.05 : 0.028, decay: 1.6, partials: [[1, 1], [2, 0.18]], send: 0.5, lp: 2600 });
+    if (c.div.errI >= 0) { const e = M(c.div.t0 + 0.62 * c.div.dur); tone(e, f * 1.0595, { gain: 0.04, decay: 2, partials: [[1, 1], [1.5, 0.15]], send: 0.6 }); tone(e + 0.03, f, { gain: 0.03, decay: 1.8, send: 0.6 }); noise(e - 0.15, 1.3, { f0: 300, f1: 900, gain: 0.018 }); } });
+  noise(M(10.0), M(14.1) - M(10.0), { f0: 900, f1: 2200, gain: 0.014, attack: 3, q: 0.6 });
+  TRANS.slice().sort((a, b) => a.ev.t0 - b.ev.t0).filter((_, i) => i % 2 === 0).slice(0, 75).forEach((o, i) => { if (o.ev.t0 < 14.05) tick(M(o.ev.t0), { f: 2400 + ((i * 977) % 3200), gain: 0.011 + ((i * 37) % 10) / 1000 }); });
+  tone(M(14.2) + 0.6, 110, { ...PULSE, gain: 0.06, decay: 1.8 });
+  TAGS.forEach((_, i) => tick(M(15.95 + i * 0.2), { f: 3200, gain: 0.018 }));
+  tone(M(17.95), 220, { glide: 262, decay: 1.1, gain: 0.022, send: 0.4 }); noise(M(18.62), 1.0, { f0: 1800, f1: 380, gain: 0.03 }); noise(M(20.15), 0.8, { type: 'highpass', f0: 2600, f1: 6000, gain: 0.012 });
+  tone(M(21.75), 880, { gain: 0.05, decay: 3.4, partials: [[1, 1], [2.01, 0.25], [3.02, 0.08]], send: 0.75, lp: 5000 });
+  [660, 740, 880, 990, 1100, 1320, 990].forEach((f, i) => tone(M(22.7 + i * 0.13), f, { gain: 0.012, decay: 1.3, send: 0.7, lp: 5000 }));
+  GHOSTS.forEach((_, i) => tick(M(23.45 + i * 0.07), { f: 900, gain: 0.012 }));
+  noise(M(24.95), 1.8, { f0: 600, f1: 1400, gain: 0.016 }); tone(M(25.9), 330, { glide: 495, decay: 1.4, gain: 0.02, send: 0.5 });
+  noise(M(27.75), 1.2, { f0: 300, f1: 3200, gain: 0.034 }); thump(M(28.55), { gain: 0.08 });
+  // the research chain: one soft impact per word, typing, perturbation, veto
+  [0.35, 1.55, 2.95, 4.35, 5.05].forEach((wt, i) => { tone(M(28 + wt), 165, { gain: 0.045, decay: 0.5, lp: 900, send: 0.3 }); tick(M(28 + wt), { f: 5200, gain: 0.02 }); if (i === 4) tone(M(28 + wt + 0.25), 233, { gain: 0.03, decay: 0.9, partials: [[1, 1], [1.06, 0.8]], send: 0.5 }); });
+  for (let i = 0; i < 8; i++) tick(M(30.1 + i * 0.035), { f: 3000 + i * 250, gain: 0.012 });
+  tick(M(29.5), { f: 2200, gain: 0.015 }); tick(M(31.45), { f: 2600, gain: 0.015 }); tone(M(32.5), 660, { gain: 0.03, decay: 1.6, partials: [[1, 1], [2.01, 0.2]], send: 0.7 });
+  for (let i = 0; i < 4; i++) tick(M(32.6 + i * 0.16), { f: 4200, gain: 0.012 });
+  // TITLE
+  thump(TA(48.7), { gain: 0.09 });
+  [440, 493.88, 554.37, 659.25, 739.99].forEach((f, i) => { for (let r = 0; r < 3; r++) if (i + r * 5 < 13) tone(TA(48.9 + (i + r * 5) * 0.05), f * (r ? 2 : 1), { gain: 0.009, decay: 0.9, send: 0.7, lp: 6000 }); });
+  tone(TA(52.2), 110, PULSE);
+  // CH1
+  tone(TA(63.4), 220, { gain: 0.035, decay: 1.8, partials: [[1, 1], [2, 0.2]], send: 0.5 }); for (let c = 0; c < 23; c += 2) tick(TA(64.2 + c * 0.1), { f: 3000 + c * 60, gain: 0.008 });
+  // CH2
+  for (let i = 0; i < 26; i++) tick(TA(76.2 + i * 0.07), { f: 2200 + (i * 331) % 3000, gain: 0.007 }); noise(TA(78.6), 1.1, { f0: 1600, f1: 500, gain: 0.014 });
+  for (let k = 0; k < 6; k++) tick(TA(80.3 + k * 0.12), { f: 3400, gain: 0.012 }); tone(TA(83.7), 294, { gain: 0.02, decay: 1.2, partials: [[1, 1], [1.06, 0.7]], send: 0.5 });
+  tone(TA(84.4), 660, { gain: 0.03, decay: 2.2, partials: [[1, 1], [2.01, 0.2]], send: 0.7 }); noise(TA(85.8), 1.0, { f0: 400, f1: 2400, gain: 0.018 });
+  tone(TA(87.8), 165, { gain: 0.04, decay: 0.8, lp: 900 }); tone(TA(88.4), 196, { gain: 0.035, decay: 0.8, lp: 900 }); tone(TA(89.4), 440, { gain: 0.018, decay: 2, partials: [[1, 1], [1.06, 0.8]], send: 0.6 });
+  // CH3
+  SCANS.forEach(([, t0]) => { noise(TA(t0 + 0.1), 1.1, { type: 'bandpass', f0: 700, f1: 2600, gain: 0.014 }); tick(TA(t0 + 1.55), { f: 1200, gain: 0.02 }); });
+  tone(TA(105.8), 330, { gain: 0.02, decay: 2.4, partials: [[1, 1], [1.5, 0.3]], send: 0.7 }); noise(TA(112.5), 1.6, { f0: 300, f1: 3000, gain: 0.02 });
+  tone(TA(115.1), 988, { gain: 0.03, decay: 1.4, partials: [[1, 1], [2.01, 0.25]], send: 0.7, lp: 6000 }); noise(TA(115.3), 2.6, { f0: 300, f1: 1800, gain: 0.02, attack: 0.3 }); tone(TA(115.3), 110, { glide: 82, decay: 2.2, gain: 0.05, lp: 700 });
+  noise(TA(119.3), 1.3, { f0: 2400, f1: 600, gain: 0.014 }); for (let i = 0; i < 10; i++) tick(TA(122.2 + i * 0.11), { f: 2600 + i * 90, gain: 0.009 }); tone(TA(123.4), 220, { gain: 0.035, decay: 2.4, partials: [[1, 1], [1.5, 0.25]], send: 0.6 });
+  // INTERLUDE — the patient as a screen? (our own audit)
+  noise(TB(0.2), 1.6, { f0: 300, f1: 1400, gain: 0.018 }); tone(TB(1.8), 659.25, { gain: 0.03, decay: 2.2, partials: [[1, 1], [1.19, 0.5]], send: 0.7 });
+  for (let i = 0; i < 8; i++) tick(TB(3.4 + i * 0.1), { f: 2000 + i * 200, gain: 0.008 });
+  tone(TB(6.9), 110, { gain: 0.05, decay: 1.6, lp: 900 }); [7.8, 8.8, 9.8].forEach(x => tick(TB(x), { f: 3000, gain: 0.014 }));
+  tone(TB(11.3), 440, { gain: 0.022, decay: 1.8, send: 0.5 }); tone(TB(11.3), 466.16, { glide: 440, decay: 1.8, gain: 0.022, send: 0.5 }); tone(TB(12.5), 196, { gain: 0.03, decay: 1.4, partials: [[1, 1], [1.06, 0.7]], send: 0.5 });
+  noise(TB(15.4), 1.4, { f0: 400, f1: 2600, gain: 0.02 }); SPARKS.filter((_, i) => i % 3 === 0).forEach(sp => tick(TB(sp.t), { f: 3600, gain: 0.01 }));
+  tone(TB(24.6), 110, { gain: 0.045, decay: 1.4, lp: 900 }); tone(TB(26.0), 330, { glide: 196, decay: 1.4, gain: 0.02, send: 0.5 });
+  noise(TB(28.2), 2.0, { f0: 200, f1: 900, gain: 0.02, attack: 1.2 }); tone(TB(30.2), 146.83, { gain: 0.035, decay: 2, partials: [[1, 1], [1.06, 0.8]], send: 0.5, lp: 900 });
+  tone(TB(33.6), 220, { gain: 0.035, decay: 2.4, partials: [[1, 1], [1.5, 0.3], [2, 0.2]], send: 0.7 });
+  tone(TA(147.3), 440, { glide: 660, decay: 1.4, gain: 0.02, send: 0.6 });
+  // CH4
+  for (let k = 0; k < 4; k++) tick(TA(134.0 + k * 0.35), { f: 2600, gain: 0.014 }); noise(TA(141.8), 1.4, { f0: 500, f1: 1500, gain: 0.014 });
+  ARMS.forEach((_, k) => tone(TA(144.6 + k * 0.5), [330, 294, 247][k], { gain: 0.022, decay: 1.2, send: 0.5 }));
+  tone(TA(145.6), 220, { glide: 330, decay: 1.8, gain: 0.02, send: 0.5 }); thump(TA(148.6), { gain: 0.08 }); tone(TA(149.3), 110, { gain: 0.04, decay: 1.6, partials: [[1, 1], [1.06, 0.8]], send: 0.4, lp: 900 });
+  tone(TA(150.0), 220, { gain: 0.03, decay: 2.2, partials: [[1, 1], [2, 0.3]], send: 0.6 });
+  // CH5 + CLOSE
+  tone(TA(163.5), 220, { gain: 0.03, decay: 1.6, send: 0.6 }); tick(TA(164.5), { f: 2800, gain: 0.012 }); tick(TA(165.1), { f: 2800, gain: 0.012 }); tone(TA(165.8), 196, { gain: 0.025, decay: 1.2, partials: [[1, 1], [1.06, 0.7]], send: 0.5 });
+  thump(TA(173.7), { gain: 0.07 }); [440, 493.88, 554.37, 659.25, 739.99].forEach((f, i) => tone(TA(173.8 + i * 0.12), f, { gain: 0.01, decay: 1.2, send: 0.7 })); tone(TA(175.6), 110, PULSE);
+}
+const Sound = {
+  ac: null, graph: null, sess: null, hold: null,
+  ensure() { if (this.ac) return true; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false; this.ac = new AC(); this.graph = makeGraph(this.ac, this.ac.destination); return true; },
+  start(from) { this.stop(); this.stopHold(); if (!CONFIG.AUDIO || !this.ensure()) return; const ac = this.ac; if (ac.state === 'suspended') ac.resume(); const dry = ac.createGain(), send = ac.createGain(); dry.connect(this.graph.master); send.connect(this.graph.conv); const base = ac.currentTime + 0.03; this.sess = { ac, dry, send, gate: this.graph.gate, nodes: [], noise: this.graph.noise, now: base }; scheduleAll(this.sess, from, base); },
+  stop() { const s = this.sess; if (!s) return; this.sess = null; const now = s.ac.currentTime; s.dry.gain.setTargetAtTime(0, now, 0.4); s.send.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { s.nodes.forEach(n => { try { n.stop(); } catch (e) { } }); s.dry.disconnect(); s.send.disconnect(); }, 2500); },
+  holdBed(t) { // sustain the current bed while the presenter speaks
+    this.stopHold(); if (!CONFIG.AUDIO || !this.ensure()) return; const bed = BEDS.filter(b => t >= b[0] - 0.5 && t <= b[1] + 0.5).pop(); if (!bed) return;
+    const ac = this.ac, dry = ac.createGain(), send = ac.createGain(); dry.connect(this.graph.master); send.connect(this.graph.conv); this.graph.gate.gain.cancelScheduledValues(0); this.graph.gate.gain.setValueAtTime(1, ac.currentTime);
+    const g = { ac, dry, send, nodes: [], noise: this.graph.noise, now: ac.currentTime }; A_pad(g, ac.currentTime, ac.currentTime + 3600, bed[2], { gain: bed[3], attack: 1.5, release: 1, lp: 600 }); this.hold = g;
+  },
+  stopHold() { const s = this.hold; if (!s) return; this.hold = null; const now = s.ac.currentTime; s.dry.gain.setTargetAtTime(0, now, 0.5); s.send.gain.setTargetAtTime(0, now, 0.5); setTimeout(() => { s.nodes.forEach(n => { try { n.stop(); } catch (e) { } }); s.dry.disconnect(); s.send.disconnect(); }, 3000); }
+};
+async function audioWavBase64() {
+  const sr = 48000, off = new OfflineAudioContext(2, Math.ceil(sr * (CONFIG.DURATION + 0.5)), sr), graph = makeGraph(off, off.destination), dry = off.createGain(), send = off.createGain();
+  dry.connect(graph.master); send.connect(graph.conv); scheduleAll({ ac: off, dry, send, gate: graph.gate, nodes: [], noise: graph.noise, now: 0 }, 0, 0);
+  const buf = await off.startRendering(), n = buf.length, L = buf.getChannelData(0), Rr = buf.getChannelData(1), out = new Uint8Array(44 + n * 4), dv = new DataView(out.buffer), ws = (o, s) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 4, true); ws(8, 'WAVE'); ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, 'data'); dv.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, clamp(L[i], -1, 1) * 32767, true); dv.setInt16(46 + i * 4, clamp(Rr[i], -1, 1) * 32767, true); }
+  let s = ''; for (let i = 0; i < out.length; i += 0x8000) s += String.fromCharCode.apply(null, out.subarray(i, i + 0x8000)); return btoa(s);
+}
+
+// ================================================================ PLAYBACK (live holds for a presenter's clicker)
+let playing = false, tNow = clamp(+(Q.get('t') || 0), 0, CONFIG.DURATION), playT0 = 0, playReal0 = 0;
+const LIVE = { holding: null, enter: 0, released: null, relAt: 0, relAge: 0, relAmp: 0, next: 0, skip: false };
+const hint = document.getElementById('hint'); if (EXPORT) hint.style.display = 'none';
+function syncNext() { LIVE.next = HOLDS.findIndex(h => h.T >= tNow - 1e-6); if (LIVE.next < 0) LIVE.next = HOLDS.length; }
+function play() { if (tNow >= CONFIG.DURATION - 0.01) tNow = 0; playing = true; playT0 = tNow; playReal0 = performance.now(); if (!LIVE.holding) Sound.start(tNow); document.body.classList.add('playing'); hint.classList.add('off'); }
+function pause() { playing = false; Sound.stop(); document.body.classList.remove('playing'); }
+function enterHold(h) { LIVE.holding = h; LIVE.enter = performance.now(); tNow = h.T; Sound.stop(); Sound.holdBed(h.bedA ?? h.t); }
+function releaseHold() {
+  const h = LIVE.holding; if (!h) return; const age = (performance.now() - LIVE.enter) / 1000;
+  Object.assign(LIVE, { released: h, relAt: performance.now(), relAge: age, relAmp: eSine(inv(0, 1.5, age)), holding: null });
+  if (h.final) return; tNow = h.Tend; LIVE.next = HOLDS.indexOf(h) + 1; playT0 = tNow; playReal0 = performance.now(); playing = true; Sound.start(tNow);
+}
+function seek(t) { LIVE.holding = null; LIVE.released = null; LIVE.skip = false; tNow = clamp(t, 0, CONFIG.DURATION); syncNext(); if (playing) { playT0 = tNow; playReal0 = performance.now(); Sound.start(tNow); } }
+// a click during an animation never cuts it short: it only means "don't stop at the next hold"
+function next(jump) { if (LIVE.holding) return releaseHold(); if (!playing) return play(); if (jump) { const h = HOLDS[LIVE.next]; if (h) seek(h.T - 0.01); } else LIVE.skip = true; }
+function prev() { const i = HOLDS.findIndex(h => h.T >= tNow - 0.05); const target = HOLDS[Math.max(0, (i < 0 ? HOLDS.length : i) - 1)]; seek(target ? target.T - 0.01 : 0); }
+function frame(now) {
+  if (playing && !LIVE.holding) {
+    tNow = playT0 + (now - playReal0) / 1000;
+    const h = HOLDS[LIVE.next];
+    if (CONFIG.LIVE_HOLDS && h && tNow >= h.T) { if (LIVE.skip && !h.final) { LIVE.skip = false; LIVE.next++; } else enterHold(h); }
+    else if (!CONFIG.LIVE_HOLDS && h && tNow >= h.Tend) LIVE.next++;
+    if (tNow >= CONFIG.DURATION) { tNow = CONFIG.DURATION; playing = false; Sound.stop(); }
+  }
+  if (LIVE.holding) tNow = LIVE.holding.T;
+  const dt = now - lastFrameT; lastFrameT = now; if (dt > 0 && dt < 500) fpsSm = lerp(fpsSm, 1000 / dt, 0.05);
+  render(tNow); requestAnimationFrame(frame);
+}
+addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === ' ') { e.preventDefault(); if (LIVE.holding) releaseHold(); else playing ? pause() : play(); }
+  else if (k === 'ArrowRight' || k === 'PageDown' || k === 'Enter') { e.preventDefault(); next(e.shiftKey); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+  else if (k >= '0' && k <= '6') seek(CHAPTERS[+k][1] ? AtoTm(CHAPTERS[+k][1]) : 0);
+  else if (k === 'h' || k === 'H') CONFIG.LIVE_HOLDS = !CONFIG.LIVE_HOLDS;
+  else if (k === 'd' || k === 'D') CONFIG.DEBUG = !CONFIG.DEBUG;
+  else if (k === 'm' || k === 'M') { CONFIG.AUDIO = !CONFIG.AUDIO; if (!CONFIG.AUDIO) { Sound.stop(); Sound.stopHold(); } else if (LIVE.holding) Sound.holdBed(LIVE.holding.bedA ?? LIVE.holding.t); else if (playing) Sound.start(tNow); }
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+cvs.addEventListener('click', e => { const r = cvs.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * H, x = (e.clientX - r.left) / r.width * W; if (CONFIG.DEBUG && y < 64) { seek(clamp((x - 60) / (W - 120)) * CONFIG.DURATION); return; } next(); });
+
+syncNext();
+window.MOSAIC_RESCUE = { duration: CONFIG.DURATION, fps: 60, renderFrame: t => render(clamp(t, 0, CONFIG.DURATION)), audioWavBase64, seek, play, pause, next, config: CONFIG, holds: HOLDS, chapters: CHAPTERS };
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => measureCache.clear());
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

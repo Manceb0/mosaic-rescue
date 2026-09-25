@@ -341,11 +341,11 @@ reading is the ablation's combined pattern, not that statistic on its own.
 
 ## 10 · Scalability
 
-Measured, not asserted: **44 of 91 modules in `src/`, 6 830 of 17 743 lines (38 %), contain no
+Measured, not asserted: **44 of 91 modules in `src/`, 6 860 of 17 816 lines (39 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
-**Read that number for what it is.** It says *38 % of the current codebase is case-agnostic
-under a conservative lexical census*. It does **not** say the project is 38 % scalable. Real
+**Read that number for what it is.** It says *39 % of the current codebase is case-agnostic
+under a conservative lexical census*. It does **not** say the project is 39 % scalable. Real
 scalability also asks which inputs can be substituted, how many modules depend on `BUB1B` or on
 the MVA phenotype specifically, and which parts reuse generic HPO and VCF machinery — none of
 which a text search can answer. Treat it as a **technical proxy**, not a measure of scalability.
