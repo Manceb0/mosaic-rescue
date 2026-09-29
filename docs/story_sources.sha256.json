@@ -5,7 +5,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "90b7ee7a806f555df645284d08d9df66aa79ae5a39d20e87388e90dc3ef2e657"
+      "sha256": "89e4a869000964de6f4c53a625458361352231a8a6459ac64e5f40894f50215f"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -17,7 +17,7 @@
     },
     {
       "path": "reports/TRACK1_REPORT.md",
-      "sha256": "eb5752d9f6298e997970ae1cc070e16d3d59dcb37b1a9bbcf4522ca551b59506"
+      "sha256": "84a973dda89b5a9948f9a6cc1c25bfbf9bcc266dc5d1bb04486c5b2169f8eba4"
     },
     {
       "path": "research/track2_evidence.tsv",
@@ -29,8 +29,8 @@
     },
     {
       "path": "research/EXPERIMENT_REGISTRY.md",
-      "sha256": "d3de901d7f33acd47462129800885e668b0d82fe900333509abdc2e932b1364b"
+      "sha256": "02ba2f3af08a78e3d37416cf7b72aa353ed6e9c6419746ea331fd627ec354ed8"
     }
   ],
-  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical."
+  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical. | 2026-09-29: resealed after adding the OpenAI (illustrations only) row to the AI-use disclosure in TRACK1_REPORT §10; no synthesis content changed. | 2026-09-29: resealed after appending the EXP-028 (SIM-GvS) preregistration to DECISIONS.md; no synthesis content changed."
 }

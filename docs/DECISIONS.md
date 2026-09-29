@@ -1641,3 +1641,81 @@ EXP-024. Con el GO: descarga de referencia y contenedores → `reference_prepare
 STOP y reporte → GO explícito del alineamiento. No se añaden ramas nuevas salvo evidencia nueva. **Este commit cierra el preregistro científico del
 WGS de lecturas cortas**: a partir de aquí no se agregan herramientas, genes, llamadores, scores ni
 figuras porque aparezca otro artículo interesante. La siguiente fase es ejecución.
+
+---
+
+## EXP-028 · Generación frente a selección (SIM-GvS) — PREREGISTRO
+
+**Fecha:** 2026-09-29. **Escrito antes de escribir el código y antes de ver un solo número.**
+GO en dos etapas: este preregistro se commitea primero; la ejecución exige un GO posterior a ese
+commit y se hace exactamente como queda escrito aquí.
+
+**Esta simulación no usa ningún dato del paciente.** No reabre GO 2B ni toca ningún artefacto
+congelado.
+
+### Pregunta
+
+¿Pueden dos procesos distintos producir la misma foto final de un tejido muestreado?
+(i) un error cromosómico que se **genera poco** y no tiene coste, y (ii) un error que se **genera
+mucho** pero cuyas células se **eliminan**. Y, si la foto final no los separa, ¿qué medición sí?
+
+Formaliza el límite escrito en `reports/TRACK1_REPORT.md` §7b («Blood is one view of the mosaic»)
+y extiende la lógica de EXP-015a: de «el método es ciego» a «la foto final es ambigua».
+
+### Modelo, congelado
+
+- Población Wright–Fisher de tamaño fijo **N = 10 000** células, **T = 60** generaciones, a
+  partir de una fundadora euploide.
+- Estado de cada célula: número de copias **k ∈ {1, 2, 3, 4}** de un único cromosoma de interés.
+  Una hija con k = 0 o k = 5 es inviable y se descarta.
+- En cada generación se muestrean N progenitores con probabilidad proporcional a la aptitud
+  **w(2) = 1** y **w(k ≠ 2) = 1 − s**. Cada progenitor aporta una hija. Con probabilidad **g** la
+  división es errónea y la hija recibe **k + 1 o k − 1 con probabilidad ½ cada uno**. La hermana
+  recíproca no se sigue: aproximación Wright–Fisher declarada.
+- Escenarios:
+  - **S1:** g₁ = 0,001; s = 0.
+  - **S2:** g₂ = 0,01; s = s\*, calibrado para que la fracción aneuploide media en T iguale la de S1.
+- **Calibración de s\*:** bisección de s en [0, 1] con **semilla 1000** y 400 réplicas por
+  evaluación, hasta que |media(S2) − media(S1)| en T sea menor que 0,05 × la desviación estándar
+  de S1 en T. El valor de s\* se registra antes de generar ningún dato de lectura.
+- **Datos de lectura:** 200 réplicas por escenario, **semilla 42**.
+- Las tasas son **ilustrativas**. No se afirma ningún valor específico de MVA ni de ningún
+  cromosoma. Worrall et al. 2018 (10.1016/j.celrep.2018.05.047) motiva que la generación no sea
+  uniforme, pero se midió con daño del huso inducido, no con deficiencia de BUBR1.
+
+### Lecturas y métrica, congeladas
+
+- **(a)** Fracción aneuploide final en T.
+- **(b)** Trayectoria de la fracción aneuploide en t = 5, 10, 20, 40 y 60.
+- **(c)** Errores nuevos por mitosis completada en la última generación.
+- Separabilidad entre S1 y S2 para cada lectura y punto temporal: **AUC de Mann–Whitney** entre
+  las 200 réplicas de cada escenario. «No separa»: AUC en [0,35; 0,65]. «Separa»: AUC ≥ 0,90 o
+  ≤ 0,10.
+
+### Predicciones, escritas antes
+
+| # | Predicción | Qué la falsaría |
+|---|---|---|
+| 1 | (a) **no separa** S1 de S2 (por construcción de la calibración; es la premisa, no un hallazgo) | AUC de (a) fuera de [0,35; 0,65] |
+| 2 | (b) **separa** en al menos un punto temporal t ≤ 20 | Ningún t ≤ 20 con AUC ≥ 0,90 o ≤ 0,10 |
+| 3 | (c) **separa** en un solo punto temporal (g difiere diez veces; también por construcción) | AUC de (c) entre 0,10 y 0,90 |
+
+**Falsificador de la premisa.** Si, calibrado s\*, la lectura (a) ya separa S1 de S2, la premisa
+queda falsada: se reporta así y la simulación se abandona. **No se retoca el modelo, la
+calibración ni los umbrales hasta que «funcione».** Una versión nueva, si se quisiera, se
+preregistraría aparte como EXP-028b.
+
+Si falla la predicción 2, se reporta que la trayectoria muestreada no basta en este modelo; no se
+añaden puntos temporales a posteriori.
+
+### Techo de afirmación
+
+`SIMULATION` / `SIMULATED`. Una demostración de no identificabilidad bajo supuestos declarados. No
+dice nada sobre las tasas, los tejidos ni los cariotipos de este niño, y no es evidencia de
+selección en su sangre.
+
+### Artefactos previstos
+
+`src/mosaic/sim_gvs.py` (código), `work/mosaic/sim_gvs.json` (salida, con sha256 registrado al
+ejecutar), `figures/pub/fig13_generation_selection.svg` con su ficha en
+`PUBLICATION_FIGURE_QA.md`, y una sección en `notebooks/06_MOSAIC_AND_MITOREAD.ipynb`.
