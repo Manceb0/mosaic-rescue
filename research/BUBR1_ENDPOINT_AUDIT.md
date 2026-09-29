@@ -116,3 +116,34 @@ Each layer is scored separately, with expression-response curves and total and k
 - **Figs. 2–4, inspected.** Fig. 2: the BUBR1-binding CENP-E fragment disappears from kinetochores after CDK1 inhibition (outer kinetochore disassembled) while the corona fragment stays; single-site loop mutants abolish corona targeting (n about 18–39 cells, experiments repeated twice). Fig. 3: in the *full-length* CENP-E (U2OS, 3.3 µM nocodazole) losing the BUBR1 site (E4A) or the corona loop (TS) each lowers CENP-E, and losing both nearly abolishes it: the two routes are **additive in a long arrest**. Fig. 4B: the **alignment readout is from over-expressed CENP-E fragments acting as dominant negatives**, not from BUBR1 variants; it says nothing directly about a BUBR1 truncation. Fig. 4G is an explicitly *proposed* model (fast BUBR1 route, slow corona route, dynein stripping).
 - **What Weber does not test:** any BUBR1 mutant, any unperturbed-mitosis segregation readout. It informs the CENP-E side of A5 (which compartment, how fast), not the BUBR1 alleles.
 - **Status:** Weber 2024 main figures visually audited; supplement Figs. S1–S4 legends read, images not yet inspected.
+
+
+## Suijkerbuijk 2010 supplement (published PDF and supplement supplied by the team; all pages inspected)
+
+Answers to the three questions set before freezing A5/A6:
+
+1. **How much was the historical truncation over-expressed?** Main Fig. 2D quantifies plasmid-expressed truncation at about 2.1× wild type in U2OS and 3.7× in HeLa; the full blots (Suppl. Fig. S1) confirm a strong band. Its "full function" was therefore shown **above** wild-type level, while the unstable neighbour truncation was at 0.12–0.27×.
+2. **Which segregation endpoint?** Main Figs. 4B and 5B: live imaging of H2B-EYFP U2OS after BUBR1 shRNA, fraction of anaphase cells with missegregating chromosomes, relative to BUBR1-depleted cells (≥238–268 cells, 3 experiments). This is an unperturbed-mitosis readout, but at over-expressed levels and with a coarse, cell-level score.
+3. **What does the S5 model show?** Truncations act through absent transcript (NMD, marked with a question mark), kinase-domain substitutions through low abundance, one TPR substitution through checkpoint dysfunction; all converge on "BUBR1 hypomorph". The model already combines low abundance with direct functional impairment across alleles, but it does not claim both within one allele.
+
+Further details found:
+- **Construct identity (Suppl. Table 1):** the historical truncation is a splice-site variant producing a frameshift after about 713 native residues plus a short non-native tail. The case variant is a direct stop codon that would keep more native sequence and no frameshift tail. They are not interchangeable constructs; A5 must use the exact case product.
+- **S3:** a shorter truncation delays mitosis (sustained checkpoint), from **one representative experiment**, ≥40 cells.
+- **S2:** of two substitutions on one allele, only one is defective, showing that co-occurring variants must be tested separately.
+
+## A5/A6 audit table (freeze candidate)
+
+Supersedes the preliminary table. Freezes when the Weber supplementary images are checked; no change of content is expected from them because Weber tests no BUBR1 allele.
+
+| Status | Statement |
+|---|---|
+| **SURVIVES** | Truncation: may keep enough function for coarse endpoints when over-expressed, while losing proximal pseudokinase functions (KARD/PP2A-B56, fast CENP-E recruitment, silencing timing) at matched level. |
+| **SURVIVES** | Missense: low-abundance component plus a possible residual conformational/functional component (H1 + H2). |
+| **CHANGES** | A5 tests the exact case product, not the historical truncation (different length, no frameshift tail). |
+| **CHANGES** | Readouts are a profile over time × compartment × function, in two families (perturbed calibration, unperturbed mitosis), with total and kinetochore levels reported and matched. |
+| **CHANGES** | "Matched" means "no significant difference detected under the reported assay". |
+| **DIES** | "Low abundance = the whole mechanism". |
+| **DIES** | "Works / fails" as a binary outcome. |
+| **DIES** | "Proximal signalling defect → segregation defect" without measuring segregation in unperturbed mitosis at matched level (no paper reviewed has done this for the truncation). |
+| **DIES** | "No BUBR1–CENP-E binding → no CENP-E at the kinetochore". |
+| **DIES** | "The historical truncation is fully functional": shown only at 2–4× over-expression with coarse readouts. |
