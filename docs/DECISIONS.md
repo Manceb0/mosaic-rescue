@@ -1739,11 +1739,39 @@ final separa los procesos en este modelo, y la tesis de no identificabilidad no 
 **Si falla la predicción 2**, se reporta que la trayectoria muestreada no basta en este modelo; no
 se añaden puntos temporales a posteriori.
 
+### Prior art y límites del modelo
+
+- **Frontera de prior art.** Separar la tasa de mis-segregación de la selección de cariotipos no
+  es nuevo. Lynch et al. 2022 (eLife, 10.7554/eLife.69799) infieren tasas de mis-segregación
+  teniendo en cuenta la selección contra células aneuploides, que reduce la diversidad
+  observable; Xiang et al. 2024 (Sci Rep, 10.1038/s41598-024-67842-9) infieren a la vez tasas de
+  aparición de alteraciones y coeficientes de selección a partir de datos de secuenciación de ADN.
+  **EXP-028 es una demostración pedagógica mínima de este problema de identificabilidad, aplicada a
+  la pregunta de MVA, no un método de inferencia nuevo.** Schukken y Foijer 2017
+  (10.1002/bies.201700147) recuerdan que la CIN es el proceso y la aneuploidía el resultado.
+- **Tiempo fijo.** El modelo evalúa en T = 60 y bajo un modelo de selección declarado. La foto
+  observada depende también del tiempo transcurrido y de la forma de la selección.
+- **Estacionariedad.** g y s son fijos e independientes por diseño. En la biología real la
+  mis-segregación, las respuestas de estrés, la muerte celular y la adaptación pueden acoplarse:
+  clones aneuploides adaptados reducen su propia CIN (Hintzen et al. 2024, 10.1038/s44319-024-00252-0);
+  una mis-segregación puede activar p53/p21 a través de la mecánica nuclear (Hervé et al. 2025,
+  10.1038/s41556-024-01565-x); y en progenitores neurales deficientes en BubR1 hay defectos de
+  segregación, daño del ADN y apoptosis dependiente e independiente de p53 (Sterling et al. 2023,
+  10.3389/fcell.2023.1282182). EXP-028 no modela la retroalimentación de la selección sobre la
+  generación de errores futuros.
+- **Compresión de estado.** Células con el mismo k se tratan como equivalentes. No se representan
+  micronúcleos, daño del ADN, reordenamientos estructurales, arresto o senescencia, estado del
+  checkpoint ni la ruta por la que se llegó a k.
+- **Linaje único.** Se sigue una sola hija por mitosis (aproximación de muestreo de linaje de
+  tipo Wright–Fisher). Una mis-segregación real produce destinos correlacionados en las dos hijas;
+  el modelo rompe esa correlación. No es un modelo de la biología celular de MVA.
+
 ### Techo de afirmación
 
-`SIMULATION` / `SIMULATED`. Una demostración de no identificabilidad bajo supuestos declarados. No
-dice nada sobre las tasas, los tejidos ni los cariotipos de este niño, y no es evidencia de
-selección en su sangre.
+`SIMULATION` / `SIMULATED`. **A tiempo fijo y bajo el modelo de selección declarado, una foto final
+puede no distinguir la generación de la selección.** No es una afirmación universal. No dice nada
+sobre las tasas, los tejidos ni los cariotipos de este niño, y no es evidencia de selección en su
+sangre.
 
 ### Artefactos previstos
 
