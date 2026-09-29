@@ -106,6 +106,35 @@ searches on 2026-09-29 (MVA/BUB1B/BUBR1 × patient cells × rescue/drug × segre
 we found **no small molecule or small perturbation applied directly to BUB1B-MVA patient cells
 that reduced segregation errors**. That is the open gap Track 2 should aim at.
 
+## Rescue is layered: endpoint-dependent rescue
+
+There is no single rescue endpoint. At least five layers can recover independently:
+
+| Layer | What recovers | Example readout |
+|---|---|---|
+| Molecular | the interaction or modification | KARD phosphorylation, PP2A-B56 at the kinetochore |
+| Checkpoint | the response and its timing | nocodazole arrest; time to exit after checkpoint inhibition |
+| Alignment | congression | misaligned chromosomes in a quantitative alignment-zone assay |
+| Segregation | new errors | errors per completed mitosis |
+| Safety | no gain for unstable cells | survival and propagation of aneuploid cells (criteria 6–7) |
+
+**Worked example: 731X.** In Suijkerbuijk 2010 this MVA truncation, lacking the pseudokinase
+domain, looked fully functional on coarse endpoints (nocodazole response, segregation, alignment,
+HeLa/U2OS). Gama Braga 2020 (PMID 33207204, full text read) retested it **at kinetochore levels
+matched to wild type** (doxycycline titration, their Fig. S4A): KARD phosphorylation was reduced,
+PP2A-B56 was not restored at the kinetochore, checkpoint exit was delayed (half of cells exiting
+at about 55–65 min versus about 35 min for wild type) and misaligned chromosomes increased (their
+Figs. 3–4). Abundance was controlled, so overexpression is **not** the main explanation; the
+difference is readout sensitivity and context. A construct can look rescued on coarse mitotic
+endpoints while keeping a proximal signalling defect. Any rescue claim in this project names the
+layer it reached.
+
+Two further observations from the same paper bear on the case missense: published MVA
+kinase-domain missense mutants were even less hyperphosphorylated in mitosis than catalytic-site
+mutants (their Fig. 2D), and HSP90 inhibition lowered KARD phosphorylation **relative to total
+BUBR1** (their Fig. 2F–G). Folding therefore affects signalling, not only amount, which is why the
+missense must be tested at matched abundance (H2 below). All of this is HeLa, not patient cells.
+
 ## What the ladder means for this case's genotype
 
 Sanitized: domains and published analogues only, no residue numbers or amino-acid identities.
@@ -125,12 +154,13 @@ Every line is a **prediction to measure**, not a result.
   function directly. H1 and H2 are separated only by function **at matched abundance**.
 - **The truncation lies just upstream of the kinase domain**, between two published truncations
   whose plasmid-expressed products behaved differently: one restored checkpoint, segregation and
-  alignment, the other was unstable (Suijkerbuijk Fig. 2D and 5). With NMD predicted, the
-  transcript is expected to be lost. The first question is therefore **not** readthrough but
-  whether the exact truncated product would work if it existed, measured at near-physiological
-  abundance: the later finding that removing the pseudokinase domain impairs silencing and
-  alignment (Gama Braga 2020) suggests plasmid overexpression can mask defects. If it works,
-  the bottleneck is transcript and protein amount; if not, readthrough gains weight.
+  alignment, the other was unstable (Suijkerbuijk Fig. 2D and 5). NMD is predicted from **this
+  case's own transcript architecture**, not by analogy: on the canonical transcript the premature
+  stop lies about 750 nt upstream of the last exon–exon junction (`docs/ACMG_CURATION.md`,
+  PVS1 section). It is a prediction; no transcript was measured. The first question is therefore
+  **not** readthrough but whether the exact truncated product would work if it existed, read on a
+  hierarchy of endpoints (next section). If it works on all of them, the bottleneck is transcript
+  and protein amount; if not, readthrough gains weight.
 - **Closest published genotype class.** A truncation plus a kinase-domain missense (genotype
   printed in Xu Fig. 4A): the fibroblast line MVA-12C, with about 17 % BUBR1, the weakest
   checkpoint in Suijkerbuijk Fig. 1 and about 35 % aligned cells in Xu Fig. 4. Neither of its

@@ -58,10 +58,12 @@ Two loss mechanisms, and they may need different interventions:
 - The **truncating** allele is predicted to lose its transcript to nonsense-mediated decay. Whether
   its truncated product would work if it existed is **not known**: of two published MVA
   truncations nearby, one plasmid-expressed product restored checkpoint, segregation and
-  alignment and the other was unstable ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319)),
-  while removing the pseudokinase domain impaired alignment and checkpoint silencing in a later
-  study (Gama Braga et al. 2020). That question comes **before** readthrough: if the exact
-  truncated product works, the bottleneck is transcript and protein amount, not the missing
+  alignment and the other was unstable ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319)).
+  Retested at kinetochore levels matched to wild type, that "functional" truncation still
+  showed reduced PP2A-B56 recruitment, slower checkpoint silencing and more misaligned
+  chromosomes (Gama Braga et al. 2020): rescue depends on the endpoint measured. Whether the
+  exact truncated product of this case works, on a hierarchy of endpoints, comes **before**
+  readthrough: if it does, the bottleneck is transcript and protein amount, not the missing
   C-terminus. Azithromycin stays in the portfolio as the only arm aimed at this allele, pending
   that answer.
 - The **missense** allele is hypothesised to destabilise the protein (the T2-A route), but it may
