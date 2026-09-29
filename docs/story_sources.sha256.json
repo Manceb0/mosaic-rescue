@@ -5,7 +5,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "89e4a869000964de6f4c53a625458361352231a8a6459ac64e5f40894f50215f"
+      "sha256": "ce8fb24b1eb8f756471e7e7331c0153e231a98f8793db88c0cc5d2f7dd790e7b"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -29,8 +29,8 @@
     },
     {
       "path": "research/EXPERIMENT_REGISTRY.md",
-      "sha256": "02ba2f3af08a78e3d37416cf7b72aa353ed6e9c6419746ea331fd627ec354ed8"
+      "sha256": "d48b8839548865b4434c5cf890afd4d8035598a183841e237a2ee8dfd71f8bb4"
     }
   ],
-  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical. | 2026-09-29: resealed after adding the OpenAI (illustrations only) row to the AI-use disclosure in TRACK1_REPORT §10; no synthesis content changed. | 2026-09-29: resealed after appending the EXP-028 (SIM-GvS) preregistration to DECISIONS.md; no synthesis content changed."
+  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical. | 2026-09-29: resealed after adding the OpenAI (illustrations only) row to the AI-use disclosure in TRACK1_REPORT §10; no synthesis content changed. | 2026-09-29: resealed after appending the EXP-028 (SIM-GvS) preregistration to DECISIONS.md; no synthesis content changed. | 2026-09-29: resealed after completing the EXP-028 preregistration (calibration gate, generation order, fitness, evaluation readouts); no synthesis content changed."
 }

@@ -1664,49 +1664,80 @@ y extiende la lógica de EXP-015a: de «el método es ciego» a «la foto final 
 
 ### Modelo, congelado
 
-- Población Wright–Fisher de tamaño fijo **N = 10 000** células, **T = 60** generaciones, a
-  partir de una fundadora euploide.
-- Estado de cada célula: número de copias **k ∈ {1, 2, 3, 4}** de un único cromosoma de interés.
-  Una hija con k = 0 o k = 5 es inviable y se descarta.
-- En cada generación se muestrean N progenitores con probabilidad proporcional a la aptitud
-  **w(2) = 1** y **w(k ≠ 2) = 1 − s**. Cada progenitor aporta una hija. Con probabilidad **g** la
-  división es errónea y la hija recibe **k + 1 o k − 1 con probabilidad ½ cada uno**. La hermana
-  recíproca no se sigue: aproximación Wright–Fisher declarada.
+- Población de tamaño fijo **N = 10 000** células, **T = 60** generaciones, a partir de N
+  células euploides (k = 2).
+- Estado de cada célula: número de copias **k** de un único cromosoma de interés. Estados viables:
+  **k ∈ {1, 2, 3, 4}**.
+- **Aptitud, exacta:** w(2) = 1; **w(1) = w(3) = w(4) = 1 − s**. Monosomía, trisomía y tetrasomía
+  pagan el mismo coste: simplificación declarada.
+- **Una generación, en este orden:**
+  1. **División.** Cada una de las N células completa una mitosis y aporta una hija. Con
+     probabilidad **g** la mitosis es errónea y la hija recibe k + 1 o k − 1 con probabilidad ½
+     cada uno; si no, recibe k. La hermana recíproca no se sigue (aproximación declarada).
+  2. **Inviabilidad.** Una hija con k = 0 o k = 5 muere y se elimina. No hay truncamiento: no se
+     reasigna a k = 1 ni a k = 4.
+  3. **Selección.** La generación siguiente son N extracciones con reemplazo entre las hijas
+     viables, con probabilidad proporcional a w(k).
 - Escenarios:
   - **S1:** g₁ = 0,001; s = 0.
-  - **S2:** g₂ = 0,01; s = s\*, calibrado para que la fracción aneuploide media en T iguale la de S1.
-- **Calibración de s\*:** bisección de s en [0, 1] con **semilla 1000** y 400 réplicas por
-  evaluación, hasta que |media(S2) − media(S1)| en T sea menor que 0,05 × la desviación estándar
-  de S1 en T. El valor de s\* se registra antes de generar ningún dato de lectura.
-- **Datos de lectura:** 200 réplicas por escenario, **semilla 42**.
+  - **S2:** g₂ = 0,01; s = s\*, calibrado como se indica abajo.
 - Las tasas son **ilustrativas**. No se afirma ningún valor específico de MVA ni de ningún
   cromosoma. Worrall et al. 2018 (10.1016/j.celrep.2018.05.047) motiva que la generación no sea
   uniforme, pero se midió con daño del huso inducido, no con deficiencia de BUBR1.
 
-### Lecturas y métrica, congeladas
+### Calibración de s\*, congelada y separada de la evaluación
 
-- **(a)** Fracción aneuploide final en T.
-- **(b)** Trayectoria de la fracción aneuploide en t = 5, 10, 20, 40 y 60.
-- **(c)** Errores nuevos por mitosis completada en la última generación.
-- Separabilidad entre S1 y S2 para cada lectura y punto temporal: **AUC de Mann–Whitney** entre
-  las 200 réplicas de cada escenario. «No separa»: AUC en [0,35; 0,65]. «Separa»: AUC ≥ 0,90 o
-  ≤ 0,10.
+- **Conjunto de calibración:** 400 réplicas de S1 y 400 de S2 por evaluación, **semilla 1000**,
+  con los mismos números aleatorios en cada evaluación (números aleatorios comunes), para que la
+  función objetivo sea suave en s. Este conjunto no se reutiliza nunca en la evaluación.
+- **Objetivo:** D(s) = media_S2(fracción aneuploide en T; s) − media_S1(fracción aneuploide en T).
+- **Método:** bisección sobre **s ∈ [0, 1]**, suponiendo D decreciente en s. Antes de bisecar se
+  comprueba que D(0) > 0 y D(1) < 0.
+- **Tolerancia:** |D(s\*)| < 0,05 × DE_S1, donde DE_S1 es la desviación estándar de la fracción en T
+  entre las réplicas de S1 del conjunto de calibración.
+- **Máximo:** 40 iteraciones.
+- **Si no hay solución** (D(0) ≤ 0, D(1) ≥ 0 o no se alcanza la tolerancia en 40 iteraciones), el
+  experimento se detiene: ver compuerta de calibración.
+- s\* y el valor final de D se registran antes de generar ningún dato de evaluación.
 
-### Predicciones, escritas antes
+### Compuerta de calibración (no es una predicción científica)
+
+**Pasa** si la calibración encuentra s\* dentro de la tolerancia. **Si falla, no se toca nada
+hasta que funcione:** se reporta que EXP-028 no pudo construir dos procesos comparables bajo este
+modelo, y se detiene. Una versión nueva se preregistraría aparte como EXP-028b.
+
+### Evaluación, congelada
+
+- **Conjunto de evaluación:** 200 réplicas por escenario, **semilla 42**, independientes de la
+  calibración.
+- **(a) Foto final:** fracción aneuploide (k ≠ 2) en T = 60.
+- **(b) Trayectoria:** fracción aneuploide en **t = 5, 10, 20 y 40**. Se calcula **un AUC por punto
+  temporal**, sin combinar los puntos en una puntuación. t = 60 no forma parte de (b), porque es (a).
+- **(c) Errores nuevos por mitosis completada** en la última generación: número de mitosis
+  erróneas en el paso 1 dividido por N, las mitosis completadas, **antes** de los pasos 2 y 3. Así
+  la inviabilidad y la selección no alteran la tasa observada.
+- Separabilidad entre S1 y S2: **AUC de Mann–Whitney** entre las 200 réplicas de cada escenario.
+  «No separa»: AUC en [0,35; 0,65]. «Separa»: AUC ≥ 0,90 o ≤ 0,10. Valores intermedios se
+  reportan como «no concluyente».
+
+### Predicciones, escritas antes (sobre el conjunto de evaluación)
 
 | # | Predicción | Qué la falsaría |
 |---|---|---|
-| 1 | (a) **no separa** S1 de S2 (por construcción de la calibración; es la premisa, no un hallazgo) | AUC de (a) fuera de [0,35; 0,65] |
-| 2 | (b) **separa** en al menos un punto temporal t ≤ 20 | Ningún t ≤ 20 con AUC ≥ 0,90 o ≤ 0,10 |
-| 3 | (c) **separa** en un solo punto temporal (g difiere diez veces; también por construcción) | AUC de (c) entre 0,10 y 0,90 |
+| 1 | (a) **no separa** S1 de S2 | AUC de (a) fuera de [0,35; 0,65] |
+| 2 | (b) **separa** en al menos uno de t = 5, 10 o 20 | Ninguno de esos tres puntos con AUC ≥ 0,90 o ≤ 0,10 |
+| 3 | (c) **separa** | AUC de (c) entre 0,10 y 0,90 |
 
-**Falsificador de la premisa.** Si, calibrado s\*, la lectura (a) ya separa S1 de S2, la premisa
-queda falsada: se reporta así y la simulación se abandona. **No se retoca el modelo, la
-calibración ni los umbrales hasta que «funcione».** Una versión nueva, si se quisiera, se
-preregistraría aparte como EXP-028b.
+La predicción 3 es **validación de constructo**, no un hallazgo biológico: g difiere diez veces
+por diseño. Lo que demuestra es que observar directamente el proceso que genera los errores
+resuelve la ambigüedad que la foto final no resuelve.
 
-Si falla la predicción 2, se reporta que la trayectoria muestreada no basta en este modelo; no se
-añaden puntos temporales a posteriori.
+**Si falla la predicción 1** con la compuerta de calibración superada, se reporta tal cual: la foto
+final separa los procesos en este modelo, y la tesis de no identificabilidad no se sostiene aquí.
+**No se retoca el modelo, la calibración ni los umbrales hasta que «funcione».**
+
+**Si falla la predicción 2**, se reporta que la trayectoria muestreada no basta en este modelo; no
+se añaden puntos temporales a posteriori.
 
 ### Techo de afirmación
 

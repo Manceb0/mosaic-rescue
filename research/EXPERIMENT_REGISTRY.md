@@ -54,7 +54,7 @@ ni figuras científicas adicionales dentro de los notebooks. Mapa: `docs/STORYBO
 | **EXP-015** | Huella de mosaicismo aplicada | **BLOCKED**, faltan controles con pipeline idéntico | — |
 | **EXP-016** | **Track 2 · dos rutas, ocho puentes** | **UNRESOLVED**, con T2-A y T2-B separadas. Puentes 1 y 3 huecos; **puente 7 `UNRESOLVED` con contraevidencia verificada (E18, E19)**; puente 8 **vacío**. Sin **ganador terapéutico** nominado; sí se nomina una cartera experimental de tres brazos para discriminación preclínica | `docs/TRACK2_MECHANISM_MAP.md` → `src/make_fig10.py` |
 | **EXP-016b** | **Puente 7 · búsqueda acotada de literatura** | **UNRESOLVED**, cero evidencia DIRECT; dos fuentes CONTRADICTORY verificadas | `docs/EVIDENCE.md` E18/E19 |
-| **EXP-028** | **Generación frente a selección: una foto final no separa «error raro» de «error frecuente pero eliminado» (SIM-GvS)** | **PREREGISTERED, NOT EXECUTED**: simulación sin datos del paciente; modelo, semillas, escenarios S1/S2, lecturas, predicciones y falsificador congelados antes de escribir el código | `docs/DECISIONS.md` § EXP-028 |
+| **EXP-028** | **Generación frente a selección: una foto final no separa «error raro» de «error frecuente pero eliminado» (SIM-GvS)** | **PREREGISTERED, NOT EXECUTED**: simulación sin datos del paciente; modelo, orden de cada generación, aptitud, límites k, calibración de s\* con su compuerta, conjunto de evaluación separado, lecturas, predicciones y reglas de fallo congelados antes de escribir el código | `docs/DECISIONS.md` § EXP-028 |
 
 ---
 
