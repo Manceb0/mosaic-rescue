@@ -1747,8 +1747,8 @@ se añaden puntos temporales a posteriori.
   observable; Xiang et al. 2024 (Sci Rep, 10.1038/s41598-024-67842-9) infieren a la vez tasas de
   aparición de alteraciones y coeficientes de selección a partir de datos de secuenciación de ADN.
   **EXP-028 es una demostración pedagógica mínima de este problema de identificabilidad, aplicada a
-  la pregunta de MVA, no un método de inferencia nuevo.** Schukken y Foijer 2017
-  (10.1002/bies.201700147) recuerdan que la CIN es el proceso y la aneuploidía el resultado.
+  la pregunta de MVA, no un método de inferencia nuevo.** Schukken y Foijer 2018
+  (BioEssays 40(1), 10.1002/bies.201700147) recuerdan que la CIN es el proceso y la aneuploidía el resultado.
 - **Tiempo fijo.** El modelo evalúa en T = 60 y bajo un modelo de selección declarado. La foto
   observada depende también del tiempo transcurrido y de la forma de la selección.
 - **Estacionariedad.** g y s son fijos e independientes por diseño. En la biología real la
