@@ -99,7 +99,7 @@ Read from the figures, not only the text:
 
 **What the ladder does not yet contain.** In MVA patient cells every rescue readout is a
 checkpoint response or alignment in arrested cells. Anaphase missegregation was measured only in
-the HeLa replacement system (Suijkerbuijk Fig. 5B), not in patient cells. So no patient-cell
+the U2OS replacement system (Suijkerbuijk Fig. 5B; Fig. 4D also includes a HeLa depletion titration), not in patient cells. So no patient-cell
 rescue reports the rubric's criterion 5 endpoint, *new segregation errors per completed mitosis*,
 and none measures survival of unstable cells (criterion 7). In two PubMed
 searches on 2026-09-29 (MVA/BUB1B/BUBR1 × patient cells × rescue/drug × segregation, 2013–2026)
@@ -121,11 +121,13 @@ There is no single rescue endpoint. At least five layers can recover independent
 **Worked example: 731X.** In Suijkerbuijk 2010 this MVA truncation, lacking the pseudokinase
 domain, looked fully functional on coarse endpoints (nocodazole response, segregation, alignment,
 HeLa/U2OS). Gama Braga 2020 (PMID 33207204, full text read) retested it **at kinetochore levels
-matched to wild type** (doxycycline titration, their Fig. S4A): KARD phosphorylation was reduced,
+matched to wild type** (the main text states that kinetochore levels were matched by doxycycline
+titration and points to their Fig. S4A; S4A itself has not yet been inspected): KARD phosphorylation was reduced,
 PP2A-B56 was not restored at the kinetochore, checkpoint exit was delayed (half of cells exiting
 at about 55–65 min versus about 35 min for wild type) and misaligned chromosomes increased (their
-Figs. 3–4). Abundance was controlled, so overexpression is **not** the main explanation; the
-difference is readout sensitivity and context. A construct can look rescued on coarse mitotic
+Figs. 3–4). The matched-level defect is not explained simply by lower kinetochore abundance. At maximal
+expression, low phospho-signal was detectable (Fig. 7D), which does not establish restoration to WT
+or downstream rescue. Expression, endpoint and model context must be evaluated separately. A construct can look rescued on coarse mitotic
 endpoints while keeping a proximal signalling defect. Any rescue claim in this project names the
 layer it reached.
 
@@ -151,7 +153,8 @@ Every line is a **prediction to measure**, not a result.
   is a functional pseudokinase that promotes PP2A-B56 recruitment, checkpoint silencing and
   alignment (Gama Braga 2020, PMID 33207204), and its ATP-binding residues matter for
   conformational stability (Suijkerbuijk 2012, PMID 22698286), so the missense may also impair
-  function directly. H1 and H2 are separated only by function **at matched abundance**.
+  function directly. H1 and H2 require functional comparison across expression levels, measuring total and
+  kinetochore abundance separately; recovery of selected endpoints does not exclude an unmeasured defect.
 - **The truncation lies just upstream of the kinase domain**, between two published truncations
   whose plasmid-expressed products behaved differently: one restored checkpoint, segregation and
   alignment, the other was unstable (Suijkerbuijk Fig. 2D and 5). NMD is predicted from **this
@@ -159,8 +162,9 @@ Every line is a **prediction to measure**, not a result.
   stop lies about 750 nt upstream of the last exon–exon junction (`docs/ACMG_CURATION.md`,
   PVS1 section). It is a prediction; no transcript was measured. The first question is therefore
   **not** readthrough but whether the exact truncated product would work if it existed, read on a
-  hierarchy of endpoints (next section). If it works on all of them, the bottleneck is transcript
-  and protein amount; if not, readthrough gains weight.
+  hierarchy of endpoints (next section). Recovery of all measured endpoints would be compatible with abundance being a dominant
+  bottleneck under those conditions, not proof that no other defect exists. Failure alone does not
+  establish that readthrough will work.
 - **Closest published genotype class.** A truncation plus a kinase-domain missense (genotype
   printed in Xu Fig. 4A): the fibroblast line MVA-12C, with about 17 % BUBR1, the weakest
   checkpoint in Suijkerbuijk Fig. 1 and about 35 % aligned cells in Xu Fig. 4. Neither of its
@@ -184,6 +188,10 @@ Every line is a **prediction to measure**, not a result.
 
 ## Recording
 
-Every scored candidate goes into `research/evidence_registry.md` with its score, the criteria it
-failed, and whether a veto was triggered. A candidate that fails a veto is still recorded — a
+Candidate evidence and decisions go into `research/track2_evidence.tsv` and
+`research/track2_candidates.tsv`; `research/evidence_registry.md` is their index, not the evidence store. A candidate that fails a veto is still recorded — a
 documented rejection is a project asset, not a dead end.
+
+## Updated A5/A6 design and source audit
+
+See [the figure-by-figure audit](../research/BUBR1_ENDPOINT_AUDIT.md). Both proposed tests now require an expression-response curve, separate total/kinetochore abundance, and a separate CENP-E interaction/localisation endpoint. Gama Braga Fig. 6 does not establish CENP-E loss as the cause of the B56/checkpoint-silencing phenotype. The high-expression phospho-signal in Fig. 7D is not evidence of complete rescue. A5/A6 remain unexecuted; supplements and construct-equivalence checks remain pending.

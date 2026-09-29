@@ -36,6 +36,10 @@ humana/clínica establecida.
 
 ## Si vas a añadir evidencia nueva
 
+Auditoría de interpretación y diseño (sin nuevos resultados del paciente ni cambios de clase en
+la matriz): [BUBR1: figuras, endpoints y A5/A6](BUBR1_ENDPOINT_AUDIT.md). Los suplementos
+siguen pendientes.
+
 1. Va al **TSV** correspondiente, no a esta página.
 2. Si contradice algo que ya afirmamos, va **además** a `contradictions.md`.
 3. Ejecuta `python src/verify.py`. Si la celda nueva no lleva fuente, falla.
