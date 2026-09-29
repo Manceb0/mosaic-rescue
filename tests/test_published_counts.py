@@ -27,7 +27,7 @@ from src.nb.nbutil import verify as nbverify                            # noqa: 
 NOTEBOOKS = sorted((ROOT / "notebooks").glob("*.ipynb"))
 DOCS_CON_CONTEO = ("README.md", "research/EXPERIMENT_REGISTRY.md")
 DOCS_CON_CONTRADICCIONES = ("docs/SCALABILITY.md", "research/evidence_registry.md",
-                            "AGENTS.md")
+                            "CONTRIBUTING_RESEARCH.md")
 
 
 def _txt(rel):

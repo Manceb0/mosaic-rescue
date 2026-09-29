@@ -123,3 +123,27 @@ desktop.ini
 __pycache__/
 **/__pycache__/
 *.py[cod]
+
+# Local AI assistance and media-production workspace (keep on disk)
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+SKILL.md
+.codex/
+.claude/
+.agents/
+.cursor/
+.github/copilot-instructions.md
+**/prompts/
+**/*[Pp][Rr][Oo][Mm][Pp][Tt]*.md
+/docs/agent_workplan.md
+/docs/assets/*ART_DIRECTION.md
+/docs/assets/MECHANISM_ROUTE_REVISION_PENDING.md
+/docs/assets/MOTION_*.md
+/docs/assets/PROJECT_OVERVIEW_*.md
+/docs/assets/PROJECT_MAP_*.md
+/docs/assets/MOSAIC_02_PHASE_FUNCTION.md
+/docs/assets/MOSAIC_03_05_CAPTIONS.md
+/docs/assets/MOSAIC_06_07_CAPTIONS.md
+/docs/assets/MOSAIC_07_08_REVISION.md
+/pitch/opening_film/

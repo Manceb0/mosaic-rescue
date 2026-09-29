@@ -27,7 +27,7 @@ sys.path.insert(0, ".")
 import matplotlib.pyplot as plt
 import numpy as np
 from src.nb import figlib as fl      # inline figures + provenance captions
-print("environment ready · figures in this notebook render inline, each with a provenance caption")'''
+print("Environment ready. Figures render inline, each with a provenance caption.")'''
 
 
 def build(path: str, cells: list) -> None:

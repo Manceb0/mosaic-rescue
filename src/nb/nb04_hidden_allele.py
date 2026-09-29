@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/04_HIDDEN_SECOND_ALLELE.ipynb"
 
 CELLS = [
-("md", """# 04 · The search for a hidden second allele
+("md", """# 04, The search for a hidden second allele
 
 **Place in the argument.** Track 1, alternative explanation. It looks for the part of a
 biallelic model that the coding filter could have missed.
@@ -50,7 +50,7 @@ that a negative would be reportable rather than disappointing."""),
 
 ("code", 'fl.labels("What is observed", "Scope of the result")'),
 
-("md", """## Method · the locus filter
+("md", """## Method, the locus filter
 
 | Stage | Variants |
 |---|---:|
@@ -68,7 +68,7 @@ boundary. Prediction #1 failed on the high side (800 to 2 000 variants were expe
 This filter covers SNVs and indels in the window only. Structural variants are handled
 separately below."""),
 
-("md", """## Primary result · AlphaGenome on the single candidate
+("md", """## Primary result, AlphaGenome on the single candidate
 
 The tracks drawn here **were frozen before** the call was repeated, so the most flattering ones
 could not be chosen after seeing them. So were the drawing rules: REF and ALT share their y
@@ -81,7 +81,7 @@ planned in `docs/03_ALPHAGENOME_ASSESSMENT.md` §7. The shortlist was sent, neve
 AG = glob.glob("work/alphagenome/chr*_A_G.json")[0]      # path not printed: it carries a coordinate
 ag = json.load(io.open(AG, encoding="utf-8"))
 mods = ag["modalities"]
-print(f"  call status: {ag.get('status')}  ·  window: {ag.get('window_bp'):,} bp")
+print(f"  call status: {ag.get('status')} ,  window: {ag.get('window_bp'):,} bp")
 print()
 print(f"  {'modality':<22}{'tracks':>8}{'rel. delta %':>14}{'max local delta':>18}")
 for m in sorted(mods, key=lambda x: -abs(x["delta_rel"])):
@@ -92,10 +92,10 @@ spl = [m for m in mods if "splic" in m["modalidad"]]
 print()
 print(f"  largest relative delta of any modality : {worst:.2f} %")
 if spl:
-    print(f"  LOCAL delta of splice junctions        : "
+    print(f"  local delta of splice junctions        : "
           f"{min(m['delta_local_max'] for m in spl):.4f}")'''),
 
-("md", """### Main figure 1 · REF / ALT / Δ browser, track by track
+("md", """### Main figure 1. REF / ALT / Δ browser, track by track
 
 The summary aggregates by modality. This view **aggregates nothing**: it draws the nine frozen
 tracks as they came out of the model, on a **shared genomic axis**, with the gene model on top.
@@ -113,10 +113,10 @@ ar = json.load(io.open(AR, encoding="utf-8"))
 TRK = ar["tracks"]
 VPOS = ar["pos"]
 FL = ar["flank_bp"]
-print(f"  status: {ar['status']}  ·  window: +/-{FL:,} bp  ·  frozen tracks: {len(TRK)}")
+print(f"  status: {ar['status']} ,  window: +/-{FL:,} bp ,  frozen tracks: {len(TRK)}")
 for t in TRK:
     print(f"    {t['mod']:<20}{t['bp_per_bin']:>8.0f} bp/bin  {len(t['ref']):>6} bins   "
-          f"{str(t['meta'])[:52]}")
+          f"{str(t['meta']).replace(' ' + chr(183) + ' ', ', ')[:52]}")
 
 from src.structure.transcript_model import fetch as fetch_tx
 TX = fetch_tx()
@@ -130,20 +130,20 @@ _figs, _ar = FT.load_and_build()
 for _which, _slug, _tag in (("main", "fig04_alphagenome_rna_splicing", "Main figure 1"),
                             ("supp", "fig04S_alphagenome_accessibility_tf", "Supplementary figure 1S")):
     _f, _st = _figs[_which]
-    fl.pub(_f, f"{_tag} · REF / ALT / delta browser: {FT.GROUPS[_which]['title']}",
+    fl.pub(_f, f"{_tag}: REF, ALT and delta browser for {FT.GROUPS[_which]['title']}",
            "EXP-009", "PREDICTED", "MODEL_OUTPUT",
            f"{_st['n_tracks']} of the nine frozen tracks on the same genomic axis, with the gene "
            f"model on top. REF and ALT share the exact y scale within each track and delta has "
            f"its own lane with zero visible. The largest |delta| of any bin here is "
            f"{_st['max_abs_delta']:.4g}.",
-           "that no second allele exists. It is a model PREDICTION for ONE SNV/indel candidate, "
-           "not a measurement and not a scan. These tracks are NOT measured data from the "
+           "that no second allele exists. It is a model prediction for one SNV/indel candidate, "
+           "not a measurement and not a scan. These tracks are not measured data from the "
            "patient or from any of the patient's tissues.",
-           source="work/alphagenome/arrays_*.json · tracks frozen before the call was repeated; "
-                  "the split between main and supplementary figure is by MODALITY",
+           source="work/alphagenome/arrays_*.json, tracks frozen before the call was repeated; "
+                  "the split between main and supplementary figure is by modality",
            lib="matplotlib", slug=_slug)'''),
 
-("md", """### Post-freeze characterisation · in-silico mutagenesis and contact maps
+("md", """### Post-freeze characterisation, in-silico mutagenesis and contact maps
 
 **This is not new evidence and it reopens nothing.** It closes a question the browser leaves
 open: *does the model respond to sequence changes in this neighbourhood, and does the candidate
@@ -177,15 +177,15 @@ print(f"  ISM             : {MI['primary']['n_variants']} synthetic substitution
 for _r, _i in MI["primary"]["roles"].items():
     _k = _i["ranks"]
     print(f"    {_r:<9} {_i['scorer']['output']:<13} candidate: position {_k['candidate_position_rank_of_L']:>3} of "
-          f"{MI['primary']['ism_window_bp']} · substitution {_k['candidate_substitution_rank_of_all']:>3} of "
-          f"{3 * MI['primary']['ism_window_bp']} · window maximum at {_k['window_argmax_offset']:+d} bp")
+          f"{MI['primary']['ism_window_bp']}, substitution {_k['candidate_substitution_rank_of_all']:>3} of "
+          f"{3 * MI['primary']['ism_window_bp']}, window maximum at {_k['window_argmax_offset']:+d} bp")
 _ip = MI["interpretation"]
 print(f"    predeclared reading: {_ip['reading']}")
 print(f"    context r(16 kb, 100 kb): " + ", ".join(f"{k} {v:.2f}" for k, v in _ip["context_pearson_r"].items()))
 _ic = MC["interpretation"]
 print(f"  contacts        : {MC['biosample_name']} ({MC['ontology_curie']}), "
       f"{MC['n_bins']}x{MC['n_bins']} bins of {MC['output_resolution_bp']} bp")
-print(f"    max |ALT-REF| / max REF = {100 * _ic['ratio']:.2f} % (predeclared threshold 5 %) -> "
+print(f"    max |ALT-REF| / max REF = {100 * _ic['ratio']:.2f} % (predeclared threshold 5 %) to "
       f"{_ic['reading']}")
 print(f"    robustness: the predeclared track ranks {MC['robustness']['chosen_rank_of_n']} of "
       f"{MC['robustness']['n_tracks']} under the official scorer")'''),
@@ -194,7 +194,7 @@ print(f"    robustness: the predeclared track ranks {MC['robustness']['chosen_ra
 from src.figures import fig04_contacts as FC
 
 _f, _st = FI.load_and_build()
-fl.pub(_f, "Main figure 2 · in-silico mutagenesis: the model's local sensitivity around the candidate",
+fl.pub(_f, "Main figure 2: In-silico mutagenesis of the model's local sensitivity around the candidate",
        "EXP-023", "PREDICTED", "MODEL_OUTPUT",
        f"768 synthetic substitutions scored with two predeclared readouts. Under the primary "
        f"(splice sites) the candidate is position {_st['readouts']['PRIMARY']['rank_pos']} of "
@@ -205,14 +205,14 @@ fl.pub(_f, "Main figure 2 · in-silico mutagenesis: the model's local sensitivit
        f"Predeclared reading: {_st['reading']}. "
        f"The 100 kb check reproduces the matrix (r = {_st['context_r']['PRIMARY']:.2f}).",
        "that the region is or is not functional, that the variant is pathogenic or benign, or any "
-       "regulatory mechanism in the patient. It is model ATTRIBUTION under a given scorer and "
+       "regulatory mechanism in the patient. It is model attribution under a given scorer and "
        "context: it characterises the already-frozen negative and changes no classification or "
        "ranking.",
-       source="work/alphagenome/ism/*.json.gz + metadata.json · manifest sealed before the call",
+       source="work/alphagenome/ism/*.json.gz + metadata.json, manifest sealed before the call",
        lib="matplotlib", slug="fig04I_alphagenome_ism")
 
 _f, _st = FC.load_and_build()
-fl.pub(_f, "Supplementary figure 2C · predicted contact maps: REF, ALT and ALT - REF",
+fl.pub(_f, "Supplementary figure 2C: Predicted contact maps for REF, ALT and ALT minus REF",
        "EXP-023", "PREDICTED", "MODEL_OUTPUT",
        f"a 1 Mb window at {MC['output_resolution_bp']} bp in the predeclared biosample "
        f"({MC['biosample_name']}). REF and ALT share a scale and are indistinguishable by eye; "
@@ -226,7 +226,7 @@ fl.pub(_f, "Supplementary figure 2C · predicted contact maps: REF, ALT and ALT 
        source="work/alphagenome/contacts/*.json.gz + robustness_scores.json + metadata.json",
        lib="matplotlib", slug="fig04C_alphagenome_contact_maps")'''),
 
-("md", """### Robustness check · the individual tracks were reviewed
+("md", """### Robustness check, the individual tracks were reviewed
 
 To rule out a tissue-specific effect being diluted in the aggregate:
 
@@ -255,12 +255,12 @@ if top:
             "is a division by a tiny number", fontsize=7.8, color=fl.DEAD, ha="right", va="top")
     ax.grid(axis="y")
     fl.title(ax, "Most of the tracks with the largest relative change sit on near-zero baselines")
-    fl.done(fig, "Robustness figure · a relative % misleads when the baseline is near zero",
+    fl.done(fig, "Robustness figure: A relative % misleads when the baseline is near zero",
             "EXP-009", "PREDICTED", "MODEL_OUTPUT",
             "each point is one of the tracks with the largest relative change. Those producing "
             "large percentages have baselines close to zero: the percentage is an artefact of "
             "the division, not a signal.",
-            "that there is no effect in any tissue. It is an argument about the METRIC, not an "
+            "that there is no effect in any tissue. It is an argument about the metric, not an "
             "exhaustive tissue-by-tissue search.",
             prov="work/alphagenome/*_tracks.json")
 else:

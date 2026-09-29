@@ -274,8 +274,13 @@ predisposition syndrome.
 
 So any candidate must be shown to move the system toward a corridor in which chromosome
 instability falls *and* clonogenic survival does not rise. Bridge 8 asks exactly this, and it
-is **empty in all ten dimensions**. In our bounded literature search, no qualifying evidence was found it, for any of these compounds, in any
-system.
+is **empty in all ten dimensions**. Our bounded literature search found no qualifying evidence
+for it, for any of these compounds, in any system.
+
+The corridor is a shared rule, not an invention of this project. Another public repository
+from this hackathon defines a true MVA rescue in the same terms: fewer segregation errors per
+completed mitosis, with cell-cycle transit, clonogenic recovery and transformation risk checked
+alongside (§9, prior art). We adopt it as good practice and do not claim it as new.
 
 ## 7 · The experiment
 
@@ -339,9 +344,36 @@ is **not** a validated detector. The depth-normalised statistic removes the dept
 observed for the absolute-deviation statistic *in this simulation*; what supports the revised
 reading is the ablation's combined pattern, not that statistic on its own.
 
+### Prior art, and what we do not claim
+
+Every component of the rescue logic in this report has precedent. We list it so that the
+design can be judged on what it assembles, not on what it appears to invent.
+
+| Idea | Precedent | Relation to this project |
+|---|---|---|
+| Learn a protective mechanism from resistant cells and transfer it to vulnerable ones | Resistant motor neurons led to IGF-2 in ALS ([Allodi et al. 2016](https://doi.org/10.1038/srep25960)) and to GDF15 in SMA ([Nichterwitz et al. 2020](https://doi.org/10.1101/gr.265017.120)); single-cell survival profiling in retina ([Tran et al. 2019](https://doi.org/10.1016/j.neuron.2019.11.006)); intracellular CFH in multiple sclerosis ([Mayer et al. 2026](https://doi.org/10.1038/s41586-026-10981-y)) | Established paradigm; not claimed |
+| A patient's own clones as a natural experiment | Somatic genetic rescue: *EIF6* suppressor mutations in Shwachman-Diamond syndrome, proposed as a model for suppressor mimics ([Tan et al. 2021](https://doi.org/10.1038/s41467-021-24999-5)); adaptive and maladaptive rescue events coexisting in the same SAMD9/9L patients ([Sahoo et al. 2021](https://doi.org/10.1038/s41591-021-01511-6)) | Established; in those cases the rescued cells changed genotype |
+| Aneuploid cells are selected against in regenerating tissue | *Bub1b* hypomorphic mice ([Pfau et al. 2016](https://doi.org/10.1101/gad.278820.116)) | A persisting cell is not necessarily a protected cell |
+| MVA cells can be rescued experimentally | Ectopic BUBR1 restored checkpoint activity in cells from patients with biallelic mutations ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319)) | Defines what a true functional rescue looks like |
+| Chromosomal instability as a discovery platform | Patent application WO2025101836A1 (Dartmouth; pending) induces aneuploidy in pluripotent stem cells and names MVA among the conditions it can model | Induced, not patient-derived, variation |
+| Rescue measured as fewer errors per completed mitosis, with clonogenic and transformation checks | The public hackathon repository `dhruv575/mva-evidence-lanes` (published 28 August 2026, `wiki/translation/rescue-assay-matrix.md`) | Our corridor entered this repository on 31 August 2026. Likely independent, but not first; not claimed |
+
+**What we do not claim.** That studying resilient cells is new, that using a patient's mosaic
+as a clue is new, that transferring protective mechanisms is new, or that our safety corridor
+is new.
+
+**What remains a candidate, pending a completed audit of papers, patents and repositories.**
+Using the chromosomal heterogeneity that MVA keeps generating inside one patient as the source
+of a protective hypothesis, and accepting that hypothesis only if transferring it lowers new
+segregation errors per completed mitosis at matched proliferation. It is a proposal: this project
+has one bulk blood genome and has measured no cell-level heterogeneity. The observed mosaic in
+any sample is shaped by what division generates, what selection removes and what tissue and
+method are used to look (Track 1 report, §7b), and bulk blood cannot separate the three. So the
+honest form of the idea is a question: *can the patient become the screen?*
+
 ## 10 · Scalability
 
-Measured, not asserted: **44 of 91 modules in `src/`, 6 860 of 17 816 lines (39 %), contain no
+Measured, not asserted: **46 of 93 modules in `src/`, 7 083 of 18 050 lines (39 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
 **Read that number for what it is.** It says *39 % of the current codebase is case-agnostic
@@ -392,11 +424,11 @@ Required by the submission rules.
 
 | | |
 |---|---|
-| **Provider** | Anthropic (earlier recorded work); OpenAI (current visual integration) |
-| **Interface** | Claude Code; Codex desktop |
-| **Model** | Earlier record: Claude Opus 5, to be checked by maintainer; current session: GPT-6 |
-| **Plan / tier** | *To be completed by the maintainer* |
-| **Data-handling setting** | *To be completed by the maintainer* |
+| **Provider** | Anthropic |
+| **Interface** | Claude Code |
+| **Model** | Claude Opus family (including Claude Opus 5.5) |
+| **Plan / tier** | Claude Pro (consumer plan) |
+| **Data-handling setting** | Model-training on user content **disabled** in the account settings |
 
 **What the assistant did:** wrote and refactored analysis code, figure modules and notebooks;
 drafted documentation; performed literature searches; audited the repository for internal
@@ -408,19 +440,14 @@ conditions, and the choice of therapeutic candidate is one of them; the portfoli
 this report was decided by the maintainer.
 
 **Patient data and external services.** The assistant reviewed local project documents,
-user-supplied figures and selected tool outputs. Account data-handling settings require
-maintainer verification; this is not a claim of zero disclosure to an AI provider.
+user-supplied figures and selected tool outputs, under the account settings above. This is
+not a claim of zero disclosure to an AI provider: derived results were visible to the
+assistant during the work.
 Raw sequencing files are excluded from version control, while some internal technical
 figures contain case-specific locus information. The earlier project record documents
 **AlphaGenome** receiving patient-derived values: a variant shortlist and never
 the VCF. It runs in an isolated virtual environment, its outputs are cached, and the call is
 not repeated on a normal build. See `docs/03_ALPHAGENOME_ASSESSMENT.md`.
-
-> **Note on the two blank fields.** The plan or tier and the account's data-handling
-> configuration are properties of the maintainer's own account. They are deliberately left blank
-> rather than guessed: this project's rules forbid writing an unverified fact, and an invented
-> compliance statement would be worse than an incomplete one. **They must be filled in before
-> submission.**
 
 ## 13 · Acknowledgements and data citation
 
@@ -449,6 +476,16 @@ No attempt was made to locate the family.
 | HSP90 inhibition collapses missense BUBR1 mutants | PMID 20516114 |
 | Arimoclomol paediatric exposure, safety profile, OCT2 inhibition, mechanism in NPC unknown | MIPLYFFA label |
 | Azithromycin paediatric Cmax, half-life, adverse reactions, neonatal IHPS, and the section 5.4 QT / torsades warning naming uncorrected hypokalaemia and hypomagnesaemia | FDA ZITHROMAX label |
+| Aneuploid haematopoietic cells show reduced fitness; regenerating tissues of *Bub1b* hypomorphic mice are largely euploid | PMID 27313317 · DOI 10.1101/gad.278820.116 |
+| Resistant motor neurons identify IGF-2 as protective in ALS | PMID 27180807 · DOI 10.1038/srep25960 |
+| Resilient retinal ganglion cell types identified by single-cell profiling, with functional tests | PMID 31784286 · DOI 10.1016/j.neuron.2019.11.006 |
+| Resistant SMA motor neurons identify GDF15, which rescues vulnerable human motor neurons | PMID 32820007 · DOI 10.1101/gr.265017.120 |
+| Intracellular CFH correlates with and mediates neuronal resilience in multiple sclerosis | PMID 42686909 · DOI 10.1038/s41586-026-10981-y |
+| Somatic *EIF6* events rescue the germline defect in Shwachman-Diamond syndrome | PMID 34413298 · DOI 10.1038/s41467-021-24999-5 |
+| Somatic genetic rescue in SAMD9/9L: maladaptive and adaptive events, often competing in the same patient | PMID 34621053 · DOI 10.1038/s41591-021-01511-6 |
+| Lymphocyte cultures and buccal FISH give different aneuploidy pictures in MVA patients without detected *BUB1B* mutations | PMID 18548531 · DOI 10.1002/ajmg.a.32315 |
+| CIN-inducing platform for pluripotent stem cells; MVA named as a modelled condition | WO2025101836A1 (Google Patents, pending) |
+| Rescue defined as fewer errors per completed mitosis, with clonogenic and transformation checks | github.com/dhruv575/mva-evidence-lanes, `wiki/translation/rescue-assay-matrix.md`, created 2026-08-28 |
 
 No identifier appears in this report that was not verified. Where a fact could not be verified,
 it is written as a declared gap rather than cited.
@@ -458,3 +495,61 @@ it is written as a declared gap rather than cited.
 Documentation, notebooks and figures: CC BY 4.0. Code: dual-licensed **MIT OR CC BY 4.0**, so
 the whole submission is available under CC BY as the rules require. See `LICENSE` and
 `LICENSE-DOCS`.
+
+<!-- methods-form:start -->
+
+## Appendix · Methods description (official hackathon form)
+
+Answers to the organisers' methods-description template, reproduced here because the submission accepts a single report file.
+
+**Team name**
+
+mosaic-rescue
+
+**Please describe your approach in detail (how you went from variant/mechanism to candidate medication(s)).**
+
+From variant to candidates by decomposition, not by association. (1) Mechanism from Track 1: candidate compound-heterozygous BUB1B (MVA1) — a truncating allele (no functional protein) and a missense hypothesised to destabilise BUBR1; BUBR1 is a pseudokinase, so the therapeutic lever is protein dose and stability, not catalytic inhibition. (2) The claim 'this gene causes the disease, therefore this drug helps' was split into 8 explicit bridges (variant → BUBR1 stability → protein level → chaperone capacity → CIN → aneuploidy stress → pharmacological co-induction → effect on CIN and clonogenic survival), each audited over 10 evidence dimensions with a closed vocabulary (DIRECT / NEAR / GENETIC / CONTRADICTORY / ABSENT) and a build-time rule that no non-absent cell may lack a source: 80 cells, 61 empty. (3) Candidates were chosen for ROLES, not ranked: azithromycin (allele-directed: readthrough of the premature stop codon), arimoclomol (falsification sentinel: heat-shock co-induction → BUBR1 abundance) and sirolimus (adversarial safety comparator: mTOR/autophagy without correcting BUBR1), plus vehicle, a genetic positive control (constitutively active HSF1) and HSP70 overexpression. (4) A drug gate of five joint conditions (approved status, proximity to a named bridge, evidence from that bridge, a falsifiable rescue prediction, an explicit CIN/tumour-risk counter-test); no arm meets all five today. (5) A 'safe rescue corridor': any arm must lower chromosome segregation errors WITHOUT raising clonogenic survival of unstable cells, measured together in an isogenic aneuploid/euploid assay with four pre-declared outcomes, two of which kill the hypothesis. No clinical recommendation is made.
+
+**(required) If commercially-available Generative AI was used, record the provider, the plan or tier, and the relevant setting in your methods description. A line is enough, for example, "Anthropic API, Claude Sonnet, commercial terms, no training on customer content."**
+
+Anthropic — Claude Pro (consumer plan), used through Claude Code with Claude Opus models; model-training on user content disabled in the account settings. Used for code, documentation and literature search; the portfolio framing and candidate roles were decided by the team.
+
+**Was candidate identification automated (e.g., via a drug-target database query or LLM-assisted search), or primarily manual literature review and expert curation?**
+
+Primarily manual literature review and expert curation, with assistant-supported PubMed searches. The evidence and candidate matrices are machine-checked (research/track2_evidence.tsv, research/track2_candidates.tsv via src/verify.py): closed role vocabulary, and every claim — including counter-evidence, exposure and safety — must carry a published identifier or an explicitly declared gap.
+
+**Please describe any manual literature review or expert curation in detail.**
+
+Each bridge was searched for direct, near, genetic or contradictory evidence and every non-empty cell was tied to a verified identifier (4 distinct publications + 2 internal artefacts). Counter-evidence was recorded first: arimoclomol did not reproduce HSP70-mediated rescue up to 500 µM in NPC1 I1061T fibroblasts and did not induce HSP70 (PMID 34481829), while HSP90 inhibition did; the heat-shock response runs at 50–60 % in aneuploid cells (PMID 25205676); HSP90 inhibition collapses missense BUBR1 mutants (PMID 20516114). Two of our own errors were corrected and recorded (bridge 3 reclassified from CONTRADICTORY to NEAR; a false claim of zero pharmacological evidence for rapamycin, corrected after reading the published article rather than the preprint). Exposure and safety were checked against the FDA labels (ZITHROMAX, MIPLYFFA), including patient-relevant collisions (QT/electrolytes; OCT2 and creatinine with nephrocalcinosis).
+
+**Please state whether you relied solely on publicly available drug/target databases and literature (preferred), or whether proprietary data sources were also used.**
+
+Publicly available literature and public drug labels only. No proprietary data sources.
+
+**Please describe the public data sources used in detail (e.g., DrugBank, ChEMBL, ClinicalTrials.gov, OMIM, PubMed literature search).**
+
+PubMed / peer-reviewed literature: PMID 26620677 (macrolide readthrough of PTCs; azithromycin), PMID 34481829 (arimoclomol vs HSP70 in NPC1 fibroblasts), PMID 25205676 (impaired heat-shock response in aneuploid cells), PMID 20516114 (HSP90 dependence of missense BUBR1), DOI 10.1038/s41467-025-60857-4 (ca-HSF1 in isogenic aneuploid cells), DOI 10.1038/s41467-026-70521-0 (rapamycin in a Drosophila CIN/MVA model), DOI 10.1038/s41467-024-46703-z (stop-codon context and readthrough), plus MVA/BUB1B literature (Hanks 2004, Matsuura 2006, Wijshake 2012). OMIM 257300 (MVA1). FDA prescribing information for ZITHROMAX and MIPLYFFA.
+
+**Please describe any proprietary data sources used in detail.**
+
+None.
+
+**How did you characterize the variant's mechanism (e.g., loss-of-function vs. gain-of-function, pathway disrupted, downstream biological consequence)?**
+
+Loss of function by two routes that need different interventions: the truncating allele is a premature stop (UGA, adenine at +4) predicted to trigger NMD — only an allele-directed approach (readthrough) can recover anything from it, and its efficiency cannot be predicted without an assay; the missense is hypothesised to destabilise BUBR1 (a proteostasis problem). Pathway: BUBR1 is a core spindle-assembly-checkpoint component; reduced dose weakens the checkpoint → chromosome segregation errors → mosaic variegated aneuploidy → proteotoxic and mitochondrial stress in aneuploid cells, with tumour predisposition. Key consequence for drug selection: the efficacy signal (better survival of aneuploid cells) and the oncological risk signal are the same measurement, hence the safe-rescue corridor. The phase of the two alleles is unresolved, so the biallelic mechanism is a candidate and every downstream step inherits that caveat.
+
+**Please provide an estimate of time or effort spent on this analysis (if possible).**
+
+Not formally timed. The work ran iteratively during the hackathon (late August–September 2026) in the same repository as Track 1; the Track 2 matrices are rebuilt and machine-checked in under a second by src/verify.py.
+
+**Provide a method abstract (up to 500 words). Please include strengths and limitations of your approach as well as methodological detail.**
+
+MOSAIC RESCUE Track 2 proposes a falsification-first repurposing portfolio for candidate compound-heterozygous BUB1B mosaic variegated aneuploidy, not a therapeutic winner. Because BUBR1 is a pseudokinase, the lever is protein dose and stability. We decomposed the therapeutic argument into eight bridges from variant to clinical-relevant effect and audited each across ten evidence dimensions with a closed vocabulary and a sourcing rule enforced at build time. Of 80 cells, 61 are empty; the empty cells are the finding. The translational bridge (pharmacological co-induction) is contradictory in three dimensions, and the safety bridge (effect on chromosome instability and clonogenic survival) is empty in all ten.
+
+Three approved compounds are nominated for preclinical discrimination in three roles: azithromycin, the only arm aimed at this patient's own truncating allele (readthrough); arimoclomol, a sentinel whose failure is informative (it did not induce HSP70 or reproduce HSP70 rescue in a published fibroblast model); and sirolimus, an adversarial comparator — the only arm with direct drug evidence in a Drosophila MVA model, where rapamycin rescued the number of aneuploid neural stem cells but not brain size. It marks the boundary: improving the survival of unstable cells is not rescue, and in a child with tumour predisposition it is a risk. Controls include vehicle, a genetic positive control (constitutively active HSF1) and HSP70 overexpression.
+
+The proposed experiment uses an isogenic aneuploid/euploid pair, measures whether each drug engages its target, and reads chromosome segregation errors and clonogenic survival together; four outcomes are pre-declared and two of them kill the hypothesis. A five-condition drug gate separates experimental arms from therapeutic candidates; none passes today.
+
+Strengths: explicit mechanism-to-drug chain; counter-evidence stated first; roles instead of ranking; every claim tied to a verified identifier or a declared gap; machine-checked matrices; our own errors corrected on the record. Limitations: all evidence comes from systems other than this patient; the phase of the two alleles is unresolved; the missense effect is unmeasured; readthrough efficiency cannot be predicted without an assay; the literature search was bounded, so empty cells mean 'not found in our search', not 'never studied'; nothing has been tested on a second patient. No compound is recommended for administration to any patient.
+
+<!-- methods-form:end -->

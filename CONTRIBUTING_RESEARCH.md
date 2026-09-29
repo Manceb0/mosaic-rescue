@@ -14,7 +14,7 @@ Explain what decision this would change.
 List primary papers, datasets, or functional screens.
 
 ### Evidence level
-Use L0-L5 from `AGENTS.md`.
+Use L0 (speculation), L1 (associative), L2 (orthogonal support), L3 (functional evidence), L4 (replicated functional evidence), or L5 (clinically established in humans). Do not upgrade evidence because a result is exciting.
 
 ### Required patient data
 State the exact modality needed: VCF, BAM/CRAM, bulk RNA-seq, scRNA-seq, proteomics, clinical karyotype, etc.

@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/03_BUBR1_MECHANISM.ipynb"
 
 CELLS = [
-("md", """# 03 · Could the missense allele alter BUBR1?
+("md", """# 03, Could the missense allele alter BUBR1?
 
 **Place in the argument.** Track 1, mechanism. The VUS is not reclassified here; the question
 is whether structure and conservation justify the functional experiment that would settle it.
@@ -27,7 +27,7 @@ None of it is a measurement of abundance, stability or function in the patient's
 
 The missense is a VUS and does not move by classification. **Does it move by mechanism?**
 
-It matters because `BUBR1` is a **pseudokinase**: catalytic activity is dispensable, and the
+`BUBR1` is a **pseudokinase**: catalytic activity is dispensable, and the
 residues that bind ATP in conventional kinases serve **conformational stability** here. The
 right question is not "does it lose catalysis?" but "is there less protein?". Published work on
 other MVA alleles makes the same distinction between abundance defects and specific functional
@@ -37,7 +37,7 @@ defects ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-431
 
 ("code", 'fl.labels("Reading", "What cannot be concluded")'),
 
-("md", """## QC · is the model reliable in that region?
+("md", """## QC, is the model reliable in that region?
 
 Without this, measuring burial or contacts would mean nothing. **Permitted use of pLDDT:** judging
 whether the model is reliable there. **Forbidden use:** comparing wild-type and mutant pLDDT as
@@ -52,7 +52,7 @@ print(f"  mean over the whole protein    : {prof.mean():.1f}")
 print(f"  candidate percentile           : {100*(prof < t).mean():.0f}")
 print(f"  relative solvent accessibility : {d['rsa']} %   (< 20 % = buried)")'''),
 
-("md", """## Primary result 1 · the molecule
+("md", """## Primary result 1, the molecule
 
 The coordinates are read from the AlphaFold model `AF-O60566-F1`, and every distance in the
 figure is computed between real heavy atoms.
@@ -60,7 +60,7 @@ figure is computed between real heavy atoms.
 > **Everything is RELATIVE to the candidate residue.** The absolute number does not appear: the
 > structural argument does not need it, and printing it would be identifying.
 >
-> **It is a predicted model, not an experimental structure.** That is why pLDDT travels in the
+> **It is a predicted model, not an experimental structure.** pLDDT is therefore shown in the
 > same figure: without it, an AlphaFold model reads as if it were crystallography."""),
 
 ("code", '''from src.structure import pocket_geometry as pg
@@ -70,40 +70,40 @@ TGT = int(get("candidate", "residue"))
 S = pg.summary(TGT)
 res, NB, HB = S["res"], S["neighbours"], S["hbonds"]
 
-def rel(n):                                   # ALWAYS relative: never the absolute number
+def rel(n):                                   # always relative: never the absolute number
     d = n - TGT
     return f"{d:+d}" if d else "0"
 
-print(f"  AlphaFold model · {len(res):,} residues · candidate residue: {S['aa']} "
+print(f"  AlphaFold model, {len(res):,} residues, candidate residue: {S['aa']} "
       f"with pLDDT {S['plddt']:.1f}")
 print(f"  neighbours within {pg.CONTACT:.0f} Å of any side-chain heavy atom: {len(NB)}")
 for n in NB:
-    tag = "sequence-local" if n["contiguo"] else "TERTIARY contact"
+    tag = "sequence-local" if n["contiguo"] else "tertiary contact"
     print(f"    {n['aa']}{rel(n['resnum']):<6}{n['dmin']:>5.2f} Å  "
           f"{n['atoms'][0]}-{n['atoms'][1]:<6}pLDDT {n['plddt']:>4.0f}   {tag}")
 sc = [h for h in HB if h["from"] not in pg.BACKBONE]
-print(f"  CANDIDATE side-chain hydrogen bonds (<= {pg.HB_MAX} Å, no angle check): {len(sc)}")
+print(f"  candidate side-chain hydrogen bonds (<= {pg.HB_MAX} Å, no angle check): {len(sc)}")
 for h in sc:
-    print(f"    {h['from']:<5}-> {h['to_aa']}{rel(h['to_res']):<6}{h['to_atom']:<5}"
+    print(f"    {h['from']:<5}to {h['to_aa']}{rel(h['to_res']):<6}{h['to_atom']:<5}"
           f"{h['dist']:>5.2f} Å")'''),
 
-("md", """### Main figure 1 · the pocket, with its real distances"""),
+("md", """### Main figure 1. the pocket, with its real distances"""),
 
 ("code", '''from src.figures import fig03_pocket as FP
 
 LOGO = FP.prepare_logo(TGT)
 fig = FP.build(S, LOGO)
-fl.pub(fig, "Main figure 1 · pocket geometry and evolutionary constraint",
-       "EXP-010 · EXP-011", "PREDICTED+EXTERNAL", "MODEL_OUTPUT",
+fl.pub(fig, "Main figure 1: Pocket geometry and evolutionary constraint",
+       "EXP-010, EXP-011", "PREDICTED+EXTERNAL", "MODEL_OUTPUT",
        f"local geometry, model confidence and evolutionary constraint in one figure. "
        f"{len(NB)} residues have a heavy atom within {pg.CONTACT:.0f} Å, of which "
-       f"{sum(1 for x in NB if not x['contiguo'])} are TERTIARY contacts; "
-       f"{len(sc)} CANDIDATE side-chain hydrogen bonds, the shortest at "
+       f"{sum(1 for x in NB if not x['contiguo'])} are tertiary contacts; "
+       f"{len(sc)} candidate side-chain hydrogen bonds, the shortest at "
        f"{min((h['dist'] for h in sc), default=float('nan')):.2f} Å; pLDDT {S['plddt']:.1f} at "
        f"the candidate; and an alignment column carrying {LOGO['info_at_candidate']:.2f} of "
        f"{LOGO['hmax']:.2f} bits over {LOGO['n_orthologs']} orthologs, with alignment coverage "
-       f"shown because it is NOT constant.",
-       "that the substitution destabilises the protein. It describes the WILD-TYPE residue's "
+       f"shown because it is not constant.",
+       "that the substitution destabilises the protein. It describes the wild-type residue's "
        "environment; there is no free-energy calculation, and without hydrogens in the model "
        "the hydrogen bonds are geometric candidates, not confirmed. Orthologs share ancestry: "
        "they are not independent observations, and the clade breakdown puts the effective "
@@ -135,15 +135,15 @@ figure is the static one above, which is also what GitHub displays."""),
     OUTV = "work/struct/pocket_view.html"
     io.open(OUTV, "w", encoding="utf-8").write(v.write_html())
     print(f"  interactive view written to {OUTV} ({os.path.getsize(OUTV)/1024:.0f} kB)")
-    print("  cartoon coloured by pLDDT (blue high -> red low) · sticks: pocket ·")
-    print("  vermilion: candidate residue · open it in a browser to rotate it")
+    print("  cartoon coloured by pLDDT (blue high to red low), sticks: pocket ,")
+    print("  vermilion: candidate residue, open it in a browser to rotate it")
     print()
-    print("  NOT shown inline: the widget would embed the PDB and absolute residue numbers")
+    print("  not shown inline: the widget would embed the PDB and absolute residue numbers")
     print("  in the .ipynb, which is a versioned file.")
 except Exception as e:
     print("py3Dmol not available in this environment:", type(e).__name__, e)'''),
 
-("md", """## Primary result 2 · the structural interrogation, and its correction downwards
+("md", """## Primary result 2, the structural interrogation, and its correction downwards
 
 The first version concluded "destabilising". A geometric analysis of the mutant weakened two of
 its three arguments (`docs/STRUCTURAL_MISSENSE.md`):
@@ -157,7 +157,7 @@ its three arguments (`docs/STRUCTURAL_MISSENSE.md`):
 What survives is chemical, not geometric, in a region of high model confidence. It justifies an
 explicit stability calculation and a functional assay. It does not replace either."""),
 
-("md", """## Primary result 3 · orthologous conservation
+("md", """## Primary result 3, orthologous conservation
 
 A single identity percentage is uninterpretable. It needs three controls: an **internal
 baseline**, **comparable coverage**, and a **clade breakdown**, because 120 orthologs are not 120
@@ -172,18 +172,18 @@ print(f"  1:1 orthologs                          : {c['n_orthologs_one2one']}")
 print(f"  identity at the candidate position     : {cand['identity_pct']} %")
 print(f"  median over the whole protein          : {c['baseline']['median_identity_pct']} %")
 print(f"  percentile (comparable coverage)       : {cc['candidate_percentile']}")
-print(f"  hydrogen-bond ACCEPTOR capacity kept   : {cand['acceptor_pct']} %")
+print(f"  hydrogen-bond acceptor capacity kept   : {cand['acceptor_pct']} %")
 print()
 print("  by clade:")
 for r in c["by_clade"]:
     acc = f"{r['acceptor_pct']:.0f} %" if r["acceptor_pct"] is not None else "  —"
-    print(f"    {CLADE.get(r['clade'], r['clade']):<20} {r['n_aligned']:>3}/{r['n_species']:<3} aligned · acceptor {acc}")'''),
+    print(f"    {CLADE.get(r['clade'], r['clade']):<20} {r['n_aligned']:>3}/{r['n_species']:<3} aligned, acceptor {acc}")'''),
 
-("md", """### Main figure 2 · the three controls a conservation claim needs"""),
+("md", """### Main figure 2. the three controls a conservation claim needs"""),
 
 ("code", '''fig, (axA, axB) = plt.subplots(1, 2, figsize=(11.4, 3.9), gridspec_kw={"width_ratios": [1.15, 1]})
 
-# A · internal baseline at comparable coverage
+# A. Internal baseline at comparable coverage
 allp = np.asarray(cc["all_positions"], float)
 axA.hist(allp, bins=np.arange(0, 101, 4), color=fl.FLOW, alpha=0.6, lw=0)
 axA.axvline(cand["identity_pct"], color=fl.DEAD, lw=2)
@@ -195,31 +195,31 @@ axA.text(cc["median_identity_pct"] - 1.5, axA.get_ylim()[1] * 0.62,
          f"median {cc['median_identity_pct']:.0f} %", ha="right", fontsize=7.8, color=fl.INK)
 axA.set_xlabel("% of aligned orthologs identical to human, per position")
 axA.set_ylabel("positions"); axA.grid(axis="y")
-fl.title(axA, f"A · Against the protein's own {cc['n_positions']} positions of comparable coverage")
+fl.title(axA, f"A. Against the protein's own {cc['n_positions']} positions of comparable coverage")
 
-# B · clade breakdown: how many species align, and whether the acceptor chemistry is kept
+# B. Clade breakdown: how many species align, and whether the acceptor chemistry is kept
 rows_c = c["by_clade"][::-1]
 y = np.arange(len(rows_c))
 axB.barh(y, [r["n_species"] for r in rows_c], color="#E3E7EA", height=0.62, label="species with a 1:1 ortholog")
 axB.barh(y, [r["n_aligned"] for r in rows_c], color=fl.BLUE, height=0.62, label="aligned at this position")
 for yi, r in zip(y, rows_c):
     acc = f"acceptor kept {r['acceptor_pct']:.0f} %" if r["acceptor_pct"] is not None else "none aligned"
-    axB.text(r["n_species"] + 1.2, yi, f"{r['n_aligned']}/{r['n_species']} · {acc}", va="center", fontsize=7.8)
+    axB.text(r["n_species"] + 1.2, yi, f"{r['n_aligned']}/{r['n_species']}, {acc}", va="center", fontsize=7.8)
 axB.set_yticks(y); axB.set_yticklabels([CLADE.get(r["clade"], r["clade"]) for r in rows_c])
 axB.set_xlim(0, 110); axB.set_xlabel("species"); axB.grid(axis="x")
 axB.tick_params(axis="y", length=0)
 axB.legend(loc="lower right", fontsize=7.6)
-fl.title(axB, "B · By clade: coverage collapses outside tetrapods")
+fl.title(axB, "B. By clade: coverage collapses outside tetrapods")
 
-fl.done(fig, "Main figure 2 · orthologous conservation with its three controls",
+fl.done(fig, "Main figure 2: Orthologous conservation with its three controls",
         "EXP-011", "EXTERNAL+DERIVED", "DATA",
-        f"the position sits at percentile {cc['candidate_percentile']} of its OWN protein among "
+        f"the position sits at percentile {cc['candidate_percentile']} of its own protein among "
         f"positions of comparable coverage. The constraint is chemical before it is identity: "
-        f"{cand['acceptor_pct']} % of the aligned orthologs keep a side chain able to ACCEPT a "
-        "hydrogen bond, and the cationic class introduced by the substitution appears in NONE.",
+        f"{cand['acceptor_pct']} % of the aligned orthologs keep a side chain able to accept a "
+        "hydrogen bond, and the cationic class introduced by the substitution appears in none.",
         "conservation across all vertebrates: only 4 of 33 ray-finned fish align and no basal "
         "vertebrate does. The effectively independent observations are ~5-6 at clade level, not "
-        "120. It says nothing about the effect of this particular substitution, and it does NOT "
+        "120. It says nothing about the effect of this particular substitution, and it does not "
         "reopen PP3.",
         prov="work/conservation/conservation_full.json",
         source=f"{c['n_orthologs_one2one']} Ensembl one2one orthologs")'''),
@@ -252,8 +252,8 @@ destabilisation has not been demonstrated.*
 
 ### What it does not show
 
-It does not show destabilisation · it does not restore `PP3` · it does not establish
-pathogenicity · the pocket is a conserved hydrophobic one, but **the "four-aromatic cage" is not
+It does not show destabilisation, it does not restore `PP3`, it does not establish
+pathogenicity, the pocket is a conserved hydrophobic one, but **the "four-aromatic cage" is not
 conserved**: one of the four is conserved neither in identity nor in class.
 
 ### Falsifier

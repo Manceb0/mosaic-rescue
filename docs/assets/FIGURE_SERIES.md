@@ -16,28 +16,24 @@ All artwork uses built-in imagegen. Conceptual illustrations complement, rather 
 
 ## Figure 1 caption
 
-Conceptual Track 1 workflow connecting blood WGS and selected documented HPO phenotypes with the BUB1B hypothesis, sequence-based predictions and proposed functional testing. Variant records do not establish phase. RNA and contact-map glyphs are schematic comparisons, not actual model outputs or effect sizes. Empty assay wells represent a proposed experiment. This is not the complete project architecture. Original generation/edit prompt is retained in MOTION_V9_REVIEW.md; the approved output was renamed without pixel changes.
+Conceptual Track 1 workflow connecting blood WGS and selected documented HPO phenotypes with the BUB1B hypothesis, sequence-based predictions and proposed functional testing. Variant records do not establish phase. RNA and contact-map glyphs are schematic comparisons, not actual model outputs or effect sizes. Empty assay wells represent a proposed experiment. This is not the complete project architecture.
 
-## Figure 2 caption and prompt
+## Figure 2 caption
 
-See MOSAIC_02_PHASE_FUNCTION.md. Cis/trans alternatives are not observed haplotypes. Functional readouts are symbols, not experimental measurements.
+See [editorial captions](EDITORIAL_CAPTIONS.md). Cis/trans alternatives are not observed haplotypes. Functional readouts are symbols, not experimental measurements.
 
 ## Whole-project map scope
 
-One case → Track 1 prioritization, BUB1B hypothesis and its challenges → conditional Track 2 mechanisms informed by external and contradictory evidence → three experimental roles → safety gate → proposed falsifiable experiment. Aggregate RD/BAF description and simulation stress tests must be identified separately. Survival alone is insufficient. No measured cell-resilience map, established diagnosis or demonstrated rescue may be implied. Exact prepared prompt is in PROJECT_OVERVIEW_PROMPT.md.
+One case → Track 1 prioritization, BUB1B hypothesis and its challenges → conditional Track 2 mechanisms informed by external and contradictory evidence → three experimental roles → safety gate → proposed falsifiable experiment. Aggregate RD/BAF description and simulation stress tests must be identified separately. Survival alone is insufficient. No measured cell-resilience map, established diagnosis or demonstrated rescue may be implied.
 
 ## Retired images
 
-User requested removal of discarded artwork. Superseded editorial PNGs and the unused code-drawn evidence-stage.svg were removed from docs/assets after their active page references were replaced. Text prompt history is retained for provenance; historical filenames in those records are not live assets. Scientific plots in figures/pub remain untouched.
+User requested removal of discarded artwork. Superseded editorial PNGs and the unused code-drawn evidence-stage.svg were removed from docs/assets after their active page references were replaced. Production history is retained locally. Scientific plots in figures/pub remain untouched.
 
 ## Whole-project map caption
 
 Conceptual architecture of the causal and rescue-hypothesis tracks. Miniature ranking, RD/BAF and simulation plots are illustrative, not quantitative results. Model predictions and structural analyses provide different forms of evidence. Track 2 is conditional on the causal hypothesis and incorporates external evidence, counter-evidence, distinct experimental roles and safety criteria. Survival alone is insufficient. The experiment and feedback loop are proposed. The map summarizes workstreams rather than literal software dependencies; simulations are methodological stress tests, not additional patient measurements.
 
-## Figures 03–05
+## Figures 03–08
 
-Paper captions, source links, exact prompts and semantic review: [MOSAIC_03_05_CAPTIONS.md](MOSAIC_03_05_CAPTIONS.md). The ranking plot, read-level metrics, evidence matrix and portfolio remain available as the actual scientific evidence.
-
-Captions and prompts for figures 06–07: [MOSAIC_06_07_CAPTIONS.md](MOSAIC_06_07_CAPTIONS.md). The earlier deterministic story13 asset remains in the technical figure registry and notebooks; its presentation references have been replaced.
-
-Figure 07 has been simplified: detailed tool inventories and limitations moved to the external caption and README branch table. Current figure 07 and figure 08 provenance: [MOSAIC_07_08_REVISION.md](MOSAIC_07_08_REVISION.md). Earlier figure 07 prompts remain historical, not the current asset specification.
+[Scientific captions and sources](EDITORIAL_CAPTIONS.md). Production prompts remain local; the quantitative figures remain available separately.

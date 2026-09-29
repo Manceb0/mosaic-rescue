@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/06_MOSAIC_AND_MITOREAD.ipynb"
 
 CELLS = [
-("md", """# 06 · Mosaicism and MitoRead: what one blood genome can and cannot see
+("md", """# 06, Mosaicism and MitoRead: what one blood genome can and cannot see
 
 **Place in the argument.** A methodological extension. MVA type 1 produces *variegated*
 aneuploidy: different cells gain or lose different chromosomes. This notebook asks what that
@@ -19,12 +19,12 @@ mitochondrial-to-nuclear depth ratio.
 
 | Part | Evidence origin | Patient data? | What it can support |
 |---|---|---|---|
-| **A · BAF under variegation** | `SIMULATED` | **None** | A failure mode of a statistic, under stated assumptions |
-| **A′ · the measured genome** | `MEASURED` + `DERIVED` | Aggregated | A chromosome-level description; not a karyotype, not a mosaic fraction |
-| **B · MitoRead** | `MEASURED` + `DERIVED` | Aggregated | A composition-unadjusted ratio; not evidence of mitochondrial dysfunction |
+| **A, BAF under variegation** | `SIMULATED` | **None** | A failure mode of a statistic, under stated assumptions |
+| **A′, the measured genome** | `MEASURED` + `DERIVED` | Aggregated | A chromosome-level description; not a karyotype, not a mosaic fraction |
+| **B, MitoRead** | `MEASURED` + `DERIVED` | Aggregated | A composition-unadjusted ratio; not evidence of mitochondrial dysfunction |
 
 The parts are kept apart on purpose. Presenting a simulated power curve or a coverage ratio as
-if it were a functional measurement of this child is exactly the error the brief forbids."""),
+if it were a functional measurement of this child is the error the brief forbids."""),
 
 ("code", SETUP),
 
@@ -33,28 +33,30 @@ from IPython.display import Markdown, display'''),
 
 ("md", """---
 
-## Part A · Does the allelic signal survive variegation?
+## Part A. Does the allelic signal survive variegation?
 
 **The biological question.** Standard mosaicism callers assume *clonality*: one ancestral cell,
 one gained homolog, so the B-allele fraction (BAF) at heterozygous sites moves away from 0.5.
 In MVA each lineage can gain either homolog. **If half the gains are of one homolog and half of
 the other, the shifts cancel in bulk sequencing.**
 
-```
-CLONAL       every cell gains the SAME homolog    BAF = 1/(2+f) ≈ 0.5 − f/4    shifted
-VARIEGATED   each lineage gains one at random     BAF = 0.5 on average          cancels
-             depth, in both cases                 (2+f)/2 × baseline            survives
-```
+| Scenario | Which homolog is gained | Expected BAF at a gained site | Expected depth |
+|---|---|---|---|
+| Clonal | the same one in every cell | 1/(2+f), about 0.5 − f/4: shifted | (2+f)/2 × baseline |
+| Variegated | a random one in each lineage | 0.5 on average: the shifts cancel | (2+f)/2 × baseline |
+
+Here f is the fraction of cells carrying the gain. Depth rises in both scenarios; only the
+allelic shift can cancel.
 
 **Preregistration.** `docs/DECISIONS.md` § EXP-015a was written *before* implementation, with
-four predictions and a decision rule. Prediction #3 was the one that mattered: if a
+four predictions and a decision rule. Prediction #3 was the deciding one: if a
 coverage-dispersion index did not keep power where BAF cancels, the idea would be dropped."""),
 
 ("code", '''sim = json.load(io.open("work/mosaic/dispersion_simulation.json", encoding="utf-8"))
 R = {(r["mode"], round(r["fraction"], 2)): r for r in sim["results"]}
 fr = sorted({round(r["fraction"], 2) for r in sim["results"]})
 
-rows = ["| cell fraction | BAF · clonal | BAF · variegated | dispersion · clonal | dispersion · variegated |",
+rows = ["| cell fraction | BAF, clonal | BAF, variegated | dispersion, clonal | dispersion, variegated |",
         "|---:|---:|---:|---:|---:|"]
 for f in fr:
     c, v = R[("clonal", f)], R[("variegated", f)]
@@ -62,13 +64,13 @@ for f in fr:
                 f"{c['power_dispersion']:.3f} | {v['power_dispersion']:.3f} |")
 display(Markdown(
     f"**Simulated detection power at a fixed false-positive rate of {sim['alpha']}.** "
-    f"Seed {sim['seed']} (preregistered) · {sim['n_rep']} replicates per cell · "
-    f"depth {sim['depth']}× · no patient data.\\n\\n" + "\\n".join(rows)))'''),
+    f"Seed {sim['seed']} (preregistered), {sim['n_rep']} replicates per cell, "
+    f"depth {sim['depth']}×, no patient data.\\n\\n" + "\\n".join(rows)))'''),
 
-("md", """### Main figure A · look at the distributions, not the summary
+("md", """### Main figure A. look at the distributions, not the summary
 
 A mean cannot show cancellation: the summary statistic of a variegated genome looks like that
-of a euploid one, and that is exactly the trap. The site-by-site BAF distribution, on the same
+of a euploid one. The site-by-site BAF distribution, on the same
 scale in all three scenarios, is what has to be inspected."""),
 
 ("code", '''from src.mosaic.simulate_dispersion import site_bafs
@@ -79,19 +81,19 @@ BAFS = {lab: site_bafs(sim["seed"] + i, 0.0 if mode == "null" else F, mode)
         for i, (lab, mode, _col) in enumerate(FBAF.SCEN)}
 fig = FBAF.build(sim, BAFS, F)
 _pv = [r["power_baf"] for r in sim["results"] if r["mode"] == "variegated"]
-fl.pub(fig, "Main figure A · simulated BAF distributions and detection power",
+fl.pub(fig, "Main figure A: Simulated BAF distributions and detection power",
        "EXP-015a", "SIMULATED", "SIMULATION",
        f"on identical scales, the euploid genome centres on 0.5, the clonal genome shifts "
        f"towards the two expected modes, and the variegated genome, with the same fraction of "
-       f"aneuploid cells, re-centres on 0.5. Panel D tracks the ABSOLUTE statistic, whose "
+       f"aneuploid cells, re-centres on 0.5. Panel D tracks the absolute statistic, whose "
        f"variegated power falls from {_pv[0]:.3f} to {_pv[-1]:.3f}. That fall is **not** caused "
        f"by cancellation: the post-hoc ablation below shows it is driven by copy-number-dependent "
-       f"depth. Cancellation does move the SIGNED statistic, from 0.980 to 0.050.",
+       f"depth. Cancellation does move the signed statistic, from 0.980 to 0.050.",
        "nothing about this child: there is not one patient value in it. Nor does it show "
        "superiority over the standard method: the comparator is a site-wise unphased BAF "
        "statistic, not MoChA, and the panel says so. Simulated power is optimistic (no GC, "
        "mappability or reference-allele bias).",
-       source=f"src/mosaic/simulate_dispersion.py · seed {sim['seed']}",
+       source=f"src/mosaic/simulate_dispersion.py, seed {sim['seed']}",
        lib="matplotlib", slug="fig06_baf_cancellation")'''),
 
 ("md", """### The four preregistered predictions, scored against the simulation
@@ -133,9 +135,9 @@ next to it."""),
 ("code", '''from src.figures import fig12_ablation as FABL
 
 fig, abl = FABL.load_and_build()          # refuses to draw if the frozen source hash changed
-fl.pub(fig, "Figure A2 · factorial ablation: which factor moves each statistic",
-       "EXP-015c · POST-HOC", "SIMULATED", "SIMULATION",
-       "homolog direction (blue vs vermilion) separates the curves only for the SIGNED "
+fl.pub(fig, "Figure A2: Factorial ablation of what moves each statistic",
+       "EXP-015c, POST-HOC", "SIMULATED", "SIMULATION",
+       "homolog direction (blue vs vermilion) separates the curves only for the signed "
        "statistic (panel A): mixed direction flattens it, which is cancellation. For the "
        "absolute deviation and the variance (panels B and C) the split is instead between "
        "copy-number-scaled depth (solid, flat) and depth matched to the null (dashed, rising): "
@@ -144,22 +146,22 @@ fl.pub(fig, "Figure A2 · factorial ablation: which factor moves each statistic"
        "anything about the patient, and it is diagnostic, not confirmatory: it was designed "
        "after the audit. No confidence intervals are drawn, so small differences between "
        "curves are not claimed as effects.",
-       source=f"work/mosaic/baf_ablation.json · sha256 {FABL.SHA256[:16]}… · seed {abl['seed']}",
+       source=f"work/mosaic/baf_ablation.json, sha256 {FABL.SHA256[:16]}…, seed {abl['seed']}",
        lib="matplotlib", slug="fig12_baf_factorial_ablation")'''),
 
 ("md", """### Decision for Part A
 
 | Hypothesis | Status |
 |---|---|
-| **EXP-015a** · the cancellation mechanism | **Survives** for the signed statistic; the failure mode is reproduced and quantified |
-| **EXP-015a** · "cancellation explains the loss of absolute power" | **Falsified** by EXP-015c; the cause is depth |
-| **EXP-015b** · the dispersion index as a detector | **Parked, not validated**: the comparator is not MoChA |
+| **EXP-015a**, the cancellation mechanism | **Survives** for the signed statistic; the failure mode is reproduced and quantified |
+| **EXP-015a**, "cancellation explains the loss of absolute power" | **Falsified** by EXP-015c; the cause is depth |
+| **EXP-015b**, the dispersion index as a detector | **Parked, not validated**: the comparator is not MoChA |
 
 What rose in status is the **mechanism**, not relative performance: we do not claim to be "more
 powerful than MoChA". Applying the index to the patient stays **blocked**: it needs control
 genomes processed with an identical pipeline, and none exist.
 
-## Part A′ · What the measured genome actually shows
+## Part A′. What the measured genome actually shows
 
 The simulation says what *could* hide. The patient's aggregated read depth (RD) and BAF, from
 the GO 2B CNVpytor run on the full alignment, say what *is visible*. The figure is read from
@@ -168,8 +170,8 @@ frozen artifacts and refuses to draw if their hashes change."""),
 ("code", '''from src.figures import fig09_cnv_chromosomes as FCNV
 
 fig, _cnv = FCNV.load_and_build()
-fl.pub(fig, "Figure A′ · measured read depth and BAF per chromosome (GO 2B, frozen)",
-       "GO 2B · CNVpytor", "MEASURED + DERIVED", "DATA",
+fl.pub(fig, "Figure A′: Measured read depth and BAF per chromosome (GO 2B, frozen)",
+       "GO 2B, CNVpytor", "MEASURED + DERIVED", "DATA",
        "chromosome-level read-depth and allelic-balance summaries of the full alignment, "
        "with their denominators. CNVpytor did not emit an RD+BAF CNV overlapping the BUB1B "
        "gene body.",
@@ -181,7 +183,7 @@ fl.pub(fig, "Figure A′ · measured read depth and BAF per chromosome (GO 2B, f
 
 ("md", """---
 
-## Part B · MitoRead: a mitochondrial-to-nuclear depth ratio
+## Part B. MitoRead: a mitochondrial-to-nuclear depth ratio
 
 **Why this branch exists.** Aneuploidy imposes proteotoxic and mitochondrial stress on cells
 (one of the Track 2 evidence bridges), so mitochondrial DNA content in blood is an orthogonal
@@ -239,7 +241,7 @@ gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0], width_ratios=[1.45, 1.0],
                       hspace=0.62, wspace=0.26)
 axA = fig.add_subplot(gs[0, :]); axB = fig.add_subplot(gs[1, 0]); axC = fig.add_subplot(gs[1, 1])
 
-# A · depth along the mitochondrial genome, under both mapping-quality filters
+# A. Depth along the mitochondrial genome, under both mapping-quality filters
 pos = np.arange(1, len(dq30) + 1)
 axA.fill_between(pos, dq0, color=fl.FLOW, alpha=0.45, lw=0, label="MAPQ 0 (all reads)", rasterized=True)
 axA.plot(pos, dq30, color=fl.BLUE, lw=0.6, label="MAPQ ≥ 30", rasterized=True)
@@ -248,10 +250,10 @@ axA.axhline(mr["chrM_median_depth_MAPQ30"], color=fl.INK, ls="--", lw=0.8,
 axA.set_xlim(1, len(pos)); axA.set_ylim(0, max(dq0.max(), dq30.max()) * 1.05); axA.grid(axis="y")
 axA.set_xlabel("position on the mitochondrial genome (bp)")
 axA.set_ylabel("read depth (×)")
-fl.title(axA, f"A · Depth along chrM: {mr['mapq30_retained_fraction']*100:.1f} % of it survives MAPQ ≥ 30")
+fl.title(axA, f"A. Depth along chrM: {mr['mapq30_retained_fraction']*100:.1f} % of it survives MAPQ ≥ 30")
 axA.legend(loc="lower center", ncol=3)
 
-# B · the denominator: mean depth of every autosome
+# B. The denominator: mean depth of every autosome
 ks = sorted(auto)
 axB.bar([str(k) for k in ks], [auto[k] for k in ks], color=fl.FLOW, width=0.72)
 axB.axhline(mr["autosomal_weighted_mean_depth"], color=fl.INK, ls="--", lw=0.8)
@@ -259,10 +261,10 @@ axB.text(-0.5, 47.5, f"dashed: weighted mean {mr['autosomal_weighted_mean_depth'
          ha="left", fontsize=8)
 axB.set_ylim(0, 52); axB.grid(axis="y")
 axB.set_xlabel("autosome"); axB.set_ylabel("mean depth (×)")
-fl.title(axB, "B · The denominator: mean depth of each autosome")
+fl.title(axB, "B. The denominator: mean depth of each autosome")
 axB.tick_params(axis="x", labelsize=7.2)
 
-# C · the same ratio under each single-autosome denominator: an interval, not a trend
+# C. The same ratio under each single-autosome denominator: an interval, not a trend
 med30 = mr["chrM_median_depth_MAPQ30"]
 r_by = {k: med30 / auto[k] for k in ks}
 lo, hi = min(r_by, key=r_by.get), max(r_by, key=r_by.get)
@@ -276,15 +278,15 @@ for k, va, dy in ((lo, "top", -10), (hi, "top", -10)):
 axC.set_yticks([]); axC.set_ylim(-1, 1); axC.set_xlim(90, 135); axC.grid(axis="x")
 axC.spines["left"].set_visible(False)
 axC.set_xlabel("mtDNA : nuclear depth ratio (MAPQ ≥ 30)")
-fl.title(axC, "C · The ratio depends on its denominator")
+fl.title(axC, "C. The ratio depends on its denominator")
 axC.legend(loc="upper center", fontsize=7.6)
 
-fl.done(fig, "Figure B · MitoRead on the full alignment", "GO 2B · MitoRead",
+fl.done(fig, "Figure B: MitoRead on the full alignment", "GO 2B, MitoRead",
         "MEASURED + DERIVED", "DATA",
         f"mitochondrial depth is about {mr['ratio_mtDNA_to_nuclear_MAPQ30']:.0f} times the "
         "autosomal depth, and almost all of it survives the MAPQ ≥ 30 filter. Panel C shows how "
         "much the number depends on which nuclear depth is taken as the denominator: that spread "
-        "is the honest resolution of the value.",
+        "is the real resolution of the value.",
         "mitochondrial dysfunction, or a copy number per cell. The ratio is not adjusted for "
         "cell composition (no blood or platelet count), and converting it into copies per cell "
         "would assume a nuclear ploidy of 2, which is exactly what cannot be assumed in "
@@ -293,7 +295,7 @@ fl.done(fig, "Figure B · MitoRead on the full alignment", "GO 2B · MitoRead",
         "through the same pipeline, so the value is descriptive, not comparable. Lower mean "
         "depths on some autosomes in panel B are not interpreted here; Figure A′ is the "
         "copy-number readout.",
-        prov="work/callers/mito/ · hashes sealed in tabla_operacional_go2b.json",
+        prov="work/callers/mito/, hashes sealed in tabla_operacional_go2b.json",
         source="mitoread.json + per-base chrM depth at MAPQ 0 and 30", lib="matplotlib")'''),
 
 ("code", '''mp = json.load(io.open("work/mito/pilot_l001.json", encoding="utf-8"))
@@ -309,9 +311,9 @@ display(Markdown(
 
 | | Status |
 |---|---|
-| **EXP-014a** · L001 pilot | **Superseded** by the aligned readout; it established feasibility only |
+| **EXP-014a**, L001 pilot | **Superseded** by the aligned readout; it established feasibility only |
 | **MitoRead on the full alignment** (GO 2B) | **Interpretable within its ceiling**: a cell-composition-unadjusted, WGS-derived blood mtDNA:nuclear ratio |
-| **EXP-014b** · biological interpretation | **Blocked**: needs a contemporaneous blood count and control genomes processed identically |
+| **EXP-014b**, biological interpretation | **Blocked**: needs a contemporaneous blood count and control genomes processed identically |
 
 **The most attackable assumption of the branch** is that mitochondrial content in peripheral
 blood reflects the mitochondrial state of muscle or kidney. With one bulk sample there is no

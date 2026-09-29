@@ -9,7 +9,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/02_BUB1B_ALLELE_CURATION.ipynb"
 
 CELLS = [
-("md", """# 02 · The evidence behind each `BUB1B` allele
+("md", """# 02, The evidence behind each `BUB1B` allele
 
 **Place in the argument.** Track 1, curation. The ranking proposes a gene; this notebook checks,
 allele by allele, what evidence supports each one and what prevents the pair from being closed.
@@ -37,7 +37,7 @@ so that an uninformative predictor could not be added when convenient."""),
 
 ("code", 'fl.labels("Interpretation", "Limit of the evidence")'),
 
-("md", """## Inputs · QC of the two calls
+("md", """## Inputs, QC of the two calls
 
 Before curating anything: are the calls good? Curation on a bad call is noise formatted as
 ACMG. Each allele is placed against the same metric for every heterozygous HIGH/MODERATE call in
@@ -56,8 +56,8 @@ for v in rows:
         continue
     seen.add(k); alleles.append(v)
 
-ROLE = {"HIGH": "allele A · truncating", "MODERATE": "allele B · missense"}
-# The raw GT field is NOT printed: it is the patient's genotype in exactly the format the hard
+ROLE = {"HIGH": "allele A, truncating", "MODERATE": "allele B, missense"}
+# The raw GT field is not printed: it is the patient's genotype in exactly the format the hard
 # rule forbids versioning. Zygosity is stated in words, because that is already the project's
 # canonical claim. The rest are call-quality metrics, which is what this QC evaluates.
 ZYG = {"0/1": "heterozygous", "1|0": "heterozygous", "0|1": "heterozygous",
@@ -92,7 +92,7 @@ for ax, (key, xlabel, vals, get, bins) in zip(axes, MET):
         ax.axvline(x, color=COL[v.impact], lw=2)
         right = v.impact == "HIGH"
         ax.text(x + (0.012 if right else -0.012) * (bins[-1] - bins[0]), ax.get_ylim()[1] * 0.95,
-                f"{ROLE[v.impact].split('·')[1].strip()}: {x:.2f}".replace(".00", "") + f"\\n{pct:.0f}th percentile",
+                f"{ROLE[v.impact].split(',')[1].strip()}: {x:.2f}".replace(".00", "") + f"\\n{pct:.0f}th percentile",
                 color=COL[v.impact], fontsize=7.8, va="top", ha="left" if right else "right",
                 bbox=dict(fc="white", ec="none", alpha=0.85, pad=1.2))
     if key == "AB":
@@ -103,16 +103,16 @@ axes[0].set_ylabel("heterozygous calls")
 fl.title(axes[0], "Depth: both calls within the bulk of the genome")
 fl.title(axes[1], "Allele balance: both near 0.5 (shaded 0.35 to 0.65)")
 
-fl.done(fig, "QC figure · the two calls against every heterozygous call in the genome",
+fl.done(fig, "QC figure: The two calls against every heterozygous call in the genome",
         "EXP-007", "MEASURED", "DATA",
         "both alleles are ordinary, well-supported heterozygous calls: depth is within the bulk "
         "of the genome's heterozygous HIGH/MODERATE calls, allele balance is near 0.5, and both "
         "have the maximum genotype quality (GQ 99). Nothing about the calls argues for an artefact.",
         "causality: good calls are a precondition, not evidence. Allele balance serves QC and "
-        "mosaicism screening; it does NOT establish that the alleles sit on opposite copies of the gene.",
+        "mosaicism screening; it does not establish that the alleles sit on opposite copies of the gene.",
         prov="patient VCF, joined by allele identity")'''),
 
-("md", """## Primary result 1 · the anatomy of the gene, with all of ClinVar on top
+("md", """## Primary result 1, the anatomy of the gene, with all of ClinVar on top
 
 Curation needs to know **where** each allele falls in the gene. The transcript model and domains
 come from **Ensembl REST**, and the variant landscape is the **1 497 ClinVar missense records**
@@ -127,8 +127,8 @@ L = T["translation"]["length"]
 DOM = [d for d in T["domains"] if d["type"] in ("Pfam", "Gene3D")]
 EX  = [e for e in T["exons"] if e.get("aa")]
 
-print(f"  Ensembl release {T['release']} · {T['transcript']} [{T['transcript_pick']}]")
-print(f"  {T['n_exons']} exons · protein {L} aa · CDS {T['translation']['cds_len']:,} nt")
+print(f"  Ensembl release {T['release']}, {T['transcript']} [{T['transcript_pick']}]")
+print(f"  {T['n_exons']} exons, protein {L} aa, CDS {T['translation']['cds_len']:,} nt")
 for d in DOM:
     print(f"    {d['type']:<8}{d['start']:>5}-{d['end']:<5} {d['desc'][:52]}")
 
@@ -144,30 +144,30 @@ for k, v in tot.items():
     k = {"CONFLICTIVA": "conflicting", "otra": "other"}.get(k, k)   # keys as stored in the snapshot
     print(f"    {k:<12}{v:>6}  ({100*v/sum(tot.values()):.1f} %)")'''),
 
-("md", """### Main figure 1 · gene browser: exons, domains and ClinVar"""),
+("md", """### Main figure 1. gene browser: exons, domains and ClinVar"""),
 
 ("code", '''from src.figures import fig02_browser as FB
 
 g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
 fig = FB.build(T, cv, {"ptc_aa": g["ptc_cds"] // 3 + 1, "mis_aa": g["mis_cds"] // 3 + 1})
-fl.pub(fig, "Main figure 1 · gene browser: exons, domains and ClinVar",
+fl.pub(fig, "Main figure 1: Gene browser with exons, domains and ClinVar",
        "EXP-007", "EXTERNAL", "DATA",
        f"the real anatomy of the canonical transcript ({T['n_exons']} exons, {L} aa), the "
        f"domains Ensembl annotates on the translation, and the {len(cv['variants']):,} missense "
        f"records ClinVar holds for the gene, one mark per record. "
        f"{100*tot['VUS']/sum(tot.values()):.1f} % are VUS, {tot.get('CONFLICTIVA', 0)} have "
-       f"conflicting interpretations, and there is a SINGLE P/LP in the whole gene: there is no "
+       f"conflicting interpretations, and there is a single P/LP in the whole gene: there is no "
        f"demonstrable hotspot anywhere, which is why PM1 does not apply here or anywhere else. "
        f"Panel D turns the records into a readable distribution; the two vertical guides place "
        f"the case alleles in that anatomy.",
        "that falling inside a domain means pathogenicity. ClinVar density mostly reflects how "
        "much the gene has been sequenced and reported, not where the mutations that matter lie; "
-       "and the absence of a hotspot is NOT evidence against the candidate.",
+       "and the absence of a hotspot is not evidence against the candidate.",
        source="Ensembl REST release " + str(T["release"]) +
               " + work/clinvar/landscape_missense.json (1 497 records)",
        lib="dna_features_viewer + matplotlib", slug="fig02_gene_browser")'''),
 
-("md", """## Primary result 2 · the missense landscape in ClinVar
+("md", """## Primary result 2, the missense landscape in ClinVar
 
 `PM1`, `PS1` and `PM5` are assessed on the comparable class. The error this corrected: counting
 "0 P/LP against 35 B/LB" mixed every consequence type; **31 of those 35 were synonymous**."""),
@@ -182,7 +182,7 @@ from IPython.display import Markdown, display
 display(Markdown("\\n".join(rows_md) + "\\n\\nNo residue of the gene has a demonstrable hotspot, "
                  "so PM1 does not apply **anywhere**."))'''),
 
-("md", """## Primary result 3 · the geometry of NMD and of phase
+("md", """## Primary result 3, the geometry of NMD and of phase
 
 Two geometric measurements decide two different things: whether the truncating allele triggers
 NMD, and whether the two alleles can be connected with short reads."""),
@@ -192,13 +192,13 @@ g = json.load(io.open("work/struct/fig3_exons.json", encoding="utf-8"))
 EXN, ptc, mis, last = g["exons"], g["ptc_cds"], g["mis_cds"], g["last_junction"]
 margin = last - ptc
 # Genomic distances between the two alleles and the single informative heterozygote between
-# them, measured from the VCF when figures/fig3 was built. Only DIFFERENCES are used here; no
+# them, measured from the VCF when figures/fig3 was built. Only differences are used here; no
 # absolute coordinate is printed or drawn.
 _src = io.open("src/make_fig3.py", encoding="utf-8").read()
 GA, GH, GB = map(int, re.search(r"GA, GH, GB = (\\d+), (\\d+), (\\d+)", _src).groups())
 d_ah, d_hb, d_ab = GH - GA, GB - GH, GB - GA
 FRAG = 300
-print(f"  PTC to the last exon-exon junction : {margin:,} nt  (rule: 50-55 nt) -> ~{margin/52:.0f}x the threshold")
+print(f"  PTC to the last exon-exon junction : {margin:,} nt  (rule: 50-55 nt) to ~{margin/52:.0f}x the threshold")
 print(f"  distance between the two alleles   : {d_ab:,} bp")
 print(f"  informative heterozygotes between  : 1  ({d_ah:,} bp and {d_hb:,} bp from each allele)")
 print(f"  shortest gap / library fragment    : {d_hb:,} / ~{FRAG} bp = {d_hb/FRAG:.1f}x")'''),
@@ -207,7 +207,7 @@ print(f"  shortest gap / library fragment    : {d_hb:,} / ~{FRAG} bp = {d_hb/FRA
 gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 1.0], hspace=0.75)
 axA, axB = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
 
-# A · the mature mRNA, CDS scale, last seven exons
+# A. The mature mRNA, CDS scale, last seven exons
 c0 = EXN[0]["c0"]
 for e in EXN:
     last_ex = e is EXN[-1]
@@ -224,44 +224,44 @@ axA.plot([ptc - c0], [0.5], marker="v", ms=11, color=fl.DEAD, zorder=4)
 axA.text(ptc - c0, 1.25, "premature stop\\n(allele A)", ha="center", va="bottom", fontsize=8,
          color=fl.DEAD)
 axA.plot([mis - c0], [0.5], marker="o", ms=9, color=fl.OPEN, mec="white", zorder=4)
-axA.text(mis - c0, -1.25, "missense (allele B)", ha="center", va="center", fontsize=8, color=fl.OPEN)
+axA.text(mis - c0, -0.8, "missense (allele B)", ha="center", va="center", fontsize=8, color=fl.OPEN)
 axA.annotate("", xy=(last - c0, -1.25), xytext=(ptc - c0, -1.25),
-             arrowprops=dict(arrowstyle="<->", color=fl.DEAD, lw=1.1))
+             arrowprops=dict(arrowstyle="|-|", color=fl.DEAD, lw=1.0, mutation_scale=4))
 axA.text((ptc + last) / 2 - c0, -1.4, f"{margin:,} nt upstream of the last junction "
          f"(threshold 55 nt): NMD predicted", ha="center", va="top", fontsize=8.2, color=fl.DEAD)
 axA.set_xlim(-20, EXN[-1]["c1"] - c0 + 30); axA.set_ylim(-2.2, 2.3)
 axA.axis("off")
-fl.title(axA, "A · Mature mRNA at coding-sequence scale: the stop codon triggers NMD")
+fl.title(axA, "A. Mature mRNA at coding-sequence scale: the stop codon triggers NMD")
 
-# B · the genomic interval, at true scale, with a library fragment drawn to the same scale
+# B. The genomic interval, at true scale, with a library fragment drawn to the same scale
 axB.plot([0, d_ab], [0, 0], color=fl.SOFT, lw=2.2, solid_capstyle="butt")
-for x, lab, c in ((0, "allele A\\ntruncating · LP", fl.DEAD), (d_ab, "allele B\\nmissense · VUS", fl.OPEN)):
+for x, lab, c in ((0, "allele A\\ntruncating, LP", fl.DEAD), (d_ab, "allele B\\nmissense, VUS", fl.OPEN)):
     axB.plot([x], [0], marker="o", ms=10, color=c, zorder=3)
     axB.text(x, 0.45, lab, ha="center", va="bottom", fontsize=8.2, color=c)
 axB.plot([d_ah], [0], marker="|", ms=16, mew=2, color=fl.INK)
 axB.text(d_ah, 0.45, "the only informative\\nheterozygote between them", ha="center", va="bottom",
          fontsize=7.8, color=fl.INK)
 for a, b, y in ((0, d_ah, -0.55), (d_ah, d_ab, -0.55)):
-    axB.annotate("", xy=(b, y), xytext=(a, y), arrowprops=dict(arrowstyle="<->", color=fl.SOFT, lw=0.9))
+    axB.annotate("", xy=(b, y), xytext=(a, y), arrowprops=dict(arrowstyle="|-|", color=fl.SOFT, lw=0.9, mutation_scale=4))
     axB.text((a + b) / 2, y - 0.12, f"{b - a:,} bp", ha="center", va="top", fontsize=8, color=fl.SOFT)
 axB.add_patch(plt.Rectangle((d_ah + 200, -1.45), FRAG, 0.22, color=fl.BLUE))
 axB.text(d_ah + 200 + FRAG + 80, -1.34, f"one ~{FRAG}-bp library fragment, same scale: "
          f"the shorter gap is {d_hb/FRAG:.1f}× longer", va="center", fontsize=8, color=fl.BLUE)
 axB.set_xlim(-400, d_ab + 400); axB.set_ylim(-1.8, 1.4); axB.axis("off")
-fl.title(axB, f"B · The {d_ab:,} bp between the alleles, at true scale: short reads cannot bridge them")
+fl.title(axB, f"B. The {d_ab:,} bp between the alleles, at true scale: short reads cannot bridge them")
 
-fl.done(fig, "Main figure 3 · the geometry of NMD and of phase", "EXP-007 · EXP-013",
+fl.done(fig, "Main figure 3: The geometry of NMD and of phase", "EXP-007, EXP-013",
         "MEASURED+DERIVED", "DATA",
         f"the premature stop lies {margin:,} nt upstream of the last exon-exon junction, far "
         "beyond the 50-55 nt rule: NMD is predicted with a wide margin. Below, why phase cannot "
         f"be resolved: {d_ab:,} bp separate the two alleles, with a single informative "
         f"heterozygote between them, against library fragments of ~{FRAG} bp.",
         "that the alleles sit on opposite copies of the gene. `unphased` is not `trans`: the longest phase block in the "
-        "whole genome is 288 bp. Unresolved phase STAYS unresolved; only parental genotypes or "
+        "whole genome is 288 bp. Unresolved phase stays unresolved; only parental genotypes or "
         "long-molecule phasing can settle it.",
         prov="work/struct/fig3_exons.json (exon limits probed at 2 bp) + VCF distances in src/make_fig3.py")'''),
 
-("md", """## Robustness · the ceiling of each allele, and what would move it
+("md", """## Robustness, the ceiling of each allele, and what would move it
 
 Curation does not end at a label: it ends knowing **how much evidence is missing, and of what
 kind**. The scale is ClinGen's Bayesian points framework (VUS 0–5, likely pathogenic 6–9,
@@ -269,9 +269,9 @@ pathogenic ≥ 10)."""),
 
 ("code", '''# ClinGen Bayesian points framework, as applied
 EVID = {
- "allele A · truncating": [("PVS1", 8, True), ("PM2_Supporting", 1, True),
+ "allele A, truncating": [("PVS1", 8, True), ("PM2_Supporting", 1, True),
                             ("PM3", 2, False), ("PS3", 4, False)],
- "allele B · missense":   [("PM2_Supporting", 1, True), ("PP3", 1, False), ("PM1", 2, False),
+ "allele B, missense":   [("PM2_Supporting", 1, True), ("PP3", 1, False), ("PM1", 2, False),
                             ("PM5", 2, False), ("PS3", 4, False)],
 }
 BANDS = [(0, 5.5, "VUS", "#EEF0F2"), (5.5, 9.5, "likely pathogenic", "#FBE3D6"),
@@ -299,18 +299,18 @@ for yi, (name, items) in enumerate(EVID.items()):
 ax.set_yticks([1, 0]); ax.set_yticklabels(list(EVID)); ax.tick_params(axis="y", length=0)
 ax.set_xlim(0, 16); ax.set_ylim(-0.5, 1.95); ax.grid(False)
 ax.spines["left"].set_visible(False)
-ax.set_xlabel("ClinGen Bayesian points · solid = applied · hatched = not applied, and what it would add")
+ax.set_xlabel("ClinGen Bayesian points, solid = applied, hatched = not applied, and what it would add")
 
-fl.done(fig, "Robustness figure · ACMG points applied, and those still missing",
+fl.done(fig, "Robustness figure: ACMG points applied, and those still missing",
         "EXP-007", "DERIVED", "SYNTHESIS",
         "the truncating allele reaches 9 points (PVS1 + PM2_Supporting): likely pathogenic. The "
         "missense has 1: it stays a VUS, and would stay a VUS even with PP3, because PM1 and PM5 "
         "cannot apply in a gene without a hotspot or a prior pathogenic change at the residue. "
         "Only functional evidence (PS3) can move it.",
-        "that criteria not applied are evidence against. PM3 is blocked BY DECISION, more "
+        "that criteria not applied are evidence against. PM3 is blocked by DECISION, more "
         "conservative than ClinGen, because phase is unresolved; PP3 does not apply because "
-        "REVEL gave 0.472, below the threshold sealed BEFORE it was looked at.",
-        prov="docs/ACMG_CURATION.md · thresholds preregistered in DECISIONS.md")'''),
+        "REVEL gave 0.472, below the threshold sealed before it was looked at.",
+        prov="docs/ACMG_CURATION.md, thresholds preregistered in DECISIONS.md")'''),
 
 ("md", """## Contradicting evidence, declared
 
@@ -326,8 +326,8 @@ truncating allele is in dbSNP, and in ClinVar as pathogenic.
 
 | | |
 |---|---|
-| **Allele A · truncating** | **Likely pathogenic** (9 points, research curation) |
-| **Allele B · missense** | **VUS**, and it stays a VUS even if `PP3` were added |
+| **Allele A, truncating** | **Likely pathogenic** (9 points, research curation) |
+| **Allele B, missense** | **VUS**, and it stays a VUS even if `PP3` were added |
 | **The pair** | *one likely pathogenic truncating allele + one rare missense candidate, **phase unresolved*** |
 
 ### What it does not establish

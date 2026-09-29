@@ -224,7 +224,7 @@ def contradiction_count():
     main = s.split("## Contradicciones que a")[0]
     n = len(re.findall(r"^\| \*\*(C\d+)\*\*", main, re.M))
     bad = []
-    for doc in ("docs/SCALABILITY.md", "research/evidence_registry.md", "AGENTS.md"):
+    for doc in ("docs/SCALABILITY.md", "research/evidence_registry.md", "CONTRIBUTING_RESEARCH.md"):
         t = io.open(os.path.join(ROOT, doc), encoding="utf-8").read()
         for m in re.finditer(r"(\d+)\s+(?:entradas|contradicciones)", t):
             if int(m.group(1)) != n:

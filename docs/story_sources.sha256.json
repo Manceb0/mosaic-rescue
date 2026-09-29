@@ -17,7 +17,7 @@
     },
     {
       "path": "reports/TRACK1_REPORT.md",
-      "sha256": "c8cc68ce5094f5c0ab84261273a761457dca37883a49d921b8a1f68d9823fd47"
+      "sha256": "eb5752d9f6298e997970ae1cc070e16d3d59dcb37b1a9bbcf4522ca551b59506"
     },
     {
       "path": "research/track2_evidence.tsv",
@@ -32,5 +32,5 @@
       "sha256": "d3de901d7f33acd47462129800885e668b0d82fe900333509abdc2e932b1364b"
     }
   ],
-  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical."
+  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical."
 }

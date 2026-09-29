@@ -15,7 +15,7 @@
     },
     {
       "path": "reports/TRACK1_REPORT.md",
-      "sha256": "c8cc68ce5094f5c0ab84261273a761457dca37883a49d921b8a1f68d9823fd47"
+      "sha256": "eb5752d9f6298e997970ae1cc070e16d3d59dcb37b1a9bbcf4522ca551b59506"
     },
     {
       "path": "research/track2_evidence.tsv",
@@ -33,7 +33,7 @@
   "base_commit": "8d2383abcc8a0dfc78512bb301feceabe89bb123",
   "source_state": "Reviewed working-tree sources, identified by content hashes; no new scientific run",
   "renderer": "src/figures/story.py",
-  "renderer_sha256": "470abe9e199b51f85adc3cb0e093f6f33ca32a9dc1cfbdcc52f9d4c710b22f05",
+  "renderer_sha256": "1bf825a2d5306f9150ff677fe1aae5d3126ac0d28211d686bb8c63ab807fddd9",
   "figures": [
     {
       "figure_id": "story00_overview",
@@ -94,12 +94,12 @@
       "figure_id": "story12_safety_gates",
       "classification": "SYNTHESIS",
       "evidence_mode": "DERIVED+EXTERNAL",
-      "claim_ceiling": "A rescue claim has to survive every gate.",
+      "claim_ceiling": "A surviving cell is not a rescued cell.",
       "forbidden_inference": "Patient RNA/protein/phase measured, diagnosis or therapeutic rescue established",
       "output_svg": "figures/pub\\story12_safety_gates.svg",
-      "output_sha256": "a03f2a5c1bc736146d35eeead9fcb0fc648aaf1ab1140f166eae5bfd7518b515",
+      "output_sha256": "156d2323a415a6f9aff53d22b315b879e8530ee3a3a3a8423575a338c4aec35b",
       "output_png": "figures/pub\\story12_safety_gates.png",
-      "png_sha256": "2ca8869325f86ff0bddb1220f849e65591d90c86a8199853dc6801088f19d8d7"
+      "png_sha256": "63a4f79ddf83552dad40b0aa1779ba222f16c3db55e2fb32dbd248c98a4e5881"
     },
     {
       "figure_id": "story13_next_experiment",

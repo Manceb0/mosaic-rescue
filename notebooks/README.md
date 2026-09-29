@@ -14,16 +14,16 @@
 
 ## Reading order
 
-| # | Notebook | Question | Main scientific object | fig · sci. |
+| # | Notebook | Question | Main scientific object | figures (scientific) |
 |---|---|---|---|---|
-| **00** | `DATA_REALITY` | What can, and cannot, be answered with the data we have? | Per-cycle FASTQ QC computed on L001; modality inventory | 1 · 1 |
-| **01** | `TRACK1_GENOME_WIDE` | Which gene explains the case when the whole genome competes? | Genome-wide prioritisation on the frozen `A0`; rank stability; A0 → A0-FREQFIX slopegraph; Exomiser comparison | **7 · 7** |
-| **02** | `BUB1B_ALLELE_CURATION` | What supports each allele, and what would make the pair causal? | Gene browser with 1 497 ClinVar missense records; NMD and phase geometry; ACMG points ladder | 4 · 3 |
-| **03** | `BUBR1_MECHANISM` | The missense does not move by classification: does it move by mechanism? | AlphaFold pocket with real distances; conservation with its three controls | 2 · 2 |
-| **04** | `HIDDEN_SECOND_ALLELE` | Is there a second allele the coding pipeline cannot see? | AlphaGenome REF/ALT/Δ tracks, ISM and contact maps, as predictions; GO 2B structural closure | 5 · 5 |
-| **05** | `RESIDUAL_PHENOTYPE` | Which traits does MVA not explain, and does any demand a second diagnosis? | HPO term × disease model matrix in Resnik bits; renal panel sweep | 2 · 2 |
-| **06** | `MOSAIC_AND_MITOREAD` | What happens to the mosaicism signal when clonality breaks? | Simulated BAF distributions and power; the post-hoc ablation that corrected us; measured RD/BAF; MitoRead on the full alignment | 4 · 4 |
-| **07** | `TRACK2_SAFE_RESCUE` | Is there a plausible, falsifiable and safe therapeutic mechanism? | 8 bridges × 10 evidence dimensions; three-arm experimental portfolio | 2 · 2 |
+| **00** | `DATA_REALITY` | What can, and cannot, be answered with the data we have? | Per-cycle FASTQ QC computed on L001; modality inventory | 1, 1 |
+| **01** | `TRACK1_GENOME_WIDE` | Which gene explains the case when the whole genome competes? | Genome-wide prioritisation on the frozen `A0`; rank stability; A0 to A0-FREQFIX slopegraph; Exomiser comparison | **7, 7** |
+| **02** | `BUB1B_ALLELE_CURATION` | What supports each allele, and what would make the pair causal? | Gene browser with 1 497 ClinVar missense records; NMD and phase geometry; ACMG points ladder | 4, 3 |
+| **03** | `BUBR1_MECHANISM` | The missense does not move by classification: does it move by mechanism? | AlphaFold pocket with real distances; conservation with its three controls | 2, 2 |
+| **04** | `HIDDEN_SECOND_ALLELE` | Is there a second allele the coding pipeline cannot see? | AlphaGenome REF/ALT/Δ tracks, ISM and contact maps, as predictions; GO 2B structural closure | 5, 5 |
+| **05** | `RESIDUAL_PHENOTYPE` | Which traits does MVA not explain, and does any demand a second diagnosis? | HPO term × disease model matrix in Resnik bits; renal panel sweep | 2, 2 |
+| **06** | `MOSAIC_AND_MITOREAD` | What happens to the mosaicism signal when clonality breaks? | Simulated BAF distributions and power; the post-hoc ablation that corrected us; measured RD/BAF; MitoRead on the full alignment | 4, 4 |
+| **07** | `TRACK2_SAFE_RESCUE` | Is there a plausible, falsifiable and safe therapeutic mechanism? | 8 bridges × 10 evidence dimensions; three-arm experimental portfolio | 2, 2 |
 
 Every notebook ends with a **decision**, **what it does not establish**, a **falsifier** and the
 **next experiment**. The four questions that only new data can answer (phase, missense function,
@@ -36,17 +36,17 @@ a self-contained image and labelled `SYNTHESIS` or `NARRATIVE`. They are regener
 
 ## The rule that applies to all of them
 
-**Writing a figure to `figures/` is not enough.** It appears INLINE, in the same cell or the
+**Writing a figure to `figures/` is not enough.** It appears inline, in the same cell or the
 next, with a caption that declares four things:
 
 ```
-experiment · evidence origin · what it shows · WHAT IT DOES NOT SHOW
+experiment, evidence origin, what it shows, what it does not show
 ```
 
 The last one is the hardest to write and the most valuable.
 
-**Evidence origins:** `MEASURED` (direct observation of the case) · `DERIVED` (computed by us) ·
-`EXTERNAL` (database or literature) · `PREDICTED` (model output) · `SIMULATED` (a model with no
+**Evidence origins:** `MEASURED` (direct observation of the case), `DERIVED` (computed by us) ,
+`EXTERNAL` (database or literature), `PREDICTED` (model output), `SIMULATED` (a model with no
 patient data).
 
 **Figure classes**, declared in the caption **and stamped on the image** so the label travels
@@ -81,10 +81,10 @@ check their hashes before drawing and refuse to render if a source changed.
 
 A notebook is **not** finished because it runs without errors. It is finished when it:
 
-1. runs top to bottom · 2. uses the right inputs, with their hash · 3. **shows** its results,
-not only writes them · 4. has QC + main result + robustness · 5. interprets every figure ·
-6. presents contradicting evidence · 7. says what it does NOT show · 8. ends in a decision ·
-9. names the next experiment · 10. is sanitised · 11. contains no superseded claims · 12. every
+1. runs top to bottom, 2. uses the right inputs, with their hash, 3. **shows** its results,
+not only writes them, 4. has QC + main result + robustness, 5. interprets every figure ,
+6. presents contradicting evidence, 7. says what it does not show, 8. ends in a decision ,
+9. names the next experiment, 10. is sanitised, 11. contains no superseded claims, 12. every
 figure can be regenerated.
 
 `src/nb/build_all.py` checks 1, 3, 4 and 10 mechanically. The rest is audited by

@@ -96,21 +96,19 @@ def cap(title, exp, ev, cls, reads, not_proves, prov=None, source=None, lib=None
     assert cls in _CLASSES, f"unknown figure class: {cls}"
     REGISTRY.append({"title": title, "exp": exp, "cls": cls, "ev": ev,
                      "source": source or prov or "", "lib": lib or "matplotlib"})
-    tag = ("scientific figure" if cls in SCIENTIFIC
-           else "not data: " + cls.lower().replace("_", " "))
+    tag = "scientific figure" if cls in SCIENTIFIC else "not data"
     extra = []
     if source:
-        extra.append(f"data: `{source}`")
+        extra.append(f"Data: {source}.")
     if lib:
-        extra.append(f"library: `{lib}`")
+        extra.append(f"Library: {lib}.")
     if prov:
-        extra.append(f"provenance: `{prov}`")
-    tail = ("  \n> " + " · ".join(extra)) if extra else ""
+        extra.append(f"Provenance: {prov}.")
+    tail = ("\n\n<sub>" + " ".join(extra) + "</sub>") if extra else ""
     display(Markdown(
-        f"> **{title}**  \n"
-        f"> `{exp}` · figure class `{cls}`, {tag} · evidence origin `{ev}`  \n"
-        f"> *{LABELS[0]}.* {reads}  \n"
-        f"> **{LABELS[1]}.** {not_proves}{tail}"))
+        f"**{title}.** {exp}; class `{cls}` ({tag}); evidence origin {ev.replace('+', ' and ')}.\n\n"
+        f"*{LABELS[0]}:* {reads}\n\n"
+        f"*{LABELS[1]}:* {not_proves}{tail}"))
 
 
 def _stamp(fig, cls):
@@ -172,7 +170,7 @@ def svg(path, title, exp, ev, cls, reads, not_proves, generator=None, source=Non
 def summary():
     """Tabla de figuras del notebook, para la definicion de HECHO."""
     sci = sum(1 for r in REGISTRY if r["cls"] in SCIENTIFIC)
-    print(f"  figures: {len(REGISTRY)}  ·  scientific: {sci}  ·  "
+    print(f"  figures: {len(REGISTRY)}, scientific: {sci}, "
           f"narrative/synthesis: {len(REGISTRY) - sci}")
     print()
     print(f"  {'class':<14}{'evidence':<22}{'library':<20}title")

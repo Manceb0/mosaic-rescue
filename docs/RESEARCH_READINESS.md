@@ -16,7 +16,7 @@ the maintainer's own target is **26 September**.
 |---|---|---|
 | Rigour, 35 % | Frozen artifacts, controls and contradictions | Align statuses, mechanism and limits; resolve EXP-012c documentally |
 | Impact, 25 % | Case-specific questions | Explain which decision each experiment enables, without promising efficacy |
-| Innovation, 25 % | Audit of the BAF explanation and the safety veto | Put the ablation and the rejection decision in the foreground |
+| Innovation, 25 % | Audit of the BAF explanation; an assembled, falsifiable design. The safety corridor is shared with another public hackathon repository and is not claimed as ours | Put the ablation in the foreground; state prior art openly (Track 2 §9); present "Can the patient become the screen?" only as a proposal |
 | Scalability, 15 % | Modular code and traceability | Show replaceable inputs; state that no second case has validated the method |
 
 Plan to the 26th: **24**, coherence and the written story; **25**, review of the reports

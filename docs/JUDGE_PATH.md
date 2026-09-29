@@ -63,7 +63,10 @@ Show [the next experiment](assets/mosaic-06-next-experiments.png).
 longer explains a recessive mechanism. Then we need variant-specific function, and RNA and long
 reads if the search for a second allele continues. For any rescue, more clonogenic survival of
 unstable cells is a reason to reject it, not a win. We deliver a traceable hypothesis and the
-tests that can change it."
+tests that can change it. And one open question for the future: MVA keeps generating different
+chromosome states in the same child. Can the patient become the screen?"
+
+Say it as a question. Nothing in this project measured cell-level heterogeneity.
 
 ## Questions that must be answerable in one sentence
 
@@ -77,11 +80,14 @@ tests that can change it."
 | What does this project change? | It makes explicit what supports each inference, what contradicts it and which experiment decides it |
 | What about the rest of the phenotype? | The nephrocalcinosis remains a residual question; prioritising BUB1B does not erase it |
 | What generalises? | The decision procedure; it has not yet been validated on another patient |
+| Is the rescue logic new? | No. Learning from resistant cells, somatic rescue and our safety corridor all have precedent, including another public repository in this hackathon; Track 2 §9 lists them |
+| Does the blood genome show the child's mosaic? | Only one view of it: what division generates, what selection removes and which tissue is sampled are mixed in bulk blood (Track 1 §7b) |
 
 ## Preparing the submission
 
 Do not use the old slogan "The Patient Is the Screen" as a finding: no selection or cell
-persistence was measured. Do not use the internal technical figures that carry positions or
+persistence was measured. Its only permitted form is the closing question, "Can the patient
+become the screen?". Do not present the safety corridor as our invention. Do not use the internal technical figures that carry positions or
 genotypes in a public presentation. The new syntheses omit those fields, but a privacy review
 of the whole package is still required.
 

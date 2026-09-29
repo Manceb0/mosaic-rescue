@@ -37,7 +37,7 @@ SPECS = [
     ("story03_second_allele", "SYNTHESIS", "The second-allele question stays open."),
     ("story04_evidence_context", "SYNTHESIS", "Three evidence layers. Three different meanings."),
     ("story10_mechanism", "SYNTHESIS", "Correct the defect — or merely help cells tolerate it?"),
-    ("story12_safety_gates", "SYNTHESIS", "A rescue claim has to survive every gate."),
+    ("story12_safety_gates", "SYNTHESIS", "A surviving cell is not a rescued cell."),
     ("story13_next_experiment", "SYNTHESIS", "The next experiment should change the decision."),
 ]
 
@@ -230,24 +230,31 @@ def mechanism():
 
 
 def safety():
+    # Two separate questions: does the intervention lower NEW segregation errors (rescue gate),
+    # and does it let chromosomally unstable cells survive or expand (tolerance veto)?
     fig, ax = canvas(SPECS[5][0], SPECS[5][2],
-                     "Proposed decision rules for preclinical experiments. No arm has passed these gates in this case.", 7.9)
-    rows = [
-        ("01 / ENGAGEMENT", "Does the proposed molecular change occur?", "No → the proposed route is unsupported."),
-        ("02 / FUNCTION", "Does chromosome segregation improve?", "No → more protein or viability is insufficient."),
-        ("03 / SAFETY", "Do unstable cells gain clonogenic survival?", "Yes → veto, even if another readout improves."),
-        ("04 / INTERPRETABILITY", "Are viability and controls interpretable?", "No → repeat or redesign; do not call rescue."),
-    ]
-    for i, (tag, question, decision) in enumerate(rows):
-        y = 179 + 106 * i
-        ax.add_patch(FancyBboxPatch((42, y), 1116, 92, boxstyle="round,pad=0,rounding_size=8",
-                                  facecolor=LIGHT, edgecolor="#CDD8DE", linewidth=0.7))
-        label(ax, 62, y + 20, tag, 11, TEAL, "bold")
-        label(ax, 300, y + 16, question, 16, INK, "bold")
-        label(ax, 300, y + 51, decision, 13, RED if i == 2 else MUTED)
-    strip(ax, 623, "CONTROLS ARE PART OF THE EXPERIMENT",
-          "Vehicle · genetic rescue control · matched euploid/aneuploid context · direct molecular readout")
-    label(ax, 60, 719, "Thresholds and experimental conditions must be fixed before testing; this diagram invents none.", 12, MUTED)
+                     "Proposed decision rule for preclinical experiments. No intervention has been tested in this case.", 8.2)
+    strip(ax, 162, "BEFORE ANY RESULT IS SCORED",
+          "Molecular engagement shown; errors counted per completed mitosis at matched proliferation;\n"
+          "viability and controls interpretable. Otherwise it is a false rescue or uninterpretable.", height=86)
+    x_row, x1, x2, cw = 42, 330, 753, 405
+    y1, y2, ch = 308, 478, 160
+    label(ax, x1 + 8, 272, "Survival of unstable cells: NOT INCREASED", 12, INK, "bold")
+    label(ax, x2 + 8, 272, "Survival of unstable cells: INCREASED", 12, RED, "bold")
+    label(ax, x_row, y1 + 20, "New segregation errors\nper completed mitosis:\nLOWER", 14, INK, "bold")
+    label(ax, x_row, y2 + 20, "New segregation errors\nper completed mitosis:\nNOT LOWER", 14, INK, "bold")
+    card(ax, x1, y1, cw, ch, "ADVANCE", "Candidate rescue",
+         "Go to the next, independent test.", accent=TEAL, fill=PALE, width=38)
+    card(ax, x2, y1, cw, ch, "VETO", "Correction with a cost",
+         "Fewer errors do not license survival of unstable cells.", accent=RED, fill=WARM, width=38)
+    card(ax, x1, y2, cw, ch, "REJECT", "No rescue",
+         "The route does not correct the defect.", accent=MUTED, fill=LIGHT, width=38)
+    card(ax, x2, y2, cw, ch, "VETO", "Tolerance",
+         "Unstable cells survive better without correction.", accent=RED, fill=WARM, width=38)
+    label(ax, 60, 662, "Controls belong to the experiment: vehicle, genetic rescue control, matched euploid and "
+          "aneuploid context, direct molecular readout.", 12, INK, width=125)
+    label(ax, 60, 712, "Shared rule: another public repository in this hackathon defines rescue the same way. "
+          "Not claimed as new. Thresholds must be fixed before testing; this diagram invents none.", 11, MUTED, width=135)
     return fig
 
 

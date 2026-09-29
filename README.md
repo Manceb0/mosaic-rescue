@@ -148,7 +148,7 @@ inheritance model.
 
 ![Ranking audit: frozen A0 places BUB1B fourth; repairing missing frequency annotations places it first in a later sensitivity analysis. Exomiser ranks it second using the same VCF.](docs/assets/mosaic-03-ranking-audit.png)
 
-*Figure 3 · Verified ranking results, schematic glyphs. A0 remains frozen; Exomiser is another method on the same sample. [Original quantitative plot](figures/pub/fig01_prioritization_genomewide.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
+*Figure 3 · Verified ranking results, schematic glyphs. A0 remains frozen; Exomiser is another method on the same sample. [Original quantitative plot](figures/pub/fig01_prioritization_genomewide.svg) · [Caption and provenance](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 The frozen **A0 #4** and later **A0-FREQFIX #1** are always reported together. The three
 genes above `BUB1B` in A0 carried common alleles whose frequency annotation was missing.
@@ -177,7 +177,7 @@ mobile-element callers, and descriptive inspection of short-read breakpoint sign
 
 ![Bounded hidden-allele search: AlphaGenome predictions, CNVpytor, mobile-element callers and descriptive read metrics do not exclude a complex insertion.](docs/assets/mosaic-04-hidden-allele.png)
 
-*Figure 4 · Scope matters: no overlapping caller record is not universal exclusion. RNA/long-read work is proposed; AE2 was not executed. All signal glyphs are schematic. [Actual read-level metrics](figures/pub/fig10_bub1b_readlevel_assay.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
+*Figure 4 · Scope matters: no overlapping caller record is not universal exclusion. RNA/long-read work is proposed; AE2 was not executed. All signal glyphs are schematic. [Actual read-level metrics](figures/pub/fig10_bub1b_readlevel_assay.svg) · [Caption and provenance](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 The conclusion is specific: **CNVpytor emitted no RD+BAF CNV overlapping the BUB1B gene
 body; xTea and SCRAMble emitted no overlapping MEI call.** The breakpoint assay had no
@@ -230,7 +230,7 @@ abundance, turnover and checkpoint function remain unmeasured.
 
 ![Proposed mechanisms: restoring residual BUBR1 function and increasing tolerance of unstable cells must be distinguished using joint segregation and clonogenic-survival measurements.](docs/assets/mosaic-08-mechanism.png)
 
-*Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; segregation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/MOSAIC_07_08_REVISION.md).*
+*Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; segregation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 External MVA-cell experiments support distinct abundance and functional defects in other
 alleles. A normal abundance assay would weaken the instability hypothesis, not exclude
@@ -247,7 +247,7 @@ this patient. [PubMed](https://pubmed.ncbi.nlm.nih.gov/34481829/) ·
 
 ![Proposed rescue assay: three experimental roles and three controls, joint molecular, segregation, clonogenic-survival and viability readouts, with explicit rejection and safety-veto outcomes.](docs/assets/mosaic-05-rescue-test.png)
 
-*Figure 5 · Proposed preclinical design, not drug efficacy results. Controls are context-dependent; reject/veto branches do not lead to advancement. [Evidence and controls](figures/pub/fig08_track2_portfolio.svg) · [Caption and provenance](docs/assets/MOSAIC_03_05_CAPTIONS.md).*
+*Figure 5 · Proposed preclinical design, not drug efficacy results. Controls are context-dependent; reject/veto branches do not lead to advancement. [Evidence and controls](figures/pub/fig08_track2_portfolio.svg) · [Caption and provenance](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 Suppose an intervention makes more cells survive. That could reflect useful restoration
 of function. It could also allow unstable cells to persist. Those outcomes lead to very
@@ -279,7 +279,7 @@ HSF1 work makes that distinction particularly relevant.
 
 ![Four proposed measurements and the decisions they inform: phase, missense function, hidden allele and safe rescue.](docs/assets/mosaic-06-next-experiments.png)
 
-*Figure 6 · Proposed measurements, not completed results. Phase is the first genetic priority; normal protein abundance alone does not establish normal function. [Caption and sources](docs/assets/MOSAIC_06_07_CAPTIONS.md).*
+*Figure 6 · Proposed measurements, not completed results. Phase is the first genetic priority; normal protein abundance alone does not establish normal function. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 **The highest-value immediate genetic question is phase.** More ranking refinement cannot
 replace that datum. RNA/long-read work addresses a hidden allele; the functional assay
@@ -339,7 +339,7 @@ This map separates work already performed from the measurements still needed.
 
 ![Research route: parallel case evidence and model context inform a causal hypothesis; independent simulation constrains methods, while external evidence and safety criteria inform proposed experiments.](docs/assets/mosaic-07-research-route.png)
 
-*Figure 7 · One case supports parallel variant, read and phenotype analyses; models add hypotheses. Independent simulations assess method limits. External evidence informs conditional rescue proposals and safety criteria. The endpoint is a proposed experiment, not a diagnosis or safe therapy. All glyphs are schematic; the table below supplies tools, findings and limitations. [Caption and sources](docs/assets/MOSAIC_07_08_REVISION.md).*
+*Figure 7 · One case supports parallel variant, read and phenotype analyses; models add hypotheses. Independent simulations assess method limits. External evidence informs conditional rescue proposals and safety criteria. The endpoint is a proposed experiment, not a diagnosis or safe therapy. All glyphs are schematic; the table below supplies tools, findings and limitations. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 ### What each branch contributes
 
@@ -416,5 +416,5 @@ partial check, not publication permission.
 
 No diagnosis, dose, administration advice or demonstrated rescue is claimed.
 Editorial artwork uses the built-in image generation tool; [approved series, captions and placement](docs/assets/FIGURE_SERIES.md).
-Research rules: [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md).
+Research rules: [Contributing research](CONTRIBUTING_RESEARCH.md).
 Counter-evidence: [contradictions](research/contradictions.md).

@@ -14,7 +14,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/00_DATA_REALITY.ipynb"
 
 CELLS = [
-("md", """# 00 · What data we have, and what it can support
+("md", """# 00, What data we have, and what it can support
 
 **Place in the argument.** The starting point. Before interpreting any variant, this notebook
 separates the questions the data can answer from those that need a modality that does not
@@ -32,7 +32,7 @@ It does not prioritise genes.
 Two different questions. The first is answered by QC of the FASTQ. The second, by an inventory
 of what exists and what does not.
 
-**The one fact that shapes everything downstream:** this is **one genome**. One blood sample,
+**Scope.** The data are **one genome**. One blood sample,
 sequenced on one flowcell across four lanes (eight FASTQ files, one VCF column). The lanes are
 technical partitions, not people or biological replicates. There are no parents, no RNA and no
 protein data."""),
@@ -52,9 +52,9 @@ from src.paths import get, patient_vcf
 fq1 = get("patient", "fastq_l001_r1")
 N = F.N_DEFAULT                  # reproducible subsample: the statistics are aggregates
 
-# One pass over the FASTQ, the SAME one the publication figure uses. The notebook and the
+# One pass over the FASTQ, the same one the publication figure uses. The notebook and the
 # figure used to have two implementations of the scan; they could diverge, and a figure that
-# does not reproduce what its notebook prints is worthless.
+# does not reproduce what its notebook prints cannot be trusted.
 D = F.scan(fq1, n_reads=N)
 
 n, CYC = D["n_reads"], D["cycles"]
@@ -63,31 +63,31 @@ median_readq = float(np.median(D["read_mean_q"]))
 non_top_first, non_top_last = float(D["non_top"][0]), float(D["non_top"][-1])
 
 print(f"  reads sampled          : {n:,}")
-print(f"  read length            : {CYC} bp  ·  distinct values: {len(D['lengths'])}")
-print(f"  quality bins           : {len(D['levels'])} -> "
+print(f"  read length            : {CYC} bp ,  distinct values: {len(D['lengths'])}")
+print(f"  quality bins           : {len(D['levels'])} to "
       + ", ".join("Q" + str(v) for v in D["levels"]))
-print(f"  outside the top bin    : {non_top_first:.2f} % at cycle 1  ->  "
+print(f"  outside the top bin    : {non_top_first:.2f} % at cycle 1 to "
       f"{non_top_last:.2f} % at cycle {CYC}")
 print(f"  mean GC per read       : {gcarr.mean():.1f} %  (sd {gcarr.std():.1f})")
-print(f"  mean quality per read  : median {median_readq:.1f}  ·  "
+print(f"  mean quality per read  : median {median_readq:.1f} ,  "
       f"{100 * float((D['read_mean_q'] < 30).mean()):.1f} % below Q30")
 print(f"  bases >= Q30           : {D['q30_pct']:.1f} %")'''),
 
-("md", """### Scientific figure 1 · per-cycle sequencing QC
+("md", """### Scientific figure 1. per-cycle sequencing QC
 
 The four panels any real QC report looks at, **computed here**: quality by cycle with its
 spread, GC per read against the theoretical distribution, mean quality per read, and base
 composition by cycle."""),
 
 ("code", '''fig = F.build(D)
-fl.pub(fig, "Figure 1 · sequencing QC of lane L001", "EXP-001", "MEASURED", "DATA",
-       f"the real degradation along the read. This sequencer reports BINNED qualities in four "
-       f"values (Q2, Q11, Q25, Q37), so what is informative is the mass that LEAVES the top bin: "
+fl.pub(fig, "Figure 1: Sequencing QC of lane L001", "EXP-001", "MEASURED", "DATA",
+       f"the real degradation along the read. This sequencer reports binned qualities in four "
+       f"values (Q2, Q11, Q25, Q37), so what is informative is the mass that leaves the top bin: "
        f"from {non_top_first:.2f} % at cycle 1 to {non_top_last:.2f} % at cycle {CYC}. Also: GC "
        f"per read centred on {gcarr.mean():.1f} % against 41 % for the human genome, a median "
        f"per-read quality of {median_readq:.1f}, and stable base composition with no poly-G "
        f"drift at the end of the read.",
-       "that the data are SUFFICIENT. QC says they are fit, not that they reach the open "
+       "that the data are sufficient. QC says they are fit, not that they reach the open "
        "questions. It also says nothing about library type: PCR-free and DNA Prep share an "
        "adapter, and that remains unanswered.",
        source=f"reproducible subsample of {n:,} reads from L001 R1",

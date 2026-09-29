@@ -14,7 +14,7 @@ PANELS = {
            ("story13_next_experiment", "SYNTHESIS", "RNA-seq and long reads are proposals. The AlphaGenome tracks below are existing predictions, not measured RNA and not a completed EXP-024 calibration.")],
     "05": [("story13_next_experiment", "SYNTHESIS", "Decision map. The residual phenotype also needs clinical review; it does not establish a second diagnosis.")],
     "06": [("story04_evidence_context", "SYNTHESIS", "The case WGS, the simulation and the literature answer different questions and are never merged.")],
-    "07": [("story12_safety_gates", "SYNTHESIS", "Proposed rules to veto an apparent rescue that favours unstable cells; they are not experimental results yet.")],
+    "07": [("story12_safety_gates", "SYNTHESIS", "A surviving cell is not a rescued cell: fewer new errors per completed mitosis and survival of unstable cells are separate questions. A proposed rule shared with other teams, not an experimental result.")],
 }
 
 
@@ -28,9 +28,9 @@ def integrate(nb, name):
         origin = "MEASURED / DERIVED" if kind == "DATA" else "DERIVED / EXTERNAL"
         cell = nbformat.v4.new_markdown_cell(
             f"![{caption}](attachment:{slug}.png)\n\n"
-            f"**`{kind}` · {origin}.** {caption} "
-            "Reviewed figure, embedded without re-running the original analysis · "
-            "[sources and limits](../docs/STORYBOARD.md) · "
+            f"**`{kind}`, {origin}.** {caption} "
+            "Reviewed figure, embedded without re-running the original analysis, "
+            "[sources and limits](../docs/STORYBOARD.md), "
             "[figure QA](../PUBLICATION_FIGURE_QA.md)",
             metadata={"tags": [TAG]},
             attachments={slug + ".png": {"image/png": encoded}},

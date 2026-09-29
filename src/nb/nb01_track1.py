@@ -23,7 +23,7 @@ from src.nb.nbutil import SETUP, run                                   # noqa: E
 OUT = "notebooks/01_TRACK1_GENOME_WIDE.ipynb"
 
 CELLS = [
-("md", """# 01 · Genome-wide causal search across the coding genome
+("md", """# 01, Genome-wide causal search across the coding genome
 
 **Place in the argument.** Track 1, discovery. It tests whether the `BUB1B` hypothesis survives
 when it competes against every gene, not against a panel chosen by hand.
@@ -46,7 +46,7 @@ surviving a search without a panel.
 
 ## Hypothesis and preregistration
 
-`docs/DECISIONS.md` § EXP-006, written before execution. The prediction that matters is #4:
+`docs/DECISIONS.md` § EXP-006, written before execution. The deciding prediction is #4:
 **`BUB1B` ranks in the top 20** without a panel. Both outcomes were declared useful in advance:
 had it not ranked high, we would have avoided an error.
 
@@ -71,9 +71,9 @@ def h(p, n=64 << 20):
 VCF, ANN = patient_vcf(), "work/gw/highmod_ann.tsv"
 print(f"  patient VCF        sha256[:16] = {h(VCF)}   ({os.path.getsize(VCF)/2**20:.0f} MB)")
 print(f"  annotated TSV (VEP) sha256[:16] = {h(ANN)}   ({os.path.getsize(ANN)/2**20:.0f} MB)")
-print(f"  python {sys.version.split()[0]}  ·  no local path is printed")'''),
+print(f"  python {sys.version.split()[0]} ,  no local path is printed")'''),
 
-("md", """## QC · exact VEP ↔ VCF allele reconciliation
+("md", """## QC, exact VEP and VCF allele reconciliation
 
 **The error this notebook uncovered.** `allele_key.py` existed, had 17 passing tests and was
 documented as the fix for the join. **No module imported it**: `load()` still joined by
@@ -95,10 +95,10 @@ assert r.returncode == 0, "the join tests fail: nothing below can be trusted"'''
 ("code", '''import gzip
 from src.prioritization.genome_wide import load, rank, haplotypic_events
 
-rows = load(ANN, VCF)                      # CURRENT join: (Location, Allele)
+rows = load(ANN, VCF)                      # current join: (Location, Allele)
 hm = [v for v in rows if v.impact in ("HIGH", "MODERATE")]
 
-# The OLD join, rebuilt here only to measure the size of the bug: position alone.
+# The old join, rebuilt here only to measure the size of the bug: position alone.
 want = {v.loc.split(":")[0] + ":" + v.loc.split(":")[1].split("-")[0] for v in rows}
 seen_pos = set()
 with gzip.open(VCF, "rt", errors="replace") as f:
@@ -133,7 +133,7 @@ print(f"  HIGH/MODERATE positions without a genotype, positional join   : {tot_b
 print(f"  HIGH/MODERATE positions without a genotype, (Location, Allele): {tot_after}")
 print(f"  recovered: {tot_before - tot_after}  ({100*(tot_before-tot_after)/tot_before:.0f} %)")'''),
 
-("md", """### QC figure · the size of the bug, and of the fix"""),
+("md", """### QC figure, the size of the bug, and of the fix"""),
 
 ("code", '''fig, ax = plt.subplots(figsize=(8.6, 3.2))
 cats = [("SNV positions", "SNV"), ("indel positions", "indel"), ("HIGH-impact annotations", "HIGH")]
@@ -151,16 +151,16 @@ ax.set_xlabel("HIGH/MODERATE items left without a joined genotype")
 fl.title(ax, f"Positional join lost {tot_before} positions; the allele-aware join leaves {tot_after}")
 ax.legend(loc="lower right", ncol=1)
 
-fl.done(fig, "QC figure · allele reconciliation, before and after", "EXP-006", "DERIVED",
+fl.done(fig, "QC figure: Allele reconciliation, before and after", "EXP-006", "DERIVED",
         "DATA",
         f"the positional join lost {tot_before} HIGH/MODERATE positions, mostly indels, because "
         f"VEP shifts their coordinate; {B['HIGH']} high-impact annotations were among them. "
         f"Reproducing VEP's representation recovers {tot_before - tot_after}.",
         f"a perfect join: {tot_after} positions remain unresolved, and a complex allele is "
         "declared unresolved rather than guessed.",
-        prov="src/prioritization/allele_key.py · genome_wide.load()")'''),
+        prov="src/prioritization/allele_key.py, genome_wide.load()")'''),
 
-("md", """## Method · genome-wide processing stages
+("md", """## Method, genome-wide processing stages
 
 Three decisions frozen in `config/ranking_v1.yaml` change the result: a two-level rule for
 `FILTER`, normalisation to single alleles, and **haplotypic aggregation**: variants sharing
@@ -188,7 +188,7 @@ STAGES = [
 for n, v in STAGES:
     print(f"  {n:<36} {v:>10,}")'''),
 
-("md", """### Main figure 1 · the processing stages, with the arithmetic visible
+("md", """### Main figure 1. the processing stages, with the arithmetic visible
 
 It is not called a *funnel*, for a reason: **one stage grows**. Going from **positions** with a
 HIGH or MODERATE consequence to **unique alleles with a genotype**, the count rises, because a
@@ -211,15 +211,14 @@ for i in range(1, len(vals)):
     if vals[i] > vals[i - 1]:
         ax.annotate(f"+{vals[i] - vals[i - 1]:,}: this stage expands, it does not filter\\n"
                     "(a multi-allelic position contributes several alleles)",
-                    xy=(vals[i], y[i]), xytext=(vals[i] * 6, y[i] - 0.9),
-                    fontsize=8, color=fl.OPEN, va="center",
-                    arrowprops=dict(arrowstyle="-|>", lw=0.8, color=fl.OPEN))
+                    xy=(vals[i], y[i]), xytext=(vals[i] * 9, y[i]),
+                    fontsize=8, color=fl.OPEN, va="center")
 ax.set_yticks(y); ax.set_yticklabels(names)
 ax.grid(axis="x"); ax.tick_params(axis="y", length=0)
 ax.set_xlabel("count (log scale)")
 fl.title(ax, "Genome-wide processing stages: no gene panel, only a consequence filter")
 
-fl.done(fig, "Main figure 1 · genome-wide processing stages", "EXP-006",
+fl.done(fig, "Main figure 1: Genome-wide processing stages", "EXP-006",
         "MEASURED+DERIVED", "DATA",
         "the real descent from 5.0 M variants to the genes that compete under an inheritance "
         "model. No stage is a panel: the only filter is functional consequence. The marked "
@@ -228,7 +227,7 @@ fl.done(fig, "Main figure 1 · genome-wide processing stages", "EXP-006",
         "outside the consequence filter are not covered, and phase is not resolved.",
         prov="work/gw/highmod_ann.tsv + VCF, hashes above")'''),
 
-("md", """## Main figure 2 · where the competition happens on the genome
+("md", """## Main figure 2. where the competition happens on the genome
 
 The stages say **how many** genes compete. They do not say **where** or **with what score**.
 This view shows every gene that received an inheritance model, placed on its chromosome, with
@@ -245,11 +244,11 @@ M = FM.prepare(by_gene, res["A0_GENETICS"], FM.contig_lengths(VCF))
 fig = FM.build(M)
 _bub = next(s for s in M["scored"] if s["gene"] == "BUB1B")
 _tie = sum(1 for s in M["scored"] if s["score"] >= _bub["score"])
-fl.pub(fig, "Main figure 2 · genome-wide prioritisation", "EXP-006",
+fl.pub(fig, "Main figure 2: Genome-wide prioritisation", "EXP-006",
        "MEASURED+DERIVED", "DATA",
        f"the whole competition on the genome: the {M['n_universe']:,} genes carrying a "
        f"HIGH/MODERATE variant form the universe (rug on the baseline and density in panel B), "
-       f"and the {M['n_scored']} that reached an inheritance model are plotted with their FROZEN "
+       f"and the {M['n_scored']} that reached an inheritance model are plotted with their frozen "
        f"A0 score. BUB1B is marked at its real frozen-A0 rank, #{_bub['rank']}, with {_tie} genes "
        f"tied or above. It was not 151 genes that competed but {M['n_universe']:,}.",
        "a probability or a p-value. The y axis is a sum of terms with weights we chose: it is "
@@ -259,7 +258,7 @@ fl.pub(fig, "Main figure 2 · genome-wide prioritisation", "EXP-006",
        source="work/gw/mode_b_results_v4.pkl (frozen A0) + VCF contig lengths",
        lib="matplotlib", slug="fig01_prioritization_genomewide")'''),
 
-("md", """## Primary result · rank stability
+("md", """## Primary result, rank stability
 
 What the preregistration requires is **not the winner** but the gene × analysis matrix. A gene
 that wins under one configuration only is not a result."""),
@@ -275,10 +274,10 @@ for j, an in enumerate(ORDER):
     for i, g in enumerate(LEAD):
         if g in pos:
             RK[i, j] = pos[g]
-print(f"  {len(ORDER)} analyses · {len(LEAD)} leading genes")
+print(f"  {len(ORDER)} analyses, {len(LEAD)} leading genes")
 print(f"  BUB1B is #1 in {int((RK[LEAD.index('BUB1B')] == 1).sum())} of {len(ORDER)}")'''),
 
-("md", """### Main figure 3 · rank-stability matrix"""),
+("md", """### Main figure 3. rank-stability matrix"""),
 
 ("code", '''from matplotlib.colors import ListedColormap, BoundaryNorm
 HPO_NAME = {"HP_0002859": "rhabdomyosarcoma", "HP_0000121": "nephrocalcinosis",
@@ -288,10 +287,10 @@ HPO_NAME = {"HP_0002859": "rhabdomyosarcoma", "HP_0000121": "nephrocalcinosis",
 def an_label(a):
     if a.startswith("LOO_"):
         return "without " + HPO_NAME.get(a[4:], a[4:])
-    return {"A0_GENETICS": "A0 · genetics only", "A1_GENETICS_CLINVAR": "A1 · + ClinVar",
-            "B0_FULL_PROBAND": "B0 · full phenotype", "B1_MINUS_RHABDOMYOSARCOMA": "B1 · − tumour",
-            "B2_MINUS_RENAL": "B2 · − renal", "B3_MINUS_GROWTH_PERINATAL": "B3 · − growth/perinatal",
-            "B4_GENETICS_ONLY_CONTROL": "B4 · genetics control", "FH_ON": "FH · family-history rule"}.get(a, a)
+    return {"A0_GENETICS": "A0, genetics only", "A1_GENETICS_CLINVAR": "A1, + ClinVar",
+            "B0_FULL_PROBAND": "B0, full phenotype", "B1_MINUS_RHABDOMYOSARCOMA": "B1, − tumour",
+            "B2_MINUS_RENAL": "B2. − renal", "B3_MINUS_GROWTH_PERINATAL": "B3, − growth/perinatal",
+            "B4_GENETICS_ONLY_CONTROL": "B4, genetics control", "FH_ON": "FH, family-history rule"}.get(a, a)
 
 # Discrete, colour-blind-safe scale: rank 1 dark, rank ≥ 8 pale. Ranks above 8 are clipped
 # for colour only; the printed number is always the true rank.
@@ -316,7 +315,7 @@ cb = plt.colorbar(im, ax=ax, fraction=0.018, pad=0.01, ticks=range(1, 9))
 cb.ax.set_yticklabels([str(i) for i in range(1, 8)] + ["≥8"]); cb.set_label("rank", fontsize=8)
 cb.outline.set_visible(False)
 
-fl.done(fig, "Main figure 3 · rank stability, gene x analysis", "EXP-006", "DERIVED",
+fl.done(fig, "Main figure 3: Rank stability, gene x analysis", "EXP-006", "DERIVED",
         "DATA",
         "BUB1B is #1 in 14 of the 15 analyses. The exception is A0, the control without "
         "phenotype or ClinVar, where it is #4. The finding is not the winner of one formula: "
@@ -326,7 +325,7 @@ fl.done(fig, "Main figure 3 · rank stability, gene x analysis", "EXP-006", "DER
         "independent checks.",
         prov="work/gw/mode_b_results_v4.pkl")'''),
 
-("md", """### Main figure 4 · frozen `A0` against `A0-FREQFIX`
+("md", """### Main figure 4. frozen `A0` against `A0-FREQFIX`
 
 This is the most important episode of the experiment, and **both numbers are shown together**.
 
@@ -337,7 +336,7 @@ resolved them locally as **common polymorphisms** that VEP had failed to annotat
 **The formula was not touched.** `A0-FREQFIX` is a sensitivity analysis **run after seeing the
 result**, applied to all 33 affected alleles, not just the three inconvenient ones."""),
 
-("code", '''# A0-FREQFIX: recomputed after repairing the frequency of EVERY allele that lacked one
+("code", '''# A0-FREQFIX: recomputed after repairing the frequency of every allele that lacked one
 from src.prioritization.freqfix_sensitivity import recovered_frequencies
 
 def a0_from(rws):
@@ -366,8 +365,8 @@ a0_fix = a0_from(rows_fx)
 
 rk_f = next(i for i, (_, g) in enumerate(a0_frozen, 1) if g == "BUB1B")
 rk_x = next(i for i, (_, g) in enumerate(a0_fix, 1) if g == "BUB1B")
-print(f"  frequencies repaired: {len(freq)} sites · {patched} rows")
-print(f"  FROZEN A0   : BUB1B rank {rk_f}")
+print(f"  frequencies repaired: {len(freq)} sites, {patched} rows")
+print(f"  frozen A0   : BUB1B rank {rk_f}")
 print(f"  A0-FREQFIX  : BUB1B rank {rk_x}")'''),
 
 ("code", '''TOP = 8
@@ -413,26 +412,26 @@ for s in ("left", "bottom"):
 ax.tick_params(axis="x", length=0)
 fl.title(ax, "Repairing missing allele frequencies moves BUB1B from #4 to #1")
 
-fl.done(fig, "Main figure 4 · frozen A0 against A0-FREQFIX", "EXP-006 · EXP-021b",
+fl.done(fig, "Main figure 4: Frozen A0 against A0-FREQFIX", "EXP-006, EXP-021b",
         "DERIVED", "DATA",
         f"in the preregistered A0, BUB1B is #{rk_f}, behind three homozygous deletions with no "
-        f"assignable frequency. Repairing the annotation defect in ALL affected alleles "
+        f"assignable frequency. Repairing the annotation defect in all affected alleles "
         f"returns it to #{rk_x}: every gene whose rank rested on an allele without a frequency "
         f"(vermilion) is no longer scored once the allele is recognised as common. BUB1B's own "
         "score is unchanged: the others moved, not BUB1B.",
-        "that A0-FREQFIX replaces A0. It is a sensitivity analysis run AFTER seeing the result, "
-        "and it repairs frequencies with Exomiser's local database, so it is NOT independent "
+        "that A0-FREQFIX replaces A0. It is a sensitivity analysis run after seeing the result, "
+        "and it repairs frequencies with Exomiser's local database, so it is not independent "
         "of Exomiser.",
         prov="frozen ranking + work/exomiser/runs/FREQFIX")'''),
 
-("md", """## External check · our engine against Exomiser
+("md", """## External check, our engine against Exomiser
 
 Exomiser started from the **original VCF** and the **same 7 HPO terms**, with its own knowledge
 base. It received none of our candidates, scores or panels.
 
-> **This is METHODOLOGICAL convergence on the SAME VCF.** It is not independent biological
-> evidence: both engines read the same genome and the same calling errors. There is proof that
-> this matters: both flag `SERPINA1`."""),
+> **This is methodological convergence on the same VCF.** It is not independent biological
+> evidence: both engines read the same genome and the same calling errors. Both flag `SERPINA1`,
+> which shows that a shared artefact can move both."""),
 
 ("code", '''from src.baseline.compare_baseline import read_exomiser
 ext, path, nrows = read_exomiser("BASELINE-PRIMARY")
@@ -441,10 +440,10 @@ our_rank = {r[0]: i + 1 for i, r in enumerate(res["B0_FULL_PROBAND"])}
 
 shared = [g for g in ext_rank if g in our_rank and (ext_rank[g] <= 25 or our_rank[g] <= 25)]
 print(f"  Exomiser: {len(ext)} unique genes ({nrows} gene x inheritance rows)")
-print(f"  BUB1B: our rank {our_rank.get('BUB1B')} · Exomiser rank {ext_rank.get('BUB1B')}")
+print(f"  BUB1B: our rank {our_rank.get('BUB1B')}, Exomiser rank {ext_rank.get('BUB1B')}")
 print(f"  genes in the top 25 of either engine: {len(shared)}")'''),
 
-("md", """### Main figure 5 · rank against rank"""),
+("md", """### Main figure 5. rank against rank"""),
 
 ("code", '''fig, ax = plt.subplots(figsize=(6.4, 6.0))
 xs = np.array([our_rank[g] for g in shared]); ys = np.array([ext_rank[g] for g in shared])
@@ -460,20 +459,20 @@ for g, c, off, ha in (("BUB1B", fl.ALIVE, (18, -4), "left"),
                       ("SERPINA1", fl.DEAD, (-14, 14), "right")):
     if g in shared:
         ax.scatter([our_rank[g]], [ext_rank[g]], s=110, color=c, zorder=3, edgecolor="white")
-        ax.annotate(f"{g}  (#{our_rank[g]} · #{ext_rank[g]})", (our_rank[g], ext_rank[g]),
+        ax.annotate(f"{g}  (#{our_rank[g]}, #{ext_rank[g]})", (our_rank[g], ext_rank[g]),
                     fontsize=8.6, color=c, xytext=off, textcoords="offset points", ha=ha,
-                    fontweight="bold", arrowprops=dict(arrowstyle="-", color=c, lw=0.8))
+                    fontweight="bold")
 ax.set_xscale("log"); ax.set_yscale("log")
 ax.set_xlim(lim, 0.7); ax.set_ylim(lim, 0.7)
 ticks = [1, 2, 5, 10, 25, 50, 100]
 ax.set_xticks([t for t in ticks if t < lim]); ax.set_xticklabels([str(t) for t in ticks if t < lim])
 ax.set_yticks([t for t in ticks if t < lim]); ax.set_yticklabels([str(t) for t in ticks if t < lim])
 ax.minorticks_off(); ax.grid(True, which="major")
-ax.set_xlabel("our rank (B0, full phenotype) · log scale")
-ax.set_ylabel("Exomiser rank · log scale")
+ax.set_xlabel("our rank (B0, full phenotype), log scale")
+ax.set_ylabel("Exomiser rank, log scale")
 fl.title(ax, "Two engines, the same patient VCF")
 
-fl.done(fig, "Main figure 5 · our ranking against Exomiser", "EXP-006b",
+fl.done(fig, "Main figure 5: Our ranking against Exomiser", "EXP-006b",
         "EXTERNAL+DERIVED", "MODEL_OUTPUT",
         "each point is a gene in the top 25 of either engine (shaded bands); the dashed line "
         "is perfect agreement. They agree strongly on BUB1B (#1 and #2) and weakly on the rest: "
@@ -482,7 +481,7 @@ fl.done(fig, "Main figure 5 · our ranking against Exomiser", "EXP-006b",
         "fools both: SERPINA1 ranks high in both because of the same local quirk of the data.",
         prov="work/exomiser/runs/BASELINE-PRIMARY")'''),
 
-("md", """## Robustness · which phenotype terms actually carry the result
+("md", """## Robustness, which phenotype terms actually carry the result
 
 *Leave-one-out*: one term is removed and the change in the leading gene's phenotypic support is
 measured."""),
@@ -495,7 +494,7 @@ for k in sorted(k for k in res if k.startswith("LOO_")):
     if v:
         loo.append((HPO_NAME.get(k.replace("LOO_", ""), k), base - v[5]))
 loo.sort(key=lambda t: t[1])
-print(f"  gene: {G} · full phenotypic support = {base:.3f}")
+print(f"  gene: {G}, full phenotypic support = {base:.3f}")
 for n, d in loo:
     print(f"    {n:<28}{d:+.3f}")'''),
 
@@ -513,15 +512,15 @@ ax.tick_params(axis="y", length=0)
 ax.set_xlabel("support lost when the term is removed (positive = the term supports BUB1B)")
 fl.title(ax, f"Leave-one-out on the leading gene, {G}")
 
-fl.done(fig, "Robustness figure · contribution of each phenotype term", "EXP-006", "DERIVED", "DATA",
+fl.done(fig, "Robustness figure: Contribution of each phenotype term", "EXP-006", "DERIVED", "DATA",
         "only rhabdomyosarcoma carries the match strongly. The other terms contribute little or "
         "negatively in the current HPO corpus.",
         "that a negative value means MVA does not explain that trait. Under Best Match Average, "
-        "removing a term that scores below the mean RAISES the average. EXP-019 settled the "
+        "removing a term that scores below the mean raises the average. EXP-019 settled the "
         "question by checking membership in the annotated disease model, not with these "
         "contributions: failure to thrive is covered in 93.5 % of the literature even though HPO "
         "does not annotate it.",
-        prov="work/gw/mode_b_results_v4.pkl · docs/PHENOTYPE_RESIDUAL_AUDIT.md")'''),
+        prov="work/gw/mode_b_results_v4.pkl, docs/PHENOTYPE_RESIDUAL_AUDIT.md")'''),
 
 ("md", """## Alternative explanations and contradicting evidence
 
@@ -544,9 +543,9 @@ fl.done(fig, "Robustness figure · contribution of each phenotype term", "EXP-00
 
 ### What it does not establish
 
-It does not resolve phase · it does not assess *de novo* status without parents · on its own it
-does not cover structural variants (addressed later in GO 2B) · it does not cover regulatory or
-deep-intronic variants · **it classifies nothing as pathogenic**.
+It does not resolve phase, it does not assess *de novo* status without parents, on its own it
+does not cover structural variants (addressed later in GO 2B), it does not cover regulatory or
+deep-intronic variants, **it classifies nothing as pathogenic**.
 
 ### Falsifier
 
@@ -558,9 +557,9 @@ the three candidates turned out to be common polymorphisms.
 
 `02_BUB1B_ALLELE_CURATION`: what each allele supports on its own, and why phase decides."""),
 
-("code", '''# Print ONLY the verdict, never the body of the report.
+("code", '''# Print only the verdict, never the body of the report.
 #
-# Dumping r.stdout here was a leak channel created by the control itself: the scanner QUOTES
+# Dumping r.stdout here was a leak channel created by the control itself: the scanner quotes
 # the text it finds, so printing it inside a versioned notebook copied the finding into a
 # versioned file. The scanner found its own quotations inside this notebook.
 r = subprocess.run([sys.executable, "src/sanitize_scan.py"], capture_output=True, text=True,
