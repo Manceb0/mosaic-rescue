@@ -195,7 +195,7 @@ terapéutica es siquiera plausible.
 
 **La trampa:** las salidas multimodales de AlphaGenome **no son rutas de evidencia
 independientes**. Son varias salidas correlacionadas del mismo modelo. Presentarlas
-como convergencia sería el error que `docs/research_protocol.md` §11 prohíbe.
+como convergencia sería contar dos veces la misma evidencia.
 
 Etiquetado obligatorio: *"perfil de predicción de un modelo"*, nunca *"convergencia de
 evidencia"*.
@@ -257,7 +257,7 @@ gen; #2 necesita que el gen sea `BUB1B` para tener umbral externo.**
 
 ## §6. Límites de uso — no negociables
 
-Por analogía directa con la regla de AlphaFold del brief (§15) y con `docs/claims_we_cannot_make.md`:
+Por analogía directa con la regla aplicada a AlphaFold en este proyecto:
 
 **Se permite** usar AlphaGenome para:
 - priorizar variantes no codificantes que de otro modo no se examinarían;

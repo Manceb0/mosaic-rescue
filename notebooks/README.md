@@ -10,7 +10,7 @@
 >
 > An earlier README described a fifteen-notebook architecture that assumed RNA-seq,
 > single-cell data, longitudinal series and cellular karyotypes. **None of those data exist.**
-> It is kept in `docs/history/notebooks_README_SUPERSEDED.md`.
+> It is kept in the project's local history, outside the repository.
 
 ## Reading order
 

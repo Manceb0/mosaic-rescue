@@ -147,3 +147,26 @@ SKILL.md
 /docs/assets/MOSAIC_06_07_CAPTIONS.md
 /docs/assets/MOSAIC_07_08_REVISION.md
 /pitch/opening_film/
+
+# Local editorial previews; the selected publication assets keep their stable names
+/docs/assets/mosaic-00-project-map-corrected.png
+/docs/assets/mosaic-00-project-map-reference-style.png
+/docs/assets/mosaic-00-project-map-refined.png
+
+# Internal working notes (planning, prompts, status boards, superseded drafts): kept locally,
+# not part of the submission. AI use is declared in the reports' disclosure section.
+/docs/00_KICKOFF.md
+/docs/00_ESTADO_Y_OBSOLESCENCIA.md
+/docs/RUNBOOK_COSTES.md
+/docs/roadmap.md
+/docs/status_board.md
+/docs/visualization_plan.md
+/docs/diagrams.md
+/docs/research_protocol.md
+/docs/architecture.md
+/docs/claims_we_cannot_make.md
+/docs/history/
+/notebooks/VISUAL_SCIENCE_PASS.md
+/research/crazy_ideas.md
+/research/TRANSVERSAL_AUDIT.md
+/research/open_questions.md
