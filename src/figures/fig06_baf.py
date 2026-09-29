@@ -30,16 +30,17 @@ sys.path.insert(0, ".")
 from src.figures import style as S                                     # noqa: E402
 
 SCEN = [("Euploid", "null", S.MUTED),
-        ("Clonal (same homolog in every cell)", "clonal", S.BLUE),
-        ("Variegated (random homolog per lineage)", "variegated", S.PURPLE)]
+        ("Clonal (same homolog in every cell)", "clonal", S.CLONAL),
+        ("Variegated (random homolog per lineage)", "variegated", S.VARIEGATED)]
 BINS = np.linspace(0.15, 0.85, 71)
 
 
 def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
-    fig = plt.figure(figsize=(11.6, 7.3))
-    # bottom leaves room for the five-line provenance strip; it used to overflow the canvas.
+    fig = plt.figure(figsize=(11.6, 7.0))
+    # Two-line provenance strip; the long caveats live in the notebook caption and the QA card,
+    # as in a journal figure legend, not on top of the canvas.
     gs = fig.add_gridspec(2, 3, height_ratios=[1.20, 1.0], hspace=0.46, wspace=0.16,
-                          bottom=0.17)
+                          bottom=0.12)
 
     dens = {k: np.histogram(bafs[k], bins=BINS, density=True)[0] for k, _m, _c in SCEN}
     hi = max(d.max() for d in dens.values())
@@ -71,8 +72,9 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
                         fontsize=S.BASE - 1.2, color=S.VERM,
                         arrowprops=dict(arrowstyle="-|>", color=S.VERM, lw=0.9))
         if mode == "variegated":
+            # Text to the right of the 0.5 line, so it no longer sits on the line and the peak.
             ax.annotate("re-centres on 0.5 with the same\naneuploidy present",
-                        xy=(0.5, hi * 0.72), xytext=(0.5, hi * 0.98), ha="center",
+                        xy=(0.507, hi * 0.80), xytext=(0.685, hi * 0.97), ha="center",
                         fontsize=S.BASE - 1.0, color=S.VERM, fontweight="bold",
                         arrowprops=dict(arrowstyle="-|>", color=S.VERM, lw=1.0))
         if mode == "null":
@@ -87,12 +89,16 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
         rs = [r for r in sim["results"] if r["mode"] == mode]
         xs = [r["fraction"] * 100 for r in rs]
         ls, mk = style[mode]
-        axD.plot(xs, [r["power_baf"] for r in rs], ls=ls, marker=mk, ms=4.6,
-                 color=S.VERM, lw=1.3,
-                 label=f"site-wise unphased BAF statistic · {mode}")
-        axD.plot(xs, [r["power_dispersion"] for r in rs], ls=ls, marker=mk, ms=4.6,
-                 color=S.GREEN, lw=1.3,
-                 label=f"coverage-dispersion index · {mode}")
+        for key, col, name in (("power_baf", S.VERM, "site-wise unphased BAF statistic"),
+                               ("power_dispersion", S.GREEN, "coverage-dispersion index")):
+            ys = [r[key] for r in rs]
+            ci = [S.wilson(y, sim["n_rep"]) for y in ys]
+            axD.errorbar(xs, ys, yerr=[[y - lo for y, (lo, _h) in zip(ys, ci)],
+                                       [hi - y for y, (_l, hi) in zip(ys, ci)]],
+                         ls=ls, marker=mk, ms=4.6, color=col, lw=1.3,
+                         elinewidth=0.8, capsize=2.2, label=f"{name} · {mode}")
+    axD.set_xticks(sorted({r["fraction"] * 100 for r in sim["results"]}))
+    axD.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _p: f"{v:g}"))
     axD.axvline(fraction * 100, color=S.INK, lw=0.9, ls=":", zorder=2)
     axD.annotate("cell fraction of panels A–C", xy=(fraction * 100, 0.50),
                  xytext=(fraction * 100 - 2.2, 0.50), ha="right", va="center",
@@ -125,21 +131,13 @@ def build(sim: dict, bafs: dict, fraction: float, n_chrom_affected: int = 3):
     # get_position() antes y despues: identicos. El hueco inferior para la
     # tira de procedencia lo da el bottom por defecto, no el rect.
     S.note(fig,
-           f"Simulation, no patient data. Seed {sim['seed']} (preregistered)  ·  "
-           f"{sim['n_rep']} replicates per cell  ·  depth {sim['depth']}×  ·  "
-           f"{sim['n_sites']} heterozygous sites per chromosome  ·  "
-           f"{n_chrom_affected} affected chromosomes  ·  panels A–C at "
-           f"{fraction * 100:.0f} % cell fraction, {S.thousands(n_sites)} sites each.\n"
-           f"Variegated power of this site-wise ABSOLUTE statistic falls from {pv[0]:.3f} to "
-           f"{pv[-1]:.3f}. The project first attributed that to lineage cancellation and its own "
-           "audit falsified it: an absolute statistic is blind to sign.\n"
-           "The 2x2 ablation (EXP-015c, POST-HOC, designed after the audit and not "
-           "preregistered) shows the fall is driven by copy-number-dependent depth. What "
-           "cancellation does move is the SIGNED statistic, 0.980 to 0.050.\n"
-           "No superiority over the standard method is claimed: the comparator is unphased and "
-           "MoChA is not reproduced here.\n"
-           "Simulated power is optimistic: no GC bias, no mappability, no reference-allele "
-           "bias, which at this depth are the real limiting factors.", y=0.005)
+           f"Simulation, no patient data. Seed {sim['seed']} (preregistered) · "
+           f"{sim['n_rep']} replicates per cell, bars = Wilson 95 % interval · depth "
+           f"{sim['depth']}× · {sim['n_sites']} het sites/chromosome · {n_chrom_affected} "
+           f"affected chromosomes · A–C at {fraction * 100:.0f} %, {S.thousands(n_sites)} sites each.\n"
+           f"D uses the ABSOLUTE statistic (variegated {pv[0]:.3f} → {pv[-1]:.3f}); its fall is a "
+           "depth effect, not cancellation (EXP-015c, post-hoc). Power is optimistic: no GC, "
+           "mappability or reference bias.", y=0.005)
     return fig
 
 

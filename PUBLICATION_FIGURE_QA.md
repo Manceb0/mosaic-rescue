@@ -17,8 +17,17 @@ Source: `work/mosaic/baf_ablation.json`, SHA256
 `27fdcb62b0f2c82ef6492081eff88bcf68290b9ebc2994df32d227a6eea22f19` (checked before render).
 Four readouts, shared rejection-proportion scale, all fractions of the four factorial
 `scope=frac` arms. `scope=all` diagnostic clonal controls are deliberately outside this
-view. Colour encodes direction; line/marker encodes depth. Lines only connect tested
-fractions. No newly estimated uncertainty; no effect claimed for small differences.
+view. Colour encodes direction with the project-wide concept colours (fixed = `S.CLONAL`
+blue, mixed = `S.VARIEGATED` pink, as in fig06); line/marker encodes depth. Ticks mark the
+tested fractions only. Error bars (2026-09-29) are Wilson 95 % intervals computed from the
+frozen proportions and 200 replicates: post-freeze uncertainty visualization; no model rerun
+and no decision threshold changed. Each interval is marginal; overlap is not a test of a
+difference, and every arm of `src/mosaic/ablation_baf.py` uses the same seed (`SEED + 1`), so
+replicates across conditions may be paired. Residual stated in the notebook caption: at 20 %,
+matched depth, panel C, an unregistered post-hoc difference of 0.130 (mixed 0.565, fixed
+0.435). No inferential claim is made; adjudicating it would need a separately preregistered
+comparison that accounts for the pairing. The provenance strip was cut to two lines; the caveats it carried are in
+the caption.
 **Misreading to avoid:** preregistered confirmation, patient mosaic fraction or detector
 superiority. The experiment is explicitly POST-HOC. SVG/PNG/thumbnail via standard export.
 
@@ -285,11 +294,11 @@ outputs*) checks that every artefact cites that manifest.
 | **statistic represented** | site-level BAF distributions; power against a fixed false-positive rate |
 | **FIGURE CLASS** | `SIMULATION` |
 | **EVIDENCE ORIGIN** | `SIMULATED`, not one value from the case |
-| **uncertainty represented?** | yes, the distributions *are* the uncertainty; power is estimated from 200 replicates |
+| **uncertainty represented?** | yes, the distributions *are* the uncertainty; power is estimated from 200 replicates and, since 2026-09-29, drawn with Wilson 95 % intervals |
 | **uncertainty quantified?** | sampling yes; **model misspecification no**, and that is the dominant term |
 | **possible misleading interpretation** | **that the power collapse of panel D is caused by lineage cancellation.** It is not, and this document certified the wrong explanation for months. `\|BAF-0.5\|` is an *absolute* statistic and therefore blind to the sign randomisation; the collapse is driven by copy-number-dependent depth, since the extra copy raises coverage to (2+f)/2 while the null stays at 44x. The post-hoc diagnostic ablation EXP-015c (designed after the audit, **not preregistered**) separates the two: no evidence of a direction effect (0.520 and 0.505 at matched depth, the same result at 200 replicates) and depth changes everything. What cancellation *does* move is the **signed** statistic, 0.980 to 0.050. Second risk: **that the dispersion index beats the standard method.** The comparator is a site-wise *unphased* BAF statistic; MoChA gets its power from long-range phasing and is not reproduced here. Third: reading simulated power as achievable power. |
 | **correction applied** | the provenance strip now names the statistic as ABSOLUTE, states that the project's own audit falsified its first explanation, and gives both numbers; the comparator is named `site-wise unphased BAF statistic` in the legend, and a boxed note inside the panel reads "NOT MoChA: no long-range phasing" so it survives a crop; the strip states the power is optimistic, no GC bias, no mappability, no reference-allele bias. The correction is written next to the untouched preregistration in `docs/DECISIONS.md`. |
-| **full-size render checked?** | yes, re-checked 2026-09-25: the second line of the provenance strip ran off the canvas and was truncated, and the boxed baseline note covered the variegated BAF curve between 15 and 20 %. The strip is now wrapped onto five lines inside the canvas and the box sits in the empty upper-left of panel D. Layout only: same data, seed and values |
+| **full-size render checked?** | yes, re-checked 2026-09-25: the second line of the provenance strip ran off the canvas and was truncated, and the boxed baseline note covered the variegated BAF curve between 15 and 20 %. The strip is now wrapped onto five lines inside the canvas and the box sits in the empty upper-left of panel D. Layout only: same data, seed and values. Re-checked 2026-09-29 after a journal-style pass (Lynch 2022, Loh 2018 as reference): Wilson 95 % bars in D, ticks only at the tested fractions (1, 2, 5, 10, 20 %), concept colours from `style.py`, panel C label moved off the 0.5 line, strip cut to two lines with the full caveats kept in the notebook caption and in this card. Same data, seed and values |
 
 ---
 
@@ -437,7 +446,7 @@ notebook's scientific figure.
 `fig2_landscape.svg`, the standalone pLDDT QC, `fig4_structural.svg`, "the two remaining
 routes", `fig5_alphagenome.svg`, "the phenotype pulls two ways", `fig9_mosaic_sim.svg`,
 "bridge 7 tension", "the four Try-to-Kill-It outcomes". Reasons per figure in
-`notebooks/VISUAL_SCIENCE_PASS.md`.
+the notebook captions.
 
 ---
 

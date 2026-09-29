@@ -53,6 +53,12 @@ BLACK    = "#000000"
 
 CYCLE = [BLUE, VERM, GREEN, ORANGE, PURPLE, SKY, YELLOW, BLACK]
 
+# One colour per CONCEPT across every figure, as Lynch 2022 and Loh 2018 do with
+# their models and event types. A reader who learned "pink = variegated" in one
+# figure must not find the same idea in vermilion in the next one.
+CLONAL     = BLUE      # same homolog in every affected cell / fixed direction
+VARIEGATED = PURPLE    # random homolog per lineage / mixed direction
+
 # Marker and dash vocabularies, so a category is identifiable in grayscale.
 MARKERS = ["o", "s", "^", "D", "v", "P", "X", "*"]
 DASHES = ["-", "--", "-.", ":", (0, (3, 1, 1, 1)), (0, (5, 2))]
@@ -123,6 +129,24 @@ def note(fig, text: str, y: float = 0.004, size: float = BASE - 1.3):
 def grid(ax, axis: str = "y"):
     ax.grid(True, axis=axis, color=HAIRLINE, lw=0.45, zorder=0)
     ax.set_axisbelow(True)
+
+
+def wilson(p: float, n: int, z: float = 1.959964) -> tuple[float, float]:
+    """95 % Wilson score interval for a proportion estimated from n replicates.
+
+    Used to draw the sampling uncertainty of simulated power and rejection
+    proportions already frozen. It is a new, post hoc derived statistic:
+    post-freeze uncertainty visualization; no model rerun and no decision
+    threshold changed. Each interval is marginal to one condition; two intervals
+    overlapping or not is NOT a test of their difference (and conditions that
+    share a seed may be paired). Wilson rather than the normal approximation
+    because the proportions sit near 0 and 1, where the normal interval leaves [0, 1].
+    """
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    # min/max against p absorb floating-point residue at p = 0 or 1.
+    return min(p, max(0.0, c - h)), max(p, min(1.0, c + h))
 
 
 def thousands(n) -> str:

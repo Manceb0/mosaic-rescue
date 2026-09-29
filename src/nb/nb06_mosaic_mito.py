@@ -135,17 +135,26 @@ next to it."""),
 ("code", '''from src.figures import fig12_ablation as FABL
 
 fig, abl = FABL.load_and_build()          # refuses to draw if the frozen source hash changed
+_c20 = {c["direction"]: c["power_disp"] for c in abl["cells"]
+        if c["scope"] == "frac" and c["depth_model"] == "matched" and c["fraction"] == 0.2}
 fl.pub(fig, "Figure A2: Factorial ablation of what moves each statistic",
        "EXP-015c, POST-HOC", "SIMULATED", "SIMULATION",
-       "homolog direction (blue vs vermilion) separates the curves only for the signed "
+       "homolog direction (blue = fixed, pink = mixed, the same colours as clonal and "
+       "variegated in the figure above) separates the curves clearly only for the signed "
        "statistic (panel A): mixed direction flattens it, which is cancellation. For the "
-       "absolute deviation and the variance (panels B and C) the split is instead between "
+       "absolute deviation and the variance (panels B and C) the main split is instead between "
        "copy-number-scaled depth (solid, flat) and depth matched to the null (dashed, rising): "
        "the loss first attributed to cancellation is a depth effect. Standardising by depth "
-       "(panel D) makes all four conditions converge.",
+       "(panel D) makes all four conditions converge. Bars are Wilson 95 % intervals from the "
+       f"{abl['n_rep']} replicates, added after the freeze as a visualization: no model rerun and "
+       "no decision threshold changed. At 20 %, matched depth, panel C shows an unregistered "
+       f"post-hoc difference of {_c20['mixed'] - _c20['fixed']:.3f} between conditions "
+       f"({_c20['mixed']:.3f} mixed, {_c20['fixed']:.3f} fixed).",
        "anything about the patient, and it is diagnostic, not confirmatory: it was designed "
-       "after the audit. No confidence intervals are drawn, so small differences between "
-       "curves are not claimed as effects.",
+       "after the audit. No inferential claim is made about the panel C difference: overlap "
+       "of two marginal intervals is not a test, and the arms share a seed, so replicates may "
+       "be paired. Adjudicating it would require a separately preregistered comparison "
+       "accounting for that pairing.",
        source=f"work/mosaic/baf_ablation.json, sha256 {FABL.SHA256[:16]}…, seed {abl['seed']}",
        lib="matplotlib", slug="fig12_baf_factorial_ablation")'''),
 

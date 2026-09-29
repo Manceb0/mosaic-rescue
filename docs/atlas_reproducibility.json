@@ -3,7 +3,7 @@
   "sha256": {
     "figures\\pub\\fig04I_alphagenome_ism.svg": "ac0428cfcd8555c0e9173ae755638a61103487688fb23586a68901f850d6e7a0",
     "figures\\pub\\fig04C_alphagenome_contact_maps.svg": "36c4fb937d2d1ee47e839c32d32be907e34ca5f2e2c9d93513ff1f349caf2349",
-    "figures\\pub\\fig06_baf_cancellation.svg": "f96ceba10d8552a662e6f64040898f53b2ee7a5f54cad48f20351704651e4bea"
+    "figures\\pub\\fig06_baf_cancellation.svg": "6ae44e81848ba11856568939c672afee1865f5ef24bd140fe989d5743aeafb1b"
   },
-  "note": "fig06 re-rendered 2026-09-25 after a layout-only fix (provenance strip wrapped inside the canvas; baseline box moved off the variegated curve). Same data, same seed; two consecutive renders are byte-identical."
+  "note": "fig06 re-rendered 2026-09-25 after a layout-only fix (provenance strip wrapped inside the canvas; baseline box moved off the variegated curve). Re-rendered 2026-09-29 after a presentation pass (Wilson 95 % intervals in panel D, ticks at tested fractions, concept colours, two-line strip). Same data, same seed; two consecutive renders are byte-identical."
 }

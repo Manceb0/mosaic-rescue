@@ -42,18 +42,31 @@ that remains a VUS. **The phase is unresolved** — no parental samples — so t
 configuration is a candidate, not a demonstrated finding, and everything downstream inherits
 that caveat.
 
-`BUB1B` encodes BUBR1, a core component of the spindle assembly checkpoint. It is a
-**pseudokinase**: the therapeutic lever is therefore **protein dose and stability**, not
-catalytic inhibition. Biallelic loss produces mosaic variegated aneuploidy, in which different
+`BUB1B` encodes BUBR1, a core component of the spindle assembly checkpoint. Its C-terminal
+domain is an unusual **pseudokinase**: catalysis is dispensable for error-free segregation, but
+residues that bind ATP in conventional kinases are needed for its conformational stability
+([Suijkerbuijk et al. 2012](https://doi.org/10.1016/j.devcel.2012.03.009)), and the domain
+itself promotes kinetochore PP2A-B56 recruitment, checkpoint silencing and chromosome alignment
+([Gama Braga et al. 2020](https://doi.org/10.1016/j.celrep.2020.108397)). For this genotype,
+protein abundance and stability is a leading therapeutic hypothesis, but direct functional
+impairment of the pseudokinase domain remains an alternative that must be tested at matched
+protein abundance. Biallelic loss produces mosaic variegated aneuploidy, in which different
 cells carry different chromosome complements.
 
-Two loss mechanisms, and they need different interventions:
+Two loss mechanisms, and they may need different interventions:
 
-- The **truncating** allele produces no functional protein. Only an allele-directed approach
-  can recover anything from it, which is why azithromycin is in the portfolio and why it is
-  the only arm aimed at this patient's own genome.
-- The **missense** allele is hypothesised to destabilise the protein. That is a proteostasis
-  problem, which is the T2-A route.
+- The **truncating** allele is predicted to lose its transcript to nonsense-mediated decay. Whether
+  its truncated product would work if it existed is **not known**: of two published MVA
+  truncations nearby, one plasmid-expressed product restored checkpoint, segregation and
+  alignment and the other was unstable ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319)),
+  while removing the pseudokinase domain impaired alignment and checkpoint silencing in a later
+  study (Gama Braga et al. 2020). That question comes **before** readthrough: if the exact
+  truncated product works, the bottleneck is transcript and protein amount, not the missing
+  C-terminus. Azithromycin stays in the portfolio as the only arm aimed at this allele, pending
+  that answer.
+- The **missense** allele is hypothesised to destabilise the protein (the T2-A route), but it may
+  also impair the pseudokinase domain directly. Only function measured at matched abundance
+  separates the two.
 
 The premature stop codon is **UGA with adenine at +4**, and the two halves of that fact
 point in opposite directions. UGA is generally readthrough-permissive. The +4 adenine is
@@ -373,7 +386,7 @@ honest form of the idea is a question: *can the patient become the screen?*
 
 ## 10 · Scalability
 
-Measured, not asserted: **46 of 93 modules in `src/`, 7 083 of 18 050 lines (39 %), contain no
+Measured, not asserted: **46 of 93 modules in `src/`, 7 112 of 18 088 lines (39 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
 **Read that number for what it is.** It says *39 % of the current codebase is case-agnostic
@@ -438,6 +451,16 @@ inconsistencies and stale numbers.
 commit or push to the repository. The project's operating rules define explicit stop
 conditions, and the choice of therapeutic candidate is one of them; the portfolio framing in
 this report was decided by the maintainer.
+
+**Second provider: OpenAI, for illustrations only.**
+
+| | |
+|---|---|
+| **Provider** | OpenAI |
+| **Interface** | ChatGPT, image generation |
+| **Plan / tier** | ChatGPT Plus (consumer plan) |
+| **Data-handling setting** | Model-training on user content **disabled** in the account settings |
+| **Use** | The conceptual editorial diagrams (`docs/assets/mosaic-*.png`). No patient data was provided. Each image was reviewed against the reports before use and is captioned as an AI-generated schematic (`docs/assets/EDITORIAL_CAPTIONS.md`); quantitative evidence stays in the code-generated figures |
 
 **Patient data and external services.** The assistant reviewed local project documents,
 user-supplied figures and selected tool outputs, under the account settings above. This is
@@ -512,7 +535,7 @@ From variant to candidates by decomposition, not by association. (1) Mechanism f
 
 **(required) If commercially-available Generative AI was used, record the provider, the plan or tier, and the relevant setting in your methods description. A line is enough, for example, "Anthropic API, Claude Sonnet, commercial terms, no training on customer content."**
 
-Anthropic — Claude Pro (consumer plan), used through Claude Code with Claude Opus models; model-training on user content disabled in the account settings. Used for code, documentation and literature search; the portfolio framing and candidate roles were decided by the team.
+Anthropic — Claude Pro (consumer plan), used through Claude Code with Claude Opus models; model-training on user content disabled in the account settings. Used for code, documentation and literature search; the portfolio framing and candidate roles were decided by the team. OpenAI — ChatGPT Plus (consumer plan), image generation for the conceptual editorial diagrams only; model-training on user content disabled; no patient data provided.
 
 **Was candidate identification automated (e.g., via a drug-target database query or LLM-assisted search), or primarily manual literature review and expert curation?**
 
