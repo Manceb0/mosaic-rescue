@@ -389,7 +389,7 @@ honest form of the idea is a question: *can the patient become the screen?*
 
 ## 10 · Scalability
 
-Measured, not asserted: **46 of 93 modules in `src/`, 7 112 of 18 088 lines (39 %), contain no
+Measured, not asserted: **44 of 91 modules in `src/`, 6 887 of 17 860 lines (39 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
 **Read that number for what it is.** It says *39 % of the current codebase is case-agnostic
