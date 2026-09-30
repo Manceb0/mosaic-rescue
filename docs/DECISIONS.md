@@ -1778,3 +1778,82 @@ sangre.
 `src/mosaic/sim_gvs.py` (código), `work/mosaic/sim_gvs.json` (salida, con sha256 registrado al
 ejecutar), `figures/pub/fig13_generation_selection.svg` con su ficha en
 `PUBLICATION_FIGURE_QA.md`, y una sección en `notebooks/06_MOSAIC_AND_MITOREAD.ipynb`.
+
+## EXP-029 · A4: caracterización específica del alelo para readthrough — PREREGISTRO
+
+**Estado: PREREGISTERED, NOT EXECUTED** (2026-09-29). Nada del alelo del caso se ha calculado.
+Preregistro v3 tras tres revisiones del líder. A4 caracteriza el alelo; **no nomina ningún
+fármaco** y no sustituye a A5 (si el producto truncado exacto resulta suficientemente funcional,
+el readthrough no es el cuello de botella).
+
+### Dos preguntas que no se fusionan
+
+- **A4a · Soporte del contexto:** cuán permisivo es el contexto del codón de parada del caso,
+  frente a una distribución de referencia fija y en una condición fija.
+- **A4b · Consecuencia en el producto:** qué producto(s) de longitud completa insertaría el
+  readthrough en esa posición.
+
+La salida es una matriz A4a × A4b, sin etiqueta global única.
+
+### Fuente primaria
+
+Mangkalaphiban et al. 2024, Nat Commun 15:2486, PMID 38509072,
+[10.1038/s41467-024-46703-z](https://doi.org/10.1038/s41467-024-46703-z). Modelos random forest
+entrenados por tratamiento sobre ribosome profiling de HEK293T; solo el modelo de G418 predijo el
+readthrough medido de reporteros PTC de CFTR. Código y datos: github.com/Jacobson-Lab/AG_readthrough,
+Zenodo [10.5281/zenodo.10698037](https://doi.org/10.5281/zenodo.10698037).
+
+### Entradas (fijas)
+
+Referencia GRCh38 congelada y transcrito canónico de ACMG_CURATION (Ensembl 116). **Ventana −9 a
++9 nt** alrededor del codón de parada (tres codones a cada lado), igual que el reportero validado.
+El codón de parada del caso es UGA, fijado en ACMG_CURATION.
+
+### A4a
+
+- **Modelo primario:** el modelo **«Assay» entrenado en G418** de los autores, es decir su modelo
+  Reducido **sin longitud del 3′-UTR** (Suppl. Fig. 7a; rindió algo peor que el Full, sin
+  diferencia significativa). Conjunto de variables tal como lo publican y lo liberan en su código,
+  sin editar. Si el código no expone ese modelo, solo puede reconstruirse con su código, sus datos
+  y esa definición publicada; si no, A4a = UNSCORABLE. Nombre de la salida: **«G418-conditioned
+  context score (Assay model)»**, nunca «propensión intrínseca».
+- **Sensibilidad:** el modelo Full de G418 solo si todas sus variables pueden aportarse
+  exactamente como las definen los autores; si no, no se ejecuta. Nunca reemplaza al primario. El
+  modelo sin tratamiento no se usa. **Sin sustituto de la longitud del 3′-UTR y sin tope de clase.**
+- **Denominador:** los mRNA con readthrough detectable cuyo codón de parada normal es el mismo que
+  el del caso, en los datos procesados de los autores para la misma condición. Percentil =
+  fracción con puntuación predicha estrictamente menor, más la mitad de los empates.
+- **Clases:** HIGHER (tercio superior), INTERMEDIATE (tercio medio), LOWER (tercio inferior),
+  **UNSCORABLE / UNRESOLVED** (modelo, datos o variables no disponibles o no aplicables). No poder
+  puntuar nunca se reporta como LOWER ni como evidencia biológica.
+- **Incertidumbre:** si el modelo no da incertidumbre por predicción, se dice y se reporta su
+  rendimiento global publicado; no se inventan intervalos. Se declara el sesgo de detección y
+  expresión del conjunto de entrenamiento.
+
+### A4b
+
+- **Inserciones candidatas para UGA, fijadas desde fuentes verificadas en PubMed:** arginina,
+  triptófano, cisteína. Pawlicka et al. 2024, PMID 39563734
+  ([10.3389/fgene.2024.1407375](https://doi.org/10.3389/fgene.2024.1407375)): células humanas con
+  gentamicina, R/W/C, R la más abundante. Chen et al. 2023, PMID 37014818
+  ([10.1152/ajplung.00038.2023](https://doi.org/10.1152/ajplung.00038.2023)): un PTC de CFTR dio
+  solo W y otro C/R/W; la mezcla depende del contexto y no se ordena. Apoyo: Roy et al. 2015,
+  PMID 25733896 ([10.1073/pnas.1424127112](https://doi.org/10.1073/pnas.1424127112), levadura);
+  Zhang et al. 2024, PMID 38342339 ([10.1016/j.xphs.2024.02.006](https://doi.org/10.1016/j.xphs.2024.02.006), CHO).
+- **Primera clasificación por producto:** WT RESIDUE RESTORED o NON-WT FULL-LENGTH PRODUCT. Para
+  productos no-WT, **FUNCTION UNKNOWN** salvo evidencia experimental independiente. Conservación y
+  modelo AlphaFold (pLDDT/PAE) son solo anotaciones de confianza del modelo; nunca deciden si una
+  sustitución se tolera.
+
+### Techos y saneado
+
+Solo in silico: no se afirma ningún compuesto, concentración ni transferencia de tejido. El
+repositorio muestra clases y percentiles, no el contexto de secuencia, coordenadas ni números de
+residuo; el detalle queda en `work/`.
+
+### Antes de ejecutar
+
+Descargar el código y los datos de los autores es una descarga: se declara el tamaño y se pide
+permiso al usuario antes de traerlos. Orden posterior: A4 → EXP-027 fase 1 → A1/A2 (GO de
+paciente) → A3 residual (solo si su sensibilidad es cuantificable).
+
