@@ -115,7 +115,12 @@ Each layer is scored separately, with expression-response curves and total and k
 - **Protocols differ between papers** (Legal: 3.3 µM 5-min pulse vs 0.3 µM 2.5 h; Weber: 1 µM 2 h and 3.3 µM 15 h). Numbers are not transferable across papers; A5/A6 must calibrate their own time points.
 - **Figs. 2–4, inspected.** Fig. 2: the BUBR1-binding CENP-E fragment disappears from kinetochores after CDK1 inhibition (outer kinetochore disassembled) while the corona fragment stays; single-site loop mutants abolish corona targeting (n about 18–39 cells, experiments repeated twice). Fig. 3: in the *full-length* CENP-E (U2OS, 3.3 µM nocodazole) losing the BUBR1 site (E4A) or the corona loop (TS) each lowers CENP-E, and losing both nearly abolishes it: the two routes are **additive in a long arrest**. Fig. 4B: the **alignment readout is from over-expressed CENP-E fragments acting as dominant negatives**, not from BUBR1 variants; it says nothing directly about a BUBR1 truncation. Fig. 4G is an explicitly *proposed* model (fast BUBR1 route, slow corona route, dynein stripping).
 - **What Weber does not test:** any BUBR1 mutant, any unperturbed-mitosis segregation readout. It informs the CENP-E side of A5 (which compartment, how fast), not the BUBR1 alleles.
-- **Status:** Weber 2024 main figures visually audited; supplement Figs. S1–S4 legends read, images not yet inspected.
+- **Weber supplement S1–S4, inspected.** Findings that limit the reading:
+  - **Depletion is partial** (S1C–E): BUBR1 is reduced to about 25 % of control and dynein heavy chain to about 30 %. The "BUBR1-independent" route is therefore measured with residual BUBR1 present; the authors acknowledge this. The route is supported, but its size relative to the BUBR1 route cannot be read off these data.
+  - **Expression is not matched across mutant lines** (S4A–B): the full-length CENP-E-mNG lines differ visibly in level (one mutant clearly higher, the double mutant lower). Kinetochore reductions in main Fig. 3 are partly confounded by expression; no level-matched comparison is shown.
+  - S4G: all CENP-E fragment mutants still reach the spindle poles (n.s.), so pole accumulation does not require either kinetochore route.
+  - S2A: kinetochore counts come from 7 and 5 cells; S3 is an AlphaFold model with PAE, i.e. prediction, not structure.
+- **Status:** Weber 2024 main figures and supplement visually audited. Legal 2020 and Weber 2024 together support *time* and *compartment* as variables; neither tests a BUBR1 allele in unperturbed segregation.
 
 
 ## Suijkerbuijk 2010 supplement (published PDF and supplement supplied by the team; all pages inspected)
@@ -131,9 +136,9 @@ Further details found:
 - **S3:** a shorter truncation delays mitosis (sustained checkpoint), from **one representative experiment**, ≥40 cells.
 - **S2:** of two substitutions on one allele, only one is defective, showing that co-occurring variants must be tested separately.
 
-## A5/A6 audit table (freeze candidate)
+## A5/A6 audit table — FROZEN 2026-09-29
 
-Supersedes the preliminary table. Freezes when the Weber supplementary images are checked; no change of content is expected from them because Weber tests no BUBR1 allele.
+Supersedes the preliminary table. Frozen after the Weber supplement was inspected; the supplement added two limits (partial depletion, unmatched expression) but no contradiction.
 
 | Status | Statement |
 |---|---|
@@ -146,4 +151,16 @@ Supersedes the preliminary table. Freezes when the Weber supplementary images ar
 | **DIES** | "Works / fails" as a binary outcome. |
 | **DIES** | "Proximal signalling defect → segregation defect" without measuring segregation in unperturbed mitosis at matched level (no paper reviewed has done this for the truncation). |
 | **DIES** | "No BUBR1–CENP-E binding → no CENP-E at the kinetochore". |
-| **DIES** | "The historical truncation is fully functional": shown only at 2–4× over-expression with coarse readouts. |
+| **DIES** | "The historical truncation is fully functional": shown only at 2–4× over-expression with coarse readouts. Suijkerbuijk 2010 is a **functional precedent, not a direct analogue**: the historical product is expressed above normal levels and is a different molecular product (frameshift with non-native tail) from the case truncation (direct stop). |
+
+## A5/A6 design — FROZEN 2026-09-29 (proposed experiment; requires cells, not the WGS)
+
+Fixed before any experiment. Changes after this point require a new version with a stated reason.
+
+- **Constructs.** A5: wild-type BUBR1 vs the **exact case truncated product** (cDNA, no NMD). A6: wild-type vs the case missense. Same tag, same integration site (single-copy inducible), endogenous BUBR1 removed by a 3′-UTR siRNA.
+- **Dose.** A titration series (at least three induction levels) per construct; every readout is reported against measured level. Comparisons use a pre-set matching window for **total** and **kinetochore** BUBR1, reported separately; "matched" means no difference detected under that assay, stated with the interval, never "equivalent".
+- **Hierarchy of readouts, each scored and reported separately:** (1) total and kinetochore BUBR1; (2) KARD phosphorylation and kinetochore PP2A-B56; (3) CENP-E binding; (4) CENP-E recruitment **early and late**, at the **kinetochore** and at the **outer corona**, scored by kinetochore subpopulation (aligned vs polar); (5) attachments / cold-stable K-fibres; (6) checkpoint-silencing timing; (7) alignment in a quantitative alignment-zone assay; (8) **new segregation errors per completed mitosis in unperturbed live-cell mitosis**; (9) safety: survival and propagation of aneuploid cells.
+- **Two readout families, never merged.** *Perturbation calibration* (nocodazole pulse and long arrest, MG132, STLC, MPS1 inhibition) isolates mechanisms; *unperturbed mitosis* (time to congression, persistent polar chromosomes, anaphase errors per completed mitosis) is the endpoint that counts for rescue. Perturbation results never substitute for readout 8.
+- **Controls.** Wild type at matched level; a published unstable truncation and a published low-abundance missense as positive-defect controls; no induction; a transformed MVA disease line as external benchmark only.
+- **Replication and statistics.** At least three independent experiments; the experiment, not the kinetochore or cell, is the unit of inference; per-kinetochore values shown but tested with a hierarchical model.
+- **Outcome.** A profile across readouts, not works/fails. An arrow between layers is claimed only where both layers were measured in the same system.
