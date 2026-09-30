@@ -1986,3 +1986,66 @@ variable del alelo y antes de cargar el caso en ningún modelo. Sustituye única
 
 **A4b no depende de nada de esto** y puede ejecutarse aunque A4a sea UNSCORABLE.
 
+### Enmienda 2 (2026-09-30) · Equivalencia numérica de la verificación fuera de bolsa
+
+**Estado: PREREGISTERED, NOT EXECUTED sobre el caso.** Escrita **antes** de construir ninguna
+variable del alelo del caso y **antes** de puntuar el caso en ningún modelo. El valor discrepante
+que motiva esta enmienda se conoció ejecutando las comprobaciones de nivel 0 y la verificación fuera
+de bolsa **solo sobre datos publicados**; **no se ha mirado ningún resultado biológico del caso**.
+Esta enmienda **solo** aclara cómo se operacionaliza la cláusula «coincide exactamente» del punto 7
+(ii) de la Enmienda 1. No cambia ningún parámetro del modelo, semilla, árbol, variable, valor del
+caso ni umbral científico.
+
+**Motivo.** El punto 7(ii) exigía que el vector de predicciones fuera de bolsa del reajuste con
+`keep.inbag = TRUE` «coincida exactamente» con el del modelo de la puerta de fidelidad. Al
+ejecutar la verificación (solo datos publicados) la discrepancia máxima observada fue
+**`1.3322676295501878e-15`**, distinta de cero. No es evidencia de un modelo distinto: el reajuste
+conserva **exactamente** la misma media CV (`0.103917142989295`, idéntica con y sin `keep.inbag`),
+la máscara OOB es la misma (checks 1 y 3 en verde) y las predicciones se reconstruyen del **mismo
+bosque** y las **mismas hojas**. La diferencia proviene únicamente de que dos rutas de acumulación
+IEEE-754 (la acumulación interna en C de `randomForest` durante el crecimiento del bosque, frente a
+`predict(..., predict.all=TRUE)` seguido de `rowSums(...)/n_oob`) no son asociativas y difieren en
+los últimos bits. Exigir identidad bit-a-bit entre dos rutas de suma independientes en doble
+precisión no es una exigencia computacional sensata.
+
+**Terminología (registro honesto).** El valor observado es **`1.3322676295501878e-15`**. **No** se
+describe como «0 exacto» ni, de forma definitiva, como «6 ULP»: es **6 × el epsilon de máquina de
+doble precisión** (`.Machine$double.eps = 2.220446e-16`), pero el número de ULP depende del exponente
+local de cada número y no se afirma sin calcularlo por elemento. Esa precisión no cambia la
+conclusión, pero se escribe bien.
+
+**Regla congelada (equivalencia numérica fuera de bolsa).** Para el punto 7(ii), «coincide
+exactamente» se operacionaliza como **equivalencia numérica** de predicciones de doble precisión
+acumuladas de forma independiente **a partir del mismo bosque ajustado, la misma máscara de árboles
+OOB y las mismas predicciones por árbol**. Se acepta si y solo si:
+
+```
+max(abs(oob_refit - oob_gate_model)) <= 16 * .Machine$double.eps * max(1, max(abs(oob_gate_model)))
+```
+
+Esta tolerancia es **exclusivamente** para el orden de acumulación en punto flotante y **no** es una
+tolerancia de rendimiento del modelo. Se elige la forma `epsilon × escala` (ligada al error de
+representación numérica) y **no** un valor como `1e-8`, que sería enorme frente al fenómeno que se
+valida. Ningún parámetro del modelo, semilla, árbol, variable, valor del caso ni umbral científico
+puede cambiar al amparo de esta enmienda.
+
+**Verificación ex ante (solo datos publicados, antes del caso).** Con el modelo de la puerta ya
+guardado: `max(abs(oob_gate_model)) = 5.02463955213363`, de modo que la tolerancia es
+`16 × 2.220446e-16 × 5.02463955213363 = 1.785111e-14`. El valor observado
+`1.3322676295501878e-15 ≤ 1.785111e-14` → **la verificación fuera de bolsa PASA** bajo esta regla.
+Se hace constar de forma explícita que **el valor observado se conoció antes de puntuar el caso**:
+no se acomoda una regla después de ver si el caso sale más alto o más bajo; se corrige una
+definición computacional antes de mirar el resultado biológico.
+
+**Sin regla OOD nueva.** Se retira toda mención a declarar el caso UNSCORABLE por «caer fuera del
+dominio del modelo». No se calcula ninguna distancia OOD ni se fija ningún umbral post-hoc tras
+conocer la secuencia. Se usan **solo** las reglas preregistradas congeladas. La **única** vía a
+UNSCORABLE por motivo mecánico es que `predict()` no pueda evaluar el contexto porque aparezca un
+**nivel de factor imposible o no visto en entrenamiento**, lo que se documenta como imposibilidad
+mecánica del predictor, no como métrica de dominio. Si `predict()` corre, se reporta el número.
+
+**Tras sellar y commitear esta enmienda: GO A4a + A4b**, una sola vez, con las reglas congeladas
+(constructor validado en 0(b); Assay congelado, `mtry = 7`, semilla 5490, marginalización de 400
+estados; percentil contra la referencia UGA OOB marginalizada; A4b para R/W/C sin trasladar
+proporciones de otros sistemas), sin retocar nada después de ver el score.
+
