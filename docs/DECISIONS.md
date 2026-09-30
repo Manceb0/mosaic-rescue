@@ -1857,3 +1857,132 @@ Descargar el código y los datos de los autores es una descarga: se declara el t
 permiso al usuario antes de traerlos. Orden posterior: A4 → EXP-027 fase 1 → A1/A2 (GO de
 paciente) → A3 residual (solo si su sensibilidad es cuantificable).
 
+### Enmienda 1 (2026-09-30) · Reconstrucción del modelo Assay
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrita antes de instalar R, antes de construir ninguna
+variable del alelo y antes de cargar el caso en ningún modelo. Sustituye únicamente a la cláusula
+«modelo Assay»; el resto de EXP-029 no cambia.
+
+**Lo que se comprobó por inspección estática del archivo v1.0.0** (sin ejecutar nada):
+
+- El archivo **no contiene un modelo Assay ajustado.** Contiene los datos de entrenamiento de
+  G418_500 (`allAG_merged.Rdata`, `feature_file_wangen_elife_2020.Rdata` y la función `prep`), el
+  conjunto de variables publicado del Assay (`rf_all_model_features_used.txt`: 21 variables
+  biológicas más 2 de control aleatorio = 23), los ajustes de `rfFit` y el NRMSE del Assay por
+  pliegue (`rf_all_model_metrics_G418_500.txt`).
+- Límites del paquete, conocidos antes de cualquier ejecución: **(i)** el script, la semilla y el
+  orden del generador aleatorio con que se entrenó el Assay **no están publicados**; el único script
+  publicado entrena los modelos Full, con `set.seed(5490)` una sola vez y un único `lapply` sobre
+  todas las muestras en el orden de `allAG_merged`. **(ii)** `rfFit` tal como se publica usa
+  variables libres (`samp`, `i`, `all.rfFit`, `samp_list`) que no se definen en ningún script y
+  devuelve una lista, mientras que el `allAG_rf_reg` publicado guarda un objeto `train` por
+  muestra: la función publicada no es el código exacto que produjo los modelos publicados.
+  **(iii)** Los archivos `.Rdata` fueron guardados por **R 4.2.0**. **(iv)** Los Methods del paper
+  dicen que los modelos adicionales de la Suppl. Fig. 7, entre ellos el Assay, usaron «los mismos
+  parámetros, salvo que `mtry` se dejó en su valor por defecto»: la rejilla de `mtry` de los modelos
+  Full **no** es la del Assay. La `rfFit` publicada tiene `mtry_ = 9` como argumento por defecto,
+  pero no se toma como autoridad (regla 1).
+
+**Reglas congeladas**
+
+1. **Modelo.** Regresión sobre `log_rte` (log2 de la eficiencia de readthrough), muestra
+   **G418_500**, no el clasificador alto/bajo. Datos: salida de `prep(cds_rpkm_cutoff = 5,
+   utr3_rpkm_cutoff = 0.5, group_param = "none", utr3_region = "ext")`. Variables: las 23
+   marcadas TRUE para «Assay» en `rf_all_model_features_used.txt`. Ajuste: regresión,
+   `caret::train(method = "rf")`, `trainControl(method = "cv", number = 5)`, `ntree = 100`,
+   `metric = "RMSE"`, `importance = TRUE`, sin variables ficticias y con **`mtry` fijo, sin rejilla
+   ni optimización**, como dice el paper para los modelos de la Suppl. Fig. 7. **`mtry = 7`**,
+   preregistrado como el valor por defecto estándar de `randomForest` para regresión con 23
+   variables predictoras, `floor(p/3) = floor(23/3)`. Las otras lecturas de «por defecto», el `mtry_ =
+   9` de la `rfFit` publicada y la rejilla automática de `caret`, **no se ejecutan, tampoco como
+   sensibilidad**. El 9 se descarta porque esa `rfFit` está incompleta y sus otros valores por
+   defecto (`ntree_ = 500`, `met = "Rsquared"`) contradicen los Methods: no puede ser autoridad
+   para `mtry` y no serlo para el resto. Se usa un `tuneGrid` de una sola casilla; la rejilla
+   `seq(1, p, 10)` de los modelos Full **no** se usa para el Assay. Ningún hiperparámetro ni paso de
+   preprocesado puede optimizarse contra el caso.
+2. **Envoltorio mecánico.** Solo se define lo que la función publicada deja sin definir
+   (`samp`, `i`, `all.rfFit`, `samp_list`); no cambia ningún parámetro del modelo. Se guarda y se
+   publica junto al script.
+3. **Semilla y una sola reconstrucción.** `5490` es la **semilla de reconstrucción preregistrada**,
+   elegida porque es la única semilla de entrenamiento de modelos de regresión que el código
+   publicado de los autores hace pública; **la semilla original del Assay se desconoce.**
+   `set.seed(5490)` inmediatamente antes de ajustar el Assay de G418_500. Se hace **una sola
+   reconstrucción**: no se prueba otra semilla, otro orden ni otra lectura de `mtry`, ni el 9.
+4. **Comprobaciones de nivel 0 (solo datos publicados, sin el caso).**
+   **(a) Entorno:** se vuelve a ejecutar el script de los autores para el modelo **Full** (`prep`
+   más el envoltorio, `lapply` completo en el orden de `allAG_merged`, semilla 5490) y la **media**
+   del NRMSE de los cinco pliegues de G418_500 debe quedar a ≤ 0,0005 de la publicada
+   (0,1018075279907178, `rf_reg_nrmse_meansd.txt`). La coincidencia pliegue a pliegue con los cinco
+   valores publicados (0,102437124775918; 0,104038441308863; 0,103127591083519;
+   0,0993287509724889; 0,1001057318128) se registra como dato informativo, no como condición.
+   **(b) Constructor de variables:** el código que construye las
+   variables del caso, con las definiciones de `prepare_data.R` (`nt_m01–m09` = 9 nt aguas arriba del
+   codón de parada; `nt_p04–p12` = 9 nt aguas abajo; `aa_m01`, `aa_m02` = residuos de los dos codones
+   inmediatamente aguas arriba; `stop_codon`), debe reproducir exactamente las variables guardadas de
+   los reporteros de CFTR publicados (`CFTR_PTCs_mRNA_features.csv`). **Desenlaces decididos ahora:**
+   si 0(a) falla en E1, se permite E2; **si 0(a) falla también en E2, A4a = UNSCORABLE**, sin tercer
+   entorno y sin decidir después de ver dos fallos. Si 0(b) falla, es un error mecánico de nuestra
+   implementación, no una conclusión biológica: puede depurarse y repetirse la prueba **mientras el
+   caso no se haya construido nunca**, dejando registrado cada cambio. A4b continúa en todos los
+   casos. Las comprobaciones de nivel 0 detectan un entorno o un flujo roto; no demuestran que el
+   Assay esté bien reconstruido. Nunca se sustituye una versión en silencio.
+5. **Puerta de fidelidad del Assay (antes de desbloquear el caso).** Se compara el resumen que los
+   propios autores calculan para sus modelos: la **media del NRMSE de los cinco pliegues**
+   (`RMSE / (max(y) − min(y))` sobre la salida de entrenamiento, como en su script). La media
+   publicada del Assay es **0,1035609822940164** (sd 0,002358), a partir de los cinco valores por
+   pliegue del archivo de datos fuente (0,103334960338437; 0,101034634677196; 0,105081457829398;
+   0,106701229796072; 0,101652628828979).
+   **Precisión que se exige.** El texto del paper no da ningún NRMSE numérico del Assay; solo el
+   archivo de datos fuente lo publica, a doble precisión, y exigir identidad numérica no es razonable
+   porque la semilla y el orden de entrenamiento del Assay no están documentados. Se fija la
+   concordancia a aproximadamente **tres decimales**, expresada como banda y no como redondeo (el
+   redondeo es inestable junto al límite): la reconstrucción **pasa si `|media reconstruida −
+   0,1035609823| ≤ 0,0005`**. La banda de ±0,0005 es una **tolerancia operativa de reconstrucción
+   fijada ex ante**; es sustancialmente menor que la variabilidad observada entre pliegues (sd
+   0,0024) y que la diferencia publicada entre las medias del Full y del Assay (0,1036 − 0,1018 =
+   0,0018). **No es un intervalo de confianza y no establece que los bosques ajustados sean
+   idénticos.** Los cinco valores por pliegue se registran como dato informativo. Pasar la puerta
+   certifica el nivel de rendimiento publicado, no los mismos árboles. **Si no pasa, A4a = UNSCORABLE:** sin ajuste, sin otra
+   semilla, sin otro orden, sin otra lectura de `mtry` y sin reinterpretar la regla después.
+   UNSCORABLE es un desenlace legítimo, no un fallo, y A4b se ejecuta igualmente.
+6. **Variables de control aleatorio.** `random_num` y `random_factor` son controles negativos
+   artificiales, no biología. Cada predicción se marginaliza sobre la rejilla publicada completa:
+   `random_num` 1–100 × `random_factor` {A, C, G, T} (T, como en los datos publicados; es el U del
+   ARN) = **400 combinaciones**, y se toma la media aritmética. El **mismo procedimiento** se aplica
+   al caso y a **cada** contexto UGA de referencia.
+7. **Puntuación de referencia fuera de bolsa.** Un modelo predice mejor sus propias filas de
+   entrenamiento que una fila nueva, y eso sesgaría el percentil del caso hacia el centro. Por eso
+   cada fila de referencia (contextos UGA de G418_500, «TGA» en la codificación de los autores) se
+   puntúa con el promedio de los árboles en cuyo remuestreo **no** entró esa fila, marginalizado
+   sobre las 400 combinaciones. Requiere un reajuste adicional con `keep.inbag = TRUE`, los mismos
+   ajustes y la misma semilla, que se documenta como reconstrucción adicional. Solo se acepta si se
+   verifica que **(i)** la matriz `inbag` tiene una fila por observación y una columna por árbol y
+   cada columna suma el tamaño del remuestreo, **(ii)** el vector de predicciones fuera de bolsa
+   coincide exactamente con el del modelo de la puerta, y **(iii)** cada fila de referencia se
+   puntúa únicamente con los árboles cuya cuenta `inbag` para esa fila es 0. Si no puede
+   verificarse, se detiene y decide el líder antes de puntuar el caso; no se improvisa una
+   alternativa ni se degrada en silencio a puntuación dentro de muestra.
+8. **Variables del caso.** Secuencia del transcrito canónico (Ensembl 116, ACMG_CURATION) con el
+   alelo alterno aplicado, construida con el constructor validado en el nivel 0(b).
+9. **Orden de desbloqueo.** Entorno aprobado e instalado → nivel 0(a) y 0(b) → reconstrucción del
+   Assay y puerta de fidelidad → verificación fuera de bolsa → solo entonces se puntúa el caso, **una
+   sola vez**, con el script y la orden exacta guardados antes. Se registran resultado, avisos y toda
+   desviación. Si el código de los autores obliga a cambiar una regla preregistrada, se detiene y no
+   se corrige sobre la marcha después de ver una puntuación.
+10. **Procedencia.** Los archivos originales quedan intactos y de solo lectura. El modelo
+    reconstruido, el script, el envoltorio, `sessionInfo()`, la semilla, las versiones de paquetes,
+    los hashes y las métricas de fidelidad se guardan como derivados reproducibles en
+    `work/external/ag_readthrough/derived/`. El repositorio recibe solo el resumen y los hashes.
+11. **Entornos preregistrados, en orden.** **E1** = R 4.2.0 con caret 6.0-92, randomForest 4.7-1,
+    data.table 1.14.2, dplyr 1.0.8 y seqinr 4.2-8 (versiones que el README da para R 4.2, la misma R
+    que guardó los `.Rdata`). **E2** = R 3.6.3 con caret 6.0-86 y randomForest 4.6-14 (versiones que
+    el README da para el clúster; la subversión 3.6.x exacta no se publica). El Assay se reconstruye
+    **en el primer entorno que supere el nivel 0(a)**, que es una prueba sin el caso; E2 solo se
+    usa si E1 falla 0(a), con su propio GO de entorno; si E2 también falla, A4a = UNSCORABLE, y no
+    hay un tercer entorno sin una nueva enmienda. Los paquetes dependientes salen de un instantáneo fechado de CRAN y sus versiones se
+    registran. R y los paquetes se instalan solo tras un GO de entorno separado que lista versión
+    por versión. Si un entorno no puede instalarse razonablemente, se documenta y se decide antes de
+    ejecutar; no se sustituyen versiones en silencio.
+
+**A4b no depende de nada de esto** y puede ejecutarse aunque A4a sea UNSCORABLE.
+

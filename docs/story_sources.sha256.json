@@ -5,7 +5,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "7360ecbab3af068261bf0666c62a68865127e086cd1c968d890dd1492ab413d5"
+      "sha256": "1ebfa81b1a1c4476cc835b0d5f218c91d3036c5ce01c09e522e612b2da1a48c5"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -29,8 +29,8 @@
     },
     {
       "path": "research/EXPERIMENT_REGISTRY.md",
-      "sha256": "e542e3c42864f7711e7c84672dab39fdb6eac2c9c6bdd6d693931f84cd706402"
+      "sha256": "37feb391f4e690dd905638369d7dc4c01d941c02d4ad197ef43559783fcefa00"
     }
   ],
-  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical. | 2026-09-29: resealed after adding the OpenAI (illustrations only) row to the AI-use disclosure in TRACK1_REPORT §10; no synthesis content changed. | 2026-09-29: resealed after appending the EXP-028 (SIM-GvS) preregistration to DECISIONS.md; no synthesis content changed. | 2026-09-29: resealed after completing the EXP-028 preregistration (calibration gate, generation order, fitness, evaluation readouts); no synthesis content changed. | 2026-09-29: resealed after adding the EXP-028 prior-art and model-limitations block; no synthesis content changed. | 2026-09-29: resealed after correcting the Schukken and Foijer citation year (2018); no synthesis content changed. | 2026-09-29: resealed after appending the EXP-029 (A4) preregistration to DECISIONS.md and its row to EXPERIMENT_REGISTRY.md; no synthesis content changed."
+  "reseal_note": "2026-09-24: STORYBOARD.md translated to English and TRACK1_REPORT.md given its conclusions section and literature context. No fact drawn in the synthesis diagrams changed; the re-render must be byte-identical. | 2026-09-29: resealed after adding the 'Blood is one view of the mosaic' limitation to TRACK1_REPORT §7b (with the author's pending report edits); story12 redrawn as the rescue-gate / tolerance-veto 2x2; other story figures must render byte-identical. | 2026-09-29: resealed after adding the OpenAI (illustrations only) row to the AI-use disclosure in TRACK1_REPORT §10; no synthesis content changed. | 2026-09-29: resealed after appending the EXP-028 (SIM-GvS) preregistration to DECISIONS.md; no synthesis content changed. | 2026-09-29: resealed after completing the EXP-028 preregistration (calibration gate, generation order, fitness, evaluation readouts); no synthesis content changed. | 2026-09-29: resealed after adding the EXP-028 prior-art and model-limitations block; no synthesis content changed. | 2026-09-29: resealed after correcting the Schukken and Foijer citation year (2018); no synthesis content changed. | 2026-09-29: resealed after appending the EXP-029 (A4) preregistration to DECISIONS.md and its row to EXPERIMENT_REGISTRY.md; no synthesis content changed. | 2026-09-30: resealed after appending amendment 1 (Assay-model reconstruction) to EXP-029; no synthesis content changed."
 }
