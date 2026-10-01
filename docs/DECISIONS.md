@@ -2334,3 +2334,100 @@ Phase 1 hasta que: (i) Amendment 2 esté commiteada, (ii) C3 (hechos mecánicos 
 profundidad, buffer de slice, familia BH, `B` y umbral de SER, y (iv) haya GO de descarga del usuario
 con tamaño declarado.
 
+### Enmienda 3 de EXP-027 (2026-10-01) · FINAL de pre-ejecución, tras la auditoría C3
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrita **antes** de descargar ningún dato de 1000G y antes de
+ejecutar ningún benchmark (cero resultados de Phase 1). **Reconocimiento:** el «STOP de diseño» de
+Amendment 2 fue **prematuro**: dejó abiertas decisiones de diseño (umbral SER, disyunción del spike-in,
+denominadores, fuga del propio objetivo) que una auditoría mecánica no puede decidir. Esta enmienda las
+cierra todas. **Tras ella, STOP real:** solo se permite (i) materializar `config/` (IDs, coordenadas,
+mapa, catálogos), (ii) comprobar hashes/IDs/tamaños, y (iii) ejecutar exactamente lo congelado. **No
+habrá Amendment 4** por detalles nuevos: cualquier problema que aparezca al ejecutar se registra como
+**desviación documentada**, no como rediseño.
+
+**C3 — hechos mecánicos verificados (SHAPEIT5).** Auditoría con datos 100 % sintéticos (semilla 42; sin
+paciente, sin 1000G); artefactos en `work/exp027/c3_shapeit5/` con manifest.
+- **Procedencia.** `github.com/odelaneau/shapeit5` está **deshabilitado por GitHub Staff** y la web de
+  documentación da 404 (docs solo vía Wayback). Artefacto autoritativo: imagen
+  `quay.io/biocontainers/shapeit5@sha256:cf3c988c2da4beda759f03300f767495944e25984a7dfa042f806c3113c6e450`
+  (tag `5.1.1--h34261f4_2`); banner literal del binario: `Version : 5.1.1 / commit = 5.1.1 / release =
+  2025-02-19` (no existe `--version`); sha256 de binarios: `phase_common 15e054eb…4066`,
+  `phase_rare 34a6a4c9…f6e6`, `ligate f20242d3…3845`, `switch 322aec56…bc22` (completos en el manifest).
+  Existe otro build de la misma versión (`5.1.1--hb60d31d_0`) que **no** se usa.
+- `phase_common` escribe **solo `GT`**: **ni `PS` ni `PP`**. `PP` solo existe en salidas de `phase_rare`,
+  para hets raros; los **singletons reciben `PP = 0.5`** (fijo); `--score-singletons` es experimental y
+  **no se usa**. Los sitios ausentes de `--reference` no los fasea `phase_common`. **`phase_rare` no tiene
+  `--reference`**: las raras del paciente solo pueden fasearse en **fase conjunta** con una cohorte.
+- `SHAPEIT5_switch -P` con genotipos de trio **no faseados** calcula el SER **solo sobre hets
+  mendelianamente informativos**. `ligate` **no da error sin solape** (concatena sin alinear la fase).
+  `phase_rare` devuelve **exit 0 ante argumentos inválidos** → se validan los ficheros de salida, nunca
+  el código de salida. Semilla por defecto `15052011` → `--seed 42` explícito siempre.
+
+**Literatura verificada en sesión** (Hofmeister 2023, *Nat Genet* 55:1243-1249, PMID 37386248,
+[10.1038/s41588-023-01415-w](https://doi.org/10.1038/s41588-023-01415-w), texto completo): comunes de
+scaffold = **MAF ≥ 0.1 %**, raras (< 0.1 %) sobre el scaffold; singletons con modelo propio (IBD más
+corto), **SER 35.1–36.6 %** en WGS, confianza **0.5** «as phasing confidence cannot be computed», y
+**excluidos** del análisis de compound heterozygotes; confianza ≥ 0.99 controla el SER ~2 % en WGS;
+validación fasando **solo a los hijos** y usando los padres solo para la verdad; WGS en chunks de
+~4.5 Mb con **buffers solapados de 250 kb**.
+
+**Reglas congeladas (sustituyen a las cláusulas correspondientes del contrato y de Amendments 1–2):**
+
+1. **leave-target-and-family-out.** El hijo evaluado **y** sus padres y familiares de primer grado
+   quedan fuera de cualquier panel de referencia/conditioning. En fase conjunta el objetivo puede ser la
+   muestra inferida, pero **nunca** reaparece como haplotipo de referencia externo. `--pedigree` **nunca**
+   se pasa en la inferencia.
+2. **Verdad mendeliana.** SER solo sobre pares sucesivos de hets cuya fase parental sea **mendelianamente
+   resoluble**; inconsistencias mendelianas, de novo putativos y configuraciones parentales ambiguas
+   **no** entran en el denominador. Implementación: `SHAPEIT5_switch -P` con genotipos de trio no
+   faseados.
+3. **Sin `PP` ni `PS` para comunes.** Se retira `PP ≥ 0.9` en comunes y la cláusula «una ventana dentro
+   de un único `PS`»: la fase es continua por cromosoma (chunks ligados), las ventanas **no** se parten y
+   los switch errors se absorben en la validación end-to-end (sustituye a D1).
+4. **MAF de scaffold ≠ MAF analítico.** La entrada de fase **no** se filtra a 1 %: scaffold = MAF ≥ 0.1 %
+   (`phase_common`), raras < 0.1 % y singletons con `phase_rare`. Los marcadores analíticos de A1 son el
+   subconjunto MAF ≥ 1 % de la salida faseada.
+5. **Chunks y buffer.** **250 kb de buffer solapado por lado**; `ligate` debe mostrar solape real
+   (`L_isec > 0` en el log), si no el conjunto de chunks es inválido. La ventana de análisis de 2 Mb
+   **nunca** cruza una unión no ligada.
+6. **Mapa genético.** Un mapa GRCh38 exacto, fijado por **ruta + sha256** en `config/`. **Prohibido** el
+   valor por defecto (1 cM/Mb): sin mapa, la ejecución falla.
+7. **Spike-in: solo beta-binomial.** `ρ` se estima en un **pool de calibración separado** de las ventanas
+   de evaluación, emparejado por bins de profundidad y fijado **antes** de evaluar. `p = 0.5 ± δ` sobre el
+   **haplotipo paterno verdadero** (mendeliano). Signo `+δ`/`−δ` repartido 50/50 por hash determinista
+   (`SHA256("42:sign:"+sample_id+":"+window_id)`, paridad del último byte). Prueba bilateral sobre `|T|`.
+8. **APR, no FPR.** La tasa sobre ventanas `δ = 0` se llama **apparent positive rate in screened
+   technical-null windows (APR)**. Puerta operativa APR ≤ 0.05; no es un FPR biológico (LCL ≠ sangre;
+   Byrska-Bishop 2022, PMID 36055201).
+9. **Ventanas: 50 por hijo, las mismas para los 20.** La **ventana #1 es la ventana pública exacta de
+   2 Mb centrada en BUB1B** (el locus donde después se aplicará A1). Las otras 49 se eligen entre tiles
+   autosómicos de 2 Mb ordenados por `SHA256("42:"+chr+":"+start)` ascendente. Exclusión por solape
+   ≥ 1 pb con: SV/CNV del callset de 1000G high-coverage de ese trio, duplicaciones segmentarias GRCh38 y
+   ENCODE blacklist v2 (versiones y sha256 en `config/`). Una ventana no elegible para un hijo se **retira
+   para ese hijo, sin reemplazo**; el denominador real (pares hijo×ventana) se reporta.
+10. **Puertas de PASS de Phase 1** (todas obligatorias, evaluadas a la profundidad real ~30×):
+    (a) **APR ≤ 0.05**; (b) **sensibilidad a δ = 0.10 con fase inferida ≥ 0.80** (LOD ≤ δ\* = 0.10);
+    (c) **retención de potencia ≥ 90 %** de la sensibilidad obtenida con fase mendeliana en las mismas
+    ventanas y spike-ins; (d) **SER de comunes ≤ 2 %** (techo operativo predeclarado, **no** un umbral
+    publicado). Se **retira** `SER* = 0.5/(Hmin−1)`. Reporte obligatorio por superpoblación; **veto** si
+    algún estrato tiene SER de comunes > 4 % o sensibilidad a δ = 0.10 < 0.80.
+11. **Familia de pruebas.** Primaria (m = 1, ventana BUB1B): **p empírica directa, sin BH**. Secundaria
+    (ventanas de chr15): BH.
+12. **CNV en la ventana primaria.** Si una llamada soportada **que cambia el número de copia** (callers
+    CNV congelados de GO2B) solapa ≥ 1 pb la ventana primaria, **A1 queda NOT EVALUABLE / UNSCORABLE**
+    bajo su endpoint original: **no** se enmascara la parte incómoda para mantenerlo vivo. Un patrón
+    copy-neutral compatible con CN-LOH queda solo como clasificación secundaria.
+13. **A2.** Un candidato singleton en el conjunto de fase conjunta es **técnicamente asignable por el
+    modelo de singletons, pero UNSCORABLE para A2 bajo la regla de confianza congelada** (`PP = 0.5` por
+    construcción; SER ~35 %), salvo evidencia de fase ortogonal (no disponible: fase física ≤ 288 pb, sin
+    padres). Un candidato raro no-singleton exige **`PP ≥ 0.99`**. A1 puede PASAR aunque A2 sea
+    UNSCORABLE.
+14. **Selección de los 20 hijos.** 4 por superpoblación (AFR/AMR/EAS/EUR/SAS); elegible = hijo de trio
+    completo con ambos padres secuenciados en 1000G high-coverage; orden por `SHA256("42:"+sample_id)`
+    (hex ascendente); se toman los 4 primeros elegibles. Si un estrato tiene menos de 4, se toman todos y
+    se reporta.
+
+**STOP real de diseño.** Siguen sin cumplirse para ejecutar: commit de esta enmienda, `config/`
+materializado (IDs, coordenadas, mapa, catálogos, extractor, hashes) y GO de descarga del usuario con
+tamaño declarado. NO-GO a descargar 1000G y a ejecutar Phase 1 hasta entonces.
+
