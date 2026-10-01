@@ -2195,3 +2195,55 @@ germinales heterocigotos son **marcadores de homólogos, no de linajes celulares
   respalda que una señal haplotípica puede ser informativa, pero **no autoriza llamar
   selección/rescate/clon** en este niño desde un bulk WGS.
 
+### Enmienda 1 de EXP-027 (2026-09-30) · corrección técnica PRE-EJECUCIÓN
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrita **antes** de descargar ningún dato y antes de correr
+ningún benchmark de Phase 1 (cero resultados de Phase 1 vistos). Corrige tres defectos del contrato
+`88edd7d` detectados al contrastarlo con PubMed. **No cambia** el propósito, el endpoint, la
+separación pre-paciente/paciente, los techos ni el bloqueo de A1/A2.
+
+**(C1) Imposibilidad física `30× → 44×` — corregida.** El recurso 1000G high-coverage está
+secuenciado a **30X** (Byrska-Bishop 2022, *Cell* 185:3426-3440, PMID 36055201,
+[10.1016/j.cell.2022.08.004](https://doi.org/10.1016/j.cell.2022.08.004)). Downsamplear solo **baja**
+profundidad; no se puede «downsamplear 30× a 44×», y remuestrear/duplicar lecturas para fabricar 44×
+replicaría moléculas y errores, no equivale a secuenciación real 44×. Se **retira** la cláusula
+«downsampleado a 44×» y el gate «LOD ≤ δ\*=0.10 at 44×». Resolución de profundidad, elegida por
+**disponibilidad de recurso en la auditoría (C3)**, no por ningún benchmark:
+- **Opción por defecto (preferida):** usar 1000G a su profundidad **real ~30×** y redefinir la puerta
+  como **validada a ~30×**; la frase correcta es «validated at ~30×; applied to a higher-depth (~44×)
+  sample», **sin asumir** que la sensibilidad solo puede mejorar a más profundidad — se **reporta la
+  diferencia de profundidad**, no se infiere monotonía.
+- **Alternativa:** solo si la auditoría identifica un recurso público genuinamente **≥44×**, se
+  reduce a 44× y se valida a 44×.
+
+**(C2) Benchmark: 20 no emparentados → 20 hijos de trios completos (ground truth mendeliano).** Con
+individuos no emparentados no se puede demostrar que el **signo haplotípico** es correcto, porque la
+propia fase estadística que queremos validar define H1/H2 (circularidad). SHAPEIT5 validó la fase
+contra verdad por herencia en duos/trios, midiendo switch-error (Hofmeister 2023, *Nat Genet*
+55:1243-1249, PMID 37386248, [10.1038/s41588-023-01415-w](https://doi.org/10.1038/s41588-023-01415-w)).
+El recurso 1000G high-coverage trae **602 trios completos**. Diseño corregido: **20 hijos de trios
+completos**; los padres construyen el ground-truth mendeliano; al evaluar el método **se ocultan los
+padres** y se fasea al hijo como si no los tuviera; se compara la fase inferida con la mendeliana; los
+spike-ins se hacen sobre haplotipos cuya orientación se conoce **independientemente**. Esto elimina la
+circularidad del signo.
+
+**(C3) Auditoría pre-ejecución de la interfaz/salida de SHAPEIT5 (confianza en variantes comunes).**
+La métrica de confianza de fase de SHAPEIT5 está descrita para **variantes raras** (MAF < 0.1 %;
+umbral > 0.99 para raras), mientras que nuestros hets informativos son **comunes** (MAF ≥ 1 %).
+SHAPEIT5 **sí** fasea los comunes (es su primer paso), pero **no se asume** que exista un `PP`
+comparable por SNP común ni que `PP ≥ 0.9` aplique tal cual. Se **suspende** la cláusula `PP ≥ 0.9`
+del contrato hasta una auditoría —antes de cualquier benchmark— de **qué escribe realmente SHAPEIT5
+en el VCF para este flujo** (`PS`, confianza, bloques, campos por SNP común). El criterio de
+«het confiablemente faseado» para marcadores comunes se **redefine tras esa auditoría**, por
+disponibilidad de campos, no tras ver ningún resultado. El gate no se diseña alrededor de campos que
+la salida no produzca de esa forma.
+
+**(C4) Reducción de coste antes de descargar.** Antes de bajar genomas completos (potencialmente TB),
+se diseña si basta con **slices por región / CRAM + genotipos públicos + panel de fase** para probar
+ventanas de 2 Mb, reduciendo la descarga a algo manejable. La descarga requiere **permiso explícito
+del usuario con tamaño declarado**; nada se baja bajo esta enmienda.
+
+**A3** sigue **RESERVED / requiere preregistro aparte**; no se ejecuta bajo EXP-027. **No se descarga
+ni se ejecuta Phase 1** hasta que: (i) esta enmienda esté commiteada, (ii) la auditoría C3 esté hecha,
+(iii) se fije la resolución de profundidad C1, y (iv) haya GO de descarga del usuario con tamaño.
+
