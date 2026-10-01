@@ -22,9 +22,9 @@ nefrocalcinosis, los tres compuestos, `HSF1`, OMIM 257300):
 
 | | módulos | líneas |
 |---|---:|---:|
-| **Sin ninguna mención al caso** — se transfieren tal cual | **44** | **6 887** |
+| **Sin ninguna mención al caso** — se transfieren tal cual | **45** | **7 008** |
 | Con menciones al caso — hay que adaptarlos | 47 | 10 973 |
-| Total | 91 | 17 860 |
+| Total | 92 | 17 981 |
 
 **El 39 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
 el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 47
@@ -106,7 +106,7 @@ Impide que una simulación se lea como dato de paciente.
 | `src/mosaic/simulate_dispersion.py` (cancelación de BAF) | El mecanismo depende de que el mosaicismo sea **variegado**: homólogo distinto por linaje, contribuciones que se cancelan. En mosaicismo **clonal** el BAF **no** se cancela y la simulación no aplica. Transfiere a otras condiciones variegadas, no al mosaicismo en general |
 | Los ocho puentes concretos | La *estructura* escala; el contenido (chaperonas → BUBR1) es de este mecanismo |
 | El brazo de readthrough | Exige un **codón de parada prematuro**. Sin alelo truncante, no hay brazo `ALLELE` |
-| `src/figures/fig03_pocket.py` (bolsillo + conservación) | Exige una missense en un dominio modelable y una hipótesis estructural concreta. `CLAUDE.md` prohíbe usar AlphaFold decorativamente |
+| `src/figures/fig03_pocket.py` (bolsillo + conservación) | Exige una missense en un dominio modelable y una hipótesis estructural concreta. `CONTRIBUTING_RESEARCH.md` (Prácticas no permitidas) prohíbe usar AlphaFold decorativamente |
 | `src/mito/pilot_l001.py` (MitoRead) | Genérico en principio, pero **no calibrado**: hoy es un prototipo, no una medida. Transferir un prototipo sin calibrar sería propagar el problema |
 | Las listas de genes de `config/panels/` | Específicas de MVA y de tubulopatías renales |
 

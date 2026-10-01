@@ -77,7 +77,7 @@ byte a byte. No es un notebook, pero cumple la regla: origen ejecutable comproba
 Eso se arregla convirtiéndolos, no rehaciéndolos: los análisis son correctos, lo que falta
 es la columna vertebral que los enlaza.
 
-**Nueva regla, en `CLAUDE.md`:**
+**Nueva regla, en `CONTRIBUTING_RESEARCH.md` (Prácticas no permitidas):**
 
 > **Ninguna figura final sin un notebook o pipeline reproducible que haya generado el
 > resultado.**

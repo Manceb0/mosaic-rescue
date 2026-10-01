@@ -3,7 +3,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "fd43e125c5891aa6eb78c7fa3dbf1604aefcd20de269fde43327c8d5e3816fb4"
+      "sha256": "6bd87ef54151f574ee6c80b052f23a3962d1eceeef021f38202b7de817f96d4b"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -19,15 +19,15 @@
     },
     {
       "path": "research/track2_evidence.tsv",
-      "sha256": "456b82c9a9c38db17ea5ef424887e59febe542c5a82ffaaafa7ef3eadd85dff4"
+      "sha256": "53555fa5e773d98deb81ea051e90d375ec18821292750eed8539710986f258d1"
     },
     {
       "path": "research/track2_candidates.tsv",
-      "sha256": "9f95bd8bb8720004f6857810e8398f407f1d2e5f5c6c0f3e15a632e61297a68e"
+      "sha256": "cc68d67eb09e574ff8faa13f95a06f8dadf5b5997cbc682dd8c58b4ffe2eab2d"
     },
     {
       "path": "research/EXPERIMENT_REGISTRY.md",
-      "sha256": "1bde955a199edc3cd4a5c579b499c9e33b40ec5c11e256c535eccbbad6b54568"
+      "sha256": "0266932bb554dec1fe90e72c5de81b641faeb0b83e5e27eef5f07f4580c8a58a"
     }
   ],
   "base_commit": "8d2383abcc8a0dfc78512bb301feceabe89bb123",

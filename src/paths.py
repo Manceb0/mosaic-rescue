@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Acceso unico a las rutas de datos del paciente.
 
-REGLA DURA 2 (CLAUDE.md): el codigo NO contiene rutas absolutas. Todas viven en
+REGLA DURA 2 (CONTRIBUTING_RESEARCH.md): el codigo NO contiene rutas absolutas. Todas viven en
 `config/paths.yaml`, que esta en `.gitignore`. Este modulo es la unica puerta.
 
 Motivo, concreto: una ruta hardcodeada filtra a la vez el nombre de usuario del

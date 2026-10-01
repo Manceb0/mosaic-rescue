@@ -1,0 +1,46 @@
+{
+  "experiment": "EXP-027",
+  "purpose": "Herramientas fijadas por digest para EXP-027 (docs/DECISIONS.md, Amendments 3-4). Solo procedencia; ningún parámetro científico vive aquí.",
+  "verified_on": "2026-10-01",
+  "tools": {
+    "shapeit5": {
+      "image": "quay.io/biocontainers/shapeit5",
+      "tag": "5.1.1--h34261f4_2",
+      "digest": "sha256:cf3c988c2da4beda759f03300f767495944e25984a7dfa042f806c3113c6e450",
+      "banner": "Version : 5.1.1 / commit = 5.1.1 / release = 2025-02-19",
+      "version_flag": "no existe --version; el banner de --help es la evidencia de versión",
+      "binaries_sha256": {
+        "SHAPEIT5_phase_common": "15e054eb6fd1891e31f1c78c246f853f8bb6eb19846c01f205ec76ec55bb4066",
+        "SHAPEIT5_phase_rare": "34a6a4c91d683347d05b4e9b79ae6abd8250bc7ca10d9b2fc5a109753f07f6e6",
+        "SHAPEIT5_ligate": "f20242d3b06e17df106bc3323e483b2fb68163bf75d3c4a9e756097014103845",
+        "SHAPEIT5_switch": "322aec56a507b1546eafa3e0bde89b08bada70a5864d4f8a1f10c4f031a5bc22"
+      },
+      "not_used": "build 5.1.1--hb60d31d_0 (otro build de la misma versión)",
+      "provenance_notes": [
+        "github.com/odelaneau/shapeit5: repositorio deshabilitado por GitHub Staff (comprobado 2026-10-01)",
+        "odelaneau.github.io/shapeit5: 404; documentación solo vía Wayback (snapshot 2024-09-17)",
+        "Bioconda solo publica linux-64 y macOS-64: en Windows se ejecuta por Docker"
+      ]
+    },
+    "bcftools": {
+      "image": "quay.io/biocontainers/bcftools",
+      "tag": "1.21--h8b25389_0",
+      "digest": "sha256:969314d56b9131683917cc5801734891a9af130daf7a0fb902b7707060b06027",
+      "role": "extractor único de conteos (bcftools mpileup) y manejo de BCF"
+    }
+  },
+  "annotation": {
+    "gencode_v33_gff3": {
+      "path_key": "exp027.gencode_v33_gff3",
+      "sha256": "8dd700b452cea75aeba52c9d85e0a40e77cb810cd9bfcb99684b1ac5b9d44e36",
+      "use": "coordenadas públicas de BUB1B (ENSG00000156970.12) para la ventana #1"
+    }
+  },
+  "c3_audit": {
+    "generator": "src/exp027/c3_synth.py",
+    "commands": "src/exp027/c3_audit.sh",
+    "seed": 42,
+    "data": "100 % sintética: 85 no emparentados + 5 trios; sin datos del paciente ni de 1000G",
+    "reproduces_original_inputs": "truth.vcf, unphased.vcf y trios.ped idénticos a los de la auditoría original (normalizando fin de línea)"
+  }
+}

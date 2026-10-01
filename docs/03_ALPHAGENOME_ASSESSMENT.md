@@ -278,7 +278,7 @@ Por analogía directa con la regla aplicada a AlphaFold en este proyecto:
   se le pasa una hipótesis de fase, no la infiere.
 
 **Lenguaje obligatorio:** *"AlphaGenome predice X"*, nunca *"AlphaGenome demuestra X"*.
-Un modelo no descubre; produce una predicción con incertidumbre (CLAUDE.md, Regla Dura 4).
+Un modelo no descubre; produce una predicción con incertidumbre (CONTRIBUTING_RESEARCH.md, Regla Dura 4).
 
 ---
 

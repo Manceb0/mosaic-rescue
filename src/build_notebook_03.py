@@ -21,7 +21,7 @@
 #       - contiene la formulacion «gano sin fenotipo y sin ClinVar», que este
 #         proyecto tiene PROHIBIDA: en el `A0` congelado `BUB1B` sale **#4**, no
 #         primero. Los dos numeros (`A0` #4 y `A0-FREQFIX` #1) se reportan
-#         siempre juntos (`CLAUDE.md`).
+#         siempre juntos (`CONTRIBUTING_RESEARCH.md`, regla de A0).
 #
 #     El auditor de afirmaciones superadas lo clasifica `OTRO` y por eso no
 #     bloqueaba. Un fichero que no bloquea igualmente enganya a quien lo lee.

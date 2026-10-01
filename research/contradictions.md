@@ -12,11 +12,11 @@ son las contradicciones realmente aceptadas, cada una con su origen.
 
 **Regla de admisión.** Una fila entra aquí solo si tiene identificador verificado o documento
 del repositorio que la sostenga. Ninguna se ha suavizado para que encaje mejor con la
-hipótesis principal. `CLAUDE.md` Regla Dura 5 y Regla Dura 6.
+hipótesis principal. `CONTRIBUTING_RESEARCH.md`, Reglas Duras 5 y 6.
 
 | ID | Hipótesis atacada | Evidencia contradictoria | Fuente | Gravedad | Decisión |
 |---|---|---|---|---|---|
-| **C002** | «`BUB1B` ganó la búsqueda genome-wide» | En el `A0` **congelado y preregistrado**, `BUB1B` sale **#4**, no #1. Solo vuelve al #1 en la sensibilidad `A0-FREQFIX`, hecha **después** de ver el resultado | `src/prioritization/freqfix_sensitivity.py` · EXP-021b | **alta** | **Se conserva la contradicción.** Los dos números se reportan siempre juntos. Prohibido narrar «siempre fue #1» (`CLAUDE.md`) |
+| **C002** | «`BUB1B` ganó la búsqueda genome-wide» | En el `A0` **congelado y preregistrado**, `BUB1B` sale **#4**, no #1. Solo vuelve al #1 en la sensibilidad `A0-FREQFIX`, hecha **después** de ver el resultado | `src/prioritization/freqfix_sensitivity.py` · EXP-021b | **alta** | **Se conserva la contradicción.** Los dos números se reportan siempre juntos. Prohibido narrar «siempre fue #1» (`CONTRIBUTING_RESEARCH.md`, regla de A0) |
 | **C003** | «La missense cae en un dominio caliente, luego `PM1` aplica» | 1 497 missense de ClinVar repartidas por el gen, 95,3 % VUS y una sola P/LP: **no hay hotspot demostrable en ningún punto de `BUB1B`** | `docs/ACMG_CURATION.md` §`PM1` · figura `fig02_gene_browser` | media | **`PM1` NO se aplica.** El criterio se retiró con el dato delante, no por intuición |
 | **C004** | «Los dos alelos están establecidos en *trans*» | La fase no está resuelta y no hay muestras parentales. `PM3` queda bloqueado | EXP-013 **BLOCKED** · `docs/ACMG_CURATION.md` | **alta** | La missense se queda en **VUS**. No se promociona por conveniencia |
 | **C005** | «Subir chaperonas sube BUBR1» (puente 3, ruta T2-A) | Inhibir HSP90 **desploma** mutantes missense de BUBR1: eso demuestra **dependencia basal**, la misma dirección de dependencia, y **no** que añadir soporte suba la abundancia. Falta la dirección de **ganancia**, que sigue sin medir | PMID 20516114 | media | Puente 3 **SIN RESOLVER**, no contradicho: las dos celdas pasan de `CONTRADICTORY` a `NEAR`. Era un error lógico nuestro, y como la corrección **nos favorece**, se declara en la cabecera del propio TSV |

@@ -2,7 +2,7 @@
 
 > **Autoridad.** Este documento manda sobre cualquier módulo, notebook o idea previa.
 > Si algo en el repositorio lo contradice, gana este documento. Ver
-> `docs/00_ESTADO_Y_OBSOLESCENCIA.md` para el mapa de lo retirado y
+> `research/EXPERIMENT_REGISTRY.md` y `docs/DECISIONS.md` para el estado vigente y lo retirado, y
 > `docs/05_CONTRATO_VISUAL.md` para qué figura debe cada hipótesis.
 
 Existe por una razón concreta: ahora mismo hay varias hipótesis atractivas a la vez, y

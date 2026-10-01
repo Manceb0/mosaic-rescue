@@ -27,7 +27,7 @@ QUÉ LA MATARÍA
 
 El segundo campo es el que da valor a los otros cuatro. Si «qué esperábamos» se escribe
 después de ver el resultado, la figura no vale nada aunque el gráfico sea correcto —
-`CLAUDE.md`, Regla Dura 6.
+`CONTRIBUTING_RESEARCH.md`, Regla Dura 6.
 
 Ejemplo, MitoRead:
 
@@ -398,7 +398,7 @@ Verificado a fecha de hoy: las cinco entradas propuestas tienen acta de defunci�
 | Diagnóstico dual / Bartter | condicional | brief §8; `04_ARQUITECTURA_MAESTRA.md` §4 |
 | Rescate mitocondrial / arimoclomol | posible, con colisión oncológica declarada | brief §10.3; plan §306 |
 | Estabilización del huso tipo taxano | **rechazada** | brief §455: el paclitaxel breve a dosis baja **induce** husos multipolares y aneuploidía; más neurotoxicidad y mielosupresión en un niño con atrofia muscular y antecedente de rabdomiosarcoma |
-| Reconstrucción de cariotipos desde bulk WGS | **rechazada por sobreafirmación** | `00_ESTADO_Y_OBSOLESCENCIA.md`; tres auditorías independientes |
+| Reconstrucción de cariotipos desde bulk WGS | **rechazada por sobreafirmación** | `docs/01_MASTER_BRIEF.md` §6.5; tres auditorías independientes |
 
 La cuarta es la lápida más instructiva del conjunto: una idea elegante, rescatar el modo
 de fallo de `CEP57` anclando extremos menos, que murió por el mecanismo mismo que proponía.

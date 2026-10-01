@@ -24,7 +24,7 @@
 #	  ABSENT         no hay
 #
 #	REGLA DURA: ninguna fila con `clase` distinta de ABSENT puede quedarse sin
-#	`fuente`. Y ninguna fuente se escribe sin haberla verificado (CLAUDE.md §5).
+#	`fuente`. Y ninguna fuente se escribe sin haberla verificado (CONTRIBUTING_RESEARCH.md, Regla Dura 5).
 #	Las fuentes de aqui son las mismas de docs/EVIDENCE.md y
 #	docs/TRACK2_MECHANISM_MAP.md; este fichero no anade ninguna nueva.
 #

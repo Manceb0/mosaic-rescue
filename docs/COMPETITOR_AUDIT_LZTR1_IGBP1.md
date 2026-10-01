@@ -97,7 +97,7 @@ Es exactamente el tipo de cosa para la que sirve una búsqueda sin panel: aparec
 que nadie estaba buscando.
 
 > **Límite explícito.** Este proyecto es investigación preclínica y **no emite
-> recomendaciones clínicas** (`CLAUDE.md`, Regla Dura 3). La relevancia clínica de un
+> recomendaciones clínicas** (`CONTRIBUTING_RESEARCH.md`, Regla Dura 3). La relevancia clínica de un
 > hallazgo secundario, su confirmación por un método ortogonal y cualquier consecuencia
 > asistencial **corresponden al equipo clínico**, no a este análisis.
 
@@ -167,7 +167,7 @@ La rama 5 pasa de **EN CURSO** a **CERRADO**:
 
 ## Verificación de identificadores
 
-`CLAUDE.md` Regla Dura 5. Los identificadores de gen y enfermedad (OMIM 300139, MIM 300472)
+`CONTRIBUTING_RESEARCH.md`, Regla Dura 5. Los identificadores de gen y enfermedad (OMIM 300139, MIM 300472)
 se comprobaron en sesión el 2026-09-02. Las referencias bibliográficas se citan por
 autor, revista y año; **los DOI y PMID concretos de Johnston 2018, Motta 2019, Graham 2003 y
 el trabajo de manchas café con leche de 2024 no se transcriben aquí porque no se verificaron

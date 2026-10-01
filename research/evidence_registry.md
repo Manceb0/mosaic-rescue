@@ -27,7 +27,7 @@ La evidencia está, por tanto, en ficheros **parseables y validados por `src/ver
 
 ## La regla que sí se cumple en todos ellos
 
-`CLAUDE.md`, Regla Dura 5: **ningún PMID ni DOI que no se haya verificado en sesión.** Si no
+`CONTRIBUTING_RESEARCH.md`, Regla Dura 5: **ningún PMID ni DOI que no se haya verificado en sesión.** Si no
 se tiene, se escribe `no verificado` y se sigue. Un identificador inventado es descalificatorio.
 
 Y Regla Dura 4: cada afirmación lleva su nivel de evidencia. `L0` especulación · `L1`

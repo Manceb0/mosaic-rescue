@@ -4,7 +4,7 @@
 # config/paths.yaml esta en .gitignore y NUNCA se commitea.
 #
 # El codigo no contiene rutas absolutas hardcodeadas. Todo pasa por aqui.
-# Ver CLAUDE.md, Regla Dura 2.
+# Ver CONTRIBUTING_RESEARCH.md, Regla Dura 2.
 
 # --- Datos del paciente (fuera del repositorio, siempre) ---
 patient:
@@ -43,6 +43,23 @@ controls:
 output:
   work_dir:       ./work            # gitignored
   results_dir:    ./results         # gitignored
+
+# --- EXP-027: benchmark público (1000G high-coverage) ---
+# Rutas reales en config/paths.yaml; sha256 en config/exp027_benchmark.yaml al materializar.
+# Nada de esto se descarga sin GO explícito con tamaño declarado.
+exp027:
+  hc_1000g_genotypes_dir:      /ruta/ficticia/1000g_hc/genotypes/
+  hc_1000g_cram_dir:           /ruta/ficticia/1000g_hc/cram_slices/
+  hc_1000g_reference_fasta:    /ruta/ficticia/1000g_hc/GRCh38_reference.fa
+  hc_1000g_pedigree:           /ruta/ficticia/1000g_hc/pedigree.ped
+  hc_1000g_sv_callset:         /ruta/ficticia/1000g_hc/sv_callset.vcf.gz
+  phase3_unrelated_ids:        /ruta/ficticia/1000g_phase3_unrelated_2504.txt
+  genetic_map_grch38:          /ruta/ficticia/maps/genetic_map_grch38.gmap.gz
+  gaps_centromeres_grch38:     /ruta/ficticia/tracks/gaps_centromeres_grch38.bed
+  segdups_grch38:              /ruta/ficticia/tracks/segdups_grch38.bed
+  encode_blacklist_v2_grch38:  /ruta/ficticia/tracks/encode_blacklist_v2_grch38.bed
+  gencode_v33_gff3:            /ruta/ficticia/gencode.v33.annotation.gff3.gz
+  work_dir:                    ./work/exp027      # gitignored
 
 # --- APIs externas ---
 # Las claves NO van aqui. Van en .env (gitignored), y se leen por variable

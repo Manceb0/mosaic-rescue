@@ -1,6 +1,6 @@
 # MASTER BRIEF: MVA Hackathon 2026
 
-> **Repositorio privado obligatorio.** Este documento contiene fenotipo clínico de un menor real. Ver `CLAUDE.md`, Regla Dura 1.
+> **Repositorio privado obligatorio.** Este documento contiene fenotipo clínico de un menor real. Ver `CONTRIBUTING_RESEARCH.md`, Regla Dura 1.
 
 ---
 

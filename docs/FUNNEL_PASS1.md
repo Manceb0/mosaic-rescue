@@ -7,7 +7,7 @@
 > profundidades ni genotipos. Ese detalle vive en `work/lanes/` (ignorado por Git).
 > **Decisión pendiente del responsable del dato:** si la memoria final debe nombrar la
 > variante —cosa habitual e inevitable en un entregable de Track 1—, hay que decidir
-> explícitamente qué nivel de detalle se versiona. Ver `CLAUDE.md`, Regla Dura 1.
+> explícitamente qué nivel de detalle se versiona. Ver `CONTRIBUTING_RESEARCH.md`, Regla Dura 1.
 
 ## El funnel, con números reales
 

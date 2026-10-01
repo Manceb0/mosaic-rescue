@@ -1,7 +1,7 @@
 # Tabla de evidencia
 
 Se actualiza **al leer cada paper**, no al final. Una referencia sin PMID/DOI verificado
-en la sesión se marca `no verificado`; no se inventa (`CLAUDE.md`, Regla Dura 5).
+en la sesión se marca `no verificado`; no se inventa (`CONTRIBUTING_RESEARCH.md`, Regla Dura 5).
 
 No citar un paper porque su título parezca relevante. Leer métodos y resultados
 suficientes para saber qué se demostró realmente.

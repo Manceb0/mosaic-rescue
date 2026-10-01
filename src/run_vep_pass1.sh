@@ -2,7 +2,7 @@
 # Pasada 1 de VEP — capa minima de consecuencia, suficiente para asignar
 # variante -> gen -> mecanismo y construir los tres carriles.
 #
-# GOBERNANZA (CLAUDE.md, Reglas Duras 1 y 2):
+# GOBERNANZA (CONTRIBUTING_RESEARCH.md, Reglas Duras 1 y 2):
 #   - --offline --cache : NINGUNA variante del paciente sale de la maquina.
 #     Prohibido --database, que consulta los servidores de Ensembl.
 #   - El VCF original NO se modifica. Todo derivado va a work/, ignorado por Git.

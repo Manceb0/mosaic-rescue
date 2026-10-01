@@ -121,7 +121,7 @@ def test_07_el_numero_de_contradicciones_publicado_coincide():
 
 @pytest.mark.parametrize("doc", ("README.md", "reports/TRACK1_REPORT.md"))
 def test_08_a0_cuatro_y_freqfix_uno_se_reportan_juntos(doc):
-    """`CLAUDE.md`: prohibido narrar la historia como "BUB1B siempre fue #1"."""
+    """`CONTRIBUTING_RESEARCH.md` (regla de A0): prohibido narrar la historia como "BUB1B siempre fue #1"."""
     t = _txt(doc)
     assert "A0-FREQFIX" in t, f"{doc} no menciona la sensibilidad A0-FREQFIX"
     # El puesto puede escribirse como "#4" o en palabras ("fourth", "cuarto").

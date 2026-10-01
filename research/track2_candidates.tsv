@@ -17,11 +17,11 @@
 #	  CONTROL      control del experimento: vehiculo o brazo genetico
 #
 #	Los identificadores de `candidato` van en INGLES, como el resto de nombres del
-#	proyecto (CLAUDE.md, Convenciones). Cuatro de los seis ya lo estaban; dejar dos
+#	proyecto (CONTRIBUTING_RESEARCH.md, Convenciones). Cuatro de los seis ya lo estaban; dejar dos
 #	en espanol metia dos palabras sueltas dentro de una figura en ingles.
 #
 #	REGLA DURA: ninguna celda de evidencia lleva un identificador sin verificar
-#	(CLAUDE.md Regla 5). Los DOI y PMID de este fichero se comprobaron el
+#	(CONTRIBUTING_RESEARCH.md, Regla Dura 5). Los DOI y PMID de este fichero se comprobaron el
 #	2026-09-02.
 #
 #	UNA DISCREPANCIA ENTRE PREPRINT Y ARTICULO PUBLICADO, ANOTADA
