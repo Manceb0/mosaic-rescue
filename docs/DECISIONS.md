@@ -2247,3 +2247,90 @@ del usuario con tamaño declarado**; nada se baja bajo esta enmienda.
 ni se ejecuta Phase 1** hasta que: (i) esta enmienda esté commiteada, (ii) la auditoría C3 esté hecha,
 (iii) se fije la resolución de profundidad C1, y (iv) haya GO de descarga del usuario con tamaño.
 
+### Enmienda 2 de EXP-027 (2026-10-01) · especificación final PRE-EJECUCIÓN
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrita **antes** de descargar nada y antes de correr ningún
+benchmark (cero resultados vistos). Cierra todos los defectos de pre-ejecución restantes. **Tras esta
+enmienda, el diseño del método queda CONGELADO:** la auditoría C3 solo resuelve **hechos mecánicos**
+de SHAPEIT5 (qué campos escribe, qué modo acepta, qué buffer necesita); **nunca** se reoptimiza el
+método según cómo salga el benchmark. Ninguno de estos defectos ha contaminado un resultado: Phase 1
+sigue sin ejecutarse.
+
+**M1 · leave-family-out (completa C2).** Para cada hijo del benchmark, **ambos padres y cualquier
+familiar de primer grado se excluyen del panel de referencia/conditioning** usado para fasear a ese
+hijo. Los genotipos parentales mendelianos se usan **solo** para construir la fase ground-truth
+**después** de la inferencia, nunca como entrada de fase. Si un panel público preconstruido no puede
+eliminar esos familiares, **ese panel no es elegible** para el benchmark de trios: se usa un panel
+independiente o se construye uno leave-family-out.
+
+**M2 · puerta a profundidad real (completa C1).** Bajo la ruta por defecto 1000G, Phase 1 conserva el
+requisito preregistrado **`FPR ≤ 0.05` y `LOD ≤ δ*=0.10`**, **evaluado a la profundidad real del
+recurso high-coverage 1000G (~30×)**, reportando la profundidad real por muestra. `δ*=0.10` no cambia;
+solo se mueve la condición de 44× a la profundidad que de verdad existe.
+
+**D1 · sin oracle phase-switch.** Una ventana solo puede partirse por **límites que la herramienta
+reporte realmente** (`PS`/chunk/bloque inferido, si existen). Los switch errors verdaderos son
+**desconocidos en el paciente** y deben absorberse en la validación end-to-end; no hay «oracle split»
+por una verdad que en el niño no tenemos.
+
+**D2 · 1000G LCL = null técnico, no null biológico.** El recurso 1000G high-coverage proviene de
+**líneas linfoblastoides (LCL)** y arrastra artefactos somáticos de propagación celular (aneuploidía
+de cromosomas sexuales ~0.94 %, CNVs mosaico subcromosómicos en autosomas; Byrska-Bishop 2022, PMID
+36055201). Por tanto `δ=0` de 1000G es **null técnico de datos reales + benchmark de fase**, no un
+null biológico universal de desequilibrio mosaico. Se **excluyen** ventanas con CNV/SV/anomalías
+conocidas y se deja explícito que **LCL ≠ sangre**: el FPR biológico no queda validado universalmente.
+
+**D3 · algoritmo de spike-in, separado por propósito.** Los dos propósitos no comparten manipulación:
+- **FPR técnico:** datos reales **intactos** (sin manipular el BAM).
+- **Potencia:** spike-in **a nivel de conteos**, manteniendo **fijo el `n_i` observado por sitio** y
+  modificando únicamente la probabilidad H1/H2 (sorteo binomial/beta-binomial a profundidad fija).
+  **No** se añaden/quitan lecturas del BAM (evita convertir «potencia de BAF» en «potencia por
+  profundidad/duplicación», el confundido de EXP-015).
+
+**D4 · familia de pruebas múltiples congelada.** Primaria confirmatoria **A1 = una única ventana de
+2 Mb centrada en BUB1B** (familia de tamaño 1 → máxima potencia, sin carga de multiplicidad
+genome-wide). Secundaria preespecificada: el conjunto de ventanas de chr15. **Cualquier scan
+genome-wide es exploratorio separado**, fuera de la familia BH primaria. `B = 10 000` da p mínima
+~`1e-4`, suficiente para la familia primaria; para familias mayores se sube `B` hasta `min p < α/m`.
+La familia se fija **antes** del benchmark.
+
+**D5 · métrica de calidad de fase con consecuencia decisional.** Phase 1 **debe reportar**
+obligatoriamente el **switch-error rate (SER) de SNP comunes** y la **degradación de potencia** usando
+fase inferida vs fase mendeliana. Existe una **regla de decisión**: un SER por encima de un umbral
+vuelve **A1/A2 no utilizables**. El valor numérico del umbral se fija tras C3 (cuando sepamos qué
+reporta SHAPEIT5), pero **antes del benchmark**; la existencia de la regla no espera a C3.
+
+**D6 · A2 (candidato raro) separado de A1 (marcadores comunes).** SHAPEIT5 fasea mal los singletons
+(~35 % switch error; confidence fijado en 0.5; los autores los excluyeron del análisis de compound
+heterozygotes; Hofmeister 2023, PMID 37386248). Por eso: **A1 puede PASAR aunque A2 sea UNSCORABLE.**
+Para A2, si el alelo candidato es **singleton/ultra-raro** y no obtiene evidencia de fase
+suficientemente fuerte, se declara **`UNSCORABLE / UNRESOLVED`**; nunca se hereda la confianza de los
+SNP comunes por proximidad.
+
+**S1 · los 20 hijos, por regla determinista.** Selección **estratificada entre las superpoblaciones**
+de 1000G (AFR/AMR/EAS/EUR/SAS), determinista por **semilla 42 / hash del ID de muestra**, solo de
+**trios completos**; los IDs se registran en `config/` **antes** del benchmark. Nunca «los 20 que
+salgan mejor».
+
+**S2 · las regiones de 2 Mb, selladas.** Coordenadas públicas fijas (o selección por seed/hash)
+registradas en `config/` antes del benchmark, **excluyendo** regiones con CNV/SV conocidos (liga a D2).
+
+**S3 · slice con buffer (completa C4).** La ventana de análisis de 2 Mb **no** es la entrada de fase:
+SHAPEIT5 fasea en **chunks solapados de varios Mb** (~4.5 Mb en UKB; Hofmeister 2023). Cada slice
+lleva **flancos/buffer** (tamaño según la auditoría C3) y **solo se evalúa el centro de 2 Mb**.
+
+**S4 · extractor único de conteos.** `n_H1`/`n_H2` salen de **un único extractor de conteos sobre
+BAM/CRAM**, el mismo para 1000G y para el caso, con filtros **MAPQ/baseQ/flags idénticos**, fijados en
+`config/`. No se mezclan extractores (p. ej. AD de GATK vs AD de Sentieon).
+
+**Registro — estado actual limpio.** La celda de estado del `EXPERIMENT_REGISTRY.md` muestra la
+**regla efectiva**; las cláusulas inválidas previas («30× → 44×» y el `PP≥0.9` provisional) se marcan
+**SUPERSEDED BY AMENDMENT 1/2**. `DECISIONS.md` conserva la historia completa; el registro no debe
+leerse como contradictorio.
+
+**STOP de diseño.** Tras Amendment 2 no se hacen más enmiendas de método. No se descarga ni se ejecuta
+Phase 1 hasta que: (i) Amendment 2 esté commiteada, (ii) C3 (hechos mecánicos de SHAPEIT5) esté hecha,
+(iii) `config/` fije IDs de los 20 trios, coordenadas de regiones, extractor de conteos, ruta de
+profundidad, buffer de slice, familia BH, `B` y umbral de SER, y (iv) haya GO de descarga del usuario
+con tamaño declarado.
+
