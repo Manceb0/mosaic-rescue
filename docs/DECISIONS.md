@@ -2639,3 +2639,37 @@ ejecución, **aceptando el resultado aunque falle**. Si Phase 1 falla porque los
 retención de potencia, ese es el resultado científico del benchmark (el estadístico no es
 suficientemente robusto en esta configuración), no un problema que arreglar.
 
+### Enmienda 7 de EXP-027 (2026-10-01) · centinela de calibración APR, PRE-DATO
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Sin descargar ni inspeccionar ningún dato de benchmark. No
+se buscó: apareció al probar el ejecutor con datos sintéticos de juguete, que es para lo que existen.
+
+**Defecto.** La regla «APR ≤ 0.05» (regla 10(a) de Amendment 3) exige que la APR estimada quede por
+debajo de su propia esperanza. Con un método perfectamente calibrado (tasa real 0.05 bajo el null de
+fase aleatorizada con `B = 10 000`), la probabilidad de pasar es 0.647 con N = 60 pares y **≈ 0.54**
+con N ≈ 900–1 000: el benchmark podía fallar por azar siendo correcto. En el toy, con fase perfecta y
+datos sin desequilibrio, salió APR = 6/60 = 0.10 y el global dio FAIL solo por APR.
+
+**Regla nueva (sustituye a «APR ≤ 0.05»).** `K` = pares hijo × ventana intactos con `p_emp < 0.05`;
+`N` = pares hijo × ventana intactos evaluables. Test binomial exacto unilateral, `H0: p = 0.05`,
+`H1: p > 0.05`. La puerta FALLA solo si `p_binom < 0.05`. No hay porcentaje fijo: el umbral sale de N
+(N = 60 → veto desde K ≥ 7; N = 900 → K ≥ 57; N = 1 000 → K ≥ 63; 6/60 da `P(X ≥ 6) = 0.0787`, sin
+exceso). Se reportan siempre `K`, `N`, la APR observada y `p_binom`. Es un **centinela operativo de
+calibración**, no un FPR biológico: el binomial presupone independencia aproximada entre pares. La
+corrección `(1 + b)/(B + 1)` del p empírico ya congelada trata la permutación como una distribución nula
+discreta exacta (Phipson & Smyth 2010, PMID 21044043,
+[10.2202/1544-6115.1585](https://doi.org/10.2202/1544-6115.1585)).
+
+**Decisiones del ejecutor confirmadas por el líder** (detalle en `config/exp027_benchmark.yaml`,
+`executor_decisions`): semillas de permutación separadas para datos intactos
+(`SHA256("42:perm:OBS:"+child+":"+window_id)`) y spike-in
+(`SHA256("42:perm:SPIKE:"+child+":"+window_id+":"+δ+":"+rep)`); clases de A1 por especificidad
+(p ≥ 0.05 → NO_EVIDENCE; p < 0.05 y |δ̂| < 0.10 → SUGGESTIVE; p < 0.05 y |δ̂| ≥ 0.10 → CONSISTENT);
+puerta de SER sobre marcadores analíticos MAF ≥ 1 %, con el SER del scaffold solo descriptivo; APR
+sobre pares hijo × ventana; una superpoblación es evaluable para BUB1B con ≥ 1 hijo evaluable, y se
+reporta el n por superpoblación; **AC, AN y MAF se calculan solo en la cohorte de conditioning** antes
+de añadir al objetivo (benchmark: `C_target`; paciente: los 2.504), para que el propio individuo no
+decida qué marcadores entran.
+
+Tras esta enmienda no hay más decisiones científicas: el siguiente artefacto es el commit del ejecutor.
+

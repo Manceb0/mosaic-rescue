@@ -99,8 +99,14 @@ rho:                                            # Amendment 4 r4; Amendment 5 r5
   min_hets_per_bin: 200
   fallback: [per_child_bin, global_bin_20_children, global_all_20_children]
 
-gates:                                          # Amendment 3 r10; Amendment 5 r3; Amendment 6
-  apr_max: 0.05                                 # datos reales intactos, delta = 0
+gates:                                          # Amendment 3 r10; Amendment 5 r3; Amendment 6; Amendment 7
+  apr_calibration_sentinel:                     # Amendment 7: sustituye a "APR <= 0.05"
+    K: pares hijo x ventana intactos con p_emp < 0.05
+    N: pares hijo x ventana intactos evaluables
+    test: binomial exacto unilateral, H0 p = 0.05, H1 p > 0.05
+    fail_if: p_binom < 0.05                      # sin porcentaje fijo: el umbral sale de N
+    report: [K, N, APR, p_binom]
+    nature: centinela operativo de calibración, no FPR biológico (independencia aproximada)
   sensitivity_at_0_10_min: 0.80                 # fase inferida
   power_retention_min: 0.90                     # frente a fase mendeliana
   common_ser_max: 0.02                          # techo operativo, no umbral publicado
@@ -125,7 +131,7 @@ a2: UNSCORABLE_UNRESOLVED_unless_orthogonal_phase   # Amendment 4 r2: PP de phas
 # Son de serialización/implementación, no científicos: materializan reglas ya congeladas.
 # CONFIRMADOS por el líder (2026-10-01).
 implementation_decisions:
-  status: CONFIRMED_2026-10-01
+  status: CONFIRMED_2026-10-01                  # ventanas, serialización y efecto de A1
   evaluation_windows: >-
     Una única lista global: las 49 primeras tiles de la retícula, en el orden hash congelado, que
     pasan las exclusiones independientes del individuo (gaps/centrómeros, duplicaciones
@@ -150,3 +156,20 @@ implementation_decisions:
     por la fase inferida, comparado con delta_star = 0.10. No es mean(abs(delta_i)), que mediría
     dispersión y no desequilibrio coherente; sin ponderación nueva (coherente con el numerador
     de T).
+
+# Decisiones del ejecutor, CONFIRMADAS por el líder (2026-10-01) junto con Amendment 7.
+executor_decisions:
+  status: CONFIRMED_2026-10-01
+  perm_seed_intact: int(SHA256("42:perm:OBS:" + child + ":" + window_id)[:16], 16)
+  perm_seed_spike: int(SHA256("42:perm:SPIKE:" + child + ":" + window_id + ":" + delta_fmt + ":" + rep)[:16], 16)
+  perm_seed_use: la semilla inicializa el RNG y de él salen las B = 10000 permutaciones
+  a1_classes:
+    - p_emp >= 0.05 -> NO_EVIDENCE
+    - p_emp < 0.05 y |delta_hat| < 0.10 -> SUGGESTIVE
+    - p_emp < 0.05 y |delta_hat| >= 0.10 -> CONSISTENT_WITH_HAPLOTYPE_SPECIFIC_ALLELIC_IMBALANCE
+  ser_gate: marcadores analíticos MAF >= 1 % (de C_target); el SER del scaffold MAF >= 0.1 % es solo descriptivo
+  apr_unit: pares hijo x ventana, con el centinela binomial de Amendment 7
+  bub1b_superpop_evaluable: una superpoblación cuenta si tiene >= 1 hijo evaluable; se reporta n por superpoblación
+  allele_frequencies: >-
+    AC, AN y MAF (scaffold y analítica) se calculan solo en la cohorte de conditioning, antes de
+    añadir al objetivo para la fase conjunta. Benchmark: C_target; paciente: los 2.504.
