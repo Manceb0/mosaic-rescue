@@ -3,7 +3,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "1222dad3afadc000f1f73069a5c75f94d80fa69ee6a5de142e8f71d860cfe678"
+      "sha256": "75c05d3f4a7befc5897407ab7db1e4dde1dd75debbabafda17733c6e19fa3fff"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -27,7 +27,7 @@
     },
     {
       "path": "research/EXPERIMENT_REGISTRY.md",
-      "sha256": "28ebcd0371b7282c2a3fd592a0f3ee2e8bacb8586839808e895de83384e3bbf8"
+      "sha256": "a7f911b9bea06c77d7787b91cbd65c3351533cbe4af633313c6ecec07cdcd30d"
     }
   ],
   "base_commit": "8d2383abcc8a0dfc78512bb301feceabe89bb123",

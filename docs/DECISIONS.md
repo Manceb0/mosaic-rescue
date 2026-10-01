@@ -2554,3 +2554,46 @@ Siguiente paso, sin cambios: commit de reproducibilidad → ejecutor probado sol
 juguete → verificación en clon limpio → tamaño exacto de descarga para el GO del usuario. NO-GO a
 descargar 1000G y a ejecutar Phase 1 hasta entonces.
 
+### Enmienda 6 de EXP-027 (2026-10-01) · ajustes mínimos PRE-DATO
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Amendment 5 se acepta. Sin descargar ni inspeccionar ningún
+dato de benchmark. Cuatro puntos de la revisión del líder y una extensión de consistencia declarada.
+Tras esto no se buscan deliberadamente parámetros científicos nuevos.
+
+1. **Signo del spike-in (sustituye a la regla de signo de la regla 7 de Amendment 3).** Para cada
+   `(hijo × ventana × δ > 0)`, las réplicas con índice `rep` **par** reciben `+δ` y las de índice
+   **impar** `−δ`: exactamente **R/2 y R/2** (R es par: 100 en BUB1B, 2 en las otras 49). La semilla de
+   sorteo `SHA256("42:draw:"+…+rep)` de la regla 4 de Amendment 5 no cambia y sirve solo como semilla. La
+   regla anterior (paridad de `SHA256("42:sign:"+sample_id+":"+window_id)`) no incluía `rep`, de modo que
+   todas las réplicas de un hijo×ventana recibían el mismo signo, y no garantizaba 50/50.
+
+2. **Centinela técnico de BUB1B (sustituye a la regla 3(c) de Amendment 5).** Entre los `n_e` hijos
+   elegibles, se cuentan los positivos en la ventana BUB1B con **datos intactos** (`p_emp < 0.05`) y se
+   aplica un **test binomial exacto unilateral** contra `p0 = 0.05`. Si hay exceso significativo
+   (`P(X ≥ k_obs) < 0.05`), **BUB1B technical-null FAIL → A1 NOT EVALUABLE**, sea cual sea la potencia.
+   Es un **centinela técnico operativo**, no un FPR biológico. Recuentos críticos, calculados del
+   binomial sin ningún dato: `n_e` = 15–16 → veto con ≥ 3 positivos; `n_e` = 17–20 → veto con ≥ 4. (Con
+   `n_e` < 15, A1 ya falla por la regla 3(a) de Amendment 5.)
+
+3. **Sin afirmación de conservadurismo (corrige la regla 2 de Amendment 5).** Se retira «la estimación
+   es conservadora». Redacción congelada: **la potencia se valida sobre el subconjunto de verdad
+   mendelianamente resoluble; no se asume su transferencia al conjunto analítico completo de hets.** Esos
+   loci pueden no ser una muestra aleatoria del conjunto completo.
+
+4. **Estimador de la puerta BUB1B (precisa la regla 3(b) de Amendment 5).** Sensibilidad **por hijo** =
+   fracción detectada de sus R = 100 réplicas a δ = 0.10 (ambos signos); después, **media con peso igual
+   entre los hijos elegibles**. Retención = esa media con fase inferida / la misma media con fase
+   mendeliana, con la misma ponderación. Cada hijo es una unidad; sus réplicas son Monte Carlo, no
+   individuos.
+
+**Extensión de consistencia (declarada, no pedida explícitamente):** las puertas **globales** de
+sensibilidad y retención (regla 10 de Amendment 3) usan la misma jerarquía, para que ninguna ventana ni
+ningún hijo pese por su número de réplicas: por hijo, media con peso igual de sus ventanas elegibles (cada
+ventana = fracción detectada entre sus réplicas); después, media con peso igual entre hijos. El SER
+global es la media con peso igual de los SER por hijo; el veto por estrato usa la misma media dentro del
+estrato.
+
+Siguiente paso, sin cambios de diseño: commit de reproducibilidad → ejecutor probado solo con sintéticos
+de juguete → verificación en clon limpio → tamaño exacto de descarga para el GO del usuario. NO-GO a
+descargar 1000G y a ejecutar Phase 1 hasta entonces.
+
