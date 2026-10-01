@@ -85,6 +85,16 @@ context "genuinely favourable", which overstated it. The second gave a strict or
 C > U > G > A, and attributed it to a source that does not establish it; recent human-cell data
 group A and G together rather than ranking A last. Both are corrected here.
 
+EXP-029 adds a preregistered in silico estimate of this PTC context under the G418-trained Assay
+model. A4a is SCORABLE and falls in the LOWER tercile (19.09th percentile among UGA references;
+n=2064). A4b provides a separate adverse axis: none of the three preregistered UGA readthrough
+products supported by external experimental systems (R/W/C) restores the wild-type residue; all
+remain NON-WT FULL-LENGTH PRODUCT · FUNCTION UNKNOWN.
+
+Together, these results computationally weaken the allele-directed readthrough hypothesis, but they
+do not eliminate the azithromycin arm. The A4a model is G418-conditioned, not azithromycin-specific;
+mutant-transcript availability (A4c) and actual product function (A5) remain unmeasured.
+
 ## 3 · The method: eight bridges, ten dimensions, and the gaps are the result
 
 The claim *"this gene causes the disease, therefore this drug will help"* is not one claim. It

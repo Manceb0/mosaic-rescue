@@ -2049,3 +2049,23 @@ mecánica del predictor, no como métrica de dominio. Si `predict()` corre, se r
 estados; percentil contra la referencia UGA OOB marginalizada; A4b para R/W/C sin trasladar
 proporciones de otros sistemas), sin retocar nada después de ver el score.
 
+### Resultado EXP-029 (EXECUTED · 2026-09-30)
+
+Ejecutado una sola vez tras pushear el commit de procedencia `b572c71` (reglas congeladas,
+anteriores al scoring). El preregistro original y sus techos se conservan sin reescribir.
+
+- **A4a:** SCORABLE · **LOWER** · percentile **19.09%** using the preregistered percentile formula
+  (`n_less=394`, `n_equal=0`, `n_ref=2064` UGA contexts) under the G418-conditioned Assay model.
+- **A4b:** the three preregistered UGA products supported by external experimental systems (R/W/C)
+  are **NON-WT FULL-LENGTH · FUNCTION UNKNOWN**; none restores WT.
+- E1; 0(a), 0(b), Assay fidelity and OOB gates PASS; Amendments 1–2 apply. Raw score, sequence
+  context and case-specific locus details remain in `work/` only.
+
+Son **dos ejes adversos separados** (no «independientes»): ambos nacen del mismo PTC y del mismo
+problema de readthrough. El modelo A4a es **G418-conditioned, no específico de azitromicina**; A4c
+(disponibilidad de mRNA mutante) y A5 (función real del producto) siguen sin medir. Esto **debilita
+computacionalmente** la hipótesis de readthrough dirigido al alelo, **sin eliminar** el brazo de
+azitromicina. No contradice el modelo publicado (Mangkalaphiban: el contexto extendido modula el
+readthrough y los modelos G418-trained predicen PTCs humanos; no convierte G418 en proxy universal
+de otro compuesto).
+
