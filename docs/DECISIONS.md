@@ -2069,3 +2069,74 @@ azitromicina. No contradice el modelo publicado (Mangkalaphiban: el contexto ext
 readthrough y los modelos G418-trained predicen PTCs humanos; no convierte G418 en proxy universal
 de otro compuesto).
 
+## EXP-027 · A1–A3: desequilibrio alélico coherente por haplotipo (BAF faseado / lógica tipo mCA)
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrito antes de cualquier análisis del alelo o del
+haplotipo del paciente.
+
+### Procedencia (hueco corregido)
+
+La definición de EXP-027 existía en el registro de investigación previo pero **no llegó al
+repositorio versionado**: en DECISIONS solo había quedado el orden de ejecución
+`A4 → EXP-027 fase 1 → A1/A2 → A3 residual`, y el registro no tenía fila EXP-027. Se recupera aquí
+como preregistro. **No es EXP-011b** (ensayo de abundancia/recambio de BUBR1, que sigue `PARKED`):
+EXP-027 es validación de un **método de desequilibrio alélico específico de haplotipo**.
+
+### Phase 1 — validación de método PRE-PACIENTE (solo datos sintéticos/públicos)
+
+**Pregunta metodológica.** ¿Podemos detectar, con parámetros congelados y **sin ver todavía al
+paciente**, un desequilibrio alélico **coherente** a lo largo de loci heterocigotos contiguos, y
+distinguirlo de fluctuación aleatoria, profundidad y sesgo de mapeo?
+
+**Endpoint primario.** Desequilibrio alélico **phase-coherent** a lo largo de loci heterocigotos
+contiguos, **sin una llamada superpuesta que cambie el número de copia**. **CN-LOH no es el endpoint
+primario**: si una señal resulta compatible con CN-LOH, es una **clasificación secundaria**, no el
+objetivo de diseño del estadístico.
+
+**Datos.** Sintéticos o públicos **únicamente; nunca el caso.** Phase 1 debe incluir:
+- spike-ins conocidos de desequilibrio a distintas intensidades,
+- permutación de fase/signo como control negativo,
+- regiones nulas,
+- sensibilidad/especificidad o al menos **tasa de falsos positivos + límite de detección**,
+- **congelación de la ventana, del nº mínimo de heterocigotos y del estadístico ANTES de desbloquear
+  al niño.**
+
+**Conclusiones permitidas (las únicas).** `NO EVIDENCE` / `SUGGESTIVE` / `CONSISTENT WITH
+HAPLOTYPE-SPECIFIC ALLELIC IMBALANCE`.
+**Prohibido:** «selección», «rescate», «clon resistente/resiliente», «el organismo eliminó células
+malas», «esta copia de BUB1B está siendo favorecida», o cualquier fracción de linaje. Los SNP
+germinales heterocigotos son **marcadores de homólogos, no de linajes celulares**.
+
+### Después de que Phase 1 pase (preguntas del paciente, bloqueadas hasta entonces)
+
+- **A1:** ¿hay desequilibrio firmado/coherente alrededor de **BUB1B / chr15**?
+- **A2:** ¿alguno de los dos alelos candidatos muestra un balance distinto de los heterocigotos
+  vecinos **faseados**, más allá de profundidad y sesgo de mapeo? Null **beta-binomial o empírico
+  depth-matched**.
+- **A3** (solo después): búsqueda residual de eventos pequeños/mosaic-compatibles que **no** repita
+  CNV/MEI/SV ya hechos.
+
+**No se inspecciona A1/A2 del paciente hasta que Phase 1 esté congelado y pase.**
+
+### Techos
+
+- Aun si A1 es positivo, **no identifica automáticamente cuál de los dos alelos BUB1B está en el
+  homólogo favorecido**, salvo que podamos conectarlo/fasearlo físicamente con los marcadores
+  informativos.
+- «Homólogo sobrerrepresentado en sangre» es **descripción**; generación, selección y muestreo
+  permanecen confundidos (coherente con EXP-028 / el límite generación-vs-selección).
+- Solo sangre: un WGS bulk tiene techo de detección.
+
+### Literatura (verificada en sesión vía PubMed)
+
+- Loh et al. 2018, *Nature* 559:350-355, PMID 29995854
+  ([10.1038/s41586-018-0321-x](https://doi.org/10.1038/s41586-018-0321-x)): 8.342 mCAs en sangre de
+  151.202 participantes de UK Biobank con técnicas computacionales **basadas en fase** — precedente
+  fuerte de explotar coherencia haplotípica, pero cohorte masiva de genotipado que **no valida
+  automáticamente un único WGS pediátrico** (de ahí Phase 1).
+- Loh et al. 2020, *Nature* 584:136-141, PMID 32581363
+  ([10.1038/s41586-020-2430-6](https://doi.org/10.1038/s41586-020-2430-6)): CN-LOH puede sustituir
+  un segmento por su homólogo y cambiar qué alelos quedan representados en clones hematopoyéticos —
+  respalda que una señal haplotípica puede ser informativa, pero **no autoriza llamar
+  selección/rescate/clon** en este niño desde un bulk WGS.
+
