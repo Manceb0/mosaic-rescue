@@ -2431,3 +2431,72 @@ validación fasando **solo a los hijos** y usando los padres solo para la verdad
 materializado (IDs, coordenadas, mapa, catálogos, extractor, hashes) y GO de descarga del usuario con
 tamaño declarado. NO-GO a descargar 1000G y a ejecutar Phase 1 hasta entonces.
 
+### Enmienda 4 de EXP-027 (2026-10-01) · cierre científico mínimo PRE-DATO
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Escrita antes de descargar ningún dato de 1000G y antes de
+inspeccionar ningún dato de benchmark.
+
+**Regla de rediseño (sustituye a «No habrá Amendment 4» de Amendment 3).** Esa frase era demasiado
+rígida. La regla correcta es: **no se rediseña nada después de inspeccionar el primer dato del
+benchmark.** Antes de cualquier dato, un defecto detectado se corrige con una enmienda transparente: el
+preregistro existe para impedir la adaptación al resultado, no para conservar un error conocido. Desde la
+primera inspección de datos de benchmark, cualquier problema es una **desviación documentada**, no un
+rediseño.
+
+1. **Cohorte de conditioning (exacta).** `C` = las **2.504 muestras no emparentadas de 1000G fase 3**
+   (Byrska-Bishop 2022, PMID 36055201), **menos** cualquier muestra con relación de primer grado con el
+   objetivo según el pedigrí del recurso high-coverage (lista de IDs y pedigrí fijados por sha256 en
+   `config/`). Se fasea **conjuntamente** `C ∪ {objetivo}` desde genotipos **no faseados**, en el mismo
+   slice: `phase_common` sin `--reference` externo y sin `--pedigree`; `phase_rare` sobre la misma
+   entrada y su scaffold. **El paciente usa la misma `C`** (2.504; no emparentado con ninguna), de modo
+   que benchmark (`C` ≈ 2.502) y caso comparten el tamaño de cohorte, del que depende la precisión de
+   fase (Hofmeister 2023, PMID 37386248).
+
+2. **A2 (sustituye a la regla 13 de Amendment 3).** A2 = **UNSCORABLE / UNRESOLVED** en este proyecto,
+   incluso si A1 pasa, salvo que aparezca evidencia de fase ortogonal independiente que conecte
+   directamente el alelo candidato con el haplotipo de marcadores. Se acepta como evidencia ortogonal:
+   genotipos parentales informativos o secuenciación física de largo alcance que abarque la conexión
+   necesaria. La fase estadística de `phase_rare`, incluido `PP`, no es suficiente por sí sola para
+   adjudicar A2. (Queda SUPERSEDED el «`PP ≥ 0.99` para raros no-singleton»; A1 es la única lectura del
+   paciente adjudicable con el WGS de sangre actual.)
+
+3. **Extractor de conteos (exacto).** `bcftools mpileup` de
+   `quay.io/biocontainers/bcftools@sha256:969314d56b9131683917cc5801734891a9af130daf7a0fb902b7707060b06027`
+   (1.21), **idéntico** para los CRAM de 1000G y el BAM del caso: `-q 20 -Q 20`,
+   `--ff UNMAP,SECONDARY,QCFAIL,DUP,SUPPLEMENTARY`, detección de solape de mates **activada** (sin `-x`),
+   `-d 10000`, `-a FORMAT/AD`, `-R` = sitios analíticos de A1 (hets MAF ≥ 1 % de la salida faseada),
+   `-f` = la referencia exacta con la que se alineó cada dataset (sha256 en `config/`). `n_H1`/`n_H2` =
+   recuentos AD de cada alelo, orientados por el haplotipo; las lecturas que no apoyan ninguno de los dos
+   alelos se descartan; un sitio entra solo si `n_i = n_H1 + n_H2 ≥ 20`.
+
+4. **`ρ` del spike-in (exacto).** Pool de calibración **por hijo** = las **20 tiles elegibles
+   siguientes** en el orden por hash de la regla 9 de Amendment 3 (disjuntas de las 50 de evaluación),
+   con datos reales intactos (δ = 0). Hets analíticos en bins de `n_i`: `[20,30)`, `[30,40)`, `[40,60)`,
+   `[60,∞)`. Por bin, momentos con `n_i` heterogéneo:
+   `ρ̂ = max(0, (mean_i[(b_i − 0.5)²·n_i/0.25] − 1) / (mean_i[n_i] − 1))`.
+   Bin con < 200 hets → `ρ̂` agrupado del hijo; si el hijo tiene < 200 hets en total → `ρ̂` agrupado de
+   los 20 pools de calibración. `ρ` se fija antes de evaluar y **nunca** se reestima en ventanas de
+   evaluación.
+
+5. **Retícula y ventana BUB1B (exactas).** Tiles autosómicas GRCh38
+   `[k·2 000 000 + 1, (k+1)·2 000 000]`, `k = 0, 1, …`, enteras dentro del cromosoma y sin solapar la
+   pista de gaps/centrómeros (fijada por sha256 en `config/`); las tiles que solapan la ventana #1 **no**
+   son elegibles. **Ventana #1 = `chr15:39,191,079–41,191,078`** (2 Mb, base 1 inclusiva), centrada en el
+   punto medio (`40,191,079`) del gen BUB1B `ENSG00000156970.12` en GENCODE v33
+   (`chr15:40,161,023–[REDACTED]`; `gencode.v33.annotation.gff3.gz`, sha256
+   `8dd700b452cea75aeba52c9d85e0a40e77cb810cd9bfcb99684b1ac5b9d44e36`). Coordenadas de anotación pública,
+   no del paciente.
+
+6. **Hashes completos de SHAPEIT5** (sustituyen a los abreviados de Amendment 3), imagen
+   `quay.io/biocontainers/shapeit5@sha256:cf3c988c2da4beda759f03300f767495944e25984a7dfa042f806c3113c6e450`:
+   `SHAPEIT5_phase_common 15e054eb6fd1891e31f1c78c246f853f8bb6eb19846c01f205ec76ec55bb4066`,
+   `SHAPEIT5_phase_rare 34a6a4c91d683347d05b4e9b79ae6abd8250bc7ca10d9b2fc5a109753f07f6e6`,
+   `SHAPEIT5_ligate f20242d3b06e17df106bc3323e483b2fb68163bf75d3c4a9e756097014103845`,
+   `SHAPEIT5_switch 322aec56a507b1546eafa3e0bde89b08bada70a5864d4f8a1f10c4f031a5bc22`.
+
+**Separado de esta enmienda (commit de reproducibilidad, no científico):** versionar fuera de `work/`
+el generador sintético y los comandos exactos de C3 y su manifest, crear `config/exp027_*`, y arreglar
+las referencias a documentos de trabajo no versionados. **Después:** ejecutor `src/exp027/` probado solo
+con datos sintéticos de juguete → commit → verificación en clon limpio → tamaño exacto de descarga para
+el GO del usuario. NO-GO a descargar 1000G y a ejecutar Phase 1 hasta entonces.
+
