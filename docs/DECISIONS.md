@@ -2086,35 +2086,88 @@ EXP-027 es validación de un **método de desequilibrio alélico específico de 
 
 **Pregunta metodológica.** ¿Podemos detectar, con parámetros congelados y **sin ver todavía al
 paciente**, un desequilibrio alélico **coherente** a lo largo de loci heterocigotos contiguos, y
-distinguirlo de fluctuación aleatoria, profundidad y sesgo de mapeo?
+distinguirlo de fluctuación aleatoria, profundidad y sesgo de mapeo/referencia?
 
 **Endpoint primario.** Desequilibrio alélico **phase-coherent** a lo largo de loci heterocigotos
 contiguos, **sin una llamada superpuesta que cambie el número de copia**. **CN-LOH no es el endpoint
-primario**: si una señal resulta compatible con CN-LOH, es una **clasificación secundaria**, no el
+primario**: si una señal resulta compatible con CN-LOH, es **clasificación secundaria**, no el
 objetivo de diseño del estadístico.
 
-**Datos.** Sintéticos o públicos **únicamente; nunca el caso.** Phase 1 debe incluir:
-- spike-ins conocidos de desequilibrio a distintas intensidades,
-- permutación de fase/signo como control negativo,
-- regiones nulas,
-- sensibilidad/especificidad o al menos **tasa de falsos positivos + límite de detección**,
-- **congelación de la ventana, del nº mínimo de heterocigotos y del estadístico ANTES de desbloquear
-  al niño.**
+Esto es un **contrato ejecutable**: todo lo de abajo queda congelado **antes** de ejecutar el
+benchmark y antes de mirar al paciente. Las versiones exactas de herramientas y los IDs de muestra
+públicos se fijan en `config/` en el mismo commit que ejecute, pero el diseño (estadístico, fase,
+benchmark, puerta, A2) no se toca después de ver ningún número.
 
-**Conclusiones permitidas (las únicas).** `NO EVIDENCE` / `SUGGESTIVE` / `CONSISTENT WITH
-HAPLOTYPE-SPECIFIC ALLELIC IMBALANCE`.
+**(1) Estadístico y convención de signo (congelado).**
+- Het informativo = SNP germinal `0/1`, `FILTER=PASS`, `DP ≥ 20`, `GQ ≥ 30`, MAF poblacional ≥ 1 %,
+  **y confiablemente faseado** (ver (2)).
+- Por het *i*, orientado al alelo del **haplotipo H1** del bloque de fase: `b_i = n_{H1,i} / (n_{H1,i}+n_{H2,i})`,
+  desviación `δ_i = b_i − 0.5`. El signo lo fija el haplotipo (H1 vs H2), de modo que «coherente»
+  significa `δ_i` del mismo signo a lo largo de hets contiguos del mismo bloque de fase.
+- Ventana **fija W = 2 Mb**, paso 0.5 Mb; una ventana se evalúa solo si cae **dentro de un único
+  bloque de fase (PS)** y contiene **≥ Hmin = 50** hets informativos. Una ventana que cruza un
+  *phase switch* se parte en el switch; hets de bloques `PS` distintos **nunca** se combinan.
+- Estadístico de ventana `T = Σ_i δ_i / sqrt(Σ_i 0.25/n_i)` (suma de desviaciones firmadas
+  estandarizada; `0.25/n_i` = varianza de `b_i` bajo `p = 0.5`).
+- Significación por **null empírico de fase aleatorizada** (como Loh 2018): `B = 10 000`
+  permutaciones, cada una invierte el signo de cada `δ_i` con prob 0.5; `p = (1 + #{|T_perm| ≥
+  |T_obs|})/(B+1)`. Corrección Benjamini–Hochberg entre ventanas.
+
+**(2) Fase: fuente y manejo de incertidumbre (congelado).** La fase **física** del caso es inservible
+para esto (bloque máximo 288 pb, mediana 7 pb; ver Fase 0.2). Por tanto:
+- **Primaria: fase estadística con panel de referencia** (SHAPEIT5; versión y panel público
+  —p. ej. 1000G 30× / HGDP, GRCh38— fijados en `config/`), que da fase de largo alcance. La fase
+  read-backed (WhatsHap, versión en `config/`) solo sirve de QC/andamiaje dentro de bloques, nunca
+  como fase de largo alcance.
+- Un het es «confiablemente faseado» solo dentro de un bloque con **PP ≥ 0.9** (o el criterio de
+  switch-error del propio método); los hets por debajo del umbral o en bloques unitarios se
+  **excluyen**.
+- **Regla A2 (congelada):** si el alelo candidato de BUB1B **no puede enlazarse con confianza** al
+  haplotipo de los marcadores (no está en un bloque de fase confiable que abarque los marcadores),
+  **A2 = UNSCORABLE / UNRESOLVED** — nunca asignado por intuición.
+
+**(3) Benchmark numérico (congelado).** Sustrato: **WGS público real** (1000G 30×, conjunto fijo de
+**N = 20** muestras no emparentadas, IDs en `config/`) que arrastra sesgo real de mapeo/referencia,
+**downsampleado a la profundidad mediana del caso, 44×**. Spike-ins de desequilibrio por remuestreo
+de lecturas a `δ ∈ {0.00, 0.02, 0.05, 0.10, 0.15, 0.20}` sobre regiones fijas de 2 Mb; **R = 100
+réplicas por (muestra × δ)**, semilla **42** (declarada en `config/`). Nulls: **(a)** regiones reales
+con `δ = 0` (captura sesgo de mapeo/referencia que un binomial limpio no reproduce) y **(b)** el null
+de fase aleatorizada por ventana. Parámetros fijados antes de ejecutar: W = 2 Mb, paso 0.5 Mb,
+Hmin = 50, DP ≥ 20, GQ ≥ 30, MAF ≥ 1 %, B = 10 000, semilla 42.
+
+**(4) Puerta PASS/FAIL de Phase 1 (congelada).** Umbral de significación `α = 0.05` (p de fase
+aleatorizada, BH entre ventanas). **FPR:** la tasa de falsos positivos sobre ventanas null reales
+(`δ = 0`) debe ser **≤ 0.05** a `α = 0.05` (la calibración se sostiene bajo sesgo real). **Límite de
+detección:** el menor `δ` con sensibilidad **≥ 0.80** a (W = 2 Mb, Hmin = 50, 44×). **Phase 1 PASA
+si y solo si** FPR ≤ 0.05 **y** límite de detección ≤ **δ\* = 0.10**. Si FALLA, el método **no se usa
+en el paciente** y se documenta como límite metodológico (no un resultado del niño).
+
+**(5) A2 determinista (congelado, sin disyunción).** Modelo **beta-binomial** de los conteos del
+alelo alterno por het, con sobredispersión `ρ` estimada en **regiones null depth-matched**
+(hets genome-wide lejos de BUB1B, mismos bins de profundidad). Es el **único** modelo; el null
+empírico depth-matched es su conjunto de calibración, **no** una alternativa. Prueba por alelo: BAF
+faseado del alelo candidato frente a la expectativa beta-binomial a profundidad emparejada.
+
+**Conclusiones permitidas (las únicas), con umbrales congelados.**
+- **`NO EVIDENCE`:** p (BH) ≥ 0.05 **o** |efecto| por debajo del límite de detección `δ*`.
+- **`SUGGESTIVE`:** p (BH) < 0.05 pero |efecto| < `δ*` (significación detectable, efecto
+  sub-umbral), **o** la ventana pasa pero la prueba por alelo de A2 no es significativa.
+- **`CONSISTENT WITH HAPLOTYPE-SPECIFIC ALLELIC IMBALANCE`:** p (BH) < 0.05 **y** |efecto| ≥ `δ*`
+  **y** (para A2) la prueba beta-binomial del alelo candidato es significativa tras depth-matching.
+
 **Prohibido:** «selección», «rescate», «clon resistente/resiliente», «el organismo eliminó células
 malas», «esta copia de BUB1B está siendo favorecida», o cualquier fracción de linaje. Los SNP
 germinales heterocigotos son **marcadores de homólogos, no de linajes celulares**.
 
 ### Después de que Phase 1 pase (preguntas del paciente, bloqueadas hasta entonces)
 
-- **A1:** ¿hay desequilibrio firmado/coherente alrededor de **BUB1B / chr15**?
-- **A2:** ¿alguno de los dos alelos candidatos muestra un balance distinto de los heterocigotos
-  vecinos **faseados**, más allá de profundidad y sesgo de mapeo? Null **beta-binomial o empírico
-  depth-matched**.
-- **A3** (solo después): búsqueda residual de eventos pequeños/mosaic-compatibles que **no** repita
-  CNV/MEI/SV ya hechos.
+- **A1:** aplicar el estadístico congelado al **BUB1B / chr15** (firmado, faseado): ¿hay
+  desequilibrio coherente?
+- **A2:** por cada alelo candidato, prueba **beta-binomial depth-matched** frente a los hets vecinos
+  faseados; **UNSCORABLE** si el alelo no se enlaza con confianza al haplotipo de los marcadores (2).
+- **A3:** **RESERVED / SEPARATE PREREGISTRATION REQUIRED.** La búsqueda residual de eventos
+  pequeños/mosaic-compatibles **aún no está preregistrada**; no se ejecuta bajo EXP-027 hasta tener
+  su propio preregistro.
 
 **No se inspecciona A1/A2 del paciente hasta que Phase 1 esté congelado y pase.**
 
@@ -2131,9 +2184,11 @@ germinales heterocigotos son **marcadores de homólogos, no de linajes celulares
 
 - Loh et al. 2018, *Nature* 559:350-355, PMID 29995854
   ([10.1038/s41586-018-0321-x](https://doi.org/10.1038/s41586-018-0321-x)): 8.342 mCAs en sangre de
-  151.202 participantes de UK Biobank con técnicas computacionales **basadas en fase** — precedente
-  fuerte de explotar coherencia haplotípica, pero cohorte masiva de genotipado que **no valida
-  automáticamente un único WGS pediátrico** (de ahí Phase 1).
+  151.202 participantes de UK Biobank con técnicas computacionales **basadas en fase**: no era
+  «mirar BAF» a secas, sino **BAF faseado + HMM + null empírico por aleatorización de fase** para
+  controlar falsos positivos — precedente fuerte que respalda la arquitectura (1)–(4) de arriba. Pero
+  es una cohorte masiva de genotipado con fase de largo alcance, que **no valida automáticamente un
+  único WGS pediátrico** (de ahí Phase 1).
 - Loh et al. 2020, *Nature* 584:136-141, PMID 32581363
   ([10.1038/s41586-020-2430-6](https://doi.org/10.1038/s41586-020-2430-6)): CN-LOH puede sustituir
   un segmento por su homólogo y cambiar qué alelos quedan representados en clones hematopoyéticos —
