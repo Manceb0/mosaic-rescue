@@ -2597,3 +2597,32 @@ Siguiente paso, sin cambios de diseño: commit de reproducibilidad → ejecutor 
 de juguete → verificación en clon limpio → tamaño exacto de descarga para el GO del usuario. NO-GO a
 descargar 1000G y a ejecutar Phase 1 hasta entonces.
 
+### Nota PRE-DATO de EXP-027 (2026-10-01) · riesgo conocido de switch errors (no es enmienda)
+
+**No cambia ninguna regla.** Registra, **antes de cualquier dato**, un riesgo identificado en una
+segunda verificación independiente de las citas, para que un posible fallo por esta causa no se lea
+como sorpresa a posteriori.
+
+- **Literatura.** Loh 2018 (PMID 29995854, texto completo): fuera de una fase de largo alcance a escala
+  de biobanco, los métodos previos tenían que modelar «phase switch errors occurring roughly every
+  megabase»; su enfoque evitó modelarlos solo porque la fase de UK Biobank era precisa a escala de
+  decenas de Mb. Byrska-Bishop 2022 (PMID 36055201, texto completo): en este mismo recurso, el SER
+  autosómico medio es 0.09 % en hijos, 0.22 % en padres y **0.79 % en muestras no emparentadas**, con
+  fase estadística **corregida por pedigrí** (SHAPEIT-duohmm); el SER crece al bajar la MAF.
+- **Relevancia para EXP-027.** El objetivo se fasea como muestra **no emparentada y sin pedigrí**; la
+  referencia comparable es la cifra de no emparentados (el paper no la desglosa para variantes comunes).
+  Con la densidad de hets de un WGS, cabe esperar **al menos un switch, probablemente varios, por ventana
+  de 2 Mb**. El estadístico `T` es una suma con signo que **no modela switches**: un switch dentro de la
+  ventana invierte el signo de parte de la señal y la cancela parcialmente.
+- **Qué lo detecta.** La puerta de **retención de potencia ≥ 90 %** frente a la fase mendeliana (regla 10
+  de Amendment 3; regla 3 de Amendment 5). El techo de SER ≤ 2 % por sí solo **no** lo detectaría: 0.79 %
+  lo pasa.
+- **Decisión del usuario (2026-10-01): no se rediseña.** El diseño se ejecuta tal como está congelado.
+  Un FAIL de Phase 1 por esta causa es un **resultado negativo anticipado** y se reporta como tal.
+- **Segunda verificación de citas (esta sesión).** Confirmado en texto completo: Loh 2018 (HMM de tres
+  estados sobre |ΔBAF| en hets, BAF faseado, null empírico con fase aleatorizada); Byrska-Bishop 2022
+  (3.202 muestras LCL, aneuploidía de alosomas en el 0.94 %, CNVs mosaico subcromosómicos, 2.504
+  originales + 698 emparentados = 602 trios, 30X); Hofmeister 2023 (PMID 37386248; scaffold MAF ≥ 0.1 %,
+  buffers de 250 kb, singletons SER 35.1–36.6 % y confianza 0.5). Umbrales del centinela binomial
+  recalculados de forma independiente: coinciden.
+
