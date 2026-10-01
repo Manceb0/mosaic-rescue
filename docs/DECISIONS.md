@@ -2500,3 +2500,57 @@ las referencias a documentos de trabajo no versionados. **Después:** ejecutor `
 con datos sintéticos de juguete → commit → verificación en clon limpio → tamaño exacto de descarga para
 el GO del usuario. NO-GO a descargar 1000G y a ejecutar Phase 1 hasta entonces.
 
+### Enmienda 5 de EXP-027 (2026-10-01) · cierre de ambigüedades PRE-DATO
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Amendment 4 se acepta como estado previo a los datos. Esta
+enmienda cierra ambigüedades del texto **sin haber descargado ni inspeccionado ningún dato de
+benchmark**. Las reglas 1, 2, 3 y 5 vienen de la revisión del líder; la 4 es una ambigüedad
+preexistente detectada al redactar la regla 3 y se declara como tal.
+
+1. **`C_target` explícito (precisa la regla 1 de Amendment 4).** Para cada hijo del benchmark,
+   `C_target = Phase3_2504 \ ({target} ∪ familiares_primer_grado(target))`, y se fasea
+   `C_target ∪ {target}`. El texto anterior («2.504 menos familiares de primer grado») no excluía al
+   propio objetivo si este pertenecía a los 2.504. **Paciente:** `C = Phase3_2504` completa (no pertenece
+   a ella ni está emparentado con nadie de ella).
+
+2. **Verdad de potencia restringida a hets mendelianamente resolubles (precisa la regla 7 de Amendment
+   3).** La «orientación paterna verdadera» solo existe en hets del hijo con fase **mendelianamente
+   resoluble**. En la evaluación de **potencia y retención de potencia**, el conjunto de hets analíticos
+   de cada ventana se restringe a esos hets; el spike-in ±δ se aplica sobre el alelo paterno verdadero de
+   esos hets; los hets no resolubles quedan **fuera** tanto del cálculo con fase inferida como del cálculo
+   con fase mendeliana (mismo conjunto de hets en la comparación). `Hmin = 50` se aplica a ese conjunto
+   restringido. El **APR** (datos reales intactos, δ = 0) usa el conjunto analítico completo, igual que A1
+   en el paciente. Se reporta la fracción resoluble por hijo. Como la potencia se mide sobre un
+   subconjunto de los hets que A1 usará en el paciente, la estimación es **conservadora**; se declara, no
+   se corrige.
+
+3. **Puerta específica del locus BUB1B (además de la regla 10 de Amendment 3).** Phase 1 solo PASA para
+   A1 si la ventana #1 (`chr15:39,191,079–41,191,078`):
+   (a) es **evaluable** (elegible tras las exclusiones y con ≥ `Hmin` hets analíticos mendelianamente
+   resolubles) en **≥ 15 de los 20 hijos** y en **≥ 4 de las 5 superpoblaciones**; y
+   (b) a δ = 0.10, agregando hijos elegibles y réplicas: **sensibilidad con fase inferida ≥ 0.80** y
+   **retención de potencia ≥ 90 %** frente a la fase mendeliana.
+   (c) El APR en la ventana #1 (una prueba por hijo elegible, n ≤ 20) se **reporta descriptivamente**, sin
+   puerta: n demasiado pequeño para estimar 5 %.
+   Si falla (a) o (b), **A1 no se aplica al paciente** aunque las puertas globales pasen: el rendimiento
+   global no puede ocultar un fallo del locus.
+
+4. **Reparto exacto de réplicas (ambigüedad preexistente).** «R = 100 réplicas por (muestra × δ)» queda
+   así: ventana #1 (BUB1B): **R = 100 por (hijo × δ)**; cada una de las otras 49 ventanas: **R = 2 por
+   (hijo × ventana × δ)** (98 por hijo × δ fuera de BUB1B). Rejilla δ ∈ {0.00, 0.02, 0.05, 0.10, 0.15,
+   0.20} sin cambios; las réplicas con δ = 0.00 son un control null **sintético** (remuestreo de conteos
+   con p = 0.5), distinto del APR (datos reales intactos). Semilla de cada sorteo:
+   `int(SHA256("42:draw:"+child+":"+window+":"+δ+":"+rep)[:16], 16)`. Motivo, declarado antes de
+   cualquier dato: estimación precisa en el locus para la regla 3 con un coste acotado (`B = 10 000`
+   permutaciones por evaluación).
+
+5. **Fallback de `ρ` exacto (sustituye al fallback de la regla 4 de Amendment 4).** `ρ(hijo, bin)` si el
+   pool de calibración de ese hijo tiene ≥ 200 hets en ese bin; si no, `ρ_global(bin)`, con la misma
+   fórmula, sobre **todos los loci de calibración de los 20 hijos** en ese bin; si `ρ_global(bin)` tiene
+   < 200 hets, `ρ_global(todos)` sobre todos los loci de calibración de los 20 hijos y todos los bins.
+   Nunca se usan ventanas de evaluación.
+
+Siguiente paso, sin cambios: commit de reproducibilidad → ejecutor probado solo con sintéticos de
+juguete → verificación en clon limpio → tamaño exacto de descarga para el GO del usuario. NO-GO a
+descargar 1000G y a ejecutar Phase 1 hasta entonces.
+
