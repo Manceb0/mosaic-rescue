@@ -60,9 +60,8 @@ def a1_class(p: float, effect: float, n_hets: int, cnv_overlap: bool,
              alpha: float = ALPHA, delta_star: float = DELTA_STAR, h_min: int = H_MIN) -> str:
     """Clase de A1 para la ventana primaria (m = 1, p empírica sin BH).
 
-    Precedencia por especificidad (pendiente de confirmación del líder): el texto del contrato
-    solapa NO_EVIDENCE («p ≥ 0.05 o |efecto| < δ*») con SUGGESTIVE («p < 0.05 pero |efecto| < δ*»).
-    Se aplica la lectura en la que todas las cláusulas tienen contenido:
+    Precedencia por especificidad, confirmada en Amendment 7 (el texto del contrato solapaba
+    NO_EVIDENCE «p ≥ 0.05 o |efecto| < δ*» con SUGGESTIVE «p < 0.05 pero |efecto| < δ*»):
     p ≥ α -> NO_EVIDENCE; p < α y efecto < δ* -> SUGGESTIVE; p < α y efecto ≥ δ* -> CONSISTENT.
     """
     if cnv_overlap or n_hets < h_min:
