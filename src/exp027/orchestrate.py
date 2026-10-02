@@ -37,8 +37,20 @@ class OrchestrationError(RuntimeError):
 
 
 # --- Docker ------------------------------------------------------------------------------------
+def docker_available() -> bool:
+    r = subprocess.run(["docker", "info", "--format", "{{.ServerVersion}}"], capture_output=True, text=True)
+    return r.returncode == 0 and bool(r.stdout.strip())
+
+
 def check_image(ref: str) -> None:
-    """La imagen debe estar en local y con el digest congelado. Nunca se descarga aquí."""
+    """La imagen debe estar en local y con el digest congelado. Nunca se descarga aquí.
+
+    Distingue tres fallos: el daemon de Docker no responde, la imagen no está en local y el digest
+    no coincide. Un daemon apagado no debe leerse como «falta la imagen» (no hay que descargar nada).
+    """
+    if not docker_available():
+        raise OrchestrationError("el daemon de Docker no responde: arranca Docker Desktop y repite "
+                                 "(no se descarga ninguna imagen)")
     name, digest = ref.split("@")
     r = subprocess.run(["docker", "image", "inspect", "--format", "{{json .RepoDigests}}", ref],
                        capture_output=True, text=True)

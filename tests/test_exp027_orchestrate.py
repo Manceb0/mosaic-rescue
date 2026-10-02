@@ -22,18 +22,27 @@ class _Proc:
         self.returncode, self.stdout, self.stderr = rc, out, ""
 
 
-def test_check_image_fails_when_missing_or_digest_differs(monkeypatch):
+def _fake_docker(info_ok: bool, inspect_rc: int, inspect_out: str = ""):
+    def run(args, **kwargs):
+        if args[1] == "info":
+            return _Proc(0, "29.0.0") if info_ok else _Proc(1)
+        return _Proc(inspect_rc, inspect_out)
+    return run
+
+
+def test_check_image_distinguishes_daemon_missing_and_digest(monkeypatch):
     ref = tools.BCFTOOLS_IMAGE
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Proc(1))
+    monkeypatch.setattr(subprocess, "run", _fake_docker(False, 0))
+    with pytest.raises(orchestrate.OrchestrationError, match="daemon de Docker"):
+        orchestrate.check_image(ref)                               # Docker apagado: no es "falta imagen"
+    monkeypatch.setattr(subprocess, "run", _fake_docker(True, 1))
     with pytest.raises(orchestrate.OrchestrationError, match="no disponible"):
         orchestrate.check_image(ref)
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Proc(0, '["quay.io/biocontainers/bcftools@sha256:otro"]'))
+    monkeypatch.setattr(subprocess, "run", _fake_docker(True, 0, '["quay.io/biocontainers/bcftools@sha256:otro"]'))
     with pytest.raises(orchestrate.OrchestrationError, match="digest"):
         orchestrate.check_image(ref)
-    name = ref.split("@")[0]
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Proc(0, f'["{ref}"]'))
+    monkeypatch.setattr(subprocess, "run", _fake_docker(True, 0, f'["{ref}"]'))
     orchestrate.check_image(ref)                                   # coincide: no lanza
-    assert name in ref
 
 
 def test_docker_cmd_refuses_frozen_violations():
