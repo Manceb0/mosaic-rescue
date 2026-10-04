@@ -68,3 +68,45 @@ def test_tbi_region_bytes_spans_overlapping_chunks(tmp_path):
     refs = plan.read_tbi(p)
     assert plan.tbi_region_bytes(refs, "chr1", 1, 100) == 4000 + plan.BGZF_MAX_BLOCK
     assert plan.tbi_region_bytes(refs, "chr1", 1, 20_000) == 8000 + plan.BGZF_MAX_BLOCK
+
+
+def _bgzf_block(payload: bytes) -> bytes:
+    import zlib
+    comp = zlib.compressobj(6, zlib.DEFLATED, -15)
+    cdata = comp.compress(payload) + comp.flush()
+    bsize = 12 + 6 + len(cdata) + 8
+    head = bytes([31, 139, 8, 4, 0, 0, 0, 0, 0, 255]) + struct.pack("<H", 6) + b"BC" + struct.pack("<HH", 2, bsize - 1)
+    return head + cdata + struct.pack("<II", zlib.crc32(payload) & 0xFFFFFFFF, len(payload))
+
+
+def test_scan_bgzf_file_cuts_at_region_end_and_checks_crc(tmp_path):
+    from src.exp027 import slices
+    blocks = [_bgzf_block(f"linea {i}\n".encode() * 50) for i in range(4)]
+    base = 1000
+    offs = [base + sum(len(b) for b in blocks[:i]) for i in range(4)]
+    p = tmp_path / "r.bgzf"
+    p.write_bytes(b"".join(blocks) + blocks[0][:10])               # cola incompleta
+    keep, _ = slices.scan_bgzf_file(p, offs[2], True, base)
+    assert keep == sum(len(b) for b in blocks[:3])
+    keep, _ = slices.scan_bgzf_file(p, offs[2], False, base)
+    assert keep == sum(len(b) for b in blocks[:2])
+    bad = bytearray(b"".join(blocks))
+    bad[len(blocks[0]) - 5] ^= 0xFF                                 # rompe el CRC del bloque 0
+    p.write_bytes(bytes(bad))
+    with pytest.raises(Exception):
+        slices.scan_bgzf_file(p, offs[3], True, base)
+
+
+def test_container_ranges_merges_adjacent_and_excludes_eof():
+    from src.exp027 import slices
+    rows = [(0, 1, 1000, 100), (0, 1001, 1000, 200), (0, 5001, 1000, 400), (1, 1, 1000, 600)]
+    crai = (rows, [100, 200, 400, 600])
+    r = slices.container_ranges(crai, {"chr1": 0, "chr2": 1}, [("chr1", 1, 2000), ("chr2", 1, 10)], 738)
+    assert r == [(100, 399), (600, 699)]                              # 738 - 38 de EOF
+
+
+def test_index_samples_strips_trailing_spaces(tmp_path):
+    p = tmp_path / "x.sequence.index"
+    p.write_text("##c\n#ENA_FILE_PATH\tMD5SUM\tSAMPLE_NAME\n"
+                 "ftp://a/HG1.cram\tm1\tHG1 \nftp://a/HG2.cram\tm2\tHG2\n", encoding="ascii")
+    assert set(plan.index_samples(p)) == {"HG1", "HG2"}

@@ -51,7 +51,10 @@ def index_samples(path: Path) -> dict[str, dict]:
     head = lines[0].lstrip("#").split("\t")
     for l in lines[1:]:
         f = dict(zip(head, l.split("\t")))
-        out[f["SAMPLE_NAME"]] = {"cram": f["ENA_FILE_PATH"], "md5": f["MD5SUM"]}
+        # El índice de 2504 trae tres nombres con un espacio final (HG02635, HG03025, HG03366): sin
+        # strip, sus tríos salían como no elegibles (599 en vez de los 602 publicados) y bcftools -S
+        # no los encontraba en el VCF.
+        out[f["SAMPLE_NAME"].strip()] = {"cram": f["ENA_FILE_PATH"], "md5": f["MD5SUM"]}
     return out
 
 
@@ -169,9 +172,9 @@ def read_tbi(path: Path):
     return refs
 
 
-def tbi_region_bytes(refs, chrom: str, start1: int, end1: int) -> int:
-    """Bytes comprimidos que tabix pedirá para [start1, end1] (base 1): de la primera a la última
-    chunk que solapa, más un bloque BGZF de cola. Cota superior razonable, no exacta."""
+def tbi_region_voffsets(refs, chrom: str, start1: int, end1: int):
+    """Offsets virtuales (inicio, fin) de las chunks que tabix leería para [start1, end1] (base 1),
+    o None si no hay ninguna."""
     bins, ioff = refs[chrom]
     beg0 = start1 - 1
     min_off = ioff[min(beg0 >> 14, len(ioff) - 1)] if ioff else 0
@@ -182,8 +185,16 @@ def tbi_region_bytes(refs, chrom: str, start1: int, end1: int) -> int:
                 continue
             lo = cb if lo is None else min(lo, cb)
             hi = ce if hi is None else max(hi, ce)
-    if lo is None:
+    return None if lo is None else (lo, hi)
+
+
+def tbi_region_bytes(refs, chrom: str, start1: int, end1: int) -> int:
+    """Bytes comprimidos que tabix pedirá para [start1, end1] (base 1): de la primera a la última
+    chunk que solapa, más un bloque BGZF de cola. Cota superior razonable, no exacta."""
+    v = tbi_region_voffsets(refs, chrom, start1, end1)
+    if v is None:
         return 0
+    lo, hi = v
     return (hi >> 16) - (lo >> 16) + BGZF_MAX_BLOCK
 
 
