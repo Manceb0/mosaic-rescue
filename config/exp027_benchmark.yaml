@@ -76,7 +76,11 @@ site_masks:                                     # Amendment 8 r2-r5
     segdups:          {path_key: exp027.segdups_grch38,          sha256: TO_MATERIALIZE}
     encode_blacklist_v2: {path_key: exp027.encode_blacklist_v2_grch38, sha256: TO_MATERIALIZE}
   sv_callset: {path_key: exp027.hc_1000g_sv_callset, sha256: TO_MATERIALIZE}
-  copy_changing: "SVTYPE in {DEL, DUP, CNV} (incl. subtipos), o copy number explícito != 2 según el callset"
+  copy_changing:                                # regla A, clarificación de implementación de A8 (2026-10-04)
+    DEL_DUP: GT integrado porta ALT
+    mCNV: FORMAT/CN discreto != 2
+    CPX: GT porta ALT y solo componentes DEL_/DUP_ de CPX_INTERVALS
+    depth_estimates_never_create_carrier: true  # RD_CN, CN de svtools: solo descriptivos
   copy_neutral_never_mask: [INS, INV, BND, CTX]
   child_copy_changing: [phasing_input, apr, a1_benchmark, power, calibration_rho, ser]
   parent_copy_changing: [mendelian_truth, power, ser]   # no APR ni rho del hijo (Amendment 8 r5)

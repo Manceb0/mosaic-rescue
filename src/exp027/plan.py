@@ -27,7 +27,8 @@ from pathlib import Path
 from . import materialize as M
 from .selection import conditioning_cohort, select_offspring
 from .serialize import window_id
-from .masks import SiteMasks, bed_lines, covered_fraction, sample_copy_changing
+from .masks import (SiteMasks, auxiliary_only, bed_lines, copy_change_components, covered_fraction,
+                    sample_carries)
 from .windows import (AUTOSOMES, BUB1B_WINDOW, Intervals, calibration_tiles, evaluation_lattice,
                       evaluation_windows, global_order, lattice_tiles, phasing_region)
 
@@ -98,13 +99,15 @@ def bed_gz(path: Path):
 
 
 def trio_copy_changing(sv_vcf: Path, trios: list[dict]):
-    """SV copy-changing de cada trío (Amendment 8 r4-r5), separados en hijo y padres.
+    """SV copy-changing de cada trío (Amendment 8 r4-r5 y regla A), separados en hijo y padres.
 
-    Intervalo [POS, END] (INFO/END; si falta, POS + len(REF) - 1). Se consideran todos los registros
-    autosómicos del callset, sin filtrar por FILTER (máscara conservadora).
+    Portador por el genotipo integrado del callset (masks.sample_carries); intervalos por
+    masks.copy_change_components ([POS, END] en DEL/DUP/CNV; componentes DEL_/DUP_ en CPX). Todos los
+    registros autosómicos, sin filtrar por FILTER. Los casos «solo señal auxiliar» (RD_CN/CN de
+    profundidad != 2 en no portadores) se cuentan como descriptivos y no enmascaran.
     """
     members = {t["child"]: (t["child"], t["father"], t["mother"]) for t in trios}
-    out = {c: {"child_cc": [], "parent_cc": []} for c in members}
+    out = {c: {"child_cc": [], "parent_cc": [], "child_aux_only_descriptive": 0} for c in members}
     stats = {"records": 0, "by_svtype": {}}
     with gzip.open(sv_vcf, "rt", encoding="ascii", errors="replace") as f:
         for line in f:
@@ -127,12 +130,14 @@ def trio_copy_changing(sv_vcf: Path, trios: list[dict]):
             fmt = p[8].split(":")
             stats["records"] += 1
             stats["by_svtype"][svtype] = stats["by_svtype"].get(svtype, 0) + 1
-            iv = (p[0], pos, end)
+            comps = copy_change_components(p[0], pos, end, svtype, info)
             for kid, (c, fa, mo) in members.items():
-                if sample_copy_changing(svtype, fmt, p[col[c]]):
-                    out[kid]["child_cc"].append(iv)
-                if sample_copy_changing(svtype, fmt, p[col[fa]]) or sample_copy_changing(svtype, fmt, p[col[mo]]):
-                    out[kid]["parent_cc"].append(iv)
+                if comps and sample_carries(svtype, fmt, p[col[c]]):
+                    out[kid]["child_cc"].extend(comps)
+                elif auxiliary_only(svtype, fmt, p[col[c]]):
+                    out[kid]["child_aux_only_descriptive"] += 1
+                if comps and (sample_carries(svtype, fmt, p[col[fa]]) or sample_carries(svtype, fmt, p[col[mo]])):
+                    out[kid]["parent_cc"].extend(comps)
     return out, stats
 
 
@@ -378,6 +383,7 @@ def build_plan(data: Path, inventory_selection: Path) -> dict:
                 for w in evaluation + calibration}
         children.append({"child": s["child"], "superpop": s["superpop"],
                          "n_child_copychange": len(m.child_cc), "n_parent_copychange": len(m.parent_cc),
+                         "n_child_aux_only_descriptive": sv[s["child"]]["child_aux_only_descriptive"],
                          "masked_bp_fraction_descriptive": frac})
     return {"amendment": 8, "selection": sel, "short_strata": short, "n_eligible_trios": n_elig,
             "lengths": lengths, "seq_ids": seq_ids, "n_tiles": len(tiles),

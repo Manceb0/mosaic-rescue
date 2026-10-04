@@ -35,6 +35,7 @@ BGZF_EOF = bytes.fromhex("1f8b08040000000000ff0600424302001b00030000000000000000
 CRAM_EOF_TAIL = 38
 HEADER_PROBE = 4 << 20
 WORKERS = 4
+DERIVE_WORKERS = 6
 _LOCK = threading.Lock()
 
 
@@ -267,7 +268,7 @@ def _windows(ids):
     return out
 
 
-def fetch_all(plan_dir: Path, data: Path) -> int:
+def fetch_all(plan_dir: Path, data: Path, workers: int = WORKERS) -> int:
     plan = json.loads((plan_dir / "plan_windows.json").read_text(encoding="utf-8"))
     sizes = {i["child"]: i["cram_bytes"] for i in json.loads(
         Path("work/exp027/inventory/selection.json").read_text(encoding="utf-8"))["selection"]}
@@ -320,7 +321,7 @@ def fetch_all(plan_dir: Path, data: Path) -> int:
         return key, rec["bytes"], False
 
     total = 0
-    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+    with ThreadPoolExecutor(max_workers=workers) as ex:
         futs = [ex.submit(gt_job, r) for r in regions] + [ex.submit(cram_job, s) for s in plan["selection"]]
         for i, fut in enumerate(as_completed(futs), 1):
             key, nbytes, cached = fut.result()
@@ -427,24 +428,53 @@ def derive_all(plan_dir: Path, data: Path) -> int:
         f.write("".join(f"{s}\n" for s in sorted(need)))
     der_path = data / "goB/MANIFEST_goB_derived.json"
     derived = json.loads(der_path.read_text(encoding="utf-8")) if der_path.exists() else {}
-    refs = {}
-    keys = sorted(k for k in man if k.startswith("gt_region:"))
-    for i, key in enumerate(keys, 1):
+    wins = _windows(plan["evaluation"] + plan["calibration"])
+    regions = sorted({P.phasing_region(w, P.BUFFER_BP, plan["lengths"]) for w in wins})
+    keys = [f"gt_region:{c}:{s}-{e}" for c, s, e in regions]
+    missing = [k for k in keys if k not in man] + \
+              [f"cram:{s['child']}" for s in plan["selection"] if f"cram:{s['child']}" not in man]
+    if missing:
+        raise SliceError(f"faltan piezas de GO-B: {missing[:5]} ({len(missing)})")
+    refs = {c: P.read_tbi(data / f"gt_index/{M.GT_NAME.format(chrom=c)}.tbi") for c in {r[0] for r in regions}}
+
+    def job(key):
         if key in derived and (docker_root / derived[key]["path"]).exists():
-            continue
+            return key, derived[key], True
         c, rng = key.split(":", 1)[1].split(":")
         s, e = (int(x) for x in rng.split("-"))
-        if c not in refs:
-            refs[c] = P.read_tbi(data / f"gt_index/{M.GT_NAME.format(chrom=c)}.tbi")
         rec = derive_region(data, plan, c, s, e, samples_rel, docker_root, refs[c],
                             man[f"gt_header:{c}"]["range"][1] + 1)
         rec["raw_sha256"] = man[key]["sha256"]
         rec["n_samples"] = len(need)
-        derived[key] = rec
-        der_path.write_text(json.dumps(derived, indent=2, sort_keys=True), encoding="utf-8", newline="\n")
-        print(f"[{i}/{len(keys)}] {rec['region']} -> {rec['bytes'] / 1e6:.0f} MB", flush=True)
-    print(f"OK derivados {len(derived)}", flush=True)
+        return key, rec, False
+
+    with ThreadPoolExecutor(max_workers=DERIVE_WORKERS) as ex:
+        for i, fut in enumerate(as_completed([ex.submit(job, k) for k in keys]), 1):
+            key, rec, cached = fut.result()
+            _record(derived, der_path, key, rec)
+            print(f"[{i}/{len(keys)}] {rec['region']} -> {rec['bytes'] / 1e6:.0f} MB"
+                  f"{' (ya estaba)' if cached else ''}", flush=True)
+    for s in plan["selection"]:
+        key = f"cram_index:{s['child']}"
+        if key in derived:
+            continue
+        _record(derived, der_path, key, prepare_cram(docker_root, man[f"cram:{s['child']}"]["path"]))
+        print(f"CRAM {s['child']}: quickcheck e índice OK", flush=True)
+    print(f"OK derivados {len(keys)} regiones VCF + {len(plan['selection'])} CRAM indexados", flush=True)
     return 0
+
+
+def prepare_cram(docker_root: Path, cram_rel_to_data: str) -> dict:
+    """samtools quickcheck + index del CRAM ensamblado (los contenedores llevan CRC32 en CRAM 3)."""
+    from .orchestrate import SAMTOOLS_IMAGE
+    rel = f"work/exp027/data/{cram_rel_to_data}"
+    cmd = ["docker", "run", "--rm", "-v", f"{docker_root}:/data", SAMTOOLS_IMAGE, "sh", "-c",
+           f"samtools quickcheck -v /data/{rel} && samtools index /data/{rel}"]
+    p = subprocess.run(cmd, capture_output=True, text=True)
+    if p.returncode != 0:
+        raise SliceError(f"CRAM inválido {rel}: {p.stdout[-300:]} {p.stderr[-300:]}")
+    idx = docker_root / f"{rel}.crai"
+    return {"path": f"{rel}.crai", "bytes": idx.stat().st_size, "sha256": sha256(idx.read_bytes())}
 
 
 def main(argv=None) -> int:
@@ -452,12 +482,13 @@ def main(argv=None) -> int:
     ap.add_argument("step", choices=["fetch", "verify", "derive"])
     ap.add_argument("--plan", default="work/exp027/plan_a8")
     ap.add_argument("--data", default="work/exp027/data")
+    ap.add_argument("--workers", type=int, default=WORKERS)
     a = ap.parse_args(argv)
     if a.step == "verify":
         return verify_all(Path(a.data))
     if a.step == "derive":
         return derive_all(Path(a.plan), Path(a.data))
-    return fetch_all(Path(a.plan), Path(a.data))
+    return fetch_all(Path(a.plan), Path(a.data), a.workers)
 
 
 if __name__ == "__main__":

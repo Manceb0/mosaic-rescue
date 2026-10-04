@@ -84,20 +84,43 @@ def test_parental_sv_only_affects_truth_power_and_ser():
     assert evaluate.intact_eval(ws, "K", windows.wid(w), b=50)["evaluable"]
 
 
-def test_copy_neutral_never_masks_and_copy_changing_rules():
-    gt = ["GT"]
-    assert not masks.sample_copy_changing("INS", gt, "0/1")
-    assert not masks.sample_copy_changing("INS:ME:ALU", gt, "1/1")
-    assert not masks.sample_copy_changing("INV", ["GT", "CN"], "0/1:1")
-    assert not masks.sample_copy_changing("BND", gt, "0/1")
-    assert masks.sample_copy_changing("DEL", gt, "0/1")
-    assert masks.sample_copy_changing("DUP:TANDEM", gt, "0/1")
-    assert not masks.sample_copy_changing("DEL", gt, "0/0")
-    assert masks.sample_copy_changing("CNV", ["GT", "CN"], ".:3")
-    assert not masks.sample_copy_changing("CNV", ["GT", "CN"], ".:2")
-    assert masks.sample_copy_changing("CPX", ["GT", "RD_CN"], "0/1:1")
-    assert not masks.sample_copy_changing("CPX", ["GT", "RD_CN"], "0/1:2")
-    assert not masks.sample_copy_changing("CPX", ["GT", "RD_CN"], "0/0:1")
+GK = ["GT", "GQ", "RD_CN", "RD_GQ"]                               # FORMAT de GATK-SV
+
+
+def test_rule_a_gt_noncarrier_with_rd_cn_is_not_masked():
+    assert not masks.sample_carries("DEL", GK, "0/0:99:1:50")      # RD_CN = 1, pero GT no porta
+    assert not masks.sample_carries("DUP", GK, "0/0:99:3:50")
+    assert not masks.sample_carries("DEL", ["GT", "CN"], "0/0:1.2") # CN de profundidad (svtools)
+    assert masks.auxiliary_only("DEL", GK, "0/0:99:1:50")           # solo descriptivo
+
+
+def test_rule_a_del_dup_carrier_is_masked():
+    assert masks.sample_carries("DEL", GK, "0/1:99:1:50")
+    assert masks.sample_carries("DUP:TANDEM", GK, "1/1:99:2:50")    # GT manda aunque RD_CN = 2
+    assert masks.sample_carries("DEL:ME:ALU", ["GT"], "0/1")
+    assert not masks.sample_carries("DEL", ["GT"], "./.")
+
+
+def test_rule_a_mcnv_by_discrete_cn():
+    f = ["GT", "GQ", "RD_CN", "RD_GQ", "PE_GT", "PE_GQ", "SR_GT", "SR_GQ", "EV", "CN", "CNQ"]
+    cell = lambda cn: f".:.:2:.:.:.:.:.:RD:{cn}:99"
+    assert masks.sample_carries("CNV", f, cell(1)) and masks.sample_carries("CNV", f, cell(3))
+    assert not masks.sample_carries("CNV", f, cell(2))
+    assert not masks.sample_carries("CNV", f, cell("."))
+
+
+def test_rule_a_cpx_only_copy_changing_components():
+    info_inv = {"CPX_TYPE": "dupINV", "CPX_INTERVALS": "DUP_chr1:100-170,INV_chr1:100-700"}
+    assert masks.copy_change_components("chr1", 100, 700, "CPX", info_inv) == [("chr1", 100, 170)]
+    neutral = {"CPX_TYPE": "INV_only", "CPX_INTERVALS": "INV_chr1:100-700"}
+    assert masks.copy_change_components("chr1", 100, 700, "CPX", neutral) == []
+    assert masks.sample_carries("CPX", GK, "0/1:99:2:50") and not masks.sample_carries("CPX", GK, "0/0:99:1:50")
+
+
+def test_copy_neutral_types_never_mask():
+    for t in ("INS", "INS:ME:ALU", "INV", "BND", "CTX"):
+        assert masks.copy_change_components("chr1", 1, 1000, t, {}) == []
+        assert not masks.sample_carries(t, ["GT", "CN"], "1/1:1")
 
 
 def test_trio_copy_changing_reads_callset(tmp_path):
@@ -108,12 +131,17 @@ def test_trio_copy_changing_reads_callset(tmp_path):
         "chr1\t2000\tb\tN\t<INV>\t.\tPASS\tSVTYPE=INV;END=9000\tGT\t0/1\t0/0\t0/0\t0/0\n",
         "chr1\t3000\tc\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=3300\tGT\t0/1\t0/0\t0/0\t0/0\n",
         "chr1\t5000\td\tN\t<DUP>\t.\tPASS\tSVTYPE=DUP;END=6000\tGT\t0/0\t0/1\t0/0\t0/0\n",
+        "chr1\t7000\tf\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=7500\tGT:RD_CN\t0/0:1\t0/0:2\t0/0:2\t0/0:2\n",
+        "chr1\t8000\tg\tN\t<CPX>\t.\tPASS\tSVTYPE=CPX;END=8900;CPX_TYPE=delINV;"
+        "CPX_INTERVALS=DEL_chr1:8000-8100,INV_chr1:8100-8900\tGT\t0/1\t0/0\t0/0\t0/0\n",
         "chrX\t5000\te\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=6000\tGT\t0/1\t0/0\t0/0\t0/0\n",
     ]
     vcf.write_bytes(gzip.compress(("##fileformat=VCFv4.2\n" + head + "".join(rows)).encode()))
     out, st = plan.trio_copy_changing(vcf, [{"child": "K", "father": "F", "mother": "M"}])
-    assert out["K"]["child_cc"] == [("chr1", 3000, 3300)]        # INS/INV no; chrX no
-    assert out["K"]["parent_cc"] == [("chr1", 5000, 6000)]
+    # INS/INV no; RD_CN en no portador no; del CPX solo su componente DEL; chrX no
+    assert out["K"]["child_cc"] == [("chr1", 3000, 3300), ("chr1", 8000, 8100)]
+    assert out["K"]["parent_cc"] == [("chr1", 5000, 6000)]          # mismo criterio en padres
+    assert out["K"]["child_aux_only_descriptive"] == 1
 
 
 def test_calibration_tiles_are_global_and_common():

@@ -32,39 +32,64 @@ def _carries(gt: str) -> bool:
     return any(a not in ("0", ".", "") for a in gt.replace("|", "/").split("/"))
 
 
-def explicit_copy_number(values: dict) -> int | None:
-    """Copy number explícito del callset: FORMAT/CN si existe y es numérico; si no, FORMAT/RD_CN.
+def discrete_cn(values: dict) -> int | None:
+    """CN discreto genotipado (FORMAT/CN entero, como en los mCNV de GATK-SV); otro valor -> None."""
+    raw = values.get("CN")
+    if raw is None or not raw.strip().isdigit():
+        return None
+    return int(raw)
 
-    Los valores no enteros (estimaciones de profundidad) se redondean al entero más próximo; "." o
-    ausente -> None.
+
+def copy_change_components(chrom: str, pos: int, end: int, svtype: str, info: dict) -> list:
+    """Intervalos de pérdida/ganancia de copia que define el registro (independiente de la muestra).
+
+    DEL/DUP/CNV (con subtipos): [POS, END]. CPX: solo sus componentes DEL_/DUP_ de CPX_INTERVALS (un
+    CPX sin componente de copia, p. ej. solo inversión, no aporta nada). INS/INV/BND/CTX: nada.
     """
-    for key in ("CN", "RD_CN"):
-        raw = values.get(key)
-        if raw in (None, "", "."):
-            continue
-        try:
-            return int(round(float(raw.split(",")[0])))
-        except ValueError:
-            continue
-    return None
+    base = svtype.split(":")[0]
+    if base in COPY_CHANGING_TYPES:
+        return [(chrom, pos, end)]
+    if base != "CPX":
+        return []
+    out = []
+    for comp in str(info.get("CPX_INTERVALS", "")).split(","):
+        kind, _, loc = comp.partition("_")
+        if kind in ("DEL", "DUP") and ":" in loc and "-" in loc:
+            c, rng = loc.rsplit(":", 1)
+            s, e = rng.split("-")
+            out.append((c, int(s), int(e)))
+    return out
 
 
-def sample_copy_changing(svtype: str, fmt_keys: list[str], sample_field: str) -> bool:
-    """¿Este registro SV es copy-changing en esta muestra? (Amendment 8 r4).
+def sample_carries(svtype: str, fmt_keys: list[str], sample_field: str) -> bool:
+    """Regla A (clarificación de implementación de Amendment 8, aprobada 2026-10-04).
 
-    DEL/DUP/CNV (con subtipos, p. ej. DEL:ME, DUP:TANDEM): portador por GT no referencia, o copy
-    number explícito distinto de 2. INS/INV/BND/CTX: copy-neutral, nunca. Otros tipos (CPX): solo si la
-    muestra es portadora y el callset da un copy number explícito distinto de 2.
+    Manda el genotipo integrado del callset: DEL/DUP/CPX solo si GT porta el alelo alternativo;
+    mCNV (SVTYPE=CNV) por su CN discreto genotipado != 2. RD_CN y demás estimaciones de profundidad
+    nunca convierten en portadora a una muestra que el callset genotipó como no portadora.
     """
     base = svtype.split(":")[0]
     values = dict(zip(fmt_keys, sample_field.split(":")))
-    carrier = _carries(values.get("GT", "."))
-    cn = explicit_copy_number(values)
     if base in COPY_NEUTRAL_TYPES:
         return False
-    if base in COPY_CHANGING_TYPES:
-        return carrier or (cn is not None and cn != DIPLOID)
-    return carrier and cn is not None and cn != DIPLOID
+    if base == "CNV":
+        cn = discrete_cn(values)
+        return cn is not None and cn != DIPLOID
+    return _carries(values.get("GT", "."))
+
+
+def auxiliary_only(svtype: str, fmt_keys: list[str], sample_field: str) -> bool:
+    """Solo descriptivo: no portadora por la regla A pero con RD_CN/CN de profundidad != 2."""
+    if sample_carries(svtype, fmt_keys, sample_field) or svtype.split(":")[0] in COPY_NEUTRAL_TYPES:
+        return False
+    values = dict(zip(fmt_keys, sample_field.split(":")))
+    for key in ("RD_CN", "CN"):
+        try:
+            if int(round(float(values.get(key, ".").split(",")[0]))) != DIPLOID:
+                return True
+        except ValueError:
+            continue
+    return False
 
 
 def merged(items) -> dict[str, list[tuple[int, int]]]:

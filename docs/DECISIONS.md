@@ -2734,3 +2734,29 @@ exacta: **Amendment 8 es una decisión metodológica nuestra**.
 tag anotado nuevo `exp027-prephase1-freeze-a8` → `plan.py` sobre los recursos GO-A → presupuesto exacto →
 GO-B solo si ≤ 170 GB y sin incompatibilidad nueva (slices brutos con SHA256 antes del BCF reducido) →
 Phase 1 una sola vez, aceptando PASS/FAIL sin rediseñar.
+
+#### Clarificación de implementación de Amendment 8 (2026-10-04) · regla A de portador copy-changing
+
+No es Amendment 9: no cambia la intención de A8 («enmascarar SV copy-changing realmente presentes en esa
+muestra»), solo fija qué campo del callset define «presente». La primera implementación dejaba que
+estimaciones de profundidad (`RD_CN` de GATK-SV, `CN` de svtools) convirtieran en portadoras a muestras
+que el callset integrado había genotipado como no portadoras: ~21 400 máscaras por hijo frente a
+~5 600 con el genotipo (HG02234). Byrska-Bishop et al. 2022 (PMID 36055201,
+[10.1016/j.cell.2022.08.004](https://doi.org/10.1016/j.cell.2022.08.004)) describen el callset como
+ensemble genotipado e informan de ~9 679 SV por genoma en total; el desglose por tipo que lo acercaría a
+~5 900 copy-changing no se pudo verificar en el texto de PMC en esta sesión.
+
+- `DEL` y `DUP` (con subtipos): máscara solo si el GT integrado porta el alelo alternativo.
+- `mCNV` (`SVTYPE=CNV`): CN discreto genotipado de la muestra; máscara si `CN ≠ 2`.
+- `CPX`: solo si el GT lo porta, y solo sus componentes `DEL_`/`DUP_` de `CPX_INTERVALS`; un CPX sin
+  componente de pérdida/ganancia no enmascara.
+- `INS`, `INV`, `BND`/`CTX`: copy-neutral, nunca máscara de intervalo.
+- `RD_CN` y demás estimaciones de profundidad **no** convierten una muestra no portadora en portadora; se
+  cuentan solo como descriptivo (`n_child_aux_only_descriptive`).
+- Padres: misma definición; su máscara solo entra en verdad mendeliana, potencia y SER (A8 r5).
+
+Secuencia antes de Phase 1: terminar GO-B y verificar SHA256/CRC de las piezas → derivar los BCF reducidos
+conservando los brutos → ejecutor real multi-ventana y multi-hijo → toy/fixture, clon limpio y `verify` →
+tag anotado `exp027-phase1-execution-freeze` (A8 + regla A + descargador + derivación + ejecutor + tests)
+→ Phase 1 una sola vez. El coste medido (~300 h de CPU, ~15 h de reloj en 24 CPU) es planificación, no
+motivo para reducir 20 × 50.

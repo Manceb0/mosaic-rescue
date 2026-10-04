@@ -131,6 +131,16 @@ def require_ligate_overlap(log_text: str, n_chunks: int) -> None:
         raise RuntimeError(f"ligate sin solape real entre chunks: L_isec={vals}")
 
 
+def parse_switch_counts(lines) -> dict[str, tuple[int, int]]:
+    """Mismo fichero: (errores, hets evaluados) por muestra, para agregar el SER entre ventanas."""
+    out = {}
+    for line in lines:
+        f = line.split()
+        if len(f) >= 4:
+            out[f[0]] = (int(f[1]), int(f[2]))
+    return out
+
+
 def parse_switch_sample(lines) -> dict[str, float]:
     """Fichero *.sample.switch.txt de SHAPEIT5_switch: 'muestra errores evaluados SER%'."""
     out = {}

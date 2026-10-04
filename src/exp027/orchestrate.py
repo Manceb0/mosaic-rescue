@@ -227,7 +227,8 @@ def ser_for_child(rn: Runner, phased: str, all_bcf: str, trio, region: str, wd: 
                                                   region, _d(f"{wd}/ser_{tag}")))
     path = rn.out(f"{wd}/ser_{tag}.sample.switch.txt.gz")
     with gzip.open(path, "rt") as f:
-        ser = tools.parse_switch_sample(f.read().splitlines())
+        lines = f.read().splitlines()
+    ser = tools.parse_switch_sample(lines)
     if kid not in ser:
         raise OrchestrationError(f"switch no reportó SER para {kid}")
     return ser[kid]
