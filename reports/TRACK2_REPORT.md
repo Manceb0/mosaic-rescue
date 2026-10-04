@@ -399,11 +399,11 @@ honest form of the idea is a question: *can the patient become the screen?*
 
 ## 10 · Scalability
 
-Measured, not asserted: **56 of 108 modules in `src/`, 8 296 of 20 183 lines (41 %), contain no
+Measured, not asserted: **57 of 109 modules in `src/`, 8 547 of 20 449 lines (42 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
-**Read that number for what it is.** It says *41 % of the current codebase is case-agnostic
-under a conservative lexical census*. It does **not** say the project is 41 % scalable. Real
+**Read that number for what it is.** It says *42 % of the current codebase is case-agnostic
+under a conservative lexical census*. It does **not** say the project is 42 % scalable. Real
 scalability also asks which inputs can be substituted, how many modules depend on `BUB1B` or on
 the MVA phenotype specifically, and which parts reuse generic HPO and VCF machinery — none of
 which a text search can answer. Treat it as a **technical proxy**, not a measure of scalability.

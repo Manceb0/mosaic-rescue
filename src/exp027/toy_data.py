@@ -86,6 +86,20 @@ def _write_sam(path: Path, ref: bytearray, pos, hap1, hap2, rng, imbalance: floa
                 rid += 1
 
 
+TOY_GAPS = [(CONTIG, 260_001, 270_000)]                 # en el buffer de fase, fuera de la ventana
+TOY_SEGDUP = [(CONTIG, 600_001, 700_000)]
+TOY_BLACKLIST = [(CONTIG, 800_001, 850_000)]
+TOY_CHILD_DEL = {"C0": [(CONTIG, 900_001, 1_000_000)]}      # copy-changing del hijo C0
+TOY_PARENT_DEL = {"C1": [(CONTIG, 1_100_001, 1_200_000)]}   # copy-changing de un padre de C1
+
+
+def site_masks(child: str):
+    """Máscaras sintéticas de Amendment 8 para ejercitar cada camino en el orquestador."""
+    from .masks import SiteMasks
+    return SiteMasks(gaps=list(TOY_GAPS), segdup=list(TOY_SEGDUP), blacklist=list(TOY_BLACKLIST),
+                     child_cc=list(TOY_CHILD_DEL.get(child, [])), parent_cc=list(TOY_PARENT_DEL.get(child, [])))
+
+
 def build(out: Path, imbalance: float = 0.0) -> dict:
     """Escribe el dataset en out y devuelve sus rutas y metadatos (sin BAM indexado: lo hace el
     orquestador con samtools en Docker)."""

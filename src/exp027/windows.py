@@ -1,4 +1,4 @@
-"""Ventanas de EXP-027 (Amendment 3 regla 9; Amendment 4 regla 5; decisiones confirmadas).
+"""Ventanas de EXP-027 (Amendment 3 regla 9; Amendment 4 regla 5; Amendment 8).
 
 Convención: todas las coordenadas en base 1 e inclusivas. Los BED (base 0, semiabiertos) se
 convierten al leerlos. Solape = al menos 1 pb en común.
@@ -72,15 +72,16 @@ def lattice_tiles(chrom_lengths: dict[str, int], size: int = TILE_BP):
     return tiles
 
 
-def global_order(tiles, global_exclusions: Intervals, bub1b=BUB1B_WINDOW):
-    """Tiles que pasan las exclusiones independientes del individuo, en orden hash.
+def global_order(tiles, tile_exclusions: Intervals, bub1b=BUB1B_WINDOW):
+    """Tiles elegibles en orden hash (Amendment 8 r1).
 
-    Exclusiones globales: gaps/centrómeros, duplicaciones segmentarias, ENCODE blacklist v2
-    (todas en global_exclusions) y solape con la ventana BUB1B.
+    Solo gaps/centrómeros (tile_exclusions) eliminan una tile, por solape ≥ 1 pb con su núcleo de
+    2 Mb; las tiles que solapan la ventana BUB1B quedan fuera para no duplicar la ventana primaria.
+    Duplicaciones segmentarias, blacklist y SV ya no entran aquí: son máscaras de sitio (masks.py).
     """
     bchr, bs, be = bub1b
     keep = [t for t in tiles
-            if not global_exclusions.hits(*t)
+            if not tile_exclusions.hits(*t)
             and not (t[0] == bchr and overlaps(t[1], t[2], bs, be))]
     return sorted(keep, key=lambda t: tile_order_key(t[0], t[1]))
 
@@ -92,33 +93,22 @@ def evaluation_lattice(order, n: int = N_EVALUATION_LATTICE):
     return list(order[:n])
 
 
-def child_evaluation_windows(lattice49, child_sv: Intervals, global_exclusions: Intervals,
-                             bub1b=BUB1B_WINDOW):
-    """Ventanas de evaluación de un hijo: BUB1B (si es elegible) + las 49, menos su SV/CNV.
+def evaluation_windows(lattice49, tile_exclusions: Intervals, bub1b=BUB1B_WINDOW):
+    """BUB1B (si no solapa gaps/centrómeros) + las 49: las mismas para los 20 hijos (Amendment 8).
 
-    Las ventanas que solapan el SV/CNV del hijo desaparecen para él, sin reemplazo. La ventana
-    BUB1B también debe pasar las exclusiones globales.
+    Ninguna máscara de sitio quita ventanas ni las sustituye: la evaluabilidad de cada hijo ×
+    ventana la decide Hmin = 50 después de las máscaras.
     """
-    out = []
-    if not global_exclusions.hits(*bub1b) and not child_sv.hits(*bub1b):
-        out.append(bub1b)
-    out += [t for t in lattice49 if not child_sv.hits(*t)]
-    return out
+    out = [] if tile_exclusions.hits(*bub1b) else [bub1b]
+    return out + list(lattice49)
 
 
-def child_calibration_tiles(order, child_sv: Intervals, n_eval: int = N_EVALUATION_LATTICE,
-                            n: int = N_CALIBRATION):
-    """Calibración por hijo: tras las 49 de evaluación, sus 20 siguientes elegibles en el mismo
-    orden hash, excluyendo su SV/CNV. Pueden diferir entre hijos; siempre disjuntas de evaluación.
-    """
-    out = []
-    for t in order[n_eval:]:
-        if child_sv.hits(*t):
-            continue
-        out.append(t)
-        if len(out) == n:
-            break
-    return out
+def calibration_tiles(order, n_eval: int = N_EVALUATION_LATTICE, n: int = N_CALIBRATION):
+    """Las 20 tiles siguientes del orden global tras las 49 de evaluación, comunes a los 20 hijos
+    (Amendment 8 r7). Cada hijo aplica dentro sus máscaras de sitio."""
+    if len(order) < n_eval + n:
+        raise ValueError(f"solo hay {len(order)} tiles elegibles; hacen falta {n_eval + n}")
+    return list(order[n_eval:n_eval + n])
 
 
 def phasing_region(window, buffer_bp: int, chrom_lengths: dict[str, int]):

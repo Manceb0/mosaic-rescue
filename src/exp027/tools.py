@@ -74,6 +74,16 @@ def analytic_subset_cmd(input_bcf: str, output: str) -> list[str]:
     return ["bcftools", "view", "-i", f"INFO/MAF>={ANALYTIC_MAF}", "-Ob", "-o", output, input_bcf]
 
 
+def exclude_regions_cmd(input_bcf: str, bed: str, output: str) -> list[str]:
+    """Retira los registros cuyo span [POS, POS + len(REF) − 1] toca el BED (Amendment 8 r2-r3).
+
+    `--targets-overlap 1` (record) usa el span del registro, no solo POS. El orquestador comprueba
+    después, en Python, que ningún sitio enmascarado haya sobrevivido.
+    """
+    return ["bcftools", "view", "-T", f"^{bed}", "--targets-overlap", "1", "-Ob", "-o", output,
+            input_bcf]
+
+
 def mpileup_cmd(reference: str, sites: str, alignment: str, output: str) -> list[str]:
     """Extractor único de conteos (Amendment 4 regla 3), idéntico para 1000G y el caso."""
     return ["bcftools", "mpileup", "-f", reference, "-R", sites, *MPILEUP_ARGS,

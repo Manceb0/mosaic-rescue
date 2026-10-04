@@ -69,3 +69,12 @@ def test_toy_end_to_end_with_docker(tmp_path):
     assert rep["ser"] is not None and rep["retention"] is not None
     assert "bub1b:evaluable" in rep["fail_reasons"]            # 5 hijos < 15: el juguete no puede pasar
     assert rep["a1_applicable"] is False
+    # Amendment 8: máscaras de sitio en todos los caminos, sin quitar la ventana
+    au = rep["toy"]["audit"]
+    assert all(a["n_mask_segdup"] > 0 and a["n_mask_blacklist"] > 0 for a in au.values())
+    assert au["C0"]["n_mask_child_copychange"] > 0 and au["C1"]["n_mask_child_copychange"] == 0
+    assert au["C1"]["n_mask_parent_copychange_truth"] > 0 and au["C0"]["n_mask_parent_copychange_truth"] == 0
+    for c, a in au.items():
+        assert a["n_after_intact"] <= a["n_before"] - a["n_mask_segdup"] - a["n_mask_blacklist"] - a["n_mask_child_copychange"]
+        assert a["n_after_truth"] <= a["n_after_intact"]
+        assert 0 < a["masked_bp_fraction_intact"] < 0.2               # descriptiva, no puerta

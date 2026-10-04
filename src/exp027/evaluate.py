@@ -3,7 +3,8 @@
 Entrada por ventana (WindowSites): conteos del extractor (n_ref, n_alt), el alelo que la fase
 inferida pone en H1, el alelo paterno verdadero (−1 si no es mendelianamente resoluble) y la máscara
 de hets analíticos (MAF ≥ 1 %, PASS, GQ ≥ 30, het en el hijo, n ≥ 20). Python puro: no llama a
-herramientas externas.
+herramientas externas. Amendment 8: los sitios enmascarados ya no llegan aquí (globales y
+copy-changing del hijo) o llegan con paternal = −1 (copy-changing parental); Hmin se aplica después.
 """
 from __future__ import annotations
 
@@ -23,14 +24,25 @@ class WindowSites:
     n_ref: np.ndarray
     n_alt: np.ndarray
     h1_allele: np.ndarray          # 0/1: alelo en H1 según la fase inferida
-    paternal: np.ndarray           # 0/1, o −1 si no es mendelianamente resoluble
+    paternal: np.ndarray           # 0/1, o −1 si no es resoluble o lo enmascara un SV parental
     analytic: np.ndarray           # bool
+    audit: dict | None = None      # recuentos de máscaras de Amendment 8 (masks.window_audit)
 
     def depth(self) -> np.ndarray:
         return np.asarray(self.n_ref) + np.asarray(self.n_alt)
 
     def mask(self) -> np.ndarray:
         return np.asarray(self.analytic, bool) & (self.depth() >= DEPTH_MIN)
+
+    def full_audit(self) -> dict:
+        """Auditoría de Amendment 8 r10 con los conjuntos finales (tras profundidad): n_after_intact
+        es lo que ven APR y A1; n_after_truth, lo que ven potencia y retención. Hmin = 50 se aplica
+        sobre estos recuentos; las fracciones son solo descriptivas."""
+        m = self.mask()
+        out = dict(self.audit or {})
+        out["n_after_intact"] = int(m.sum())
+        out["n_after_truth"] = int((m & (np.asarray(self.paternal) >= 0)).sum())
+        return out
 
 
 def _h1_counts(n_ref, n_alt, h1_allele):
@@ -103,6 +115,7 @@ def run_benchmark(children: dict, b: int = stats.B_PERMUTATIONS, deltas_grid=DEL
                 "power_evaluable": pe["evaluable"],
                 "detect_inferred": pe.get("detect_inferred", {}),
                 "detect_mendel": pe.get("detect_mendel", {}),
+                "audit": sites.full_audit(),
             }
         results["children"][child] = {"superpop": k["superpop"], "ser": k.get("ser"),
                                        "ser_scaffold": k.get("ser_scaffold"), "windows": wins}

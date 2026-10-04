@@ -1,4 +1,5 @@
-"""EXP-027 · plan exacto previo a GO-B: exclusiones, ventanas por hijo y presupuesto de rangos.
+"""EXP-027 · plan exacto previo a GO-B (Amendment 8): ventanas comunes, máscaras de sitio por hijo
+y presupuesto de rangos.
 
 Lee solo recursos materializados en GO-A (metadatos, pistas, callset SV, índices .tbi/.crai, mapa,
 referencia). No toca cuerpos de VCF/CRAM de genotipos ni calcula nada de Phase 1 (BAF, SER, A1).
@@ -26,9 +27,9 @@ from pathlib import Path
 from . import materialize as M
 from .selection import conditioning_cohort, select_offspring
 from .serialize import window_id
-from .windows import (AUTOSOMES, BUB1B_WINDOW, Intervals, child_calibration_tiles,
-                      child_evaluation_windows, evaluation_lattice, global_order, lattice_tiles,
-                      phasing_region)
+from .masks import SiteMasks, bed_lines, covered_fraction, sample_copy_changing
+from .windows import (AUTOSOMES, BUB1B_WINDOW, Intervals, calibration_tiles, evaluation_lattice,
+                      evaluation_windows, global_order, lattice_tiles, phasing_region)
 
 BUFFER_BP = 250_000
 BGZF_MAX_BLOCK = 65_536
@@ -93,12 +94,15 @@ def bed_gz(path: Path):
         return [(p[0], int(p[1]) + 1, int(p[2])) for p in (l.split("\t") for l in f if l.strip())]
 
 
-def trio_sv_records(sv_vcf: Path, trios: list[dict]):
-    """SV/CNV del callset en cada trío: registros donde hijo, padre o madre llevan un alelo no
-    referencia en GT. Intervalo [POS, END] (INFO/END; si falta, POS + len(REF) - 1)."""
+def trio_copy_changing(sv_vcf: Path, trios: list[dict]):
+    """SV copy-changing de cada trío (Amendment 8 r4-r5), separados en hijo y padres.
+
+    Intervalo [POS, END] (INFO/END; si falta, POS + len(REF) - 1). Se consideran todos los registros
+    autosómicos del callset, sin filtrar por FILTER (máscara conservadora).
+    """
     members = {t["child"]: (t["child"], t["father"], t["mother"]) for t in trios}
-    out = {c: [] for c in members}
-    stats = {"records": 0, "by_svtype": {}, "filters": {}}
+    out = {c: {"child_cc": [], "parent_cc": []} for c in members}
+    stats = {"records": 0, "by_svtype": {}}
     with gzip.open(sv_vcf, "rt", encoding="ascii", errors="replace") as f:
         for line in f:
             if line.startswith("##"):
@@ -115,14 +119,17 @@ def trio_sv_records(sv_vcf: Path, trios: list[dict]):
                 continue
             info = dict(kv.split("=", 1) if "=" in kv else (kv, True) for kv in p[7].split(";"))
             pos = int(p[1])
-            end = int(info["END"]) if "END" in info else pos + len(p[3]) - 1
-            end = max(end, pos)
+            end = max(int(info["END"]) if "END" in info else pos + len(p[3]) - 1, pos)
             svtype = str(info.get("SVTYPE", "NA"))
+            fmt = p[8].split(":")
             stats["records"] += 1
-            for kid, mem in members.items():
-                if any(_carries(p[col[s]]) for s in mem):
-                    out[kid].append({"chrom": p[0], "start": pos, "end": end, "svtype": svtype,
-                                     "filter": p[6], "len": end - pos + 1})
+            stats["by_svtype"][svtype] = stats["by_svtype"].get(svtype, 0) + 1
+            iv = (p[0], pos, end)
+            for kid, (c, fa, mo) in members.items():
+                if sample_copy_changing(svtype, fmt, p[col[c]]):
+                    out[kid]["child_cc"].append(iv)
+                if sample_copy_changing(svtype, fmt, p[col[fa]]) or sample_copy_changing(svtype, fmt, p[col[mo]]):
+                    out[kid]["parent_cc"].append(iv)
     return out, stats
 
 
@@ -324,11 +331,12 @@ def check_map(tar_path: Path, out_dir: Path) -> dict:
 
 # ---------------------------------------------------------------- plan
 def build_plan(data: Path, inventory_selection: Path) -> dict:
+    """Ventanas exactas (Amendment 8): 50 de evaluación y 20 de calibración comunes a los 20 hijos,
+    más las máscaras de sitio de cada hijo y su fracción enmascarada (solo descriptiva)."""
     manifest = json.loads((data / "MANIFEST.json").read_text(encoding="utf-8"))
     sel, short, n_elig = rebuild_selection(data)
     inv = json.loads(inventory_selection.read_text(encoding="utf-8"))["selection"]
-    if [s["child"] for s in sel] != [s["child"] for s in inv] or \
-            [s["C_target_n"] for s in sel] != [s["C_target_n"] for s in inv]:
+    if [s["child"] for s in sel] != [s["child"] for s in inv] or             [s["C_target_n"] for s in sel] != [s["C_target_n"] for s in inv]:
         raise PlanError("la selección re-derivada no coincide con la del inventario")
     fai = {}
     for line in (data / f"ref/{M.REF_NAME}.fa.fai").read_text(encoding="ascii").splitlines():
@@ -340,28 +348,35 @@ def build_plan(data: Path, inventory_selection: Path) -> dict:
     gaps = ucsc_bed(data / "tracks/ucsc_gap.txt.gz") + ucsc_bed(data / "tracks/ucsc_centromeres.txt.gz")
     segdups = ucsc_bed(data / "tracks/ucsc_genomicSuperDups.txt.gz")
     blacklist = bed_gz(data / "tracks/hg38-blacklist.v2.bed.gz")
-    glob = Intervals(gaps + segdups + blacklist)
+    tile_excl = Intervals(gaps)
     tiles = lattice_tiles(lengths)
-    order = global_order(tiles, glob)
+    order = global_order(tiles, tile_excl)
     lattice49 = evaluation_lattice(order)
-    excl_counts = {name: sum(Intervals(items).hits(*t) for t in tiles)
-                   for name, items in (("gaps_centromeres", gaps), ("segdups", segdups), ("blacklist", blacklist))}
+    evaluation = evaluation_windows(lattice49, tile_excl)
+    calibration = calibration_tiles(order)
 
-    sv, sv_stats = trio_sv_records(data / f"sv/{M.SV_NAME}", sel)
+    sv, sv_stats = trio_copy_changing(data / f"sv/{M.SV_NAME}", sel)
+    masks_bed = {"gaps": bed_lines(gaps), "segdup": bed_lines(segdups), "blacklist": bed_lines(blacklist)}
+    masks_bed.update({f"{c}.{k}": bed_lines(v[k]) for c, v in sv.items() for k in ("child_cc", "parent_cc")})
     children = []
     for s in sel:
-        civ = Intervals((r["chrom"], r["start"], r["end"]) for r in sv[s["child"]])
-        ev = child_evaluation_windows(lattice49, civ, glob)
-        cal = child_calibration_tiles(order, civ)
-        children.append({"child": s["child"], "superpop": s["superpop"], "n_trio_sv": len(sv[s["child"]]),
-                         "evaluation": [window_id(*w) for w in ev],
-                         "calibration": [window_id(*w) for w in cal],
-                         "bub1b_evaluable": ev[:1] == [BUB1B_WINDOW]})
-    return {"selection": sel, "short_strata": short, "n_eligible_trios": n_elig, "lengths": lengths,
-            "seq_ids": seq_ids, "n_tiles": len(tiles), "n_global_eligible": len(order),
-            "tiles_hit_by": excl_counts, "lattice49": [window_id(*w) for w in lattice49],
-            "sv_stats": sv_stats, "sv_by_child": {k: _sv_summary(v) for k, v in sv.items()},
-            "children": children, "manifest_keys": sorted(manifest)}
+        m = SiteMasks(gaps=gaps, segdup=segdups, blacklist=blacklist,
+                      child_cc=sv[s["child"]]["child_cc"], parent_cc=sv[s["child"]]["parent_cc"])
+        frac = {window_id(*w): {"intact": round(covered_fraction(m.phasing_intervals(), w), 6),
+                                "truth": round(covered_fraction(m.truth_intervals(), w), 6)}
+                for w in evaluation + calibration}
+        children.append({"child": s["child"], "superpop": s["superpop"],
+                         "n_child_copychange": len(m.child_cc), "n_parent_copychange": len(m.parent_cc),
+                         "masked_bp_fraction_descriptive": frac})
+    return {"amendment": 8, "selection": sel, "short_strata": short, "n_eligible_trios": n_elig,
+            "lengths": lengths, "seq_ids": seq_ids, "n_tiles": len(tiles),
+            "n_tiles_hit_by_gaps": sum(tile_excl.hits(*t) for t in tiles),
+            "n_global_eligible": len(order),
+            "evaluation": [window_id(*w) for w in evaluation],
+            "calibration": [window_id(*w) for w in calibration],
+            "bub1b_in_evaluation": evaluation[:1] == [BUB1B_WINDOW],
+            "sv_stats": sv_stats, "children": children, "manifest_keys": sorted(manifest),
+            "_masks_bed": masks_bed}
 
 
 def compatibility(plan: dict, data: Path) -> dict:
@@ -401,10 +416,7 @@ def budget(plan: dict, data: Path, inventory_selection: Path) -> dict:
     CRAM: por hijo, sus ventanas de evaluación y calibración (sin buffer: AD solo dentro).
     """
     lengths = plan["lengths"]
-    regions = set()
-    for ch in plan["children"]:
-        for w in ch["evaluation"] + ch["calibration"]:
-            regions.add(w)
+    regions = set(plan["evaluation"]) | set(plan["calibration"])
     phase_regions = []
     for w in sorted(regions):
         c, rng = w.split(":")
@@ -421,28 +433,21 @@ def budget(plan: dict, data: Path, inventory_selection: Path) -> dict:
     cram_size = {i["child"]: i["cram_bytes"] for i in
                  json.loads(inventory_selection.read_text(encoding="utf-8"))["selection"]}
     cram_rows = []
+    windows_all = plan["evaluation"] + plan["calibration"]
     for s in plan["selection"]:
-        ch = next(x for x in plan["children"] if x["child"] == s["child"])
         crai = read_crai(data / f"crai/{s['child']}.final.cram.crai")
         size = cram_size[s["child"]]
         b = 0
-        for w in ch["evaluation"] + ch["calibration"]:
+        for w in windows_all:
             c, rng = w.split(":")
             st, en = (int(x) for x in rng.split("-"))
             b += crai_region_bytes(crai, plan["seq_ids"][c], st, en, size)
-        cram_rows.append({"child": s["child"], "windows": len(ch["evaluation"]) + len(ch["calibration"]),
+        cram_rows.append({"child": s["child"], "windows": len(windows_all),
                           "bytes": b, "header_bytes": crai[1][0]})
     return {"n_union_windows": len(regions), "phase_regions_bp": sum(e - s + 1 for _, s, e in phase_regions),
             "gt_bytes": gt_bytes, "gt_regions": per_region, "cram": cram_rows,
             "cram_bytes": sum(r["bytes"] + r["header_bytes"] for r in cram_rows),
             "total_bytes": gt_bytes + sum(r["bytes"] + r["header_bytes"] for r in cram_rows)}
-
-
-def _sv_summary(recs):
-    by = {}
-    for r in recs:
-        by.setdefault(r["svtype"], []).append(r["len"])
-    return {t: {"n": len(v), "median_len": sorted(v)[len(v) // 2]} for t, v in sorted(by.items())}
 
 
 def main(argv=None) -> int:
@@ -456,6 +461,11 @@ def main(argv=None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     data = Path(a.data)
     plan = build_plan(data, Path(a.selection))
+    beds = plan.pop("_masks_bed")
+    (out / "masks").mkdir(exist_ok=True)
+    for name, lines in beds.items():
+        (out / "masks" / f"{name}.bed").write_text("".join(f"{l}\n" for l in lines), encoding="ascii",
+                                                    newline="\n")
     (out / "plan_windows.json").write_text(json.dumps(plan, indent=2), encoding="utf-8", newline="\n")
     if a.windows_only:
         _print(plan)
@@ -472,10 +482,13 @@ def main(argv=None) -> int:
 
 
 def _print(plan):
-    print(json.dumps({k: plan[k] for k in ("n_tiles", "n_global_eligible", "tiles_hit_by", "sv_stats")}, indent=1))
+    print(json.dumps({k: plan[k] for k in ("n_tiles", "n_tiles_hit_by_gaps", "n_global_eligible",
+                                           "bub1b_in_evaluation", "sv_stats")}, indent=1))
+    print(f"evaluación {len(plan['evaluation'])} ventanas; calibración {len(plan['calibration'])} tiles (comunes)")
     for c in plan["children"]:
-        print(c["child"], c["superpop"], "SV trío", c["n_trio_sv"], "eval", len(c["evaluation"]),
-              "calib", len(c["calibration"]), "BUB1B", c["bub1b_evaluable"])
+        fr = c["masked_bp_fraction_descriptive"][plan["evaluation"][0]]
+        print(c["child"], c["superpop"], "SV copy-changing hijo", c["n_child_copychange"],
+              "padres", c["n_parent_copychange"], "| frac. enmascarada ventana #1", fr)
 
 
 if __name__ == "__main__":

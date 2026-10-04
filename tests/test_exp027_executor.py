@@ -80,21 +80,20 @@ def test_lattice_and_overlap_conventions():
     assert iv.hits("chr1", 1, 2_000_000) and not iv.hits("chr1", 2_000_001, 4_000_000)
 
 
-def test_global_list_child_drop_and_calibration():
+def test_global_list_and_common_calibration_amendment8():
+    """Amendment 8: solo gaps/centrómeros quitan tiles; ventanas y calibración comunes a todos."""
     tiles = windows.lattice_tiles(LENGTHS)
-    glob = windows.Intervals([("chr2", 1, 10)])
-    order = windows.global_order(tiles, glob)
+    gaps = windows.Intervals([("chr2", 1, 10)])
+    order = windows.global_order(tiles, gaps)
     assert all(not (t[0] == "chr15" and windows.overlaps(t[1], t[2], 39_191_079, 41_191_078)) for t in order)
     assert ("chr2", 1, 2_000_000) not in order
     lat = windows.evaluation_lattice(order)
-    assert len(lat) == 49
-    sv = windows.Intervals([(lat[0][0], lat[0][1] + 5, lat[0][1] + 6), ("chr15", 40_000_000, 40_000_001)])
-    ev = windows.child_evaluation_windows(lat, sv, glob)
-    assert windows.BUB1B_WINDOW not in ev and lat[0] not in ev and len(ev) == 48   # sin reemplazo
-    cal = windows.child_calibration_tiles(order, sv)
-    assert len(cal) == 20 and not set(cal) & set(lat)
-    ev2 = windows.child_evaluation_windows(lat, windows.Intervals(), glob)
-    assert ev2[0] == windows.BUB1B_WINDOW and len(ev2) == 50
+    ev = windows.evaluation_windows(lat, gaps)
+    assert ev[0] == windows.BUB1B_WINDOW and len(ev) == 50
+    cal = windows.calibration_tiles(order)
+    assert cal == order[49:69] and not set(cal) & set(lat)
+    gap_on_bub1b = windows.Intervals([("chr15", 40_000_000, 40_000_000)])
+    assert windows.BUB1B_WINDOW not in windows.evaluation_windows(lat, gap_on_bub1b)
 
 
 # --- verdad mendeliana ---------------------------------------------------------------------------
