@@ -1,6 +1,6 @@
 # EXP-027 · Phase 1 + A1 · parámetros congelados (transcripción, no diseño)
 #
-# Fuente de verdad: docs/DECISIONS.md § EXP-027 (contrato + Amendments 1-6 + nota pre-dato).
+# Fuente de verdad: docs/DECISIONS.md § EXP-027 (contrato + Amendments 1-8 + nota pre-dato).
 # Cada valor cita su regla. Si algo aquí contradice a DECISIONS, gana DECISIONS y esto es un error.
 # Las rutas viven en config/paths.yaml (claves exp027.*); aquí no hay rutas absolutas.
 # Los elementos dependientes de datos quedan como TO_MATERIALIZE: se rellenan al materializar,
@@ -47,7 +47,7 @@ statistic:                                      # contrato (1)
   delta_i: b_i - 0.5                            # b_i = n_H1 / (n_H1 + n_H2), H1 por la fase
   T: sum(delta_i) / sqrt(sum(0.25 / n_i))
   window_bp: 2000000
-  h_min: 50
+  h_min: 50                                     # tras todas las máscaras (Amendment 8 r6)
   split_windows: never                          # Amendment 3 r3
   null: phase_randomized                        # contrato (1); Loh 2018
   permutations_B: 10000
@@ -58,20 +58,33 @@ families:                                       # Amendment 2 D4; Amendment 3 r1
   primary: {windows: [bub1b_window], correction: none_empirical_p}
   secondary_chr15: {window_bp: 2000000, step_bp: 500000, correction: BH}   # paso de 0.5 Mb: contrato (1)
 
-windows:                                        # Amendment 3 r9; Amendment 4 r5
+windows:                                        # Amendment 3 r9; Amendment 4 r5; Amendment 8 r1, r7
   bub1b_window: {chrom: chr15, start: 39191079, end: 41191078}   # 1-based inclusiva; GENCODE v33
   lattice: "[k*2000000 + 1, (k+1)*2000000], autosomas GRCh38, enteras dentro del cromosoma"
   lattice_hash: SHA256("42:" + chrom + ":" + start), hex ascendente
   n_lattice_windows: 49
-  n_calibration_tiles: 20                       # las 20 siguientes en el mismo orden (Amendment 4 r4)
-  exclude_overlap_bp_min: 1
-  exclusion_tracks:
+  n_calibration_tiles: 20                       # las 20 globales siguientes, comunes a los 20 hijos (Amendment 8 r7)
+  tile_exclusion:                               # Amendment 8 r1: única pista que elimina tiles
+    gaps_centromeres: {path_key: exp027.gaps_centromeres_grch38, sha256: TO_MATERIALIZE, overlap_bp_min: 1, on: core_2mb}
+  lattice_tiles_overlapping_bub1b_window: ineligible
+  window_substitution: none                     # Amendment 8 r6
+
+site_masks:                                     # Amendment 8 r2-r5
+  marker_span: "[POS, POS + len(REF) - 1]"      # interseca >= 1 pb
+  global:                                       # retirados del input de fase y de todos los conjuntos
     gaps_centromeres: {path_key: exp027.gaps_centromeres_grch38, sha256: TO_MATERIALIZE}
     segdups:          {path_key: exp027.segdups_grch38,          sha256: TO_MATERIALIZE}
     encode_blacklist_v2: {path_key: exp027.encode_blacklist_v2_grch38, sha256: TO_MATERIALIZE}
-    trio_sv_cnv:      {path_key: exp027.hc_1000g_sv_callset,     sha256: TO_MATERIALIZE}
-  lattice_tiles_overlapping_bub1b_window: ineligible
-  ineligible_for_a_child: dropped_without_replacement
+  sv_callset: {path_key: exp027.hc_1000g_sv_callset, sha256: TO_MATERIALIZE}
+  copy_changing: "SVTYPE in {DEL, DUP, CNV} (incl. subtipos), o copy number explícito != 2 según el callset"
+  copy_neutral_never_mask: [INS, INV, BND, CTX]
+  child_copy_changing: [phasing_input, apr, a1_benchmark, power, calibration_rho, ser]
+  parent_copy_changing: [mendelian_truth, power, ser]   # no APR ni rho del hijo (Amendment 8 r5)
+  padding_bp: 0
+  audit_per_child_window: [n_before, n_mask_segdup, n_mask_blacklist, n_mask_child_copychange,
+                           n_mask_parent_copychange_truth, n_after_intact, n_after_truth,
+                           masked_bp_fraction_descriptive]
+  fractions_are_gates: false
 
 benchmark:                                      # Amendment 3 r14; Amendment 1 C2
   n_offspring: 20
@@ -120,7 +133,7 @@ gates:                                          # Amendment 3 r10; Amendment 5 r
     technical_sentinel: one_sided_exact_binomial_vs_0.05   # veto con >=3 si n_e=15-16, >=4 si n_e=17-20
 
 a1:                                             # contrato (5); Amendment 3 r11-r12
-  cnv_overlapping_window: NOT_EVALUABLE         # sin enmascarar
+  cnv_overlapping_window: NOT_EVALUABLE         # sin enmascarar; Amendment 8 r9 lo mantiene
   cn_loh_pattern: secondary_classification_only
   classes: [NO_EVIDENCE, SUGGESTIVE, CONSISTENT_WITH_HAPLOTYPE_SPECIFIC_ALLELIC_IMBALANCE]
   delta_star: 0.10
@@ -133,15 +146,12 @@ a2: UNSCORABLE_UNRESOLVED_unless_orthogonal_phase   # Amendment 4 r2: PP de phas
 implementation_decisions:
   status: CONFIRMED_2026-10-01                  # ventanas, serialización y efecto de A1
   evaluation_windows: >-
-    Una única lista global: las 49 primeras tiles de la retícula, en el orden hash congelado, que
-    pasan las exclusiones independientes del individuo (gaps/centrómeros, duplicaciones
-    segmentarias, ENCODE blacklist v2, solape con la ventana BUB1B). Después se aplica el SV/CNV
-    de cada hijo: la ventana desaparece para ese hijo, sin reemplazo, y se reporta el denominador
-    real (pares hijo x ventana).
+    SUSTITUIDO por Amendment 8. Una única lista global: las 49 primeras tiles de la retícula, en el
+    orden hash congelado, que no solapan gaps/centrómeros ni la ventana BUB1B. Las mismas para los 20
+    hijos; las máscaras de sitio no eliminan ventanas y Hmin decide la evaluabilidad.
   calibration_tiles: >-
-    Por hijo: tras las 49 de evaluación, se continúa por el mismo orden hash y se toman sus
-    siguientes 20 tiles elegibles (exclusiones globales + su propio SV/CNV), siempre disjuntas de
-    las de evaluación. Pueden diferir entre hijos.
+    SUSTITUIDO por Amendment 8. Las 20 tiles siguientes del mismo orden global, comunes a los 20
+    hijos y disjuntas de las de evaluación; cada hijo aplica sus máscaras de sitio dentro.
   serialization:
     child_selection: SHA256("42:" + sample_id)              # sample_id = ID de 1000G
     tile_order: SHA256("42:" + chr + ":" + start)           # literal; chr = "chrN", start en base 1

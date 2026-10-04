@@ -2673,3 +2673,64 @@ decida qué marcadores entran.
 
 Tras esta enmienda no hay más decisiones científicas: el siguiente artefacto es el commit del ejecutor.
 
+
+### Enmienda 8 de EXP-027 (2026-10-04) · máscaras de sitio en lugar de exclusión de ventana · POST-FREEZE / PRE-PHASE1
+
+**Estado: PREREGISTERED, NOT EXECUTED.** Posterior al tag `exp027-prebenchmark-freeze` (que no se mueve
+ni se borra) y anterior a cualquier medida de Phase 1. **GO-B no ha empezado.**
+
+**Por qué existe (bloqueo del contrato, no resultado negativo).** Al materializar solo los recursos
+auxiliares de GO-A (pistas, callset SV, índices, mapa, referencia; commit `e50d0df`), sin descargar
+genotipos ni CRAM y sin calcular BAF, SER, `T`, p ni A1, la regla congelada «excluir la ventana entera
+por cualquier solape ≥ 1 pb» resultó operacionalmente degenerada:
+
+- las duplicaciones segmentarias tocan 1 263 de las 1 428 tiles de 2 Mb (quedan 87 elegibles globales);
+- la ventana BUB1B tiene ~12 kb de duplicación segmentaria (~0,61 %, 8 entradas) y quedaba excluida
+  para todos los hijos, con lo que la puerta del locus fallaba por construcción;
+- cada trío lleva 11 800–14 900 registros SV (sobre todo DEL de ~300 pb e inserciones), de modo que los
+  20 hijos quedaban con **0 ventanas** de evaluación.
+
+Esto no mide el método: impide medirlo. Se corrige antes del primer dato, sin porcentaje arbitrario.
+
+**Reglas nuevas** (sustituyen a la exclusión por solape de Amendment 3 r9 y a las decisiones de
+implementación de ventanas y calibración del 2026-10-01):
+
+1. **Selección de ventanas.** Solo gaps/centrómeros eliminan una tile completa, por solape ≥ 1 pb con
+   su núcleo de 2 Mb. Las tiles que solapan la ventana BUB1B siguen fuera de las 49 aleatorias.
+2. **Duplicaciones segmentarias y ENCODE blacklist v2** ya no eliminan ventanas: son **máscaras de sitio**.
+   Un marcador se enmascara si su span VCF `[POS, POS + len(REF) − 1]` interseca la pista.
+3. **Fase.** Del input específico de cada objetivo se retiran los sitios dentro de gaps/centrómeros,
+   duplicaciones segmentarias, blacklist y SV copy-changing del hijo. Sin padding nuevo.
+4. **SV del hijo.** Solo los eventos copy-changing (`DEL`, `DUP`, `CNV`, o copy number explícitamente
+   distinto del diploide según el callset) enmascaran sus intervalos en APR, A1-benchmark, potencia y
+   calibración. `INS`/`INV`/`BND` copy-neutral no invalidan la ventana ni enmascaran un intervalo.
+5. **SV del padre o la madre.** Los copy-changing parentales se excluyen **solo** del conjunto de verdad
+   mendeliana, potencia y SER. No afectan a APR ni a `ρ` del hijo.
+6. **`Hmin = 50` después de todas las máscaras.** Con < 50 hets en el conjunto correspondiente, ese
+   hijo × ventana es `NOT_EVALUABLE`. Sin sustitución de ventanas y sin umbral porcentual.
+7. **Calibración.** Las 20 tiles globales siguientes en el mismo orden hash tras las 49 de evaluación,
+   **las mismas para los 20 hijos**; ya no se saltan por SV. Cada hijo aplica dentro sus máscaras de sitio.
+8. **SER.** Puerta analítica (MAF ≥ 1 %) sobre el conjunto mendelianamente resoluble tras las máscaras
+   globales y las copy-changing de hijo y padres; el SER del scaffold (MAF ≥ 0,1 %) sigue descriptivo,
+   con las mismas máscaras.
+9. **Paciente / A1, sin cambios.** Cualquier CNV copy-changing del paciente que solape una ventana de A1
+   la deja `NOT_EVALUABLE`. No se convierte en máscara para «salvar» al paciente.
+10. **Auditoría.** Por hijo × ventana se reportan `n_before`, `n_mask_segdup`, `n_mask_blacklist`,
+    `n_mask_child_copychange`, `n_mask_parent_copychange_truth`, `n_after_intact`, `n_after_truth` y,
+    como descriptiva, la fracción de bases enmascarada. **Ninguna fracción se usa como puerta.**
+
+**Sin cambios:** semillas, `T`, `B = 10 000`, APR de Amendment 7, `ρ`, rejilla de δ, ponderación por hijo,
+sensibilidad 0,80, retención 0,90, SER global 0,02, veto de estrato, centinela BUB1B, efecto y clases de
+A1, A2.
+
+**Respaldo y límite.** GA4GH recomienda estratificar y restringir por contexto genómico difícil en lugar
+de tratar regiones enteras como equivalentes por un solape mínimo (Krusche et al. 2019, PMID 30858580,
+[10.1038/s41587-019-0054-x](https://doi.org/10.1038/s41587-019-0054-x)); Loh et al. 2018 formulan la
+señal por fase a nivel de heterocigotos individuales (PMID 29995854,
+[10.1038/s41586-018-0321-x](https://doi.org/10.1038/s41586-018-0321-x)). Ninguno prescribe esta regla
+exacta: **Amendment 8 es una decisión metodológica nuestra**.
+
+**Secuencia:** este commit documental → implementación y tests → validación en clon limpio con Docker →
+tag anotado nuevo `exp027-prephase1-freeze-a8` → `plan.py` sobre los recursos GO-A → presupuesto exacto →
+GO-B solo si ≤ 170 GB y sin incompatibilidad nueva (slices brutos con SHA256 antes del BCF reducido) →
+Phase 1 una sola vez, aceptando PASS/FAIL sin rediseñar.
