@@ -110,3 +110,32 @@ def test_index_samples_strips_trailing_spaces(tmp_path):
     p.write_text("##c\n#ENA_FILE_PATH\tMD5SUM\tSAMPLE_NAME\n"
                  "ftp://a/HG1.cram\tm1\tHG1 \nftp://a/HG2.cram\tm2\tHG2\n", encoding="ascii")
     assert set(plan.index_samples(p)) == {"HG1", "HG2"}
+
+
+def test_curl_range_to_file_retries_injected_error_by_subrange(monkeypatch, tmp_path):
+    """Un tramo con el XML de error inyectado se repite; el fichero final sale limpio."""
+    from src.exp027 import slices
+
+    class P:
+        def __init__(self, rc):
+            self.returncode, self.stderr = rc, b""
+
+    body = bytes(range(256)) * 40                       # 10 240 bytes
+    calls = {"n": 0}
+
+    def fake_run(cmd, capture_output=True):
+        a, b = (int(x) for x in cmd[cmd.index("-r") + 1].split("-"))
+        out = __import__("pathlib").Path(cmd[cmd.index("-o") + 1])
+        calls["n"] += 1
+        chunk = body[a:b + 1]
+        if calls["n"] == 2:                             # segundo tramo, primer intento: error inyectado
+            chunk = b"<Error><Code>X</Code></Error>" + chunk[29:]
+        out.write_bytes(chunk)
+        return P(0)
+
+    monkeypatch.setattr(slices, "SUBRANGE", 4096)
+    monkeypatch.setattr(slices.time, "sleep", lambda s: None)
+    monkeypatch.setattr(slices.subprocess, "run", fake_run)
+    dest = tmp_path / "x.part"
+    slices.curl_range_to_file("https://h/f", 0, len(body) - 1, dest)
+    assert dest.read_bytes() == body and calls["n"] == 4   # 3 tramos + 1 reintento

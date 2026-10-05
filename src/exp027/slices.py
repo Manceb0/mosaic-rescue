@@ -24,6 +24,7 @@ import struct
 import subprocess
 import sys
 import threading
+import time
 import zlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -58,12 +59,40 @@ def curl_range(url: str, start: int, end_incl: int) -> bytes:
     return data
 
 
+SUBRANGE = 256 << 20
+SUBRANGE_TRIES = 5
+PIECE_TRIES = 4
+
+
 def curl_range_to_file(url: str, start: int, end_incl: int, dest: Path) -> None:
-    """Como curl_range, pero escribe en disco (las regiones VCF pesan ~1-2 GB)."""
-    p = subprocess.run(["curl", "-fsSL", "--proto", "=https", "--retry", "8", "--retry-delay", "15",
-                        "-r", f"{start}-{end_incl}", "-o", str(dest), url], capture_output=True)
-    if p.returncode:
-        raise SliceError(f"curl {p.returncode} en {url} [{start}-{end_incl}]: {p.stderr.decode(errors='replace')[-300:]}")
+    """Como curl_range, pero en disco y por tramos de 256 MB, cada uno validado (tamaño exacto, sin
+    mensaje de error del servidor) y reintentado por separado.
+
+    El servidor de EBI inserta a veces un XML de error (ConnectionClosedException) en mitad del cuerpo
+    y sigue enviando hasta completar el tamaño (2026-10-04: referencia, chr14; GO-B, chr2 7,1 GB):
+    curl sale 0 y el tamaño cuadra. Tramos cortos acotan lo que hay que repetir.
+    """
+    tmp = dest.with_name(dest.name + ".seg")
+    with open(dest, "wb") as out:
+        a = start
+        while a <= end_incl:
+            b = min(a + SUBRANGE - 1, end_incl)
+            for attempt in range(1, SUBRANGE_TRIES + 1):
+                p = subprocess.run(["curl", "-fsSL", "--proto", "=https", "--retry", "8", "--retry-delay", "15",
+                                    "-r", f"{a}-{b}", "-o", str(tmp), url], capture_output=True)
+                ok = p.returncode == 0 and tmp.exists() and tmp.stat().st_size == b - a + 1
+                if ok:
+                    data = tmp.read_bytes()
+                    ok = M.INJECTED_ERROR not in data
+                if ok:
+                    out.write(data)
+                    break
+                if attempt == SUBRANGE_TRIES:
+                    raise SliceError(f"{url} [{a}-{b}]: {SUBRANGE_TRIES} intentos fallidos "
+                                     f"(curl {p.returncode}, error inyectado o tamaño)")
+                time.sleep(20 * attempt)
+            a = b + 1
+    tmp.unlink(missing_ok=True)
     if dest.stat().st_size != end_incl - start + 1:
         raise SliceError(f"{url}: recibidos {dest.stat().st_size} bytes, pedidos {end_incl - start + 1}")
 
@@ -156,18 +185,83 @@ def _done(manifest: dict, key: str, data: Path) -> bool:
     return bool(rec) and (data / rec["path"]).exists() and (data / rec["path"]).stat().st_size == rec["bytes"]
 
 
-def verify_all(data: Path) -> int:
-    """Recalcula el SHA256 de cada pieza del manifest de GO-B."""
+def verify_all(data: Path, plan_dir: Path | None = None) -> int:
+    """Revalidación desde cero de GO-B (que figure en el manifest no basta).
+
+    Por pieza: existe, tamaño registrado, SHA256 recalculado y estructura: los ficheros BGZF (cabeceras
+    y regiones VCF) se descomprimen bloque a bloque con CRC32/ISIZE y sin cola incompleta; el CRAM
+    empieza por «CRAM» y acaba en el contenedor EOF. Con plan_dir, además, comprueba que están todas
+    las piezas que el plan exige (regiones de fase de las 70 ventanas y los 20 CRAM).
+    """
     man = json.loads((data / "goB/MANIFEST_goB.json").read_text(encoding="utf-8"))
     bad = []
     for key, rec in sorted(man.items()):
+        path = data / rec["path"]
+        if not path.exists() or path.stat().st_size != rec["bytes"]:
+            bad.append(f"{key}:tamaño")
+            continue
         h = hashlib.sha256()
-        with open(data / rec["path"], "rb") as f:
+        with open(path, "rb") as f:
             for block in iter(lambda: f.read(1 << 22), b""):
                 h.update(block)
         if h.hexdigest() != rec["sha256"]:
-            bad.append(key)
-    print(f"{len(man) - len(bad)}/{len(man)} piezas con SHA256 correcto" + (f"; MAL: {bad}" if bad else ""))
+            bad.append(f"{key}:sha256")
+            continue
+        try:
+            if key.startswith("gt_"):
+                n = sum(1 for _ in iter_inflated(path))
+                if n == 0:
+                    raise SliceError("sin bloques")
+            elif key.startswith("cram:"):
+                with open(path, "rb") as f:
+                    head = f.read(4)
+                    f.seek(-CRAM_EOF_TAIL, 2)
+                    tail = f.read(8)
+                if head != b"CRAM" or tail != bytes.fromhex("0f000000ffffffff"):
+                    raise SliceError("firma CRAM o EOF incorrecta")
+        except (SliceError, zlib.error) as e:
+            bad.append(f"{key}:estructura({e})")
+    missing = []
+    if plan_dir is not None:
+        plan = json.loads((plan_dir / "plan_windows.json").read_text(encoding="utf-8"))
+        wins = _windows(plan["evaluation"] + plan["calibration"])
+        regions = sorted({P.phasing_region(w, P.BUFFER_BP, plan["lengths"]) for w in wins})
+        need = [f"gt_region:{c}:{s}-{e}" for c, s, e in regions] + \
+               [f"gt_header:{c}" for c in sorted({r[0] for r in regions})] + \
+               [f"cram:{s['child']}" for s in plan["selection"]]
+        missing = [k for k in need if k not in man]
+    print(f"{len(man) - len(bad)}/{len(man)} piezas válidas (tamaño, SHA256, CRC/estructura)"
+          + (f"; MAL: {bad}" if bad else "") + (f"; FALTAN: {missing}" if missing else ""))
+    return 1 if bad or missing else 0
+
+
+def verify_derived(data: Path, docker_root: Path) -> int:
+    """Cada BCF derivado: SHA256 registrado, índice presente y legible con registros (bcftools index -n);
+    cada CRAM ensamblado: quickcheck (vuelve a ejecutarse) e índice con el SHA256 registrado."""
+    from . import tools
+    from .orchestrate import SAMTOOLS_IMAGE
+    der = json.loads((data / "goB/MANIFEST_goB_derived.json").read_text(encoding="utf-8"))
+    bad = []
+    for key, rec in sorted(der.items()):
+        path = docker_root / rec["path"]
+        if not path.exists() or sha256(path.read_bytes()) != rec["sha256"]:
+            bad.append(f"{key}:sha256")
+            continue
+        if key.startswith("gt_region:"):
+            p = subprocess.run(["docker", "run", "--rm", "-v", f"{docker_root}:/data", tools.BCFTOOLS_IMAGE,
+                                "bcftools", "index", "-n", f"/data/{rec['path']}"], capture_output=True, text=True)
+            if p.returncode != 0 or not p.stdout.strip().isdigit() or int(p.stdout) == 0:
+                bad.append(f"{key}:indice")
+        elif key.startswith("cram_index:"):
+            cram = rec["path"][:-len(".crai")]
+            p = subprocess.run(["docker", "run", "--rm", "-v", f"{docker_root}:/data", SAMTOOLS_IMAGE,
+                                "samtools", "quickcheck", "-v", f"/data/{cram}"], capture_output=True, text=True)
+            if p.returncode != 0:
+                bad.append(f"{key}:quickcheck")
+    n_gt = sum(k.startswith("gt_region:") for k in der)
+    n_cr = sum(k.startswith("cram_index:") for k in der)
+    print(f"derivados: {n_gt} BCF y {n_cr} CRAM indexados; {len(der) - len(bad)}/{len(der)} válidos"
+          + (f"; MAL: {bad}" if bad else ""))
     return 1 if bad else 0
 
 
@@ -320,14 +414,35 @@ def fetch_all(plan_dir: Path, data: Path, workers: int = WORKERS) -> int:
                                           "fetched_utc": stamp()})
         return key, rec["bytes"], False
 
-    total = 0
+    def retried(fn, arg, label):
+        """Una pieza que no valida se repite entera; una pieza mala no detiene las demás."""
+        for attempt in range(1, PIECE_TRIES + 1):
+            try:
+                return fn(arg)
+            except SliceError as e:
+                print(f"REINTENTO {label} ({attempt}/{PIECE_TRIES}): {e}", flush=True)
+                if attempt == PIECE_TRIES:
+                    raise
+                time.sleep(60 * attempt)
+
+    total, failed = 0, []
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        futs = [ex.submit(gt_job, r) for r in regions] + [ex.submit(cram_job, s) for s in plan["selection"]]
+        futs = {ex.submit(retried, gt_job, r, f"{r[0]}:{r[1]}-{r[2]}"): f"gt_region:{r[0]}:{r[1]}-{r[2]}"
+                for r in regions}
+        futs.update({ex.submit(retried, cram_job, s, s["child"]): f"cram:{s['child']}" for s in plan["selection"]})
         for i, fut in enumerate(as_completed(futs), 1):
-            key, nbytes, cached = fut.result()
+            try:
+                key, nbytes, cached = fut.result()
+            except SliceError as e:
+                failed.append(futs[fut])
+                print(f"[{i}/{len(futs)}] FALLO {futs[fut]}: {e}", flush=True)
+                continue
             total += nbytes
             print(f"[{i}/{len(futs)}] {key} {nbytes / 1e9:.2f} GB{' (ya estaba)' if cached else ''} "
                   f"· acumulado {total / 1e9:.1f} GB", flush=True)
+    if failed:
+        print(f"GO-B INCOMPLETO: {len(failed)} piezas fallidas: {failed}", flush=True)
+        return 1
     print(f"OK GO-B: {len(regions)} regiones VCF + {len(plan['selection'])} CRAM; {total / 1e9:.1f} GB", flush=True)
     return 0
 
@@ -415,7 +530,7 @@ def derive_region(data: Path, plan: dict, chrom: str, start: int, end: int, samp
             "raw_sha256": None, "region": region}
 
 
-def derive_all(plan_dir: Path, data: Path) -> int:
+def derive_all(plan_dir: Path, data: Path, partial: bool = False) -> int:
     import yaml
     plan = json.loads((plan_dir / "plan_windows.json").read_text(encoding="utf-8"))
     docker_root = Path(yaml.safe_load(Path("config/paths.yaml").read_text(encoding="utf-8"))["compute"]["docker_repo_root"])
@@ -433,8 +548,10 @@ def derive_all(plan_dir: Path, data: Path) -> int:
     keys = [f"gt_region:{c}:{s}-{e}" for c, s, e in regions]
     missing = [k for k in keys if k not in man] + \
               [f"cram:{s['child']}" for s in plan["selection"] if f"cram:{s['child']}" not in man]
-    if missing:
+    if missing and not partial:
         raise SliceError(f"faltan piezas de GO-B: {missing[:5]} ({len(missing)})")
+    if partial:                                  # solo piezas ya terminadas (la descarga sigue)
+        keys = [k for k in keys if k in man]
     refs = {c: P.read_tbi(data / f"gt_index/{M.GT_NAME.format(chrom=c)}.tbi") for c in {r[0] for r in regions}}
 
     def job(key):
@@ -456,11 +573,14 @@ def derive_all(plan_dir: Path, data: Path) -> int:
                   f"{' (ya estaba)' if cached else ''}", flush=True)
     for s in plan["selection"]:
         key = f"cram_index:{s['child']}"
-        if key in derived:
+        if key in derived or f"cram:{s['child']}" not in man:
             continue
         _record(derived, der_path, key, prepare_cram(docker_root, man[f"cram:{s['child']}"]["path"]))
         print(f"CRAM {s['child']}: quickcheck e índice OK", flush=True)
-    print(f"OK derivados {len(keys)} regiones VCF + {len(plan['selection'])} CRAM indexados", flush=True)
+    n_gt = sum(k.startswith("gt_region:") for k in derived)
+    n_cram = sum(k.startswith("cram_index:") for k in derived)
+    print(f"derivados en total: {n_gt} regiones VCF y {n_cram} CRAM indexados "
+          f"(el plan exige {len(regions)} y {len(plan['selection'])})", flush=True)
     return 0
 
 
@@ -479,15 +599,20 @@ def prepare_cram(docker_root: Path, cram_rel_to_data: str) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["fetch", "verify", "derive"])
+    ap.add_argument("step", choices=["fetch", "verify", "derive", "verify-derived"])
     ap.add_argument("--plan", default="work/exp027/plan_a8")
     ap.add_argument("--data", default="work/exp027/data")
     ap.add_argument("--workers", type=int, default=WORKERS)
+    ap.add_argument("--partial", action="store_true", help="derive: solo las piezas ya descargadas")
     a = ap.parse_args(argv)
     if a.step == "verify":
-        return verify_all(Path(a.data))
+        return verify_all(Path(a.data), Path(a.plan))
+    if a.step == "verify-derived":
+        import yaml
+        root = Path(yaml.safe_load(Path("config/paths.yaml").read_text(encoding="utf-8"))["compute"]["docker_repo_root"])
+        return verify_derived(Path(a.data), root)
     if a.step == "derive":
-        return derive_all(Path(a.plan), Path(a.data))
+        return derive_all(Path(a.plan), Path(a.data), a.partial)
     return fetch_all(Path(a.plan), Path(a.data), a.workers)
 
 

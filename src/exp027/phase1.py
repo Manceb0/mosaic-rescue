@@ -16,7 +16,7 @@ congelada violada, muestras inesperadas, sitio enmascarado superviviente.
 
 Uso:
     python -m src.exp027.phase1 toy  --out work/exp027/phase1_toy
-    python -m src.exp027.phase1 real --plan work/exp027/plan_execution --workers 20   # solo tras el tag
+    python -m src.exp027.phase1 real --plan work/exp027/plan_execution --workers 16   # solo en el tag de ejecución
 """
 from __future__ import annotations
 
@@ -311,6 +311,66 @@ def calibration_job(ds: Dataset, trio, tile) -> dict:
     return res
 
 
+# ---------------------------------------------------------------------- manifest de ejecución
+EXECUTION_TAG = "exp027-phase1-execution-freeze"
+
+
+def _git(*args) -> str:
+    import subprocess
+    p = subprocess.run(["git", *args], capture_output=True, text=True)
+    if p.returncode != 0:
+        raise OrchestrationError(f"git {' '.join(args)} falló: {p.stderr.strip()}")
+    return p.stdout.strip()
+
+
+def _sha_file(path: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 22), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def run_manifest(ds: Dataset, plan_dir: Path, data: Path, workers: int, b: int) -> dict:
+    """Qué código y qué bytes producen el resultado. Barrera: HEAD debe ser el commit del tag de
+    ejecución y src/, config/ y tests/ no pueden tener cambios sin commitear."""
+    import datetime as dt
+    import os
+    import platform
+    import subprocess
+    head = _git("rev-parse", "HEAD")
+    tagged = _git("rev-parse", f"{EXECUTION_TAG}^{{commit}}")
+    if head != tagged:
+        raise OrchestrationError(f"HEAD {head[:12]} no es el tag {EXECUTION_TAG} ({tagged[:12]})")
+    dirty = _git("status", "--porcelain", "--", "src", "config", "tests")
+    if dirty:
+        raise OrchestrationError(f"cambios sin commitear en src/config/tests:\n{dirty}")
+    goB = json.loads((data / "goB/MANIFEST_goB.json").read_text(encoding="utf-8"))
+    der = json.loads((data / "goB/MANIFEST_goB_derived.json").read_text(encoding="utf-8"))
+    mat = json.loads((data / "MANIFEST.json").read_text(encoding="utf-8"))
+    images = {}
+    for ref in (tools.SHAPEIT5_IMAGE, tools.BCFTOOLS_IMAGE, SAMTOOLS_IMAGE):
+        r = subprocess.run(["docker", "image", "inspect", "--format", "{{.Id}}", ref], capture_output=True, text=True)
+        images[ref] = r.stdout.strip()
+    return {
+        "experiment": "EXP-027 Phase 1",
+        "commit": head, "tag": EXECUTION_TAG, "tag_commit": tagged,
+        "started_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "workers": workers, "B": b, "deltas": list(DELTA_GRID),
+        "children": [t[0] for t in ds.trios], "n_evaluation": len(ds.evaluation),
+        "n_calibration": len(ds.calibration),
+        "plan": {"plan_windows.json": _sha_file(plan_dir / "plan_windows.json"),
+                 **{f"masks/{p.name}": _sha_file(p) for p in sorted((plan_dir / "masks").glob("*.bed"))}},
+        "config": {p: _sha_file(Path(p)) for p in ("config/exp027_benchmark.yaml", "config/exp027_tool_manifest.json")},
+        "goB_raw_sha256": {k: v["sha256"] for k, v in sorted(goB.items())},
+        "goB_derived_sha256": {k: v["sha256"] for k, v in sorted(der.items())},
+        "goA_sha256": {k: v["sha256"] for k, v in sorted(mat.items())},
+        "images": images,
+        "host": {"platform": platform.platform(), "cpus": os.cpu_count(), "python": platform.python_version()},
+    }
+
+
 # ---------------------------------------------------------------------- ensamblado
 def assemble(ds: Dataset, win_results, cal_results) -> dict:
     children = {}
@@ -374,7 +434,7 @@ def main(argv=None) -> int:
     t.add_argument("--workers", type=int, default=4)
     r = sub.add_parser("real")
     r.add_argument("--plan", type=Path, default=Path("work/exp027/plan_execution"))  # máscaras con regla A
-    r.add_argument("--workers", type=int, default=20)
+    r.add_argument("--workers", type=int, default=16)   # operacional: solo cambia el tiempo de reloj
     a = ap.parse_args(argv)
     if a.mode == "toy":
         if a.out.exists():
@@ -385,7 +445,19 @@ def main(argv=None) -> int:
         import yaml
         root = Path(yaml.safe_load(Path("config/paths.yaml").read_text(encoding="utf-8"))["compute"]["docker_repo_root"])
         ds = Dataset.from_plan(a.plan, "work/exp027/data", root)
-        rep = run(ds, a.workers, evaluate.stats.B_PERMUTATIONS)
+        b = evaluate.stats.B_PERMUTATIONS
+        man = run_manifest(ds, a.plan, root / "work/exp027/data", a.workers, b)
+        mpath = root / ds.out / "RUN_MANIFEST.json"
+        mpath.parent.mkdir(parents=True, exist_ok=True)
+        if mpath.exists():                       # reanudación: solo con el mismo código y los mismos bytes
+            prev = json.loads(mpath.read_text(encoding="utf-8"))
+            same = all(prev[k] == man[k] for k in ("commit", "plan", "config", "goB_raw_sha256",
+                                                    "goB_derived_sha256", "images"))
+            if not same:
+                raise OrchestrationError("RUN_MANIFEST existente con otro código o entradas: no se reanuda")
+            man["resumed_utc"], man["started_utc"] = man["started_utc"], prev["started_utc"]
+        mpath.write_text(json.dumps(man, indent=2), encoding="utf-8", newline="\n")
+        rep = run(ds, a.workers, b)
     print(json.dumps({k: rep.get(k) for k in ("phase1_global", "a1_applicable", "apr_k", "apr_n",
                                               "apr_p_binom_one_sided", "sensitivity_inferred",
                                               "retention", "ser", "fail_reasons", "run")},

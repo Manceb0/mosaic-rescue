@@ -8,8 +8,8 @@
 > La regla que se sigue aquí es la misma que en el resto del proyecto: **se mide, no se
 > afirma**. Y donde algo NO escala, se dice.
 >
-> **Qué mide el número de abajo, exactamente.** Que el 42 % del código actual es agnóstico al
-> caso **bajo un censo léxico conservador**. No que el proyecto sea «un 42 % escalable». La
+> **Qué mide el número de abajo, exactamente.** Que el 43 % del código actual es agnóstico al
+> caso **bajo un censo léxico conservador**. No que el proyecto sea «un 43 % escalable». La
 > escalabilidad real incluye qué entradas se pueden sustituir, cuántos módulos dependen de
 > `BUB1B` o del fenotipo MVA en concreto, y qué partes reutilizan maquinaria genérica de HPO y
 > VCF — nada de eso lo puede responder una búsqueda de texto. Es un **proxy técnico**, y como
@@ -22,11 +22,11 @@ nefrocalcinosis, los tres compuestos, `HSF1`, OMIM 257300):
 
 | | módulos | líneas |
 |---|---:|---:|
-| **Sin ninguna mención al caso** — se transfieren tal cual | **58** | **9 079** |
-| Con menciones al caso — hay que adaptarlos | 53 | 12 314 |
-| Total | 111 | 21 393 |
+| **Sin ninguna mención al caso** — se transfieren tal cual | **58** | **9 204** |
+| Con menciones al caso — hay que adaptarlos | 53 | 12 386 |
+| Total | 111 | 21 590 |
 
-**El 42 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
+**El 43 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
 el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 53
 módulos restantes solo nombra el caso en títulos de figura y cadenas de texto, no en la
 lógica.

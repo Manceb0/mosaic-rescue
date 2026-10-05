@@ -53,3 +53,18 @@ def test_phase1_runner_on_toy_with_docker(tmp_path):
     assert all(a["n_after_truth"] <= a["n_after_intact"] for a in au.values())
     assert "bub1b:evaluable" in rep["fail_reasons"]                  # 5 hijos < 15
     assert not list((tmp_path / "toy" / "phase1").rglob("*.bcf"))   # intermedios grandes borrados
+
+
+def test_run_manifest_refuses_when_head_is_not_execution_tag(monkeypatch, tmp_path):
+    calls = {"rev-parse HEAD": "a" * 40, f"rev-parse {phase1.EXECUTION_TAG}^{{commit}}": "b" * 40}
+    monkeypatch.setattr(phase1, "_git", lambda *a: calls[" ".join(a)])
+    with pytest.raises(phase1.OrchestrationError, match="no es el tag"):
+        phase1.run_manifest(None, tmp_path, tmp_path, 16, 10_000)
+
+
+def test_run_manifest_refuses_dirty_tree(monkeypatch, tmp_path):
+    calls = {"rev-parse HEAD": "a" * 40, f"rev-parse {phase1.EXECUTION_TAG}^{{commit}}": "a" * 40,
+             "status --porcelain -- src config tests": " M src/exp027/stats.py"}
+    monkeypatch.setattr(phase1, "_git", lambda *a: calls[" ".join(a)])
+    with pytest.raises(phase1.OrchestrationError, match="sin commitear"):
+        phase1.run_manifest(None, tmp_path, tmp_path, 16, 10_000)

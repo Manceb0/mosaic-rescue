@@ -2743,8 +2743,10 @@ estimaciones de profundidad (`RD_CN` de GATK-SV, `CN` de svtools) convirtieran e
 que el callset integrado había genotipado como no portadoras: ~21 400 máscaras por hijo frente a
 ~5 600 con el genotipo (HG02234). Byrska-Bishop et al. 2022 (PMID 36055201,
 [10.1016/j.cell.2022.08.004](https://doi.org/10.1016/j.cell.2022.08.004)) describen el callset como
-ensemble genotipado e informan de ~9 679 SV por genoma en total; el desglose por tipo que lo acercaría a
-~5 900 copy-changing no se pudo verificar en el texto de PMC en esta sesión.
+ensemble genotipado; su Tabla 1 («Average # variants per sample») da 4 232 DEL, 1 207 DUP y 425 mCNV
+(~5 864 copy-changing) de 9 679 SV por muestra. *Corrección de procedencia:* una versión previa de esta
+nota decía que el desglose no se pudo verificar; el texto que devuelve el servidor de PubMed omite las
+tablas, y la Tabla 1 se comprobó después en la página de PMC (PMC9439720).
 
 - `DEL` y `DUP` (con subtipos): máscara solo si el GT integrado porta el alelo alternativo.
 - `mCNV` (`SVTYPE=CNV`): CN discreto genotipado de la muestra; máscara si `CN ≠ 2`.
