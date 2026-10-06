@@ -2837,3 +2837,52 @@ scaffold, y auditoría; y los GT del scaffold son idénticos por registro `CHROM
 muestras antes y después de `phase_rare` (24 105–33 298 registros por ventana; los 24–69 registros raros que
 comparten posición se informan aparte). Igualdad de filas y auditoría implica entrada puntuable idéntica byte
 a byte; la puntuación es determinista, así que no se calcularon `T` ni `p`.
+
+**Nota de ejecución r2 (2026-10-06, sin cambio de método ni de código).** La auditoría por ventana
+(`n_not_in_phased_output`) muestra que ~16 % de los heterocigotos que cumplen el filtro analítico (MAF de
+`C_target` ≥ 1 %, PASS, GQ ≥ 30, 0/1 en el hijo) no aparecen en la salida faseada. Comprobado en una ventana
+(HG01261, chr10:2–4 Mb): son **registros multialélicos** (2 831 bialélicos + 606 multialélicos = 3 437,
+frente a 3 433 candidatos del run). `bcftools +fill-tags` da para ellos una MAF de un solo valor, así que
+entran como candidatos, pero SHAPEIT5 no fasea multialélicos y nunca llegan a `WindowSites`. Es el
+comportamiento del código congelado desde el freeze (idéntico en el intento abortado y en la validación de
+A′): **el conjunto analítico efectivo es bialélico**. Se registra para que la auditoría se lea bien; no se
+corrige durante el run ni se rediseña.
+
+**Los 20 hijos del benchmark de Phase 1 (r2).** Tríos públicos de 1000 Genomes high-coverage (no son
+datos del paciente), elegidos antes de ver ningún dato con la regla congelada: 4 por superpoblación,
+orden `SHA256("42:" + ID)` ascendente entre los 602 tríos completos elegibles; `plan.py` los
+re-deriva de los metadatos públicos y falla si no coinciden. `C_target` = 2 504 de fase 3 menos el hijo y
+sus familiares de primer grado.
+
+| Superpoblación | Hijo | Padre | Madre | n `C_target` |
+|---|---|---|---|---:|
+| AFR | HG03248 | HG03246 | HG03247 | 2502 |
+| AFR | HG01959 | HG01986 | HG01958 | 2502 |
+| AFR | HG01916 | HG01914 | HG01915 | 2502 |
+| AFR | NA20279 | NA20278 | NA20282 | 2502 |
+| AMR | HG01261 | HG01259 | HG01260 | 2502 |
+| AMR | HG02303 | HG02302 | HG02301 | 2503 |
+| AMR | HG01106 | HG01104 | HG01105 | 2502 |
+| AMR | HG01993 | HG01991 | HG01992 | 2502 |
+| EAS | HG00408 | HG00406 | HG00407 | 2502 |
+| EAS | HG02074 | HG02076 | HG02075 | 2502 |
+| EAS | HG00420 | HG00418 | HG00419 | 2503 |
+| EAS | HG00477 | HG00475 | HG00476 | 2502 |
+| EUR | HG02234 | HG02233 | HG02232 | 2502 |
+| EUR | HG01677 | HG01678 | HG01676 | 2502 |
+| EUR | NA10842 | NA11917 | NA11918 | 2503 |
+| EUR | NA10865 | NA11891 | NA11892 | 2503 |
+| SAS | HG04204 | HG03679 | HG03642 | 2502 |
+| SAS | HG03707 | HG03705 | HG03706 | 2502 |
+| SAS | HG03617 | HG03615 | HG03616 | 2502 |
+| SAS | HG03909 | HG03908 | HG03907 | 2502 |
+
+**Ejecución Phase 1 r2 iniciada (anclaje de procedencia; el resultado se añadirá al terminar).**
+
+- Código: tag `exp027-phase1-execution-freeze-r2` → commit `7e20047f3dec4b62f6496ed264d928eae3b0f549`; worktree limpio en ese commit.
+- Inicio: 2026-10-06T02:06:10+00:00; 16 workers; etiqueta Docker `exp027-r2-636bdeef1da8`; B = 10000; δ = [0.0, 0.02, 0.05, 0.1, 0.15, 0.2].
+- Diseño: 20 hijos × (50 ventanas de evaluación + 20 tiles de calibración) = 1400 trabajos; BUB1B es la ventana de evaluación #1.
+- Plan: `work/exp027/plan_execution/plan_windows.json` sha256 `e3731d525b1980026a5700f2fe8772a02eee6d363fa69e376cdd4b8bfa7c1c80` (50 + 20 ventanas, re-derivables con `plan.py`; las coordenadas no se copian aquí porque el escáner de privacidad trata los intervalos genómicos como patrón sensible).
+- Entradas GO-B: `MANIFEST_goB.json` sha256 `c967c572853dc54dcf12784a80c374d343ca8bf909c3f42e3cc0240f22a02468` (110 piezas brutas) y `MANIFEST_goB_derived.json` sha256 `483867c29987a7898dc1f3af59a3997ae26ba8ae32a645e0fa5a119238405717` (90 derivados); GO-A: `MANIFEST.json` sha256 `3bc2b403f3fc47e374cd4bf8604c1266504533266f779029d6ec8f1db7471f4e` (59 recursos).
+- `RUN_MANIFEST.json` (r2) sha256 `29f70878257130af25ce98a506b42f095f14e6344af7515658a42671d3bb9557`; registra además la supersesión del intento `exp027-phase1-execution-freeze` (ABORTED_TECHNICAL) y `rare_phasing_in_phase1: false`.
+- Seguimiento sin fallos silenciosos: `progress.log`, `status.json` y `job.log` por trabajo en `work/exp027/phase1_r2/`.
