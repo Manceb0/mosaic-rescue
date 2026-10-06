@@ -23,7 +23,7 @@ phasing:                                        # Amendments 3-4
   phase_common_reference_panel: none            # sin --reference externo
   pedigree_in_inference: forbidden              # nunca --pedigree
   scaffold_maf_min: 0.001                       # Amendment 3 r4 (Hofmeister 2023)
-  rare_and_singletons: phase_rare_on_scaffold
+  rare_and_singletons: not_run_in_phase1           # EXEC-DEF-PH1-001: scaffold = salida faseada (A′)
   chunk_overlap_buffer_bp_per_side: 250000      # Amendment 3 r5
   require_ligate_overlap: true                  # L_isec > 0 en el log de ligate
   genetic_map: {path_key: exp027.genetic_map_grch38, sha256: TO_MATERIALIZE}   # Amendment 3 r6: sin default

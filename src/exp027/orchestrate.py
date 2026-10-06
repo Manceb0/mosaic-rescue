@@ -144,8 +144,12 @@ def cohort_inputs(rn: Runner, all_bcf: str, cohort, child: str, wd: str) -> str:
     return f"{wd}/joint_ann.bcf"
 
 
-def phase(rn: Runner, joint: str, chunks, region: str, gmap: str, wd: str) -> str:
-    """phase_common por chunks solapados -> ligate con solape real -> phase_rare sobre el scaffold."""
+def phase(rn: Runner, joint: str, chunks, region: str, gmap: str, wd: str, rare: bool = True) -> str:
+    """phase_common por chunks solapados -> ligate con solape real -> phase_rare sobre el scaffold.
+
+    rare=False termina tras ligate y devuelve el scaffold (Phase 1, EXEC-DEF-PH1-001: ningún endpoint
+    adjudicable usa variantes raras, y phase_rare aborta con genotipos ausentes en raras).
+    """
     lst = []
     for i, (c, s, e) in enumerate(chunks):
         out = f"{wd}/common_{i}.bcf"
@@ -158,6 +162,8 @@ def phase(rn: Runner, joint: str, chunks, region: str, gmap: str, wd: str) -> st
     tools.require_ligate_overlap(r.stdout + r.stderr, len(chunks))
     rn.out(f"{wd}/scaffold.bcf")
     rn.index(f"{wd}/scaffold.bcf")
+    if not rare:
+        return f"{wd}/scaffold.bcf"
     rn.run(tools.SHAPEIT5_IMAGE, tools.phase_rare_cmd(_d(joint), region, _d(f"{wd}/scaffold.bcf"),
                                                       region, _d(gmap), _d(f"{wd}/phased.bcf")))
     rn.out(f"{wd}/phased.bcf")

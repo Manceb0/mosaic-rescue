@@ -3,9 +3,10 @@
 Trabajos independientes y reanudables, cada uno con su directorio y su result.json:
   - ventana (hijo × ventana de evaluación): C_target -> AC/AN/MAF en C_target -> entrada conjunta sin
     sitios enmascarados (globales + copy-changing del hijo) -> phase_common por 2 chunks con buffer ->
-    ligate (L_isec > 0) -> phase_rare -> SER analítico y de scaffold por recuentos, sin máscaras de
-    verdad -> hets analíticos clasificados por masks.window_audit -> AD con el extractor congelado
-    (bcftools mpileup) sobre el slice CRAM, casando el ALT del VCF;
+    ligate (L_isec > 0) -> el scaffold es la salida faseada (sin phase_rare: EXEC-DEF-PH1-001) -> SER
+    analítico y de scaffold por recuentos, sin máscaras de verdad -> hets analíticos clasificados por
+    masks.window_audit -> AD con el extractor congelado (bcftools mpileup) sobre el slice CRAM,
+    casando el ALT del VCF;
   - calibración (hijo × tile): hets analíticos intactos (sin máscaras globales ni copy-changing del
     hijo) con su AD, sin fase (ρ usa b_i − 0.5).
 Al terminar, evaluate.run_benchmark con B = 10 000 y la rejilla de δ congelada produce el informe.
@@ -14,6 +15,11 @@ El mismo código corre sobre el juguete (Dataset.toy) y sobre 1000G (Dataset.fro
 heredado del orquestador: imagen ausente o digest distinto, salida ausente, ligate sin solape, regla
 congelada violada, muestras inesperadas, sitio enmascarado superviviente.
 
+Nada falla en silencio (EXEC-DEF-PH1-001): cada trabajo escribe job.log con cada comando, su código
+de salida y su stderr; el ejecutor escribe progress.log (sin búfer) y status.json en cada trabajo; la
+primera excepción cancela lo pendiente, mata los contenedores del run, escribe FAILED_JOB.json y
+termina con error.
+
 Uso:
     python -m src.exp027.phase1 toy  --out work/exp027/phase1_toy
     python -m src.exp027.phase1 real --plan work/exp027/plan_execution --workers 16   # solo en el tag de ejecución
@@ -21,11 +27,16 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import gzip
 import json
 import shutil
+import subprocess
 import sys
+import threading
 import time
+import traceback
+import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -39,6 +50,45 @@ from .orchestrate import (ANALYTIC_MAF, BUFFER_BP, GQ_MIN, SAMTOOLS_IMAGE, SCAFF
                           write_lines)
 from .serialize import DELTA_GRID, window_id
 from .windows import BUB1B_WINDOW, phasing_region
+
+# Etiqueta Docker única de los contenedores de ESTE proceso: la parada solo mata contenedores con ella,
+# nunca un barrido genérico.
+RUN_LABEL = f"exp027-r2-{uuid.uuid4().hex[:12]}"
+
+
+def _now() -> str:
+    return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+
+
+def _write_atomic(path: Path, text: str) -> None:
+    """Escribe en un temporal del mismo directorio y lo renombra (os.replace es atómico)."""
+    import os
+    tmp = path.with_name(f".{path.name}.{uuid.uuid4().hex[:8]}.tmp")
+    tmp.write_text(text, encoding="utf-8", newline="\n")
+    os.replace(tmp, path)
+
+
+class LoggedRunner(Runner):
+    """Runner que deja rastro: cada comando Docker, su código de salida, su duración y la cola de su
+    stderr van a job.log del trabajo (append + flush). Los contenedores llevan la etiqueta del run para
+    poder matarlos en bloque si algo falla."""
+
+    def __init__(self, mount: Path, job_dir: str):
+        super().__init__(mount)
+        self.log_path = self.mount / job_dir / "job.log"
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def run(self, image: str, cmd: list[str]) -> subprocess.CompletedProcess:
+        full = tools.docker_cmd(image, str(self.mount), cmd)          # aplica assert_frozen
+        full = full[:2] + ["--label", f"exp027_run={RUN_LABEL}"] + full[2:]
+        t0 = time.time()
+        p = subprocess.run(full, capture_output=True, text=True)
+        entry = {"utc": _now(), "seconds": round(time.time() - t0, 1), "returncode": p.returncode,
+                 "cmd": cmd, "stderr_tail": (p.stderr or "")[-2000:]}
+        with open(self.log_path, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(entry) + "\n")
+            f.flush()
+        return p
 
 
 @dataclass
@@ -80,7 +130,8 @@ class Dataset:
                    gmap=lambda c: "toy.gmap.gz", site_masks=toy_data.site_masks, bub1b=window)
 
     @classmethod
-    def from_plan(cls, plan_dir: Path, data_rel: str, mount: Path) -> "Dataset":
+    def from_plan(cls, plan_dir: Path, data_rel: str, mount: Path,
+                  out: str = "work/exp027/phase1_r2") -> "Dataset":
         from . import plan as P
         plan = json.loads((plan_dir / "plan_windows.json").read_text(encoding="utf-8"))
         data = mount / data_rel
@@ -113,7 +164,7 @@ class Dataset:
             c, s, e = phasing_region(w, BUFFER_BP, lengths)
             return f"{data_rel}/goB/gt_reduced/{c}_{s}_{e}.gtgq.bcf"
 
-        return cls(mount=mount, out="work/exp027/phase1", trios=[(s["child"], s["father"], s["mother"])
+        return cls(mount=mount, out=out, trios=[(s["child"], s["father"], s["mother"])
                                                                  for s in plan["selection"]],
                    superpop={s["child"]: s["superpop"] for s in plan["selection"]}, phase3=phase3,
                    pedigree=pedigree, lengths=lengths, evaluation=win(plan["evaluation"]),
@@ -215,14 +266,19 @@ def _switch_counts(rn: Runner, wd: str, tag: str, kid: str):
     return list(c[kid])
 
 
-def window_job(ds: Dataset, trio, window) -> dict:
+def job_dir(ds: Dataset, kind: str, kid: str, window) -> str:
+    wid = window_id(*window).replace(":", "_")
+    return f"{ds.out}/{kid}/{wid}" if kind == "win" else f"{ds.out}/{kid}/cal_{wid}"
+
+
+def window_job(ds: Dataset, trio, window, keep_intermediates: bool = False) -> dict:
     kid, fa, mo = trio
     wid = window_id(*window)
-    wd = f"{ds.out}/{kid}/{wid.replace(':', '_')}"
+    wd = job_dir(ds, "win", kid, window)
     res_path = ds.mount / wd / "result.json"
     if res_path.exists():
         return json.loads(res_path.read_text(encoding="utf-8"))
-    rn = Runner(ds.mount)
+    rn = LoggedRunner(ds.mount, wd)
     m = ds.site_masks(kid)
     cohort = selection.conditioning_cohort(ds.phase3, kid, ds.pedigree)
     if kid in cohort or fa in cohort or mo in cohort:
@@ -235,7 +291,8 @@ def window_job(ds: Dataset, trio, window) -> dict:
     mid = (rs + re_) // 2
     chunks = [(contig, rs, mid + BUFFER_BP), (contig, mid - BUFFER_BP + 1, re_)]
     region = tools.region_str(contig, rs, re_)
-    phased = phase(rn, joint, chunks, region, ds.gmap(contig), wd)
+    # A′ (EXEC-DEF-PH1-001): sin phase_rare; el scaffold común (MAF ≥ 0,1 %) es la salida faseada.
+    phased = phase(rn, joint, chunks, region, ds.gmap(contig), wd, rare=False)
     if m.phasing_intervals():
         require_unmasked(rn, phased, contig, m.phasing_intervals(), "fase")
     truth_items = m.truth_intervals()
@@ -269,7 +326,8 @@ def window_job(ds: Dataset, trio, window) -> dict:
         rows.append([ad[p][0], ad[p][1], int(g.split("|")[0]), -1 if pat is None else pat])
     res = {"child": kid, "window": wid, "is_bub1b": tuple(window) == tuple(ds.bub1b), "rows": rows,
            "audit": audit, "ser_analytic": ser_a, "ser_scaffold": ser_s}
-    _cleanup(rn, wd)
+    if not keep_intermediates:
+        _cleanup(rn, wd)
     res_path.write_text(json.dumps(res), encoding="utf-8", newline="\n")
     return res
 
@@ -277,11 +335,11 @@ def window_job(ds: Dataset, trio, window) -> dict:
 def calibration_job(ds: Dataset, trio, tile) -> dict:
     kid = trio[0]
     wid = window_id(*tile)
-    wd = f"{ds.out}/{kid}/cal_{wid.replace(':', '_')}"
+    wd = job_dir(ds, "cal", kid, tile)
     res_path = ds.mount / wd / "result.json"
     if res_path.exists():
         return json.loads(res_path.read_text(encoding="utf-8"))
-    rn = Runner(ds.mount)
+    rn = LoggedRunner(ds.mount, wd)
     m = ds.site_masks(kid)
     cohort = selection.conditioning_cohort(ds.phase3, kid, ds.pedigree)
     bcf = ds.region_bcf(tile)
@@ -312,7 +370,18 @@ def calibration_job(ds: Dataset, trio, tile) -> dict:
 
 
 # ---------------------------------------------------------------------- manifest de ejecución
-EXECUTION_TAG = "exp027-phase1-execution-freeze"
+EXECUTION_TAG = "exp027-phase1-execution-freeze-r2"
+SUPERSEDED = {
+    "supersedes_execution_tag": "exp027-phase1-execution-freeze",
+    "previous_attempt_status": "ABORTED_TECHNICAL",
+    "previous_attempt_dir": "work/exp027/phase1",
+    "rare_phasing_in_phase1": False,
+    "reason": ("EXEC-DEF-PH1-001: SHAPEIT5_phase_rare (5.1.1) aborta de forma determinista "
+               "(Assertion !isnan(...prob) en phaseLiAndStephens) con genotipos ausentes en variantes "
+               "raras; ningún endpoint adjudicable de Phase 1 usa variantes raras y A2 es UNSCORABLE. "
+               "Phase 1 termina la fase tras phase_common + ligate y usa el scaffold."),
+    "scaffold_invariance_test": "src/exp027/validate_r2.py (work/exp027/validation_r2/VALIDATION.json)",
+}
 
 
 def _git(*args) -> str:
@@ -355,7 +424,7 @@ def run_manifest(ds: Dataset, plan_dir: Path, data: Path, workers: int, b: int) 
         images[ref] = r.stdout.strip()
     return {
         "experiment": "EXP-027 Phase 1",
-        "commit": head, "tag": EXECUTION_TAG, "tag_commit": tagged,
+        "commit": head, "tag": EXECUTION_TAG, "tag_commit": tagged, **SUPERSEDED,
         "started_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "workers": workers, "B": b, "deltas": list(DELTA_GRID),
         "children": [t[0] for t in ds.trios], "n_evaluation": len(ds.evaluation),
@@ -395,21 +464,103 @@ def assemble(ds: Dataset, win_results, cal_results) -> dict:
     return children
 
 
-def run(ds: Dataset, workers: int, b: int, deltas=DELTA_GRID, log=print) -> dict:
+class JobFailed(OrchestrationError):
+    pass
+
+
+def kill_run_containers() -> int:
+    """Mata los contenedores Docker etiquetados con la etiqueta de este proceso."""
+    ids = subprocess.run(["docker", "ps", "-q", "--filter", f"label=exp027_run={RUN_LABEL}"],
+                         capture_output=True, text=True).stdout.split()
+    if ids:
+        subprocess.run(["docker", "kill", *ids], capture_output=True, text=True)
+    return len(ids)
+
+
+def _job_log_tail(path: Path, n: int = 8) -> list:
+    if not path.exists():
+        return []
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()[-n:] if l.strip()]
+
+
+def run(ds: Dataset, workers: int, b: int, deltas=DELTA_GRID, log=None) -> dict:
+    """Ejecuta todos los trabajos. Nada falla en silencio: progress.log y status.json en cada trabajo,
+    y la primera excepción detiene el run (FAILED_JOB.json + contenedores muertos + JobFailed)."""
     for img in (tools.SHAPEIT5_IMAGE, tools.BCFTOOLS_IMAGE, SAMTOOLS_IMAGE):
         check_image(img)
+    out_dir = ds.mount / ds.out
+    out_dir.mkdir(parents=True, exist_ok=True)
+    progress = open(out_dir / "progress.log", "a", encoding="utf-8", newline="\n")
+
+    def say(msg: str) -> None:
+        line = f"{_now()} {msg}"
+        progress.write(line + "\n")
+        progress.flush()
+        if log is not None:
+            log(line)
+
     t0 = time.time()
     jobs = [("win", t, w) for t in ds.trios for w in ds.evaluation] + \
            [("cal", t, w) for t in ds.trios for w in ds.calibration]
+    lock = threading.Lock()
+    first_failure = threading.Lock()                     # solo se registra el primer fallo de este run
+    running: dict = {}
+    counts = {"done": 0, "total": len(jobs)}
+
+    def status(state: str, extra: dict | None = None) -> None:
+        with lock:
+            snap = {"state": state, "updated_utc": _now(), "run_label": RUN_LABEL, **counts,
+                    "elapsed_s": round(time.time() - t0), "running": sorted(running.values()), **(extra or {})}
+        _write_atomic(out_dir / "status.json", json.dumps(snap, indent=1))
+
+    def tracked(kind, trio, w):
+        tag = f"{kind} {trio[0]} {window_id(*w)}"
+        with lock:
+            running[tag] = f"{tag} desde {_now()}"
+        try:
+            return (window_job if kind == "win" else calibration_job)(ds, trio, w)
+        finally:
+            with lock:
+                running.pop(tag, None)
+
+    say(f"inicio: {len(jobs)} trabajos, {workers} workers, etiqueta {RUN_LABEL}")
+    status("RUNNING")
     win_results, cal_results = [], []
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        futs = {ex.submit(window_job if k == "win" else calibration_job, ds, t, w): (k, t[0], w)
-                for k, t, w in jobs}
-        for i, fut in enumerate(as_completed(futs), 1):
-            k, kid, w = futs[fut]
-            r = fut.result()
+    ex = ThreadPoolExecutor(max_workers=workers)
+    futs = {ex.submit(tracked, k, t, w): (k, t, w) for k, t, w in jobs}
+    try:
+        for fut in as_completed(futs):
+            k, trio, w = futs[fut]
+            try:
+                r = fut.result()
+            except Exception as exc:                           # primera excepción: se para todo
+                if not first_failure.acquire(blocking=False):
+                    raise
+                ex.shutdown(wait=False, cancel_futures=True)
+                with lock:
+                    running_at_failure = sorted(running.values())
+                killed = kill_run_containers()
+                wd = job_dir(ds, k, trio[0], w)
+                failed = {"utc": _now(), "kind": k, "child": trio[0], "window": window_id(*w), "job_dir": wd,
+                          "error": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc(),
+                          "last_commands": _job_log_tail(ds.mount / wd / "job.log"),
+                          "running_at_failure": running_at_failure, "run_label": RUN_LABEL,
+                          "containers_killed": killed, "done_before_failure": counts["done"]}
+                if (out_dir / "FAILED_JOB.json").exists():      # nunca se sobrescribe un fallo previo
+                    raise JobFailed("ya existe FAILED_JOB.json en el directorio del run") from exc
+                _write_atomic(out_dir / "FAILED_JOB.json", json.dumps(failed, indent=2))
+                say(f"FALLO {k} {trio[0]} {window_id(*w)}: {type(exc).__name__}: {exc} -> FAILED_JOB.json")
+                status("FAILED", {"failed_job": f"{k} {trio[0]} {window_id(*w)}"})
+                raise JobFailed(f"trabajo fallido {k} {trio[0]} {window_id(*w)}: {exc}") from exc
             (win_results if k == "win" else cal_results).append(r)
-            log(f"[{i}/{len(jobs)}] {k} {kid} {window_id(*w)} · {time.time() - t0:.0f}s")
+            with lock:
+                counts["done"] += 1
+            say(f"[{counts['done']}/{len(jobs)}] {k} {trio[0]} {window_id(*w)} · {time.time() - t0:.0f}s")
+            status("RUNNING")
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
+    say("trabajos completos; evaluación (permutaciones y spike-in)")
+    status("EVALUATING")
     children = assemble(ds, win_results, cal_results)
     result = evaluate.run_benchmark(children, b=b, deltas_grid=deltas)
     report = result["report"]
@@ -422,6 +573,9 @@ def run(ds: Dataset, workers: int, b: int, deltas=DELTA_GRID, log=print) -> dict
     out = ds.mount / ds.out / "phase1_report.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8", newline="\n")
+    say(f"FIN: phase1_report.json escrito ({report.get('phase1_global')})")
+    status("DONE")
+    progress.close()
     return report
 
 
@@ -440,7 +594,7 @@ def main(argv=None) -> int:
         if a.out.exists():
             shutil.rmtree(a.out)
         ds = Dataset.toy(a.out)
-        rep = run(ds, a.workers, a.b, deltas=(0.00, 0.10))
+        rep = run(ds, a.workers, a.b, deltas=(0.00, 0.10), log=lambda m: print(m, flush=True))
     else:
         import yaml
         root = Path(yaml.safe_load(Path("config/paths.yaml").read_text(encoding="utf-8"))["compute"]["docker_repo_root"])
@@ -457,11 +611,20 @@ def main(argv=None) -> int:
                 raise OrchestrationError("RUN_MANIFEST existente con otro código o entradas: no se reanuda")
             man["resumed_utc"], man["started_utc"] = man["started_utc"], prev["started_utc"]
         mpath.write_text(json.dumps(man, indent=2), encoding="utf-8", newline="\n")
-        rep = run(ds, a.workers, b)
+        try:
+            rep = run(ds, a.workers, b, log=lambda m: print(m, flush=True))
+        except JobFailed:
+            raise                                   # FAILED_JOB.json ya escrito
+        except BaseException as exc:                # cualquier otro fallo también deja rastro
+            kill_run_containers()
+            _write_atomic(root / ds.out / "FAILED_RUN.json", json.dumps(
+                {"utc": _now(), "run_label": RUN_LABEL, "error": f"{type(exc).__name__}: {exc}",
+                 "traceback": traceback.format_exc()}, indent=2))
+            raise
     print(json.dumps({k: rep.get(k) for k in ("phase1_global", "a1_applicable", "apr_k", "apr_n",
                                               "apr_p_binom_one_sided", "sensitivity_inferred",
                                               "retention", "ser", "fail_reasons", "run")},
-                     indent=2, default=str))
+                     indent=2, default=str), flush=True)
     return 0
 
 

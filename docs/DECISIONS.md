@@ -2762,3 +2762,78 @@ conservando los brutos → ejecutor real multi-ventana y multi-hijo → toy/fixt
 tag anotado `exp027-phase1-execution-freeze` (A8 + regla A + descargador + derivación + ejecutor + tests)
 → Phase 1 una sola vez. El coste medido (~300 h de CPU, ~15 h de reloj en 24 CPU) es planificación, no
 motivo para reducir 20 × 50.
+
+### EXEC-DEF-PH1-001 (2026-10-05) · fallo determinista en una etapa no puntuable · intento ABORTED_TECHNICAL
+
+**No es Amendment 9 y no se maquilla.** El primer intento de Phase 1 bajo el tag
+`exp027-phase1-execution-freeze` (commit `bba7e1e`, `RUN_MANIFEST.json` y 163 trabajos terminados
+conservados en `work/exp027/phase1`) queda **`ABORTED_TECHNICAL`**. No había resultado global: se paró
+antes de evaluar nada.
+
+**Qué pasó.** ~36 % de los trabajos de ventana (93 de ~260) fallaban dentro de `SHAPEIT5_phase_rare`
+(5.1.1) con `Assertion '!isnan(GRvar_genotypes[vr][tidx].prob)' failed` en `phaseLiAndStephens`, sin
+escribir salida. Reproducido en una copia: lo provocan los **genotipos ausentes (`./.`) en variantes
+raras**; sin esos registros (2 695 de 92 333) `phase_rare` termina. Los multialélicos no intervienen.
+El ejecutor no lo mostraba: guardaba la excepción y habría seguido ~2 días para abortar al final, con
+`phase1_run.err` vacío. **Ese fallo de registro fue nuestro** y se corrige aquí.
+
+**Decisión del líder (A′).** Phase 1 **no ejecuta `phase_rare`**: la fase termina tras
+`phase_common → ligate` y el scaffold común (MAF ≥ 0,1 %) es la salida faseada. Todo lo que decide
+Phase 1 vive en ese estrato (marcadores analíticos MAF ≥ 1 %, SER decisional, APR, potencia,
+retención); A2 sigue `UNSCORABLE / UNRESOLVED`. SHAPEIT5 separa explícitamente las dos etapas
+(Hofmeister et al. 2023, PMID 37386248, [10.1038/s41588-023-01415-w](https://doi.org/10.1038/s41588-023-01415-w)).
+Se descarta filtrar raras con ausentes para salvar `phase_rare`: sería una selección post-freeze sobre un
+conjunto que Phase 1 no usa. `phase_rare` sigue en el código para una futura pregunta de raras.
+
+**Comprobación.** En una ventana fallida, `phase_rare` sobre la entrada sin ausentes dejó idénticos bit a
+bit los GT de los 23 443 sitios del scaffold en las 2 504 muestras. `src/exp027/validate_r2.py` lo exige
+antes del freeze r2 sobre ventanas reales: 5 que fallaban deben completar; en 4 que habían completado, el
+resultado nuevo debe ser idéntico al viejo (filas de `WindowSites`, recuentos de SER, auditoría) y los GT
+del scaffold deben ser invariantes a `phase_rare`.
+
+**Registro sin silencio.** Cada trabajo escribe `job.log` (comando, código de salida, duración, cola de
+stderr); el ejecutor escribe `progress.log` sin búfer y `status.json` en cada trabajo; la primera
+excepción cancela lo pendiente, mata los contenedores del run (etiqueta Docker propia), escribe
+`FAILED_JOB.json` y termina con error; cualquier otro fallo deja `FAILED_RUN.json`.
+
+**Ejecución r2.** Run completo desde cero en `work/exp027/phase1_r2` (no se reutilizan los 163
+resultados), nuevo commit y tag anotado `exp027-phase1-execution-freeze-r2`, que la barrera exige. El
+`RUN_MANIFEST.json` registra `supersedes_execution_tag`, `previous_attempt_status: ABORTED_TECHNICAL`,
+`rare_phasing_in_phase1: false`, la razón y la prueba de invariancia. Mismos 16 workers; ningún
+parámetro científico cambia.
+
+**Endurecimiento antes de r2 (defectos operacionales, ninguno científico).**
+
+- *Bug de `keep` descubierto por tests.* Al añadir la opción de conservar intermedios, el parámetro
+  `keep` de `window_job` quedaba tapado por la variable local `keep` (conjunto de sitios de
+  `window_audit`), así que la limpieza nunca se ejecutaba. Lo detectó la prueba de juguete con Docker
+  antes de cualquier ejecución real; renombrado a `keep_intermediates`.
+- *Parada solo del propio run.* Los contenedores llevan la etiqueta única `exp027_run=exp027-r2-<id>` y la
+  parada mata solo los que la tienen; `FAILED_JOB.json`, `status.json` y `FAILED_RUN.json` se escriben de
+  forma atómica (temporal + `os.replace`), solo se registra el primer fallo de cada run, un
+  `FAILED_JOB.json` previo nunca se sobrescribe y se anotan los trabajos en curso en ese momento.
+- *Lista explícita de fallos del intento abortado.* `work/exp027/phase1/ABORTED_FAILED_WINDOWS.json`:
+  101 trabajos con scaffold y sin salida de `phase_rare`, de los que 97 son fallos confirmados y 4 pudieron
+  quedar interrumpidos por la parada (scaffold escrito en los 20 min previos); la validación usa solo los 97.
+
+**Intentos de validación, conservados y sin mezclar con el veredicto.** (1)
+`VALIDATION_attempt1_flawed_gt_check.json`: las 5 ventanas fallidas completaron y las 4 completadas dieron
+resultado idéntico, pero el comprobador de GT casaba por posición y no por `CHROM:POS:REF:ALT`, de modo
+que contaba como diferencias los registros raros que comparten posición con el scaffold: **defecto del
+comprobador, no evidencia contra A′**. (2) Detenido sin veredicto al endurecer el ejecutor (la validación
+debe correr sobre el código exacto del commit). (3) Detenido al arrancar: la selección dependía de
+intermedios que se habían movido a `_para_borrar`. La validación definitiva registra el SHA256 de cada
+módulo de `src/exp027` en `VALIDATION.json`.
+
+**Limpieza.** Los intermedios reproducibles (BCF de cohorte, entradas conjuntas y fases parciales) y los
+directorios de prueba se mueven a `work/exp027/_para_borrar/` para que el usuario los borre; la evidencia
+(`result.json`, `job.log`, `RUN_MANIFEST.json`, listas y JSON de validación) se conserva.
+
+**Validación definitiva de A′: PASS** (`work/exp027/validation_r2/VALIDATION.json`, con el SHA256 de cada
+módulo de `src/exp027`, idéntico al código del commit r2). Las 5 ventanas antes fallidas (5 hijos y 5
+ventanas distintos) completan sin `phase_rare` (1 068–2 245 filas). En las 4 antes completadas, el resultado
+nuevo es idéntico al del intento abortado en filas de `WindowSites`, recuentos de SER analítico y de
+scaffold, y auditoría; y los GT del scaffold son idénticos por registro `CHROM:POS:REF:ALT` en todas las
+muestras antes y después de `phase_rare` (24 105–33 298 registros por ventana; los 24–69 registros raros que
+comparten posición se informan aparte). Igualdad de filas y auditoría implica entrada puntuable idéntica byte
+a byte; la puntuación es determinista, así que no se calcularon `T` ni `p`.
