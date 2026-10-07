@@ -2908,3 +2908,26 @@ haplotipos; la explicación por sesgo hacia la referencia es una hipótesis (L0)
 forense con cadena de custodia, afirmaciones prohibidas y SHA256: `docs/EXP027_PHASE1_RESULT.md`; figura
 `fig13_exp027_phase1_result`. **No se rediseña:** cualquier diagnóstico del APR será un experimento nuevo con
 preregistro propio y nunca podrá reabrir A1.
+
+---
+
+### Revisión de redacción del líder · figuras 13, 14, 05 y TRACK1 (2026-10-07)
+
+Revisión adversarial sobre `main` (`c7abdb9`) con el tag `exp027-phase1-result-r2-fail` intacto en `f8c8e93`.
+**Solo redacción y presentación; ningún número, fuente ni resultado cambia.** El resultado sellado de EXP-027 no
+se toca: el documento forense conserva los SHA de la figura sellada y anota el re-render.
+
+| Dónde | Antes | Ahora | Por qué |
+|---|---|---|---|
+| fig13 A | «Healthy data» | «Intact, unspiked benchmark data» | 1000G no es un control sano en sentido experimental y es ADN de LCL |
+| fig13 subtítulo | «fires without signal» | «fires without **injected** signal» | el mapa post-hoc sugiere estructura REF/ALT real que el null no captura: no podemos afirmar «sin señal» |
+| fig13 B | «The null is broken» | «The null is miscalibrated on the benchmark» | no sabemos qué parte del null falla |
+| fig13 B, banda | «95 % band of a calibrated test» | «iid Uniform reference envelope (95 %, descriptive)» | los 995 pares comparten hijos, ventanas y pipeline; no son iid. 249/995 sigue siendo incompatible con el 5 % sin apoyarse en la banda |
+| fig14 A | «1» como cuarta etapa del embudo | tres filtros + flecha «ranked, not filtered» a «BUB1B: top-ranked in 14 of 15» y «same genome: sensitivity analyses, not independent replications» | el 1 es un resultado de ranking, no de filtrado |
+| fig14 C | «Every rival, and what removed it» | «… and what stays open» | HLA-DRB1 no está eliminado |
+| TRACK1 §conclusiones, resumen, README | «Every competitor … rejected»; «independent method» | competidores internos falsados por frecuencia o configuración; HLA-DRB1 (Exomiser #1) **audit flag sin resolver**, no diagnóstico alternativo demostrado; Exomiser = método externo sobre el mismo VCF | contradicción real entre figura e informe |
+| TRACK1 tabla de competidores | sin HLA-DRB1 | fila `HLA-DRB1 · UNRESOLVED` (35 variantes, 28 sin frecuencia, 0 P/LP; `docs/EXTERNAL_BASELINE.md`) | el juez ve la figura; el informe debe decir lo mismo |
+| fig05 título | «Seven traits, two checks: only nephrocalcinosis fails both» | «Among seven recorded traits, nephrocalcinosis is the only one unsupported by both checks» | no es una afirmación sobre el fenotipo MVA1 en general |
+| fig05 comprobación 2 | «growth delay 93.5 %» | **direct** (RMS entre las malignidades) vs **broader** (retraso de crecimiento pre/postnatal 93,5 %) | la serie no reporta literalmente «failure to thrive» ni «SGA» |
+
+Nivel: sin cambio (Track 1 sigue en L2; EXP-027 Phase 1 sigue FAIL).

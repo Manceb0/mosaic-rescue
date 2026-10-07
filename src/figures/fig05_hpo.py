@@ -107,7 +107,7 @@ VSTYLE = {  # relleno, borde, tinta, trama; la identidad va además escrita en l
 }
 VNOTE = {
     "EXPLAINED": "annotated in the MVA1 model",
-    "ANNOTATION GAP": "corpus gap, not biology",
+    "ANNOTATION GAP": "corpus gap; broader support only",
     "CANNOT JUDGE": "PARKED: no number in the series",
     "RESIDUAL": "fails both checks",
 }
@@ -185,7 +185,7 @@ def build(m: dict):
     X1, X2, XV = .9, 3.05, 7.3
     al.text(X1, -0.78, "1 · annotated\nin MVA1 model?", ha="center", va="bottom",
             fontsize=S.BASE - 1.1, color=S.INK, fontweight="bold", linespacing=1.15)
-    al.text(X2 - .55, -0.78, "2 · reported in the published\nMVA1 series (31 cases)?",
+    al.text(X2 - .55, -0.78, "2 · supported by the published\nMVA1 series (31 cases)?",
             ha="left", va="bottom", fontsize=S.BASE - 1.1, color=S.INK, fontweight="bold",
             linespacing=1.15)
     al.text(XV, -0.78, "verdict", ha="center", va="bottom", fontsize=S.BASE - 1.1,
@@ -227,12 +227,11 @@ def build(m: dict):
     if not unc_mva:
         raise SystemExit("fig05: algún modelo MVA cubre la nefrocalcinosis; revisar el texto")
 
-    fig.text(.03, .955, "Seven traits, two checks: only nephrocalcinosis fails both",
+    fig.text(.03, .955, "Among seven recorded traits, nephrocalcinosis is the only one unsupported by both checks",
              fontsize=21, fontweight="bold", color=S.INK)
     fig.text(.03, .845,
-             f"{cnt['EXPLAINED']} traits are annotated in the MVA1 model, {cnt['ANNOTATION GAP']} more is a "
-             f"corpus gap the published series covers, {cnt['CANNOT JUDGE']} cannot be judged (no number in "
-             f"the series: PARKED, not negative)." + NL2 +
+             f"{cnt['EXPLAINED']} traits are annotated in the MVA1 model; {cnt['ANNOTATION GAP']} more is supported by the series only "
+             f"through a broader growth phenotype; {cnt['CANNOT JUDGE']} cannot be judged (PARKED, not negative)." + NL2 +
              f"Nephrocalcinosis is annotated in none of the three MVA models (best match "
              f"{BM[i_nef, mv[0]]:.1f} of {ic_t[PT[i_nef]]:.1f} bits) and absent from the series, while "
              f"{len(nef_other)} of {len(ot)} neighbour models cover it ({n_bartter} Bartter)." + NL2 +
@@ -322,10 +321,10 @@ LIT_MVA1 = {"HP:0002859": True, "HP:0004322": True, "HP:0001518": True,
 # Comprobación 2 con su categoría y su cifra, copiadas de docs/PHENOTYPE_RESIDUAL_AUDIT.md
 # (serie publicada de 31 casos de MVA1). "nq" = no cuantificado: PARKED, no NEGATIVE.
 LIT_MVA1_DETAIL = {
-    "HP:0002859": ("yes", "malignancy 38.7 %;" + NL2 + "RMS among the typical"),
-    "HP:0004322": ("yes", "growth delay 93.5 %"),
-    "HP:0001518": ("yes", "pre/postnatal growth" + NL2 + "delay 93.5 %"),
-    "HP:0001508": ("yes", "growth phenotype 93.5 %"),
+    "HP:0002859": ("yes", "direct: RMS among reported" + NL2 + "malignancies (all, 38.7 %)"),
+    "HP:0004322": ("yes", "broader: pre/postnatal" + NL2 + "growth retardation 93.5 %"),
+    "HP:0001518": ("yes", "broader: pre/postnatal" + NL2 + "growth retardation 93.5 %"),
+    "HP:0001508": ("yes", "broader: pre/postnatal" + NL2 + "growth phenotype 93.5 %"),
     "HP:0001622": ("nq", "plausible (perinatal)," + NL2 + "not quantified"),
     "HP:0003202": ("nq", "not quantified"),
     "HP:0000121": ("no", "no: only generic renal" + NL2 + "dysfunction, 12.9 %"),

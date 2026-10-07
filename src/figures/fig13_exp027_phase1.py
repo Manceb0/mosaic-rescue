@@ -1,10 +1,10 @@
-"""EXP-027 Phase 1 · resultado sellado, contado como idea: el método ve señal, pero se enciende sin ella.
+"""EXP-027 Phase 1 · resultado sellado, contado como idea: el método ve la señal inyectada, pero se enciende sin señal inyectada.
 
 Cuatro piezas, cada una con un trabajo:
   A · matriz de los 1 000 pares reales (20 hijos × 50 ventanas): cada casilla es un par con datos intactos;
       las que el test llama positivas se encienden. Un test calibrado encendería ~5 %.
-  B · QQ-plot de los 995 p-valores intactos frente a la diagonal de un test calibrado (banda 95 % por
-      simulación con semilla fija): así se ve un null roto.
+  B · QQ-plot de los 995 p-valores intactos frente a la diagonal uniforme (envolvente iid Uniform, 95 %,
+      DESCRIPTIVA, semilla fija; los pares no son independientes): null mal calibrado en el benchmark.
   C · potencia: detección frente al δ inyectado con fase inferida y mendeliana; el hueco es lo que cuesta
       la fase inferida.
   D · tablero de puertas preregistradas que desemboca en la compuerta del paciente: cerrada.
@@ -110,7 +110,7 @@ def _qq(ax, rows):
     rng = np.random.default_rng(SEED)
     sims = -np.log10(np.sort(rng.uniform(size=(2000, n)), axis=1))
     lo, hi = np.quantile(sims, [.025, .975], axis=0)
-    ax.fill_between(exp, lo, hi, color=S.HAIRLINE, lw=0, label="95 % band of a calibrated test")
+    ax.fill_between(exp, lo, hi, color=S.HAIRLINE, lw=0, label="iid Uniform reference envelope (95 %, descriptive)")
     lim = math.ceil(max(exp.max(), obs.max()) * 10) / 10 + .15
     ax.plot([0, lim], [0, lim], color=S.MUTED, lw=1, ls="--", label="calibrated: observed = expected")
     ax.plot(exp, obs, "o", ms=2.6, color=S.VERM, mec="none", label="995 intact benchmark pairs")
@@ -124,7 +124,7 @@ def _qq(ax, rows):
     ax.text(.15, lim - .35, f"inflation λ ≈ {lam:.1f}\n(calibrated: 1.0)", fontsize=9, color=S.VERM, va="top")
     ax.set_xlim(0, lim)
     ax.set_ylim(0, lim)
-    ax.set_xlabel("expected −log10 p (calibrated test)")
+    ax.set_xlabel("expected −log10 p (iid Uniform)")
     ax.set_ylabel("observed −log10 p")
     ax.legend(loc="lower right", frameon=False, fontsize=7.5)
     S.grid(ax, "both")
@@ -199,8 +199,8 @@ def load_and_build():
                           left=.045, right=.985, top=.82, bottom=.10, wspace=.26, hspace=.36)
     fig.suptitle("High sensitivity, failed calibration → patient test not performed",
                  x=.045, y=.965, ha="left", fontsize=19, fontweight="bold", color=S.INK)
-    fig.text(.045, .93, "The method sees a real haplotype imbalance when we inject one, but on healthy benchmark "
-             "data it lights up one window in four.\nA detector that fires without signal cannot be pointed at a "
+    fig.text(.045, .93, "The method detects a haplotype imbalance when we inject one, but on intact, unspiked benchmark "
+             "data it lights up one window in four.\nA detector that fires without injected signal cannot be trusted on a "
              "child, so Mosaic Rescue closed the gate.", fontsize=11, color=S.MUTED, va="top")
     fig.text(.045, .852, "EXP-027 Phase 1 · METHOD VALIDATION FAIL · public 1000 Genomes high-coverage trios, "
              "no patient data · tag exp027-phase1-execution-freeze-r2", fontsize=9, color=S.MUTED)
@@ -208,11 +208,11 @@ def load_and_build():
     axA = fig.add_subplot(gs[0, 0:2])
     _matrix(axA, rep, plan, rows)
     S.panel(axA, "A", dx=-.01)
-    S.head(axA, "Healthy data, 1 000 pairs: what lit up")
+    S.head(axA, "Intact, unspiked benchmark data, 1 000 pairs: what lit up")
     axB = fig.add_subplot(gs[0, 2])
     lam = _qq(axB, rows)
     S.panel(axB, "B")
-    S.head(axB, "The null is broken")
+    S.head(axB, "The null is miscalibrated on the benchmark")
     axC = fig.add_subplot(gs[1, 0])
     _power(axC, rep, ph)
     S.panel(axC, "C")
@@ -223,7 +223,7 @@ def load_and_build():
     S.head(axD, "Preregistered gates → patient")
     S.note(fig, "Sources SHA256-checked: phase1_report.json 37e676ad… · post-hoc reproduction 923cfb32… "
            "(identical to the sealed report) · per-pair calls apr_map.csv 316f0cf7… (same seeds; 249/995) · "
-           "plan_windows.json e3731d52….\nQQ band: 2 000 uniform draws, seed 42. APR is an operational "
+           "plan_windows.json e3731d52….\nQQ envelope: 2 000 iid Uniform draws, seed 42, descriptive only (the 995 pairs share children, windows and pipeline, so they are not iid). APR is an operational "
            "calibration sentinel on LCL-derived benchmark DNA, not a biological false-positive rate. "
            "The patient was never tested.")
     return fig, {"apr": rep["apr_k"] / rep["apr_n"], "lambda": lam, "bub1b_retention": rep["locus_bub1b"]["retention"]}

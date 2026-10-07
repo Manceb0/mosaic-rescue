@@ -23,8 +23,8 @@ nefrocalcinosis, los tres compuestos, `HSF1`, OMIM 257300):
 | | módulos | líneas |
 |---|---:|---:|
 | **Sin ninguna mención al caso** — se transfieren tal cual | **59** | **9 411** |
-| Con menciones al caso — hay que adaptarlos | 56 | 13 312 |
-| Total | 115 | 22 723 |
+| Con menciones al caso — hay que adaptarlos | 56 | 13 326 |
+| Total | 115 | 22 737 |
 
 **El 41 % de las líneas de `src/` no sabe que este paciente existe.** Ese es el **suelo**, no
 el techo, por dos motivos: la medida es de dependencia **textual**, y buena parte de los 56
@@ -56,7 +56,7 @@ Funciona sobre **cualquier** paciente único con WGS, sin importar el gen ni la 
 | `src/prioritization/allele_key.py` | Cruce de alelos entre VCF y anotación | Puro problema de identidad de alelo |
 | `src/phenotype/run_mode_b.py` | Resnik + *Best Match Average* sobre HPO | El fenotipo entra por YAML |
 | `src/qc_fastq_sample.py` · `src/vcf_variant_census.py` · `src/vcf_header_audit.py` | Aptitud del dato antes de analizarlo | Preguntas sobre el fichero, no sobre la enfermedad |
-| `src/baseline/fetch_exomiser.py` | Línea base **externa e independiente** sobre el mismo VCF | Protege del sesgo de panel en cualquier caso |
+| `src/baseline/fetch_exomiser.py` | Línea base **externa** (método escrito por otros) sobre el mismo VCF | Protege del sesgo de panel en cualquier caso |
 | `src/sanitize_scan.py` | Escáner de fuga: patrones estructurales (coordenadas, HGVS, genotipos, rutas locales) + valores prohibidos del caso | Los patrones son universales; los valores del caso se cargan de un fichero ignorado |
 | `src/figures/style.py` | Estándar de figura: paleta apta para daltonismo, escala tipográfica, **los dos ejes de metadatos**, exportación determinista | No sabe de biología |
 | `src/nb/nbutil.py` · `src/nb/figlib.py` | Construcción y verificación de notebooks; una figura **solo cuenta si está embebida y declara su clase** | Contabilidad, no ciencia |

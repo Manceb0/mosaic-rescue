@@ -750,7 +750,7 @@ L 1131.336348 480.044571
     <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(795.867082 156.800856)">in MVA1 model?</text>
    </g>
    <g id="text_151">
-    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 149.336511)">2 · reported in the published</text>
+    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 149.282605)">2 · supported by the published</text>
     <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 156.800856)">MVA1 series (31 cases)?</text>
    </g>
    <g id="text_152">
@@ -769,8 +769,8 @@ L 1131.336348 480.044571
     <text style="fill: #1f5f8f; font: 700 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="880.946087" y="201.792902" transform="rotate(-0 880.946087 201.792902)">✓</text>
    </g>
    <g id="text_157">
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 196.509989)">malignancy 38.7 %;</text>
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 203.433439)">RMS among the typical</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 196.509989)">direct: RMS among reported</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 203.433439)">malignancies (all, 38.7 %)</text>
    </g>
    <g id="patch_13">
     <path d="M 1005.126122 182.832686
@@ -792,7 +792,8 @@ z
     <text style="fill: #1f5f8f; font: 700 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="880.946087" y="253.03633" transform="rotate(-0 880.946087 253.03633)">✓</text>
    </g>
    <g id="text_160">
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="896.172522" y="251.215143" transform="rotate(-0 896.172522 251.215143)">growth delay 93.5 %</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 247.753418)">broader: pre/postnatal</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 254.676868)">growth retardation 93.5 %</text>
    </g>
    <g id="patch_14">
     <path d="M 1005.126122 234.076114
@@ -814,8 +815,8 @@ z
     <text style="fill: #1f5f8f; font: 700 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="880.946087" y="304.279759" transform="rotate(-0 880.946087 304.279759)">✓</text>
    </g>
    <g id="text_163">
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 298.996846)">pre/postnatal growth</text>
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 305.920296)">delay 93.5 %</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 298.996846)">broader: pre/postnatal</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 305.920296)">growth retardation 93.5 %</text>
    </g>
    <g id="patch_15">
     <path d="M 1005.126122 285.319543
@@ -837,7 +838,8 @@ z
     <text style="fill: #1f5f8f; font: 700 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="880.946087" y="355.523188" transform="rotate(-0 880.946087 355.523188)">✓</text>
    </g>
    <g id="text_166">
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="896.172522" y="353.702" transform="rotate(-0 896.172522 353.702)">growth phenotype 93.5 %</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 350.240275)">broader: pre/postnatal</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 357.163725)">growth phenotype 93.5 %</text>
    </g>
    <g id="patch_16">
     <path d="M 1005.126122 336.562971
@@ -942,7 +944,7 @@ z
     <text style="fill: #1f5f8f; font: 700 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="348.660438" transform="rotate(-0 1043.361391 348.660438)">ANNOTATION GAP</text>
    </g>
    <g id="text_183">
-    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="367.344569" transform="rotate(-0 1043.361391 367.344569)">corpus gap, not biology</text>
+    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="367.344569" transform="rotate(-0 1043.361391 367.344569)">corpus gap; broader support only</text>
    </g>
    <g id="text_184">
     <text style="fill: #5b6670; font: 700 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="399.903867" transform="rotate(-0 1043.361391 399.903867)">CANNOT JUDGE</text>
@@ -1068,10 +1070,10 @@ z
    </g>
   </g>
   <g id="text_197">
-   <text style="fill: #1a1a1a; font: 700 21px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="34.56" y="30.456" transform="rotate(-0 34.56 30.456)">Seven traits, two checks: only nephrocalcinosis fails both</text>
+   <text style="fill: #1a1a1a; font: 700 21px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="34.56" y="30.456" transform="rotate(-0 34.56 30.456)">Among seven recorded traits, nephrocalcinosis is the only one unsupported by both checks</text>
   </g>
   <g id="text_198">
-   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 75.65375)">3 traits are annotated in the MVA1 model, 1 more is a corpus gap the published series covers, 2 cannot be judged (no number in the series: PARKED, not negative).</text>
+   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 75.65375)">3 traits are annotated in the MVA1 model; 1 more is supported by the series only through a broader growth phenotype; 2 cannot be judged (PARKED, not negative).</text>
    <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 90.278875)">Nephrocalcinosis is annotated in none of the three MVA models (best match 1.5 of 3.9 bits) and absent from the series, while 5 of 9 neighbour models cover it (3 Bartter).</text>
    <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 104.904)">A residual trait raises, but does not establish, a second diagnosis.</text>
   </g>

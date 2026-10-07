@@ -8165,7 +8165,7 @@ L 330.670514 282.906688
     <text style="fill: #1a1a1a; font: 700 10.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="176.48984" y="107.439609" transform="rotate(-0 176.48984 107.439609)">A</text>
    </g>
    <g id="text_27">
-    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="181.113319" y="115.232" transform="rotate(-0 181.113319 115.232)">Healthy data, 1 000 pairs: what lit up</text>
+    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="181.113319" y="115.232" transform="rotate(-0 181.113319 115.232)">Intact, unspiked benchmark data, 1 000 pairs: what lit up</text>
    </g>
   </g>
   <g id="axes_2">
@@ -8319,7 +8319,7 @@ L 1118.131765 119.232
      </g>
     </g>
     <g id="text_37">
-     <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="993.72" y="355.076352" transform="rotate(-0 993.72 355.076352)">expected −log10 p (calibrated test)</text>
+     <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="993.72" y="355.076352" transform="rotate(-0 993.72 355.076352)">expected −log10 p (iid Uniform)</text>
     </g>
    </g>
    <g id="matplotlib.axis_2">
@@ -11519,36 +11519,36 @@ L 1134.72 332.759087
     <text style="fill: #1a1a1a; font: 700 10.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="835.236" y="107.439609" transform="rotate(-0 835.236 107.439609)">B</text>
    </g>
    <g id="text_52">
-    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="852.72" y="115.232" transform="rotate(-0 852.72 115.232)">The null is broken</text>
+    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="852.72" y="115.232" transform="rotate(-0 852.72 115.232)">The null is miscalibrated on the benchmark</text>
    </g>
    <g id="legend_1">
     <g id="patch_1009">
-     <path d="M 990.603984 304.682134
-L 1002.603984 304.682134
-L 1002.603984 299.432134
-L 990.603984 299.432134
+     <path d="M 924.0825 304.682134
+L 936.0825 304.682134
+L 936.0825 299.432134
+L 924.0825 299.432134
 z
 " style="fill: #d6dadd"/>
     </g>
     <g id="text_53">
-     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="1007.103984" y="304.682134" transform="rotate(-0 1007.103984 304.682134)">95 % band of a calibrated test</text>
+     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="940.5825" y="304.682134" transform="rotate(-0 940.5825 304.682134)">iid Uniform reference envelope (95 %, descriptive)</text>
     </g>
     <g id="line2d_46">
-     <path d="M 990.603984 313.065727
-L 996.603984 313.065727
-L 1002.603984 313.065727
+     <path d="M 924.0825 313.065727
+L 930.0825 313.065727
+L 936.0825 313.065727
 " style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #5b6670"/>
     </g>
     <g id="text_54">
-     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="1007.103984" y="315.690727" transform="rotate(-0 1007.103984 315.690727)">calibrated: observed = expected</text>
+     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="940.5825" y="315.690727" transform="rotate(-0 940.5825 315.690727)">calibrated: observed = expected</text>
     </g>
     <g id="line2d_47">
      <g>
-      <use xlink:href="#m70a7e88106" x="996.603984" y="324.074321" style="fill: #d55e00; stroke: #000000; stroke-opacity: 0"/>
+      <use xlink:href="#m70a7e88106" x="930.0825" y="324.074321" style="fill: #d55e00; stroke: #000000; stroke-opacity: 0"/>
      </g>
     </g>
     <g id="text_55">
-     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="1007.103984" y="326.699321" transform="rotate(-0 1007.103984 326.699321)">995 intact benchmark pairs</text>
+     <text style="fill: #1a1a1a; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="940.5825" y="326.699321" transform="rotate(-0 940.5825 326.699321)">995 intact benchmark pairs</text>
     </g>
    </g>
   </g>
@@ -12179,15 +12179,15 @@ z
    <text style="fill: #1a1a1a; font: 700 19px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="51.84" y="37.621031" transform="rotate(-0 51.84 37.621031)">High sensitivity, failed calibration → patient test not performed</text>
   </g>
   <g id="text_114">
-   <text style="fill: #5b6670; font: 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(51.84 54.726281)">The method sees a real haplotype imbalance when we inject one, but on healthy benchmark data it lights up one window in four.</text>
-   <text style="fill: #5b6670; font: 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(51.84 67.043875)">A detector that fires without signal cannot be pointed at a child, so Mosaic Rescue closed the gate.</text>
+   <text style="fill: #5b6670; font: 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(51.84 54.726281)">The method detects a haplotype imbalance when we inject one, but on intact, unspiked benchmark data it lights up one window in four.</text>
+   <text style="fill: #5b6670; font: 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(51.84 67.043875)">A detector that fires without injected signal cannot be trusted on a child, so Mosaic Rescue closed the gate.</text>
   </g>
   <g id="text_115">
    <text style="fill: #5b6670; font: 9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="51.84" y="98.0352" transform="rotate(-0 51.84 98.0352)">EXP-027 Phase 1 · METHOD VALIDATION FAIL · public 1000 Genomes high-coverage trios, no patient data · tag exp027-phase1-execution-freeze-r2</text>
   </g>
   <g id="text_116">
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 650.668131)">Sources SHA256-checked: phase1_report.json 37e676ad… · post-hoc reproduction 923cfb32… (identical to the sealed report) · per-pair calls apr_map.csv 316f0cf7… (same seeds; 249/995) · plan_windows.json e3731d52….</text>
-   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 658.357009)">QQ band: 2 000 uniform draws, seed 42. APR is an operational calibration sentinel on LCL-derived benchmark DNA, not a biological false-positive rate. The patient was never tested.</text>
+   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 658.357009)">QQ envelope: 2 000 iid Uniform draws, seed 42, descriptive only (the 995 pairs share children, windows and pipeline, so they are not iid). APR is an operational calibration sentinel on LCL-derived benchmark DNA, not a biological false-positive rate. The patient was never tested.</text>
   </g>
   <g id="text_117">
    <text style="fill: #5b6670; font: 6.2px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: end" x="1149.696" y="6.367031" transform="rotate(-0 1149.696 6.367031)">Figure class: data    Evidence origin: external, derived</text>

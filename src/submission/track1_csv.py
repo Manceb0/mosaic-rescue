@@ -74,11 +74,11 @@ COLUMNS = ["proband_id", "chrom_1", "pos_1", "ref_1", "alt_1",
            "epcr", "finding_type", "notes"]
 
 EPCR_RATIONALE = {
-    "BUB1B": (0.75, """A favor, y son lineas independientes:
+    "BUB1B": (0.75, """A favor (lineas de analisis distintas sobre el MISMO VCF, no replicas biologicas):
       - #1 en 14 de los 15 analisis de priorizacion; en el A0 CONGELADO queda #4,
         y los tres que lo superaban se resolvieron como polimorfismos comunes con
         rsID (EXP-021). En la sensibilidad A0-FREQFIX vuelve al #1.
-      - linea base EXTERNA e independiente (Exomiser) lo situa #2 de 398 GENES
+      - metodo EXTERNO sobre el mismo VCF (Exomiser; no es evidencia biologica independiente) lo situa #2 de 398 GENES
         DISTINTOS, modelo autosomico recesivo, en las dos corridas. Las 470 filas
         de la salida son pares gen x modelo de herencia, no genes: contar 470
         inflaba el denominador un 18 % y contaba BUB1B dos veces.
@@ -89,7 +89,9 @@ EPCR_RATIONALE = {
       - LA FASE NO ESTA RESUELTA. Sin genotipos parentales, PM3 esta bloqueado y
         la configuracion bialelica es CANDIDATA, no demostrada.
       - la missense sigue siendo VUS: no hay ensayo funcional de abundancia.
-      - no se ha descartado SV/CNV en el locus por falta de BAM/CRAM."""),
+      - la busqueda estructural con lecturas cortas (GO 2B) no emitio CNV
+        (CNVpytor) ni MEI (xTea, SCRAMble) sobre el cuerpo del gen, pero una
+        insercion compleja intronica NO queda excluida (EXP-012, EXP-012b)."""),
     "LZTR1": (0.05, """Candidato secundario/incidental DE INVESTIGACION, no causa
       propuesta del fenotipo MVA y NO un hallazgo clinico devolvible.
       - es una parada prematura en el transcrito MANE, heterocigota, de alta
@@ -109,7 +111,8 @@ NOTES = {
               "and biallelic configuration is candidate, not demonstrated. Panel-free "
               "genome-wide search; frozen preregistered ranking A0 places it #4 and the "
               "A0-FREQFIX sensitivity #1, both reported. External baseline Exomiser ranks "
-              "it #2 of 398 distinct genes, AR model."),
+              "it #2 of 398 distinct genes, AR model. Short-read SV search: no CNV or MEI call "
+              "overlaps the gene body; a complex intronic insertion is not excluded."),
     "LZTR1": ("Research secondary/incidental candidate, NOT proposed as the cause of the "
               "reported phenotype and NOT a returnable clinical finding. Heterozygous "
               "nonsense on the MANE transcript, ClinVar pathogenic/likely pathogenic. "

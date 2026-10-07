@@ -84,10 +84,12 @@ Fifteen ranking analyses were run, differing in whether phenotype and ClinVar we
 | `B0_FULL_PROBAND` | + HPO phenotype (Resnik / Best Match Average) | #1 |
 | 11 further leave-one-out and ablation analyses | varies | #1 in 14 of 15 overall |
 
-**An independent external baseline was run on the same VCF.** Exomiser, a method this project
-did not write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both
-runs. Agreement between an in-house score and an independent tool is worth more than either
-alone.
+**An external baseline was run on the same VCF.** Exomiser, a method this project did not
+write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both runs.
+Agreement between an in-house score and an independently written tool is worth more than
+either alone, but it is methodological agreement on the same genotypes, not independent
+biological evidence. Its #1, `HLA-DRB1`, is kept as an open audit flag (see the competitor
+table).
 
 **Phenotype handling.** Seven HPO terms from the clinical document, plus one family-history
 term kept on a separate channel so it cannot contaminate the primary result. A frozen polarity
@@ -135,6 +137,7 @@ mechanism → replication.**
 | `FANCD2` | Exomiser #6 | **NEGATIVE** — three alleles at ~47 % population frequency, all heterozygous, no recessive configuration possible |
 | `LZTR1` | `B0` #4 | **NEGATIVE as a cause of MVA** — the syndromic form is recessive and only one allele is present; heterozygous LoF causes adult-onset schwannomatosis, and `LZTR1` has no established role in chromosome segregation |
 | `IGBP1` | `B0` #6 | **NEGATIVE** — the only reported disease mechanism is 5'UTR disruption of translation initiation, not coding missense; the association rests on a single family; and `MAX_AF` 1 × 10⁻⁴ is strongly inconsistent with an ultra-rare, penetrant, causal model. The verdict rests on all three together, not on the frequency argument alone |
+| `HLA-DRB1` | Exomiser #1 (external baseline) | **UNRESOLVED · audit flag, not eliminated** — 35 variants, 28 without population frequency, 0 ClinVar P/LP (`docs/EXTERNAL_BASELINE.md`). That pattern *suggests* mapping or representation complexity in a polymorphic region; nothing here tests it. Not a demonstrated alternative diagnosis, and not rejected |
 
 `FANCD2` deserves a note: it is the Fanconi anaemia pathway, which overlaps MVA in **both**
 phenotype and mechanism. It was the most uncomfortable competitor and was audited rather than
@@ -235,8 +238,11 @@ None of these assays is represented as already performed in this case.
 2. **`BUB1B` is the best-supported explanation in this genome.** It competed against 6 321
    genes without a panel. It is #4 in the frozen ranking only because three common
    polymorphisms lacked frequency annotations; with those repaired it is #1, and it is #1 in
-   14 of 15 analyses. An independent method on the same VCF places it #2 of 398. Every
-   competitor that approached it was audited and rejected for a stated reason.
+   14 of 15 sensitivity analyses of the same genome (not independent replications). An
+   external method on the same VCF (Exomiser) places it #2 of 398. Every in-house competitor
+   that outranked it in the frozen A0 was falsified by frequency or genotype configuration.
+   The external Exomiser baseline ranks HLA-DRB1 first; it remains an unresolved audit flag
+   rather than a demonstrated alternative diagnosis.
 3. **The candidate genotype is the canonical MVA1 configuration**: a truncating allele,
    research-curated as likely pathogenic, and a missense VUS ([Hanks et al. 2004](https://doi.org/10.1038/ng1449); [Wijshake et al. 2012](https://doi.org/10.1371/journal.pgen.1003138)).
 4. **The structural search narrowed the second-allele question without closing it.** No
@@ -353,6 +359,16 @@ commit or push to the repository. The project's operating rules define explicit 
 conditions, and the choice of therapeutic candidate is one of them; those decisions are the
 maintainer's.
 
+**Second provider: OpenAI, for illustrations only.**
+
+| | |
+|---|---|
+| **Provider** | OpenAI |
+| **Interface** | ChatGPT, image generation |
+| **Plan / tier** | ChatGPT Plus (consumer plan) |
+| **Data-handling setting** | Model-training on user content **disabled** in the account settings |
+| **Use** | The conceptual editorial diagrams (`docs/assets/mosaic-*.png`). No patient data was provided. Each image was reviewed against the reports before use and is captioned as an AI-generated schematic (`docs/assets/EDITORIAL_CAPTIONS.md`); quantitative evidence stays in the code-generated figures |
+
 **Patient data and external services.** The assistant reviewed local project documents,
 user-supplied figures and selected tool outputs, under the account settings above. This is
 not a claim of zero disclosure to an AI provider: derived results were visible to the
@@ -404,11 +420,11 @@ Model 1 of 1 — panel-free genome-wide ranking with audited competitors (predic
 
 **Please describe your model/approach in detail.**
 
-Panel-free, genome-wide prioritisation of one paediatric blood WGS (GRCh38), built to avoid confirmation bias: no gene panel and no gene-level prior. (1) QC of the reads (149 bp, 92.9 % bases ≥Q30, GC 41.3 %). (2) Annotation of the provider VCF with Ensembl VEP 116.1 offline (cache 116_GRCh38, gnomAD v4.1, MANE). (3) Extraction of all HIGH/MODERATE alleles: 13 191 positions → 13 216 alleles in 6 321 genes. (4) A frozen, preregistered genetics-only score (A0) combining genotype configuration per gene (including two heterozygous alleles in the same gene), rarity, consequence severity, transcript status and call quality; 15 ranking analyses in total, adding ClinVar and/or the HPO phenotype (7 terms, Resnik information content with Best-Match-Average; unmentioned features treated as unknown, never negative) and leave-one-out/ablation variants. (5) An independent external baseline (Exomiser 14.1.0) on the same VCF. (6) Every gene that outranked or approached the leader was audited, cheapest falsifier first (frequency → zygosity → mechanism → replication). (7) Research ACMG/AMP curation (Bayesian points) of the leading alleles. (8) Short-read structural search on the reconstructed full-depth BAM for a hidden second allele (CNVpytor RD+BAF, xTea and SCRAMble MEI, Manta/DELLY breakpoints, read-level assay). Result: candidate compound-heterozygous BUB1B (MVA1, OMIM 257300), truncating allele (Likely Pathogenic, research curation) + missense (VUS). The frozen A0 ranks it #4 because three common polymorphisms lacked frequency annotation; the later sensitivity A0-FREQFIX (33 annotations repaired) ranks it #1; it is #1 in 14 of 15 analyses and Exomiser ranks it #2 of 398 genes (AR). Both numbers are always reported. Phase is unresolved (no parental samples; the alleles are 13.8× the fragment length apart), so the biallelic configuration is a candidate, not demonstrated.
+Panel-free, genome-wide prioritisation of one paediatric blood WGS (GRCh38), built to avoid confirmation bias: no gene panel and no gene-level prior. (1) QC of the reads (149 bp, 92.9 % bases ≥Q30, GC 41.3 %). (2) Annotation of the provider VCF with Ensembl VEP 116.1 offline (cache 116_GRCh38, gnomAD v4.1, MANE). (3) Extraction of all HIGH/MODERATE alleles: 13 191 positions → 13 216 alleles in 6 321 genes. (4) A frozen, preregistered genetics-only score (A0) combining genotype configuration per gene (including two heterozygous alleles in the same gene), rarity, consequence severity, transcript status and call quality; 15 ranking analyses in total, adding ClinVar and/or the HPO phenotype (7 terms, Resnik information content with Best-Match-Average; unmentioned features treated as unknown, never negative) and leave-one-out/ablation variants. (5) An external baseline (Exomiser 14.1.0), independently written, on the same VCF; methodological, not biological, independence. (6) Every gene that outranked or approached the leader was audited, cheapest falsifier first (frequency → zygosity → mechanism → replication). (7) Research ACMG/AMP curation (Bayesian points) of the leading alleles. (8) Short-read structural search on the reconstructed full-depth BAM for a hidden second allele (CNVpytor RD+BAF, xTea and SCRAMble MEI, Manta/DELLY breakpoints, read-level assay). Result: candidate compound-heterozygous BUB1B (MVA1, OMIM 257300), truncating allele (Likely Pathogenic, research curation) + missense (VUS). The frozen A0 ranks it #4 because three common polymorphisms lacked frequency annotation; the later sensitivity A0-FREQFIX (33 annotations repaired) ranks it #1; it is #1 in 14 of 15 analyses and Exomiser ranks it #2 of 398 genes (AR). Both numbers are always reported. Phase is unresolved (no parental samples; the alleles are 13.8× the fragment length apart), so the biallelic configuration is a candidate, not demonstrated.
 
 **(required) If commercially-available Generative AI was used, record the provider, the plan or tier, and the relevant setting in your methods description. A line is enough, for example, "Anthropic API, Claude Sonnet, commercial terms, no training on customer content."**
 
-Anthropic — Claude Pro (consumer plan), used through Claude Code with Claude Opus models; model-training on user content disabled in the account settings. Used for code, documentation and literature search; rankings and curation are produced by the repository's code and reviewed by the team.
+Anthropic — Claude Pro (consumer plan), used through Claude Code with Claude Opus models; model-training on user content disabled in the account settings. Used for code, documentation and literature search; rankings and curation are produced by the repository's code and reviewed by the team. OpenAI — ChatGPT Plus (consumer plan), image generation for the conceptual editorial diagrams only; model-training on user content disabled; no patient data provided.
 
 **Please state whether the submission file is the automated output of your computational approach (preferred), or if it has undergone downstream manual review and curation.**
 
@@ -416,7 +432,7 @@ Hybrid. The rows (coordinates and alleles read directly from the VCF, proband ID
 
 **Please describe any downstream manual review in detail.**
 
-(a) Competitor audits: CTU2, PEX5, SLC22A1 (A0 #1–#3) are common polymorphisms with rsIDs (up to 313 150 gnomAD homozygotes) → negative; FANCD2 (three alleles at ~47 % frequency, all heterozygous) → negative; LZTR1 (single allele, recessive syndromic form) → negative as a cause of MVA; IGBP1 (reported mechanism is 5'UTR, single family, MAX_AF 1e-4) → negative. (b) Research ACMG/AMP curation: truncating allele PVS1 + PM2_Supporting = Likely Pathogenic; missense stays VUS (PM1 rejected: 1 497 ClinVar missense in BUB1B, 95.3 % VUS, one P/LP; PM3 blocked by unresolved phase; no PS3 assay). (c) epcr values are declared subjective probabilities, not calibrated model output: BUB1B pair 0.75 (held below higher values because phase is unresolved, the missense is a VUS and a complex intronic insertion is not excluded); LZTR1 0.05. (d) We deliberately submit 2 rows, not 10: padding with competitors our own audits rejected would be hedging against the analysis.
+(a) Competitor audits: CTU2, PEX5, SLC22A1 (A0 #1–#3) are common polymorphisms with rsIDs (up to 313 150 gnomAD homozygotes) → negative; FANCD2 (three alleles at ~47 % frequency, all heterozygous) → negative; LZTR1 (single allele, recessive syndromic form) → negative as a cause of MVA; IGBP1 (reported mechanism is 5'UTR, single family, MAX_AF 1e-4) → negative. HLA-DRB1 (Exomiser #1; 35 variants, 28 without population frequency, 0 ClinVar P/LP) → unresolved audit flag, not eliminated. (b) Research ACMG/AMP curation: truncating allele PVS1 + PM2_Supporting = Likely Pathogenic; missense stays VUS (PM1 rejected: 1 497 ClinVar missense in BUB1B, 95.3 % VUS, one P/LP; PM3 blocked by unresolved phase; no PS3 assay). (c) epcr values are declared subjective probabilities, not calibrated model output: BUB1B pair 0.75 (held below higher values because phase is unresolved, the missense is a VUS and a complex intronic insertion is not excluded); LZTR1 0.05. (d) We deliberately submit 2 rows, not 10: padding with competitors our own audits rejected would be hedging against the analysis.
 
 **Please state whether your approach only used publicly available data (preferred) or if proprietary data was also used. If proprietary data were used, where possible, please also include a submission based only on publicly available data.**
 
@@ -446,7 +462,7 @@ Ranking pipeline on a single 16 GB-RAM workstation: VEP annotation of ~4.9 M var
 
 MOSAIC RESCUE Track 1 asks which variants in one paediatric blood genome best explain suspected mosaic variegated aneuploidy (MVA), and what would falsify the answer. We ran a panel-free, genome-wide search to avoid designing the analysis backwards from a favourite gene. All HIGH/MODERATE alleles (13 216 in 6 321 genes; VEP 116.1, gnomAD v4.1, MANE) were scored by a frozen, preregistered genetics-only formula over genotype configuration, rarity, consequence, transcript status and quality, then re-ranked in 15 analyses that add ClinVar and/or the HPO phenotype (Resnik/BMA; unmentioned features are unknown, never negative). An independent tool (Exomiser 14.1.0) was run on the same VCF.
 
-Result: candidate compound-heterozygous BUB1B (MVA1), a truncating allele curated Likely Pathogenic plus a missense VUS — the canonical MVA1 configuration. It is #1 in 14 of 15 analyses and #2 of 398 genes in Exomiser. We report, rather than hide, that the frozen ranking placed it #4: the three genes above it were common polymorphisms lacking frequency annotation, and repairing 33 annotations (A0-FREQFIX) returns BUB1B to #1. Every competitor that approached it (CTU2, PEX5, SLC22A1, FANCD2, LZTR1, IGBP1) was audited and rejected for a stated reason. A heterozygous LZTR1 nonsense variant is reported as a research secondary finding only.
+Result: candidate compound-heterozygous BUB1B (MVA1), a truncating allele curated Likely Pathogenic plus a missense VUS — the canonical MVA1 configuration. It is #1 in 14 of 15 sensitivity analyses of the same genome and #2 of 398 genes in Exomiser, an external method run on the same VCF. We report, rather than hide, that the frozen ranking placed it #4: the three genes above it were common polymorphisms lacking frequency annotation, and repairing 33 annotations (A0-FREQFIX) returns BUB1B to #1. Every in-house competitor that approached it (CTU2, PEX5, SLC22A1, FANCD2, LZTR1, IGBP1) was falsified for a stated reason (frequency, zygosity or mechanism). Exomiser ranks HLA-DRB1 first; it remains an unresolved audit flag, not a demonstrated alternative diagnosis. A heterozygous LZTR1 nonsense variant is reported as a research secondary finding only.
 
 Strengths: no panel or gene prior; preregistered decision rules and negative results reported (the frozen ranking is never rewritten); external baseline agreement; explicit competitor audits; a short-read structural search for the hidden second allele (no CNV or MEI call overlaps the gene body); deterministic, reproducible code with hash-checked inputs and a privacy scanner, so the method is auditable without exposing patient coordinates.
 

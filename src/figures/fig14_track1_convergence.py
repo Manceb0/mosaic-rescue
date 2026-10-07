@@ -94,21 +94,33 @@ def _exomiser():
     return first, len(first)
 
 
-def _funnel(ax, n_pos, n_genes, n_scored):
+def _funnel(ax, n_pos, n_genes, n_scored, top, n_rank):
+    # Tres FILTROS (embudo) y, aparte, un RANKING: BUB1B no es lo que queda tras filtrar 151 genes,
+    # es el que encabeza las ordenaciones de esos 151. Por eso no se dibuja como una cuarta etapa.
     levels = [(f"{n_pos:,}".replace(",", " "), "HIGH/MODERATE positions,\nwhole genome, no panel"),
               (f"{n_genes:,}".replace(",", " "), "genes carrying them:\nevery one competed"),
-              (str(n_scored), "genes whose genotype fits\nan inheritance model"),
-              ("1", "BUB1B: #1 in 14 of\n15 rankings")]
+              (str(n_scored), "genes whose genotype fits\nan inheritance model")]
     widths = [np.log10(max(int(t[0].replace(" ", "")), 1)) + 1 for t in levels]
-    top = 9.4
+    y_top = 9.4
     for i, ((num, txt), w) in enumerate(zip(levels, widths)):
-        y0, y1 = top - i * 2.3, top - i * 2.3 - 1.7
-        wn = widths[i + 1] if i + 1 < len(widths) else w * .55
-        col = S.VERM if i == len(levels) - 1 else [S.HAIRLINE, "#C9CED3", "#AAB2BA"][i]
-        ax.add_patch(Polygon([(-w, y0), (w, y0), (wn, y1), (-wn, y1)], closed=True, facecolor=col, lw=0))
-        ax.text(0, (y0 + y1) / 2 + .15, num, ha="center", va="center", fontsize=15 if i < 3 else 13,
-                fontweight="bold", color="white" if i == len(levels) - 1 else S.INK)
+        y0, y1 = y_top - i * 2.0, y_top - i * 2.0 - 1.5
+        wn = widths[i + 1] if i + 1 < len(widths) else w * .62
+        ax.add_patch(Polygon([(-w, y0), (w, y0), (wn, y1), (-wn, y1)], closed=True,
+                             facecolor=[S.HAIRLINE, "#C9CED3", "#AAB2BA"][i], lw=0))
+        ax.text(0, (y0 + y1) / 2 + .1, num, ha="center", va="center", fontsize=15, fontweight="bold",
+                color=S.INK)
         ax.text(5.2, (y0 + y1) / 2, txt, va="center", fontsize=8.6, color=S.MUTED)
+    yb = y_top - 2 * 2.0 - 1.5
+    ax.annotate("", xy=(0, 1.95), xytext=(0, yb - .05),
+                arrowprops=dict(arrowstyle="-|>", color=S.INK, lw=1.2, ls=(0, (3, 2))))
+    ax.text(.25, (yb + 1.95) / 2, f"ranked, not filtered:\n{n_rank} sensitivity analyses",
+            va="center", fontsize=7.8, color=S.INK, style="italic")
+    ax.add_patch(FancyBboxPatch((-4.9, .95), 9.8, .95, boxstyle="round,pad=0.02,rounding_size=.25",
+                                fc=S.VERM, ec="none"))
+    ax.text(0, 1.42, f"BUB1B: top-ranked in {top} of {n_rank}", ha="center", va="center",
+            fontsize=11.5, fontweight="bold", color="white")
+    ax.text(0, .62, "same genome: sensitivity analyses, not independent replications", ha="center",
+            va="center", fontsize=8, color=S.INK, style="italic")
     ax.set_xlim(-5.2, 13)
     ax.set_ylim(.2, 9.8)
     ax.axis("off")
@@ -196,23 +208,23 @@ def load_and_build():
         raise ValueError("los rankings no coinciden con los números publicados (14/15, FREQFIX #1, Exomiser #2)")
     fig = plt.figure(figsize=(16, 9.4))
     gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 1.25], height_ratios=[.82, 1.18],
-                          left=.05, right=.985, top=.83, bottom=.135, wspace=.16, hspace=.30)
+                          left=.05, right=.985, top=.83, bottom=.15, wspace=.16, hspace=.30)
     fig.suptitle("Without a gene panel, the genome converges on BUB1B", x=.05, y=.965, ha="left",
                  fontsize=19, fontweight="bold", color=S.INK)
     ng = f"{n_genes:,}".replace(",", " ")
-    fig.text(.05, .93, f"Every gene with a high- or moderate-impact allele competed ({ng} genes). BUB1B leads "
-             f"{top} of {len(ORDER)} rankings and an external tool on the same VCF places it #{exo_rank[FOCUS]} of {n_exo}.\n"
+    fig.text(.05, .93, f"Every gene with a high- or moderate-impact allele competed ({ng} genes). BUB1B is top-ranked in "
+             f"{top} of {len(ORDER)} sensitivity analyses of this genome, and an external tool on the same VCF places it #{exo_rank[FOCUS]} of {n_exo}.\n"
              "It is #4 in the frozen A0 and #1 after repairing missing frequencies: both numbers are always "
              "reported. Phase is unresolved, so this is a strong candidate, not a diagnosis.",
              fontsize=10.5, color=S.MUTED, va="top")
     axA = fig.add_subplot(gs[0, 0])
-    _funnel(axA, n_pos, n_genes, n_scored)
+    _funnel(axA, n_pos, n_genes, n_scored, top, len(ORDER))
     S.panel(axA, "A", dx=-.01)
-    S.head(axA, "From the whole genome to one gene")
+    S.head(axA, "From the whole genome to a top-ranked candidate")
     axC = fig.add_subplot(gs[:, 1])
     _elimination(axC)
     S.panel(axC, "C", dx=-.01)
-    S.head(axC, "Every rival, and what removed it")
+    S.head(axC, "Every rival: what removed it, and what stays open")
     axB = fig.add_subplot(gs[1, 0])
     _board(axB, res, fx, exo_rank, n_exo)
     S.panel(axB, "B")

@@ -63,7 +63,7 @@ FIGURES = [
      "official local-disruption score. Predicted contacts, not Hi-C and not the patient."),
     ("fig05_hpo", "fig05_hpo_disease_matrix", "05_RESIDUAL_PHENOTYPE",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
-     "Seven traits, two checks: nephrocalcinosis is the one proband term with neither HPO "
+     "Among seven recorded traits, nephrocalcinosis is the one with neither HPO "
      "annotation nor MVA1 literature support, while Bartter-type models do cover it. Two traits "
      "cannot be judged (PARKED, not negative)."),
     ("fig06_baf", "fig06_baf_cancellation", "06_MOSAIC_AND_MITOREAD",
@@ -100,7 +100,7 @@ FIGURES = [
     # del notebook 01) y el baseline de Exomiser, los tres comprobados por SHA256.
     ("fig14_track1_convergence", "fig14_track1_convergence", "01_TRACK1_GENOME_WIDE",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
-     "Without a gene panel, BUB1B leads 14 of 15 rankings and Exomiser places it #2 of 398 (same VCF). It is #4 in "
+     "Without a gene panel, BUB1B is top-ranked in 14 of 15 sensitivity analyses of the same genome and Exomiser places it #2 of 398 (same VCF). It is #4 in "
      "the frozen A0 and #1 in A0-FREQFIX; both are reported. Strong candidate, not a diagnosis."),
     ("fig11_mei_sv_adjudication", "fig11_mei_sv_adjudication_map", "GO2B_STRUCTURAL_FALSIFICATION",
      "DATA", "MEASURED+EXTERNAL+DERIVED",

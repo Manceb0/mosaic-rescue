@@ -230,7 +230,7 @@ abundance, turnover and checkpoint function remain unmeasured.
 
 ![Proposed mechanisms: restoring residual BUBR1 function and increasing tolerance of unstable cells must be distinguished using joint segregation and clonogenic-survival measurements.](docs/assets/mosaic-08-mechanism.png)
 
-*Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; segregation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
+*Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; new errors per completed mitosis at matched proliferation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 External MVA-cell experiments support distinct abundance and functional defects in other
 alleles. A normal abundance assay would weaken the instability hypothesis, not exclude
@@ -277,9 +277,9 @@ HSF1 work makes that distinction particularly relevant.
 
 ## 6. The next chapter needs a different kind of evidence
 
-![Four proposed measurements and the decisions they inform: phase, missense function, hidden allele and safe rescue.](docs/assets/mosaic-06-next-experiments.png)
+![Five proposed questions: phase, missense function, hidden allele, safe rescue and a future patient-derived lineage screen.](docs/assets/mosaic-06-next-experiments.png)
 
-*Figure 6 · Proposed measurements, not completed results. Phase is the first genetic priority; normal protein abundance alone does not establish normal function. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
+*Figure 6 · Proposed measurements, not completed results. Phase is the first genetic priority; normal protein abundance alone does not establish normal function. The fifth row proposes a patient-derived lineage screen: fewer new errors per completed mitosis at matched proliferation, with independent safety criteria. No patient lineages have been measured. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 **The highest-value immediate genetic question is phase.** More ranking refinement cannot
 replace that datum. RNA/long-read work addresses a hidden allele; the functional assay
@@ -298,9 +298,11 @@ remain. [Detailed status and decision-changing results](docs/STORYBOARD.md#what-
 1. The data are fit for the question, and both candidate alleles are recovered in the
    reconstructed reads.
 2. `BUB1B` is the best-supported explanation among 6 321 genes: #4 in the frozen ranking,
-   #1 once three missing frequency annotations were repaired, #1 in 14 of 15 analyses, and
-   #2 of 398 in an independent method on the same VCF. Every close competitor was rejected
-   for a stated reason.
+   #1 once three missing frequency annotations were repaired, #1 in 14 of 15 sensitivity
+   analyses of the same genome (not independent replications), and #2 of 398 in an external
+   method (Exomiser) run on the same VCF. Every in-house competitor that outranked it in the
+   frozen A0 was falsified by frequency or genotype configuration; Exomiser's #1, HLA-DRB1,
+   remains an unresolved audit flag, not a demonstrated alternative diagnosis.
 3. The candidate genotype, truncating plus missense, is the canonical MVA1 configuration.
 4. The structural search found no copy-number or mobile-element call in the gene. A complex
    intronic insertion, the kind that has hidden second alleles before, is not excluded.
