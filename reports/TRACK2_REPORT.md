@@ -11,8 +11,9 @@ Repository: <https://github.com/Manceb0/mosaic-rescue>
 
 **Human MVA cells establish that BUBR1 dysfunction is rescuable at the checkpoint level.**
 Cell lines derived from MVA patients with biallelic `BUB1B` mutations fail to hold a
-mitotic-checkpoint arrest, show 2–3-fold more chromosome misalignment than control lines, and
-carry 2–6-fold less full-length BUBR1. Transient re-expression of BUBR1 doubled their response
+mitotic-checkpoint arrest and carry 2–6-fold less full-length BUBR1; under MG132 arrest to
+prevent mitotic exit, they showed a 2–3-fold increase in chromosome misalignment relative to
+controls. Transient re-expression of BUBR1 doubled their response
 to nocodazole, and in one patient line (731X/Y155C) restored checkpoint activity almost fully to
 the level of the parental control ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319),
 PMID 20516114). The ceiling is exact: the endpoint rescued in patient cells is the checkpoint,
@@ -29,7 +30,7 @@ portfolio for a first preclinical experiment:
 
 | Compound | Route | Mechanism proposed | Status |
 |---|---|---|---|
-| **Azithromycin** | allele-directed | Readthrough of the premature stop codon, to restore some full-length BUBR1 | Approved, paediatric use established. **Computationally weakened by EXP-029, not eliminated**: the stop context scores in the lower tercile (19.09th percentile) under a G418-trained model, and the three plausible readthrough products (R/W/C) do not restore the wild-type residue; transcript availability and product function are unmeasured |
+| **Azithromycin** | allele-directed | Readthrough of the premature stop codon, to restore some full-length BUBR1 | Approved, paediatric use established. **Computationally weakened by EXP-029, not eliminated**: the stop context scores in the lower tercile (19.09th percentile) under a G418-trained model, and the three preregistered UGA products supported by external experimental systems (R/W/C) do not restore the wild-type residue; transcript availability and product function are unmeasured |
 | **Arimoclomol** | abundance / proteostasis (falsification sentinel) | Amplify the heat-shock response to raise chaperone capacity and with it BUBR1 abundance | FDA-approved for Niemann-Pick type C, ≥2 years. **Verified counterexample**: in NPC1 I1061T fibroblasts it did not rescue up to 500 µM and did not induce HSP70, while HSP70 overexpression did (PMID 34481829) |
 | **Sirolimus** | adversarial safety comparator | Reduce the damage of aneuploidy through mTOR/autophagy **without correcting BUBR1** | Approved, paediatric exposure well characterised |
 

@@ -37,3 +37,7 @@ Conceptual architecture of the causal and rescue-hypothesis tracks. Miniature ra
 ## Figures 03–08
 
 [Scientific captions and sources](EDITORIAL_CAPTIONS.md). Production prompts remain local; the quantitative figures remain available separately.
+
+## 29 September revision
+
+Figures 00, 05 and 06 updated. Figure 06 now contains five proposed questions and uses the user-provided motion-design reference directly. Figure 08 image unchanged; its caption distinguishes function restoration from tolerance. Figures 01–04 and 07 unchanged. Scientific semantics and limitations: [captions](EDITORIAL_CAPTIONS.md).

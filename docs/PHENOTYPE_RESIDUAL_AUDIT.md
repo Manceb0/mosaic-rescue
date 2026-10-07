@@ -2,6 +2,14 @@
 
 > **`DERIVED`** sobre corpus HPO local + **`EXTERNAL`** (serie de 31 casos de MVA1,
 > `Neurol Sci` 2022, DOI 10.1007/s10072-022-06247-w, ya verificada en el brief §11).
+>
+> **Nota de auditoría sobre el denominador (verificada en PubMed, texto completo, 2026-10-07; Pavone et al.
+> 2022, PMID 35804254, PMC9616775).** *The paper describes 31 cases including the current report; one prose
+> sentence refers to a group of 30, while the reported totals and percentages correspond to n=31* (29/31 =
+> 93,5 %, 12/31 = 38,7 %, 4/31 = 12,9 %). El cuerpo y los métodos hablan de 30 casos de la literatura más el
+> caso índice. Usamos n = 31. Ese caso índice porta una sola VUS heterocigota de `BUB1B`, también presente en
+> su padre no afectado: la serie no es exclusivamente bialélica confirmada, lo que no cambia ningún veredicto
+> de esta tabla.
 
 ## La trampa que este experimento existe para evitar
 

@@ -244,8 +244,8 @@ abundance, turnover and checkpoint function remain unmeasured.
 *Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; new errors per completed mitosis at matched proliferation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
 **The mechanism is experimentally rescuable in human MVA cells.** Cell lines from MVA
-patients with biallelic `BUB1B` mutations fail to hold a mitotic-checkpoint arrest, misalign
-chromosomes and carry little BUBR1; re-expressing BUBR1 restored checkpoint activity almost
+patients with biallelic `BUB1B` mutations fail to hold a mitotic-checkpoint arrest, carry
+little BUBR1 and, under MG132 arrest, misalign more chromosomes than controls; re-expressing BUBR1 restored checkpoint activity almost
 fully to parental-control level in one patient line. That rescue was genetic, its endpoint was
 the checkpoint (not measured segregation), and the alleles were not this patient's. The same
 work shows abundance and functional defects that differ by allele, so a normal abundance assay
@@ -274,7 +274,7 @@ roles; the order below is not a ranking or an administration recommendation.
 
 | Arm | Question | Crucial gap / rejection condition |
 |---|---|---|
-| **Azithromycin — allele-directed hypothesis** | Could readthrough restore useful full-length protein? | **Computationally weakened by EXP-029, not eliminated:** the stop context scores in the lower tercile under a G418-trained model and the plausible readthrough products do not restore the wild-type residue. No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
+| **Azithromycin — allele-directed hypothesis** | Could readthrough restore useful full-length protein? | **Computationally weakened by EXP-029, not eliminated:** the stop context scores in the lower tercile under a G418-trained model and the three preregistered UGA products supported by external experimental systems (R/W/C) do not restore the wild-type residue. No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
 | **Arimoclomol — falsification sentinel** | Does pharmacological co-induction actually engage the intended stress-response mechanism? | External counter-evidence; no engagement despite an informative positive control would reject the proposed pharmacological bridge in that system |
 | **Sirolimus — adversarial comparator** | Could apparent benefit reflect tolerance of instability? | Improved clonogenic survival of unstable cells is a veto; this arm is not a therapeutic nominee |
 
