@@ -112,6 +112,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | `fig10_bub1b_readlevel_assay` | `DATA` | `MEASURED+DERIVED` |
 | `fig11_mei_sv_adjudication_map` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 | `fig13_exp027_phase1_result` | `DATA` | `EXTERNAL+DERIVED` |
+| `fig14_track1_convergence` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 
 ---
 
@@ -179,15 +180,15 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | **notebook** | `03_BUBR1_MECHANISM` |
 | **source data** | `work/struct/AF-O60566-F1.pdb` (coordinates, B-factor = pLDDT) + `work/conservation/orthologs.json` |
 | **n** | 9 neighbours ≤ 5 Å · 3 candidate H-bonds · 153 one-to-one orthologs · 117–122 aligned per column |
-| **axes / units** | A: Å (3-D, axes hidden) · B: minimum heavy-atom distance (Å) · C: information (bits) and n aligned · D: pLDDT, position relative to candidate (aa) |
+| **axes / units** | A: Å (3-D, axes hidden) · B: contact shell to scale, radius = minimum heavy-atom distance (Å) to the candidate side chain, angle only separates sequence-local (left, circles) from tertiary (right, squares); rings at 3.5 Å and 5 Å · C: information (bits) and n aligned · D: pLDDT, position relative to candidate (aa) |
 | **statistic represented** | Euclidean distances between heavy atoms; Shannon information per alignment column; AlphaFold pLDDT |
 | **FIGURE CLASS** | `MODEL_OUTPUT` |
 | **EVIDENCE ORIGIN** | `PREDICTED+EXTERNAL`, meaning AlphaFold coordinates plus Ensembl orthologs |
 | **uncertainty represented?** | yes, pLDDT is a confidence track, and alignment coverage is its own sub-track |
 | **uncertainty quantified?** | pLDDT yes; phylogenetic non-independence **no**, stated, not drawn |
 | **possible misleading interpretation** | **that "3 candidate H-bonds" are demonstrated interactions.** They are donor/acceptor pairs within 3.5 Å in a *predicted* structure that carries no hydrogens, so no angle was checked. Second risk: reading 153 orthologs as 153 independent observations. |
-| **correction applied** | the word CANDIDATE is in the legend entry, the panel and the provenance strip; the strip states that the effective clade-level count is ~5–6; the coverage sub-track shows that alignment depth is not constant and that the deepest clades drop out first |
-| **full-size render checked?** | yes |
+| **correction applied** | the word CANDIDATE is in the legend entry, the panel and the provenance strip; the strip states that the effective clade-level count is ~5–6; the coverage sub-track shows that alignment depth is not constant and that the deepest clades drop out first. **2026-10-07 redesign (idea-level):** panel B was a bar chart repeating A's distances; it is now the contact shell to scale (class by marker shape as well as colour); A no longer prints the overlapping H-bond distances (read in B); thesis title and a computed subtitle that says "3 candidate H-bonds to 2 residues" and states the ceiling (predicted structure, correlated sequences, not a measured destabilisation) |
+| **full-size render checked?** | yes (redesign: three renders; label/marker collisions in B fixed) |
 
 ---
 
@@ -272,15 +273,15 @@ outputs*) checks that every artefact cites that manifest.
 | **notebook** | `05_RESIDUAL_PHENOTYPE` |
 | **source data** | `work/hpo/prepared.pkl` (9 155 disease models) + `work/hpo/phenotype.hpoa` (disease names) |
 | **n** | 7 proband terms × 12 models = 84 cells |
-| **axes / units** | rows: proband HPO terms with their own IC · columns: disease models · cell value and colour: **bits** · panel B: profile BMA in bits |
+| **axes / units** | A: rows = proband HPO terms with their own IC · columns = disease models (name, gene, profile BMA in bits in the label) · cell value and colour: **bits**. B: the same rows; check 1 (term annotated in the MVA1 model, read from the matrix), check 2 (MVA1 published series, from `docs/PHENOTYPE_RESIDUAL_AUDIT.md`) and the verdict DERIVED from both: EXPLAINED · ANNOTATION GAP · CANNOT JUDGE (PARKED) · RESIDUAL |
 | **statistic represented** | Resnik: IC of the most informative common ancestor. The same quantity the ranking engine consumes. |
 | **FIGURE CLASS** | `DATA` |
 | **EVIDENCE ORIGIN** | `MEASURED+EXTERNAL+DERIVED`, proband HPO terms, external disease models, computed Resnik. **This is the case the two axes exist for.** |
 | **uncertainty represented?** | partly, the IC scale is shown; annotation bias is stated, not drawn |
 | **uncertainty quantified?** | **no** for annotation bias, and it cannot be from this corpus |
 | **possible misleading interpretation** | **that a low cell means the trait does not occur in that disease.** It means the corpus does not annotate it. Second risk: that literature support has been folded into the bits. Third: that MVA1 covering 3 of 7 terms is evidence against MVA1, it is not, because three of the four uncovered terms have literature support. |
-| **correction applied** | literature support is a dashed **ring**, never a number, and the legend says "not a Resnik score"; the provenance strip states the annotation bias explicitly and says the columns are neighbours of the full profile, not a search for renal models; the computed caption names which terms are covered and which are not, rather than asserting a count |
-| **full-size render checked?** | yes |
+| **correction applied** | literature support is a dashed **ring**, never a number, and the legend says "not a Resnik score"; the provenance strip states the annotation bias explicitly and says the columns are neighbours of the full profile, not a search for renal models; the computed caption names which terms are covered and which are not, rather than asserting a count. **2026-10-07 redesign (idea-level):** the profile-BMA bar panel was replaced by a row-aligned two-check verdict ledger (BMA kept in the column labels); the thesis is the title; the renderer refuses to draw unless the derived RESIDUAL set is exactly nephrocalcinosis and no MVA model covers it. Verdict identity is written in each pill, not carried by colour alone; CANNOT JUDGE is dashed and labelled PARKED, not negative |
+| **full-size render checked?** | yes (redesign: two renders; subtitle overflow, panel-heading collisions and truncated Bartter subtypes fixed) |
 
 ---
 
@@ -519,5 +520,32 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 | **possible misleading interpretation** | that the method "works" because panels B–C pass; the decisive panel is A. And that the 25 % is a biological false-positive rate: it is an operational calibration sentinel on LCL-derived benchmark data. |
 | **correction applied** | first version (bars) rejected as not conveying the idea; redesigned as a unit matrix + QQ plot + power curve + gate diagram. No dual axis. Legend uses the real fill colours (identity not by colour alone: lit / unlit / ⊠ not evaluable). λ is descriptive only and is not a gate. |
 | **full-size render checked?** | yes (five renders: label collisions, text overflow, legend overlap corrected) |
+
+---
+
+## Fig 14 · Track 1 convergence: `fig14_track1_convergence`
+
+| | |
+|---|---|
+| **Figure ID** | `fig14_track1_convergence` |
+| **notebook** | `01_TRACK1_GENOME_WIDE` (A0, A0-FREQFIX and the 15 frozen rankings); Exomiser baseline per `docs/EXTERNAL_BASELINE.md` |
+| **Classification** | `DATA` |
+| **Evidence mode** | `MEASURED+EXTERNAL+DERIVED` (patient genotypes → our rankings; external population frequencies and an external method, Exomiser, run on the same VCF) |
+| **Source artifact(s)** | `work/gw/mode_b_results_v4.pkl` (15 frozen rankings); `work/gw/highmod_ann.tsv` (universe of 13 191 HIGH/MODERATE positions in 6 321 genes; A0-FREQFIX recomputed with the notebook-01 formula via `src.prioritization.freqfix_sensitivity`); `work/exomiser/runs/BASELINE-PRIMARY/BASELINE-PRIMARY.genes.tsv` |
+| **Source SHA256** | `3ec4862274fa0f5168d32be8f69d1adacb631936e57aed678cf83a0cd79a8b3d` · `6bb5d13907efa9d576115e5877603321c49eb523cff7c7d7dfbfd3bdba6f5ce2` · `00b8ef31c993095b4b7987d3f17c864feffad1a31dfa5cb66565081ed4c332e7` |
+| **Renderer** | `src/figures/fig14_track1_convergence.py` |
+| **Output** | `figures/pub/fig14_track1_convergence.svg` (+ PNG 300 dpi, thumbnail) |
+| **Output SHA256** | `4b8fe0e83d7c655a8d62faf00ab64ad29b3f3b75a36fc42a47a2d83cf46ae414` (SVG) · `6566d86c3cff4d8904f245c7f67adff7c9c03f5fe6a6f53d31215f9d6e8454ae` (PNG) |
+| **hash verification** | FAIL CLOSED: the renderer checks all three source SHA256 before drawing and refuses to draw unless the data give BUB1B #1 in 14/15 frozen rankings, #1 in A0-FREQFIX and #2 in Exomiser. |
+| **n** | 13 191 positions · 6 321 genes · 151 genes fitting an inheritance model · 15 frozen rankings + A0-FREQFIX + Exomiser (398 genes) |
+| **axes / units** | A: funnel, counts only. B: bump chart, rank (1 = top) per ranking; ranks below #8 folded into one row; Exomiser drawn apart, after a separator, as an external method (same VCF, not independent biological evidence). C: one card per rival with the cheapest falsifier that removed it. No coordinates. |
+| **statistic represented** | ordinal rank; prioritization scores are not test statistics and no p-value is shown |
+| **uncertainty represented?** | no (ranks); the ceiling "candidate, not diagnosis" and "phase unresolved" are stated in the title and in card C |
+| **uncertainty quantified?** | no |
+| **Claim ceiling** | *Without a gene panel, BUB1B is #1 in 14 of 15 frozen rankings and #2 of 398 in an external tool run on the same VCF. It is #4 in the frozen A0 (three common polymorphisms ahead) and #1 in A0-FREQFIX. Strong biallelic candidate; phase unresolved; not a diagnosis.* (L2) |
+| **Forbidden inference** | "BUB1B was always #1"; hiding the frozen #4; "diagnosis"; "biallelic confirmed"; HLA-DRB1 eliminated (it is flagged as an audit hypothesis, not proven or removed) |
+| **possible misleading interpretation** | that the convergence of 15 rankings is 15 independent replications: they share the same genotypes and annotation, so they test robustness to choices, not independent evidence. And that the bump chart shows effect size: ranks are ordinal. |
+| **correction applied** | designed idea-first (funnel + bump chart + elimination cards) instead of bars; strike-through marks removed rivals and is not the only cue (each card carries a written verdict); both A0 numbers drawn and annotated. Render fixes: subtitle comma bug, overlapping rotated tick labels vs footer, panel A text overflow, strike-through length. |
+| **full-size render checked?** | yes (six renders; Exomiser relabelled "external, same VCF" to match the submission rationale) |
 
 ---

@@ -76,10 +76,12 @@ rejection proportions. The view contains every `scope=frac` factorial arm, not t
 `scope=all` clonal controls. [Renderer with input hash](../src/figures/fig12_ablation.py).
 This new figure visualises the existing run; it is not a new validation.
 
-![HPO similarity matrix by trait and disease model](../figures/pub/fig05_hpo_disease_matrix.svg)
+![Seven proband traits, two checks: only nephrocalcinosis is neither annotated in the MVA1 model nor reported in the MVA1 series](../figures/pub/fig05_hpo_disease_matrix.svg)
 
 **DATA / MEASURED + EXTERNAL + DERIVED.** Semantic similarity shows which traits are least
-well explained; it does not automatically assign a second diagnosis.
+well explained; the row-aligned verdicts derive from two checks (HPO annotation in the MVA1
+model, and the published MVA1 series). A residual trait does not by itself assign a second
+diagnosis.
 [Code](../src/figures/fig05_hpo.py).
 
 ![Complete rescue evidence matrix](../figures/pub/fig07_track2_evidence_matrix.svg)

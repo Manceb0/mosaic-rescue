@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Figure 4. Local geometry and evolutionary constraint at the candidate residue.
 
+B dejó de ser un diagrama de barras (repetía las distancias de A): es la capa de contacto a escala,
+candidato en el centro, cada vecino a su distancia mínima real, anillos de 3,5 y 5 Å.
+
 WHAT THE READER SHOULD GET IN ONE LOOK
     local geometry (A, B)  +  model confidence (C)  +  evolutionary constraint (D)
     and the uncertainty attached to each of them.
@@ -49,9 +52,9 @@ def build(geom: dict, logo: dict):
     res, NB, HB = geom["res"], geom["neighbours"], geom["hbonds"]
     sc_hb = [h for h in HB if h["from"] not in pg.BACKBONE]
 
-    fig = plt.figure(figsize=(13.4, 8.0))
+    fig = plt.figure(figsize=(13.4, 8.9))
     gs = fig.add_gridspec(2, 2, width_ratios=[1.52, 1.0], height_ratios=[1.20, 1.0],
-                          wspace=0.24, hspace=0.46)
+                          wspace=0.24, hspace=0.46, top=0.79, bottom=0.08)
     ax3 = fig.add_subplot(gs[0, 0], projection="3d")
     axB = fig.add_subplot(gs[0, 1])
     axD = fig.add_subplot(gs[1, 0])   # logo, panel C in reading order
@@ -87,7 +90,7 @@ def build(geom: dict, logo: dict):
         v = c - cen
         q = c + v / (np.linalg.norm(v) or 1.0) * 4.6
         if is_t:
-            q = c + np.array([0.0, 0.0, 4.6])
+            q = c + np.array([0.0, 0.0, 6.4])
             ax3.plot(*zip(c, q), color=col, lw=0.9, ls=":", zorder=6)
         ax3.text(q[0], q[1], q[2], f"{res[r]['aa']} (candidate)" if is_t
                  else f"{res[r]['aa']}{_rel(r, tgt)}",
@@ -95,18 +98,11 @@ def build(geom: dict, logo: dict):
                  fontweight="bold" if is_t else "normal", color=col,
                  ha="center", va="center", zorder=9)
 
-    # Las tres distancias caian en el mismo punto de la proyeccion y se
-    # solapaban. Se escalonan en Z por indice.
-    for k, h in enumerate(sc_hb):
+    # Las distancias se leen en B, a escala; en la proyección 3-D se solapaban. Aquí solo el trazo.
+    for h in sc_hb:
         a = res[tgt]["atoms"][h["from"]]
         b = res[h["to_res"]]["atoms"][h["to_atom"]]
         ax3.plot(*zip(a, b), color=S.INK, lw=1.5, ls=(0, (2.2, 1.8)), zorder=8)
-        m = [(a[i] + b[i]) / 2 for i in range(3)]
-        off = np.array([2.2 * (k - 1), -0.6 * k, -1.4 - 1.5 * k])
-        ax3.plot(*zip(m, np.asarray(m) + off), color=S.INK, lw=0.6, ls=":", zorder=8)
-        q = np.asarray(m) + off
-        ax3.text(q[0], q[1], q[2], f"{h['dist']:.2f} Å", fontsize=S.BASE - 1.0,
-                 color=S.INK, ha="center", fontweight="bold", zorder=9)
 
     ax3.set_axis_off()
     ax3.view_init(elev=16, azim=-58)
@@ -130,30 +126,60 @@ def build(geom: dict, logo: dict):
         Line2D([], [], color=CONTEXT, lw=3.0, label="backbone trace"),
     ], loc="upper center", bbox_to_anchor=(0.5, 0.03), fontsize=S.BASE - 1.0, ncol=2)
 
-    # ---------------- B · the measured distances ----------------------------
-    order = sorted(NB, key=lambda n: n["dmin"], reverse=True)
-    ypos = np.arange(len(order))
-    axB.barh(ypos, [n["dmin"] for n in order], height=0.62, zorder=3,
-             color=[SEQ_COL if n["contiguo"] else TERT_COL for n in order],
-             edgecolor="white", linewidth=0.5)
-    axB.set_yticks(ypos)
-    axB.set_yticklabels([f"{n['aa']}{_rel(n['resnum'], tgt)}" for n in order],
-                        fontsize=S.BASE - 0.5)
-    axB.axvline(pg.HB_MAX, color=S.INK, lw=1.0, ls=(0, (2.2, 1.8)), zorder=5)
-    axB.text(pg.HB_MAX - 0.10, len(order) - 0.35, f"{pg.HB_MAX} Å H-bond cut-off",
-             fontsize=S.BASE - 1.2, color=S.INK, ha="right", va="top")
-    for i, n in enumerate(order):
-        axB.text(n["dmin"] + 0.07, i, f"{n['dmin']:.2f}", va="center",
-                 fontsize=S.BASE - 1.0, color=S.MUTED)
-    axB.set_xlim(0, pg.CONTACT + 1.1)
-    axB.set_xlabel("minimum heavy-atom distance to candidate side chain (Å)")
-    S.panel(axB, "B")
-    S.head(axB, f"{len(NB)} residues within {pg.CONTACT:.0f} Å")
-    S.grid(axB, axis="x")
-    axB.legend(handles=[Patch(color=SEQ_COL, label="sequence-local"),
-                        Patch(color=TERT_COL, label="tertiary contact")],
-               loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2,
-               fontsize=S.BASE - 1.0)
+    # ---------------- B · la capa de contacto, a escala ---------------------
+    # Cada vecino a su distancia mínima REAL del candidato (el radio es la medida); el ángulo
+    # solo separa: locales en secuencia a la izquierda, contactos terciarios a la derecha.
+    # La clase va también en la forma del marcador, no solo en el color.
+    partners = {}
+    for h in sc_hb:
+        partners[h["to_res"]] = min(h["dist"], partners.get(h["to_res"], 9e9))
+    loc = sorted([n for n in NB if n["contiguo"]], key=lambda n: n["resnum"])
+    ter = sorted([n for n in NB if not n["contiguo"]], key=lambda n: n["resnum"])
+
+    def fan(ns, a0, a1):
+        return [(n, np.deg2rad(a)) for n, a in zip(ns, np.linspace(a0, a1, len(ns)))] if len(ns) > 1 \
+            else [(n, np.deg2rad((a0 + a1) / 2)) for n in ns]
+
+    th = np.linspace(0, 2 * np.pi, 361)
+    axB.fill(pg.CONTACT * np.cos(th), pg.CONTACT * np.sin(th), color="#F4F6F7", lw=0, zorder=0)
+    axB.plot(pg.CONTACT * np.cos(th), pg.CONTACT * np.sin(th), color=S.HAIRLINE, lw=1.0, zorder=1)
+    axB.plot(pg.HB_MAX * np.cos(th), pg.HB_MAX * np.sin(th), color=S.INK, lw=0.9,
+             ls=(0, (2.2, 1.8)), zorder=1)
+    axB.text(0, -pg.CONTACT - 0.2, f"{pg.CONTACT:.0f} Å contact shell", ha="center", va="top",
+             fontsize=S.BASE - 1.4, color=S.MUTED)
+    axB.text(0, -pg.HB_MAX - 0.12, f"{pg.HB_MAX} Å cut-off", ha="center", va="top",
+             fontsize=S.BASE - 1.6, color=S.INK,
+             bbox=dict(boxstyle="round,pad=0.1", fc="#F4F6F7", ec="none"))
+    for n, a in fan(loc, 115, 245) + fan(ter, 65, -65):
+        d = n["dmin"]
+        x, y = d * np.cos(a), d * np.sin(a)
+        col = SEQ_COL if n["contiguo"] else TERT_COL
+        hb = n["resnum"] in partners
+        axB.plot([0, x], [0, y], color=S.INK if hb else col, lw=1.5 if hb else 0.9,
+                 ls=(0, (2.2, 1.8)) if hb else "-", alpha=1 if hb else .55, zorder=2)
+        axB.scatter([x], [y], s=95, marker="o" if n["contiguo"] else "s", color=col,
+                    edgecolors="white", linewidths=1.0, zorder=4)
+        lx, ly = (d + 0.5) * np.cos(a), (d + 0.5) * np.sin(a)
+        ha = "left" if np.cos(a) > 0.2 else ("right" if np.cos(a) < -0.2 else "center")
+        axB.text(lx, ly, f"{n['aa']}{_rel(n['resnum'], tgt)}\n{d:.2f} Å", ha=ha,
+                 va="center", fontsize=S.BASE - 1.2, color=S.INK, linespacing=1.1,
+                 fontweight="bold" if hb else "normal", zorder=5)
+    axB.scatter([0], [0], s=420, marker="o", color=CAND_COL, edgecolors="white",
+                linewidths=1.5, zorder=6)
+    axB.text(0, 0, geom["aa"], ha="center", va="center", fontsize=S.BASE + 1.5,
+             color="white", fontweight="bold", zorder=7)
+    axB.set_xlim(-7.6, 7.6); axB.set_ylim(-6.6, 6.6)
+    axB.set_aspect("equal"); axB.axis("off")
+    S.panel(axB, "B", dx=0.0, dy=1.02)
+    axB.text(0.07, 1.02, f"The contact shell, to scale: {len(NB)} residues within "
+             f"{pg.CONTACT:.0f} Å", transform=axB.transAxes, fontsize=S.BASE + 0.5,
+             color=S.INK, va="bottom")
+    axB.legend(handles=[
+        Line2D([], [], ls="", marker="o", color=SEQ_COL, ms=8, label="sequence-local (|Δ| ≤ 4)"),
+        Line2D([], [], ls="", marker="s", color=TERT_COL, ms=8, label="tertiary contact"),
+        Line2D([], [], color=S.INK, lw=1.5, ls=(0, (2.2, 1.8)),
+               label="candidate H-bond partner (distance only)"),
+    ], loc="upper center", bbox_to_anchor=(0.5, 0.02), ncol=2, fontsize=S.BASE - 1.2)
 
     # ---------------- C · model confidence ----------------------------------
     xs, ys = pg.plddt_track(res, tgt - WIN_PLDDT, tgt + WIN_PLDDT)
@@ -219,6 +245,17 @@ def build(geom: dict, logo: dict):
                f"across the window; the deepest clades drop out first",
                fontsize=S.BASE - 1.4, color=S.MUTED, va="bottom")
 
+    n_loc = sum(1 for n in NB if n["contiguo"])
+    fig.text(0.012, 0.955, "A packed, conserved, confidently modelled pocket around the candidate "
+             "residue", fontsize=17, fontweight="bold", color=S.INK)
+    fig.text(0.012, 0.878,
+             f"{len(NB)} residues within {pg.CONTACT:.0f} Å ({n_loc} sequence-local, {len(NB) - n_loc} "
+             f"tertiary), {len(sc_hb)} candidate H-bonds to {len(partners)} residues, pLDDT {geom['plddt']:.1f}, and "
+             f"{logo['info_at_candidate']:.2f} of {logo['hmax']:.2f} possible bits across "
+             f"{logo['n_orthologs']} orthologs." + chr(10) +
+             "All of it is a predicted structure and correlated sequences: a reason the substitution "
+             "could matter, not a measured destabilisation.",
+             fontsize=10.5, color=S.MUTED, linespacing=1.4)
     S.note(fig, "Predicted structure, not an experimental one. Distances are measured on the "
                 "model's coordinates; H-bonds are CANDIDATES from a donor/acceptor distance "
                 "criterion only. The model carries no hydrogens, so no angle was checked.\n"

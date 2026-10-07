@@ -63,8 +63,9 @@ FIGURES = [
      "official local-disruption score. Predicted contacts, not Hi-C and not the patient."),
     ("fig05_hpo", "fig05_hpo_disease_matrix", "05_RESIDUAL_PHENOTYPE",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
-     "Nephrocalcinosis is the one proband term with neither HPO annotation nor MVA1 "
-     "literature support, while Bartter-type models do cover it."),
+     "Seven traits, two checks: nephrocalcinosis is the one proband term with neither HPO "
+     "annotation nor MVA1 literature support, while Bartter-type models do cover it. Two traits "
+     "cannot be judged (PARKED, not negative)."),
     ("fig06_baf", "fig06_baf_cancellation", "06_MOSAIC_AND_MITOREAD",
      "SIMULATION", "SIMULATED",
      "A variegated genome re-centres on BAF 0.5 with the same aneuploidy present, and "
@@ -95,6 +96,12 @@ FIGURES = [
      "DATA", "EXTERNAL+DERIVED",
      "High sensitivity (0.943 at δ = 0.10), failed calibration (APR 249/995 = 25.0 % vs 5 % nominal): "
      "method validation FAIL, so the patient-level A1 test was not performed."),
+    # Track 1, la idea central: lee el pkl congelado, la anotación (A0-FREQFIX recalculado con la fórmula
+    # del notebook 01) y el baseline de Exomiser, los tres comprobados por SHA256.
+    ("fig14_track1_convergence", "fig14_track1_convergence", "01_TRACK1_GENOME_WIDE",
+     "DATA", "MEASURED+EXTERNAL+DERIVED",
+     "Without a gene panel, BUB1B leads 14 of 15 rankings and Exomiser places it #2 of 398 (same VCF). It is #4 in "
+     "the frozen A0 and #1 in A0-FREQFIX; both are reported. Strong candidate, not a diagnosis."),
     ("fig11_mei_sv_adjudication", "fig11_mei_sv_adjudication_map", "GO2B_STRUCTURAL_FALSIFICATION",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
      "The four alternative structural signals near BUB1B, their breakpoint partners and the gene context "
