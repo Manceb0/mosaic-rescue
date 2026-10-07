@@ -62,7 +62,8 @@ activity, chromosome segregation and clonogenic survival, as well as viability.
 
 ## 2:20–3:00 · The useful result is a decision
 
-Show [the next experiment](assets/mosaic-06-next-experiments.png).
+Show [the next experiment](assets/mosaic-06-next-experiments.png), or [the decision map](../figures/pub/fig15_decision_map.html)
+if the jury wants every question with its test and its failure condition on one page.
 
 "The most informative next step is phase: if both alleles are on the same copy, this pair no
 longer explains a recessive mechanism. Then we need variant-specific function, and RNA and long

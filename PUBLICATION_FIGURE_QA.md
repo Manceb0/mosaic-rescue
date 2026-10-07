@@ -113,6 +113,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | `fig11_mei_sv_adjudication_map` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
 | `fig13_exp027_phase1_result` | `DATA` | `EXTERNAL+DERIVED` |
 | `fig14_track1_convergence` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
+| `fig15_decision_map` | `SYNTHESIS` | `DERIVED+EXTERNAL` |
 
 ---
 
@@ -507,7 +508,7 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 | **Source SHA256** | `37e676ad5137dc4ceee283de7251b403323c3d9dda589907e8eff43a441e1e3e` · `923cfb32854c76867bc7fd06a28bef83c624f0e49bb17d6a987d3de4146ae136` · `316f0cf7be522f0ca62e1b4e55bcb1c01f1efe65e3591b27babdc23c7897da3d` · `e3731d525b1980026a5700f2fe8772a02eee6d363fa69e376cdd4b8bfa7c1c80` |
 | **Renderer** | `src/figures/fig13_exp027_phase1.py` |
 | **Output** | `figures/pub/fig13_exp027_phase1_result.svg` (+ PNG 300 dpi, thumbnail) |
-| **Output SHA256** | `2e87124546f97899b5b7b0cd54e739ef94dc96e85edae35cff7220dcef4a8bba` (SVG) · `f99f359c999599735696bfcb0d0528c9c4b116a6957e801ebd24eae76010b328` (PNG); sealed version under tag `exp027-phase1-result-r2-fail`: `d7fd1bf3…` / `44533858…` |
+| **Output SHA256** | `5c138b0226769ae99d5d3e449f33c44b155799f9ccbddd4fd346b8f88965e8bd` (SVG) · `3f0a21ee0044a612f775c0358d365e75937720d087409b3c02538fc7b775e716` (PNG); sealed version under tag `exp027-phase1-result-r2-fail`: `d7fd1bf3…` / `44533858…` |
 | **Frozen commit** | run `7e20047` (tag `exp027-phase1-execution-freeze-r2`); result sealed under tag `exp027-phase1-result-r2-fail` |
 | **hash verification** | FAIL CLOSED: the renderer checks all four source SHA256 before drawing, refuses to draw if the post-hoc reproduction is not identical to the sealed report, and refuses if the per-pair map does not give the report's K/N. |
 | **n** | 20 children × 50 evaluation windows = 1000 pairs, 995 evaluable (5 below Hmin = 50 after filters); 20 × 20 calibration tiles for ρ (not part of APR); B = 10 000; δ ∈ {0, .02, .05, .10, .15, .20} |
@@ -530,12 +531,12 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 | **Figure ID** | `fig14_track1_convergence` |
 | **notebook** | `01_TRACK1_GENOME_WIDE` (A0, A0-FREQFIX and the 15 frozen rankings); Exomiser baseline per `docs/EXTERNAL_BASELINE.md` |
 | **Classification** | `DATA` |
-| **Evidence mode** | `MEASURED+EXTERNAL+DERIVED` (patient genotypes → our rankings; external population frequencies and an external method, Exomiser, run on the same VCF) |
+| **Evidence mode** | `MEASURED+EXTERNAL+DERIVED` (patient genotypes feed our rankings; external population frequencies and an external method, Exomiser, run on the same VCF) |
 | **Source artifact(s)** | `work/gw/mode_b_results_v4.pkl` (15 frozen rankings); `work/gw/highmod_ann.tsv` (universe of 13 191 HIGH/MODERATE positions in 6 321 genes; A0-FREQFIX recomputed with the notebook-01 formula via `src.prioritization.freqfix_sensitivity`); `work/exomiser/runs/BASELINE-PRIMARY/BASELINE-PRIMARY.genes.tsv` |
 | **Source SHA256** | `3ec4862274fa0f5168d32be8f69d1adacb631936e57aed678cf83a0cd79a8b3d` · `6bb5d13907efa9d576115e5877603321c49eb523cff7c7d7dfbfd3bdba6f5ce2` · `00b8ef31c993095b4b7987d3f17c864feffad1a31dfa5cb66565081ed4c332e7` |
 | **Renderer** | `src/figures/fig14_track1_convergence.py` |
 | **Output** | `figures/pub/fig14_track1_convergence.svg` (+ PNG 300 dpi, thumbnail) |
-| **Output SHA256** | `f98e0c153a264517d938e4d93a0b471bb134d4b3a71160a7f74ebef37c28fd48` (SVG) · `2723becd845e0ae86d331e46fda8ec9fadf04a8747360cbe841254f0348f8d51` (PNG) |
+| **Output SHA256** | `ce80025d33a8a41b3cd1bccf6cec0c613dde7f7319c182d6434a2e2b44591b82` (SVG) · `7a594fa908711e251692ed5897f8ba2fe0450e407d95c28b80aeff1e19fc4c70` (PNG) |
 | **hash verification** | FAIL CLOSED: the renderer checks all three source SHA256 before drawing and refuses to draw unless the data give BUB1B #1 in 14/15 frozen rankings, #1 in A0-FREQFIX and #2 in Exomiser. |
 | **n** | 13 191 positions · 6 321 genes · 151 genes fitting an inheritance model · 15 frozen rankings + A0-FREQFIX + Exomiser (398 genes) |
 | **axes / units** | A: funnel of three FILTERS (counts only), then a dashed arrow "ranked, not filtered" to a separate box: BUB1B top-ranked in 14 of 15 sensitivity analyses, with "same genome: sensitivity analyses, not independent replications" printed under it. B: bump chart, rank (1 = top) per ranking; ranks below #8 folded into one row; Exomiser drawn apart, after a separator, as an external method (same VCF, not independent biological evidence). C: one card per rival with the cheapest falsifier that removed it. No coordinates. |
@@ -546,6 +547,31 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 | **Forbidden inference** | "BUB1B was always #1"; hiding the frozen #4; "diagnosis"; "biallelic confirmed"; HLA-DRB1 eliminated (it is flagged as an audit hypothesis, not proven or removed) |
 | **possible misleading interpretation** | that the convergence of 15 rankings is 15 independent replications: they share the same genotypes and annotation, so they test robustness to choices, not independent evidence. And that the bump chart shows effect size: ranks are ordinal. |
 | **correction applied** | designed idea-first (funnel + bump chart + elimination cards) instead of bars; strike-through marks removed rivals and is not the only cue (each card carries a written verdict); both A0 numbers drawn and annotated. Render fixes: subtitle comma bug, overlapping rotated tick labels vs footer, panel A text overflow, strike-through length. |
-| **full-size render checked?** | yes (eight renders; Exomiser relabelled "external, same VCF"; 2026-10-07 leader review: the final "1" is no longer drawn as a fourth funnel stage, the non-independence caveat is in the figure, panel C heading says "what removed it, and what stays open" because HLA-DRB1 is not removed, and TRACK1_REPORT now says the same) |
+| **full-size render checked?** | yes (eight renders; Exomiser relabelled "external, same VCF"; 2026-10-07 leader review: the final "1" is no longer drawn as a fourth funnel stage, the non-independence caveat is in the figure, panel C heading says "what removed it, and what stays open" because HLA-DRB1 is not removed, and TRACK1_REPORT now says the same). Arrow characters removed from the card subtitle at the user's request |
+
+---
+
+## Fig 15 · Decision map: `fig15_decision_map`
+
+| | |
+|---|---|
+| **Figure ID** | `fig15_decision_map` |
+| **notebook** | none: a synthesis of what the reports already state |
+| **Classification** | `SYNTHESIS` |
+| **Evidence mode** | `DERIVED+EXTERNAL` (our reports and the published rescue precedent; no new result) |
+| **Source artifact(s)** | `README.md` (open-question table), `reports/TRACK1_REPORT.md` §7a, `reports/TRACK2_REPORT.md` §1, §5, §6, `docs/RENAL_RESIDUAL.md`, `docs/EXTERNAL_BASELINE.md` |
+| **Renderer** | `src/figures/fig15_decision_map.py`: writes a self-contained HTML page (no external fonts, scripts or services; the JS draws the decision arrows and links each question to its node) and photographs it with Playwright (Edge or Chromium) at 2x |
+| **Output** | `figures/pub/fig15_decision_map.html` (interactive) + `figures/pub/fig15_decision_map.png` (3200 px wide) + thumbnail |
+| **Output SHA256** | `44cdcaa9fe63e5483bded63ed25b36096df452a4cbba6aa20a61c3dcbb70c618` (PNG) · `621cdb6a4d6fd7f3cbcab8c5e2503ca9119cbda9e5b5bd984c34cc815896d81c` (HTML) |
+| **source verification** | FAIL CLOSED: 24 fragments (outcomes, decisive observations and every Track 2 discard rule) must appear verbatim, after removing Markdown marks, in their source document, or the figure is not drawn. A presentation page cannot drift from the frozen narrative |
+| **n** | 6 Track 1 questions · 3 intervention arms plus the Safe Rescue Corridor |
+| **axes / units** | A: the order of decisions, drawn with real arrows (phase first; cis and trans branches; the arms; the corridor). B: question, decisive observation, both outcomes, what is needed. C: route, intervention hypothesis, what the experiment must measure, discard rule as written in Track 2, what is needed |
+| **statistic represented** | none; it is a plan |
+| **uncertainty represented?** | as content: every row has two outcomes or a discard rule |
+| **Claim ceiling** | *Each open question has a decisive experiment and a failure condition written before any experiment. Track 2 arms are preclinical hypotheses, for no patient.* |
+| **Forbidden inference** | that any experiment has been performed; that any arm is recommended for a patient; that the decision order is a clinical pathway |
+| **possible misleading interpretation** | that the Track 2 arms depend on phase to start: they can start now in engineered cells; phase decides whether they are relevant to this child, which is what the arrow label says |
+| **correction applied** | built at the leader's request with four changes to the draft: discard rules copied verbatim instead of paraphrased, both outcomes per question instead of a kill criterion alone, a "Needs" column separating what requires the family from what does not, and the decision order drawn as arrows rather than written with arrow characters |
+| **full-size render checked?** | yes. First built in matplotlib (two renders); rebuilt the same day as an HTML page at the user's request because the matplotlib table was hard to read: same content, same guards plus three more, Track 2 as a full-width row of four cards, outcomes split into their own label and text without changing a word |
 
 ---

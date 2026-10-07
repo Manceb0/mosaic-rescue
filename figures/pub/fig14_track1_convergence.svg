@@ -291,7 +291,7 @@ L 642.979259 369.138
     <text style="fill: #1a1a1a; font: 7.1px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(777.342222 545.124507)">+ rare missense VUS; phase unresolved</text>
    </g>
    <g id="text_36">
-    <text style="fill: #5b6670; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="583.416296" y="119.85" transform="rotate(-0 583.416296 119.85)">cheapest falsifier first: frequency → zygosity → mechanism → replication</text>
+    <text style="fill: #5b6670; font: 7.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="583.416296" y="119.85" transform="rotate(-0 583.416296 119.85)">cheapest falsifier first: frequency, then zygosity, mechanism and replication</text>
    </g>
    <g id="text_37">
     <text style="fill: #1a1a1a; font: 700 10.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="575.105185" y="92.162248" transform="rotate(-0 575.105185 92.162248)">C</text>

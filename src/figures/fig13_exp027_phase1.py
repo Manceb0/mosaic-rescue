@@ -197,7 +197,7 @@ def load_and_build():
     fig = plt.figure(figsize=(16, 9.2))
     gs = fig.add_gridspec(2, 3, width_ratios=[1.55, .95, 1.1], height_ratios=[1.12, 1],
                           left=.045, right=.985, top=.82, bottom=.10, wspace=.26, hspace=.36)
-    fig.suptitle("High sensitivity, failed calibration → patient test not performed",
+    fig.suptitle("High sensitivity, failed calibration: the patient test was not performed",
                  x=.045, y=.965, ha="left", fontsize=19, fontweight="bold", color=S.INK)
     fig.text(.045, .93, "The method detects a haplotype imbalance when we inject one, but on intact, unspiked benchmark "
              "data it lights up one window in four.\nA detector that fires without injected signal cannot be trusted on a "
@@ -220,7 +220,7 @@ def load_and_build():
     axD = fig.add_subplot(gs[1, 1:3])
     _gates(axD, rep)
     S.panel(axD, "D", dx=-.01)
-    S.head(axD, "Preregistered gates → patient")
+    S.head(axD, "Preregistered gates and the patient gate")
     S.note(fig, "Sources SHA256-checked: phase1_report.json 37e676ad… · post-hoc reproduction 923cfb32… "
            "(identical to the sealed report) · per-pair calls apr_map.csv 316f0cf7… (same seeds; 249/995) · "
            "plan_windows.json e3731d52….\nQQ envelope: 2 000 iid Uniform draws, seed 42, descriptive only (the 995 pairs share children, windows and pipeline, so they are not iid). APR is an operational "

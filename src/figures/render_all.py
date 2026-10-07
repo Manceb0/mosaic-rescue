@@ -136,6 +136,10 @@ def main():
     # Capa narrativa: síntesis verificadas contra sus fuentes, no resultados nuevos.
     from src.figures.story import render_all as render_story
     done.update(render_story())
+    # fig15 es una página HTML (las flechas las dibuja el JS); el PNG sale de una captura con Playwright.
+    # Sus 24 fragmentos se comprueban literalmente contra los informes antes de generar nada.
+    from src.figures.fig15_decision_map import render as render_fig15
+    done["fig15_decision_map"] = render_fig15()
     print(f"  {'figure':<40}{'FIGURE CLASS':<20}EVIDENCE ORIGIN")
     print("  " + "-" * 92)
     for slug, r in done.items():

@@ -339,6 +339,10 @@ cell fraction, a working rescue, or that the method generalises beyond this chil
 Phase comes first: it is the cheapest observation and it decides whether this pair can be the
 explanation at all. The full argument is in [Track 1 §7b](reports/TRACK1_REPORT.md).
 
+![Decision map: each open question with its decisive experiment, both outcomes, and the discard rule of each Track 2 arm as written in the report.](figures/pub/fig15_decision_map.png)
+
+*Every open question has a decisive experiment and a condition for failure written before any experiment. Phase comes first. The Track 2 arms can start in engineered cells without new patient material; phase decides whether they matter for this child. The discard rules are copied from the Track 2 report and checked verbatim when the figure is drawn. [Interactive version](figures/pub/fig15_decision_map.html).*
+
 **And when a secondary method failed validation, we did not use it on the child.** EXP-027
 asked whether haplotype-specific allelic imbalance could read a mosaic signal from blood. Before
 touching the patient, it was validated on 20 public 1000 Genomes trios under a frozen contract.
@@ -352,7 +356,7 @@ patient-negative result. [Result figure](figures/pub/fig13_exp027_phase1_result.
 
 | Decision we exposed | Why it matters |
 |---|---|
-| A0 #4 → A0-FREQFIX #1 | Shows exactly how missing frequency provenance changed the ranking |
+| A0 #4, then A0-FREQFIX #1 | Shows exactly how missing frequency provenance changed the ranking |
 | Published negative regulatory and structural results | Narrows the claim while preserving the limits of each assay |
 | Our original absolute-BAF explanation was falsified | A post-hoc ablation identified depth confounding; no detector superiority is claimed |
 | Evidence gaps and counter-evidence stay visible | A proposed drug mechanism cannot borrow certainty from genetic rescue in another system |
@@ -375,7 +379,7 @@ This map separates work already performed from the measurements still needed.
 | Process | What we learned / produced | What it does not settle | Inspect |
 |---|---|---|---|
 | **Data and alignment** | Initial read QC, full-depth BAM, reference and technical-concordance checks | Additional biological replication | [Data notebook](notebooks/00_DATA_REALITY.ipynb), [current report](reports/TRACK1_REPORT.md) |
-| **Broad search and ranking audit** | Frozen A0 #4 → later A0-FREQFIX #1; independent ranking method on the same VCF | Causality from a rank alone | [Genome-wide notebook](notebooks/01_TRACK1_GENOME_WIDE.ipynb) |
+| **Broad search and ranking audit** | Frozen A0 #4 and later A0-FREQFIX #1; an external ranking method on the same VCF | Causality from a rank alone | [Genome-wide notebook](notebooks/01_TRACK1_GENOME_WIDE.ipynb) |
 | **Phenotype comparison** | Disease-model comparison uses clinical terms; missing traits stay unknown | A missing annotation is not evidence that a trait is absent | [Residual phenotype notebook](notebooks/05_RESIDUAL_PHENOTYPE.ipynb) |
 | **Allele curation** | Truncating allele: research LP; missense: VUS; phase unresolved | A confirmed recessive diagnosis | [Curation notebook](notebooks/02_BUB1B_ALLELE_CURATION.ipynb) |
 | **Conservation and structure** | Evolutionary support for concern and structural hypotheses that can be challenged | A prediction is not a functional assay | [Mechanism notebook](notebooks/03_BUBR1_MECHANISM.ipynb) |

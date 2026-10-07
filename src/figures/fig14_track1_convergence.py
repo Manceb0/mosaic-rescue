@@ -6,8 +6,8 @@ Tres piezas, cada una con un trabajo:
   B · tablero de rankings: BUB1B y sus rivales en los 15 análisis congelados, en A0-FREQFIX y en Exomiser
       (método externo sobre el MISMO VCF: no es evidencia biológica independiente). Enseña el #4 del A0 congelado y por qué, sin esconderlo: regla
       del proyecto, los dos números van siempre juntos.
-  C · tablero de eliminación: cada competidor con el falsificador más barato que lo descartó (frecuencia →
-      cigosidad → mecanismo); HLA-DRB1 queda señalado como hipótesis de auditoría, no eliminado.
+  C · tablero de eliminación: cada competidor con el falsificador más barato que lo descartó (primero frecuencia,
+      luego cigosidad y mecanismo); HLA-DRB1 queda señalado como hipótesis de auditoría, no eliminado.
 Techo: candidato bialélico fuerte, NO diagnóstico (fase sin resolver).
 
 Fuentes, comprobadas por SHA256 antes de dibujar: work/gw/mode_b_results_v4.pkl (15 rankings congelados),
@@ -192,7 +192,7 @@ def _elimination(ax):
             ax.plot([.25, min(.35 + .155 * len(gene), 2.6)], [y + .85, y + .85], color=S.MUTED, lw=1.2)
         ax.text(3.55, y + .9, verdict, fontsize=7.6, fontweight="bold", color=gcol, va="center")
         ax.text(3.55, y + .4, why, fontsize=7.1, color=S.INK, va="center", linespacing=1.15)
-    ax.text(.05, len(cards) * 1.55 + .2, "cheapest falsifier first: frequency → zygosity → mechanism → replication",
+    ax.text(.05, len(cards) * 1.55 + .2, "cheapest falsifier first: frequency, then zygosity, mechanism and replication",
             fontsize=7.5, color=S.MUTED)
 
 

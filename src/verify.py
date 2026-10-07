@@ -242,8 +242,10 @@ def figure_qa_cards():
     documento. Una promesa que no verifica nadie deja de cumplirse sola.
     """
     import glob
-    slugs = sorted({os.path.basename(p)[:-4]
-                    for p in glob.glob(os.path.join(ROOT, "figures/pub/*.svg"))})
+    # fig15 es una pagina HTML (flechas dibujadas por JS), no un SVG de matplotlib: tambien necesita ficha.
+    slugs = sorted({os.path.splitext(os.path.basename(p))[0]
+                    for ext in ("svg", "html")
+                    for p in glob.glob(os.path.join(ROOT, f"figures/pub/*.{ext}"))})
     qa = io.open(os.path.join(ROOT, "PUBLICATION_FIGURE_QA.md"), encoding="utf-8").read()
     faltan = [s for s in slugs if s not in qa]
     if faltan:

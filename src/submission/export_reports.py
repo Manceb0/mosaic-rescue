@@ -9,9 +9,12 @@ POR QUE
     plantilla oficial de metodos (Excel) se pide "para organizar" ese informe, asi que sus
     respuestas tienen que viajar DENTRO del informe o el jurado no las ve. Este script:
 
-    1. lee las respuestas del Excel rellenado (work/submission/subir/<equipo>_methods_description.xlsx)
-       y las inserta como apendice en reports/TRACK{1,2}_REPORT.md, entre marcadores, de forma
-       idempotente;
+    1. el informe maestro manda: las respuestas viven en el apendice de reports/TRACK{1,2}_REPORT.md,
+       entre marcadores, y se ESCRIBEN en el Excel de entrega
+       (work/submission/subir/<equipo>_methods_description.xlsx), nunca al reves. Hasta 2026-10-07 el
+       sentido era Excel -> informe; con el apendice corregido despues (HLA-DRB1, Exomiser «externo»,
+       EXP-029), ejecutar el exportador antiguo habria revertido esas correcciones con el Excel del
+       26-sep. Una pregunta del Excel que no aparezca en el apendice detiene el proceso;
     2. escribe la copia Markdown de entrega con enlaces absolutos al repositorio;
     3. escribe un PDF con las figuras INCRUSTADAS, porque mientras el repositorio sea privado
        las imagenes enlazadas no se ven.
@@ -38,28 +41,26 @@ blockquote{border-left:3px solid #999;margin:6pt 0;padding:2pt 8pt;color:#444}im
 .q{font-weight:600;margin-top:10pt}"""
 
 
-def form_appendix(sheet: str, rows) -> str:
-    import openpyxl
-    ws = openpyxl.load_workbook(XLSX)[sheet]
-    out = [START, "", "## Appendix · Methods description (official hackathon form)", "",
-           "Answers to the organisers' methods-description template, reproduced here because the "
-           "submission accepts a single report file.", ""]
+def appendix_answers(md: str) -> dict:
+    """Pregunta -> respuesta, leidas del apendice del informe maestro (entre START y END)."""
+    block = md[md.index(START):md.index(END)]
+    parts = re.split(r"^\*\*(.+?)\*\*\s*$", block, flags=re.M)
+    return {q.strip(): a.strip() for q, a in zip(parts[1::2], parts[2::2])}
+
+
+def write_form(wb, sheet: str, rows, answers: dict) -> int:
+    """Escribe en el Excel las respuestas del informe; falla si una pregunta no tiene respuesta."""
+    ws, n = wb[sheet], 0
     for r in rows:
-        q, a = ws.cell(r, 1).value, ws.cell(r, 2).value
+        q = ws.cell(r, 1).value
         if not q:
             continue
-        out += [f"**{str(q).strip()}**", "", str(a or "_(not answered)_").strip(), ""]
-    return "\n".join(out + [END])
-
-
-def upsert(path: str, block: str) -> str:
-    s = open(path, encoding="utf-8").read()
-    if START in s:
-        s = s[:s.index(START)] + block + s[s.index(END) + len(END):]
-    else:
-        s = s.rstrip() + "\n\n" + block + "\n"
-    open(path, "w", encoding="utf-8").write(s)
-    return s
+        key = str(q).strip()
+        if key not in answers:
+            raise SystemExit(f"{sheet}: la pregunta de la fila {r} no esta en el apendice del informe: {key[:60]}")
+        ws.cell(r, 2).value = answers[key]
+        n += 1
+    return n
 
 
 def absolute_links(md: str) -> str:
@@ -103,16 +104,32 @@ def to_pdf(md: str, pdf: str, title: str):
 
 
 def main() -> int:
-    assert os.path.exists(XLSX), f"falta el formulario rellenado: {XLSX}"
+    import openpyxl
+    assert os.path.exists(XLSX), f"falta la plantilla del formulario: {XLSX}"
+    wb = openpyxl.load_workbook(XLSX)
+    try:
+        import markdown  # noqa: F401  (solo para el PDF)
+        pdf_ok = True
+    except ImportError:
+        pdf_ok = False
+        print("AVISO: falta el paquete `markdown`; se escriben .md y .xlsx, NO el .pdf")
     for n, (src, sheet, rows) in REPORTS.items():
-        md = upsert(src, form_appendix(sheet, rows))
+        md = open(src, encoding="utf-8").read()
+        k = write_form(wb, sheet, rows, appendix_answers(md))
         stem = os.path.join(OUT, f"{TEAM}_track{n}_report")
         open(stem + ".md", "w", encoding="utf-8", newline="\n").write(absolute_links(md))
-        to_pdf(local_images(md, os.path.dirname(src)), stem + ".pdf", f"MOSAIC RESCUE · Track {n} report")
-        for ext in (".md", ".pdf"):
+        exts = [".md"]
+        if pdf_ok:
+            to_pdf(local_images(md, os.path.dirname(src)), stem + ".pdf", f"MOSAIC RESCUE · Track {n} report")
+            exts.append(".pdf")
+        for ext in exts:
             if EXTRA_OUT:
                 shutil.copy(stem + ext, EXTRA_OUT)
-        print(f"track {n}: apendice del formulario insertado en {src}; {stem}.md y .pdf escritos")
+        print(f"track {n}: {k} respuestas del apendice de {src} escritas en el Excel; "
+              f"{', '.join(stem + e for e in exts)}")
+    wb.save(XLSX)
+    if EXTRA_OUT:
+        shutil.copy(XLSX, EXTRA_OUT)
     return 0
 
 

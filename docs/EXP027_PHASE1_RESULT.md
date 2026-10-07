@@ -153,12 +153,14 @@ valida la fase, no esta calibración (PMID 37386248).
 | `work/exp027/validation_r2/VALIDATION.json` (A′) | `2046f8dabd75f7f73882e1fe155d635c343122c53f17c66c8a6b38585577df52` |
 
 Los dos SHA de `fig13` de la tabla son los de la versión **sellada** en el tag `exp027-phase1-result-r2-fail`.
-**Re-render posterior (2026-10-07), solo de redacción, tras revisión del líder:** «healthy data» → «intact, unspiked
-benchmark data»; «fires without signal» → «fires without injected signal»; «the null is broken» → «the null is
+**Re-render posterior (2026-10-07), solo de redacción, tras revisión del líder:** «healthy data» pasa a ser «intact,
+unspiked benchmark data»; «fires without signal», «fires without injected signal»; «the null is broken», «the null is
 miscalibrated on the benchmark»; la banda del QQ pasa a «iid Uniform reference envelope (95 %, descriptive)», porque los
-995 pares comparten hijos, ventanas y pipeline y no son iid. Mismas fuentes, mismos SHA de entrada, mismos números.
-SHA del re-render: SVG `2e87124546f97899b5b7b0cd54e739ef94dc96e85edae35cff7220dcef4a8bba` · PNG
-`f99f359c999599735696bfcb0d0528c9c4b116a6957e801ebd24eae76010b328`. El resultado sellado no se toca.
+995 pares comparten hijos, ventanas y pipeline y no son iid. El titular deja el carácter de flecha y dice «High
+sensitivity, failed calibration: the patient test was not performed». Mismas fuentes, mismos SHA de entrada, mismos
+números.
+SHA del re-render: SVG `5c138b0226769ae99d5d3e449f33c44b155799f9ccbddd4fd346b8f88965e8bd` · PNG
+`3f0a21ee0044a612f775c0358d365e75937720d087409b3c02538fc7b775e716`. El resultado sellado no se toca.
 
 Figura: [`figures/pub/fig13_exp027_phase1_result.svg`](../figures/pub/fig13_exp027_phase1_result.svg),
 ficha en `PUBLICATION_FIGURE_QA.md`.

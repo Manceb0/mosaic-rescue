@@ -97,7 +97,7 @@ invented to make an attractive bubble chart.
 |---|---|---|
 | ISM / sensitive regions | Full matrix and reference contributions | Model attribution, not a functional assay |
 | Chromatin contact maps | REF/ALT/Δ and biosample context | Not the patient's Hi-C |
-| Variants → functional effect | Genome browser, tracks, structure and conservation | Phase and missense function unresolved |
+| From variants to functional effect | Genome browser, tracks, structure and conservation | Phase and missense function unresolved |
 | Chromosomal mosaic | Measured RD/BAF + explicit simulation | No observed cell × chromosome matrix |
 | Subpopulations / resistant cells | No invented cell atlas is presented | Requires cell-level data and state/viability measures |
 | Rescue map | Evidence matrix and experimental portfolio | No measured efficacy/safety coordinates for the drugs |

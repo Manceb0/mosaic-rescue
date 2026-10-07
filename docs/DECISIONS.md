@@ -2978,3 +2978,36 @@ demostrado que sea incompatible con MVA1 (la compilación reporta disfunción re
 Estado del líder: Track 1 APROBADO · Track 2 APROBADO · EXP-027 sellado y cerrado · `research_story.html`
 alineado. **La narrativa científica queda congelada**: solo se reabre ante una contradicción nueva. El trabajo
 siguiente es presentación, claridad visual y preparación de preguntas del jurado.
+
+### Pase final de entrega · paquete sincronizado con los maestros (2026-10-07)
+
+Sin cambios científicos. (1) CSV de Track 1 regenerado y validado: idéntico byte a byte al de la carpeta de
+entrega. (2) El exportador `src/submission/export_reports.py` invierte su sentido: el apéndice del informe
+maestro manda y se escribe en el Excel del formulario; antes copiaba Excel → informe y, con el Excel del 26-sep,
+habría revertido las correcciones de HLA-DRB1, «método externo» y EXP-029 (tests en
+`tests/test_export_reports.py`). (3) Dos contradicciones del apéndice con su propio informe, corregidas: Track 1
+decía «an independent tool (Exomiser)»; el abstract de Track 2 decía en categórico «the lever is protein dose and
+stability» y omitía «weakened by EXP-029»; ahora abre con el rescate de checkpoint y su techo. (4) «13 216
+alleles» queda conciliado: es «unique alleles with a genotype» del notebook 01 ejecutado. (5)
+`docs/TRACK_DELIVERABLES.md` pasa a FINAL SUBMISSION READINESS con los pasos que quedan (PDF, cita del dataset,
+confirmación de la declaración de IA, revisión de privacidad, vídeo, subida y comprobante).
+
+### Mapa de decisiones (fig15) y limpieza de flechas (2026-10-07)
+
+Pedido del líder: una página donde cada pregunta abierta tenga su experimento decisivo y su condición de fracaso.
+Se construye `fig15_decision_map` (SYNTHESIS, sin resultado nuevo) con cuatro cambios sobre su borrador: las reglas
+de descarte de Track 2 se copian literales del informe en lugar de parafrasearse (su paráfrasis de arimoclomol y
+sirolimus decía otra cosa que el informe); cada pregunta lleva sus dos desenlaces y no solo el criterio de muerte;
+una columna «Needs» separa lo que requiere a la familia de lo que no (los tres brazos y el ensayo del missense
+pueden empezar ya en células editadas); y el orden de decisiones se dibuja con flechas reales. El renderizador
+comprueba 21 fragmentos literales contra sus documentos de origen y no dibuja si alguno cambió.
+
+A petición del usuario, los textos que ve el jurado dejan de usar el carácter de flecha como atajo (README, Track 1,
+Track 2, atlas, lista de entrega, fig13 y fig14): se reescriben con palabras, sin cambiar ningún contenido. El
+titular de fig13 pasa a «High sensitivity, failed calibration: the patient test was not performed».
+
+**fig15 rehecha como página HTML (2026-10-07).** A petición del usuario, la versión matplotlib se sustituye por una
+página HTML autocontenida (sin fuentes, scripts ni servicios externos) que genera el mismo módulo: el JS dibuja las
+flechas del orden de decisiones y enlaza cada pregunta con su nodo; Playwright la fotografía a 2x para el PNG. Mismo
+contenido y mismas guardias, más tres (24 en total). `verify.py` exige ficha QA también a las figuras HTML. El SVG
+antiguo se apartó a `Downloads\_PARA_BORRAR`.

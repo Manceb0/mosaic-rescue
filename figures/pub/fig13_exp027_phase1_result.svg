@@ -12172,11 +12172,11 @@ z
     <text style="fill: #1a1a1a; font: 700 10.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="523.133782" y="394.74793" transform="rotate(-0 523.133782 394.74793)">D</text>
    </g>
    <g id="text_112">
-    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="529.189091" y="401.510815" transform="rotate(-0 529.189091 401.510815)">Preregistered gates → patient</text>
+    <text style="fill: #1a1a1a; font: 8.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="529.189091" y="401.510815" transform="rotate(-0 529.189091 401.510815)">Preregistered gates and the patient gate</text>
    </g>
   </g>
   <g id="text_113">
-   <text style="fill: #1a1a1a; font: 700 19px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="51.84" y="37.621031" transform="rotate(-0 51.84 37.621031)">High sensitivity, failed calibration → patient test not performed</text>
+   <text style="fill: #1a1a1a; font: 700 19px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="51.84" y="37.621031" transform="rotate(-0 51.84 37.621031)">High sensitivity, failed calibration: the patient test was not performed</text>
   </g>
   <g id="text_114">
    <text style="fill: #5b6670; font: 11px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(51.84 54.726281)">The method detects a haplotype imbalance when we inject one, but on intact, unspiked benchmark data it lights up one window in four.</text>
