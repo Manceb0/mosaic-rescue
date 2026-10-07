@@ -33,12 +33,28 @@ START, END = "<!-- methods-form:start -->", "<!-- methods-form:end -->"
 REPORTS = {1: ("reports/TRACK1_REPORT.md", "Track 1 methods", range(7, 20)),
            2: ("reports/TRACK2_REPORT.md", "Track 2 methods", range(7, 18))}
 
-CSS = """body{font-family:'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1b1b1b;max-width:180mm;margin:auto}
-h1{font-size:20pt;margin-bottom:2pt}h2{font-size:14pt;border-bottom:1px solid #ccc;padding-bottom:2pt;margin-top:18pt}h3{font-size:12pt}
-table{border-collapse:collapse;width:100%;font-size:9pt;margin:8pt 0}th,td{border:1px solid #bbb;padding:3pt 5pt;vertical-align:top}th{background:#f1f1f1}
-code{font-family:Consolas,monospace;font-size:9pt;background:#f4f4f4;padding:0 2pt}pre{background:#f4f4f4;padding:6pt;font-size:8.5pt;white-space:pre-wrap}
-blockquote{border-left:3px solid #999;margin:6pt 0;padding:2pt 8pt;color:#444}img{max-width:100%;display:block;margin:8pt auto}a{color:#1a4f8b}
-.q{font-weight:600;margin-top:10pt}"""
+CSS = """body{font-family:Cambria,Georgia,'Times New Roman',serif;font-size:10.5pt;line-height:1.5;color:#111;
+  max-width:170mm;margin:auto}
+h1{font-size:19pt;font-weight:700;margin:0 0 4pt}h2{font-size:12.5pt;font-weight:700;margin:16pt 0 4pt}
+h3{font-size:11pt;font-weight:700;font-style:italic;margin:12pt 0 3pt}
+p{margin:0 0 7pt;text-align:justify;hyphens:auto}li{margin:0 0 3pt}
+table{border-collapse:collapse;width:100%;font-size:9pt;line-height:1.35;margin:8pt 0 10pt;
+  border-top:1.2pt solid #111;border-bottom:1.2pt solid #111}
+th{font-weight:700;text-align:left;border-bottom:.6pt solid #111;padding:3pt 6pt;vertical-align:bottom}
+td{padding:3pt 6pt;vertical-align:top;border:none}
+code{font-family:inherit;font-size:inherit;background:none;padding:0}
+pre{font-family:Consolas,'Courier New',monospace;font-size:8.5pt;margin:4pt 0 8pt 12pt;white-space:pre-wrap}
+pre code{font-family:inherit}
+blockquote{margin:6pt 18pt;padding:0;color:#333;font-style:italic}
+img{max-width:100%;display:block;margin:8pt auto}a{color:#1d3f6e;text-decoration:none}hr{display:none}
+h1,h2,h3{break-after:avoid}
+img,tr,blockquote,pre{break-inside:avoid}
+p:has(+ table),p:has(+ p > img){break-after:avoid}
+thead:not(:has(th:not(:empty))){display:none}"""
+# Formato de artículo, no de interfaz (2026-10-07, a petición del usuario): texto con serifa, títulos sin subrayar,
+# tablas de tres rayas sin rejilla ni fondos, nombres y rutas sin «fichas» grises, sin reglas horizontales. Las
+# últimas cuatro reglas vienen de revisar los PDF a ojo: un título solo al pie de página con su figura en la
+# siguiente, una frase separada de su tabla y una fila de cabecera vacía en las tablas de dos columnas.
 
 
 def appendix_answers(md: str) -> dict:
@@ -85,6 +101,8 @@ def local_images(md: str, base: str) -> str:
 
 def to_pdf(md: str, pdf: str, title: str):
     import markdown
+    # «6 321» no debe partirse al final de una línea: espacio que no se rompe entre grupos de miles.
+    md = re.sub(r"(?<=\d) (?=\d{3}(?!\d))", " ", md)
     from playwright.sync_api import sync_playwright
     html = f"<!doctype html><html><head><meta charset='utf-8'><title>{title}</title><style>{CSS}</style></head><body>" \
            + markdown.markdown(md, extensions=["tables", "fenced_code"]) + "</body></html>"
@@ -98,7 +116,7 @@ def to_pdf(md: str, pdf: str, title: str):
         pg.pdf(path=pdf, format="A4", margin={"top": "16mm", "bottom": "16mm", "left": "14mm", "right": "14mm"},
                print_background=True, display_header_footer=True, header_template="<span></span>",
                footer_template="<div style='font-size:8px;width:100%;text-align:center;color:#777'>"
-                               f"{title} · <span class='pageNumber'></span>/<span class='totalPages'></span></div>")
+                               f"{title}, page <span class='pageNumber'></span> of <span class='totalPages'></span></div>")
         b.close()
     tmp.unlink()
 
@@ -120,7 +138,7 @@ def main() -> int:
         open(stem + ".md", "w", encoding="utf-8", newline="\n").write(absolute_links(md))
         exts = [".md"]
         if pdf_ok:
-            to_pdf(local_images(md, os.path.dirname(src)), stem + ".pdf", f"MOSAIC RESCUE · Track {n} report")
+            to_pdf(local_images(md, os.path.dirname(src)), stem + ".pdf", f"MOSAIC RESCUE, Track {n} report")
             exts.append(".pdf")
         for ext in exts:
             if EXTRA_OUT:

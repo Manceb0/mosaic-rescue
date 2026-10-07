@@ -3,7 +3,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "e52c57db20a8f28624782c2763b91bdf32bb56d73af8b10df8e9fd5966950b45"
+      "sha256": "7d4a39cf194e99f9953fb1d35d73ae38d5f6b7302d89130cf9ce820e7b26cdee"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -15,7 +15,7 @@
     },
     {
       "path": "reports/TRACK1_REPORT.md",
-      "sha256": "53d48f134d7982c9c83482ef93937e14584c919688adfa93e87a2339ebf21baa"
+      "sha256": "391a914d8f5357cc7ec596ff83bd3cb5118c4ce6bc09665cde4e00c5cf41f2f5"
     },
     {
       "path": "research/track2_evidence.tsv",
@@ -33,7 +33,7 @@
   "base_commit": "8d2383abcc8a0dfc78512bb301feceabe89bb123",
   "source_state": "Reviewed working-tree sources, identified by content hashes; no new scientific run",
   "renderer": "src/figures/story.py",
-  "renderer_sha256": "1bf825a2d5306f9150ff677fe1aae5d3126ac0d28211d686bb8c63ab807fddd9",
+  "renderer_sha256": "c31e46d08738d01a73bdf54e73f6ba035a730f78c17d6fa646e30ee5b1bafa38",
   "figures": [
     {
       "figure_id": "story00_overview",
@@ -83,12 +83,12 @@
       "figure_id": "story10_mechanism",
       "classification": "SYNTHESIS",
       "evidence_mode": "DERIVED+EXTERNAL",
-      "claim_ceiling": "Correct the defect — or merely help cells tolerate it?",
+      "claim_ceiling": "Correct the defect, or merely help cells tolerate it?",
       "forbidden_inference": "Patient RNA/protein/phase measured, diagnosis or therapeutic rescue established",
       "output_svg": "figures/pub\\story10_mechanism.svg",
-      "output_sha256": "427043f99b4ce49f48d1f96dff96c7bf08199c6bdc1324c0ff289637d1f4559c",
+      "output_sha256": "9479d0b6842a359f58745335d2349c1aa86730053c04f4540a1818c7e8d3f72d",
       "output_png": "figures/pub\\story10_mechanism.png",
-      "png_sha256": "b95e9abac7ab87bc72c24c33ecfffe9d0670bdcd899c379168e2246862a1d4c1"
+      "png_sha256": "6d6717791365439ee4272c19392cda72c6a263feb97bdfd710518b3170e21cfd"
     },
     {
       "figure_id": "story12_safety_gates",

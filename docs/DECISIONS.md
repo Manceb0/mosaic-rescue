@@ -3035,3 +3035,24 @@ sus endpoints preregistrados y el negativo ya no suena a normalidad universal. �
 «a reported biallelic MVA1 pattern» en la figura y en todos los textos del jurado (README, Track 1, guion). El
 subtítulo dice que Track 1 necesita datos nuevos o una auditoría ortogonal, lo que incluye la de HLA-DRB1 sobre el
 alineamiento existente.
+
+**PDF de entrega generados y revisados (2026-10-07).** Con el visto bueno del líder se instala `markdown` 3.11 en
+`.venv` (fijado en `requirements.txt`). Los dos PDF se revisan página a página. Se corrigen cuatro defectos de
+maquetación desde la hoja de estilo del exportador y la cabecera de los informes: un título solo al pie de página con
+su figura en la siguiente, una frase separada de su tabla, una fila de cabecera gris vacía en las tablas de dos
+columnas y dos líneas de cabecera fundidas. El aparente tachado de «not» en una cabecera de Track 2 era negrita dentro
+de negrita, comprobado a 3x. Track 2 no incrusta ninguna figura, solo las enlaza.
+
+**Formato de los informes de entrega (2026-10-07).** A petición del usuario, los PDF dejan el aspecto de interfaz y
+pasan a formato de artículo: sin regla horizontal en la cabecera, títulos numerados sencillos («1. Summary») sin «·»
+ni guiones largos, texto con serifa, títulos sin subrayar, tablas de tres rayas sin rejilla ni fondos, nombres y rutas
+sin fichas grises y números de miles que no se parten. Las dos figuras tipo panel que Track 1 incrustaba (story03 y
+story13) salen del informe, porque su contenido ya está en las tablas de §7 y §7b. En el cuerpo de los dos informes
+se quitan los punto y coma, guiones largos y «·» (unas 120 líneas, solo puntuación, ninguna idea cambia, y las frases
+que quedaban cortadas se rehacen a mano).
+
+**Guion largo fuera de todo lo que ve el jurado (2026-10-07).** El usuario lo considera la marca más visible de texto
+generado. Se quita del README, de `docs/EXTERNAL_BASELINE.md`, de `docs/PHENOTYPE_RESIDUAL_AUDIT.md`, del documento
+de EXP-027 y del título de la figura story10 («Correct the defect, or merely help cells tolerate it?»), con coma, dos
+puntos o paréntesis según el caso, y los incisos en español se reescriben a mano. story10 deja de ser idéntica byte a
+byte a su versión anterior por ese único cambio de título. El resto de figuras story se re-renderiza idéntico.

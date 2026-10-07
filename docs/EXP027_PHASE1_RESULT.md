@@ -110,7 +110,7 @@ los datos reales intactos (25,0 %) tienen estructura que ese modelo no recoge.
 | Sensibilidad, fase inferida | 0,047 | 0,762 | 0,902 | 0,943 | 0,952 | 0,960 |
 | Sensibilidad, fase mendeliana | 0,056 | 0,975 | 1,000 | 1,000 | 1,000 | 1,000 |
 
-## POST-HOC DIAGNOSTIC — NOT USED FOR ADJUDICATION
+## POST-HOC DIAGNOSTIC: NOT USED FOR ADJUDICATION
 
 Mapa de los 995 pares evaluables (`work/exp027/posthoc/apr_map.csv`); nivel de evidencia **L1**
 (asociación). No cambia el FAIL y no puede rescatar A1.

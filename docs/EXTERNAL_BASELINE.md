@@ -1,7 +1,7 @@
-# EXP-006b · Baseline externo — método independiente sobre el mismo VCF
+# EXP-006b. Baseline externo: método independiente sobre el mismo VCF
 
-> **`EXTERNAL`** — Exomiser 14.1.0 con datos `2402_hg38` + `2402_phenotype` y su propia base
-> de conocimiento. **`DERIVED`** — la comparación con nuestro ranking, calculada aquí.
+> **`EXTERNAL`**: Exomiser 14.1.0 con datos `2402_hg38` + `2402_phenotype` y su propia base
+> de conocimiento. **`DERIVED`**: la comparación con nuestro ranking, calculada aquí.
 >
 > Preregistro y umbral de lectura en `docs/DECISIONS.md`, ambos escritos **antes** de ejecutar.
 >
@@ -16,7 +16,7 @@ quince análisis comparten código, así que no son quince comprobaciones indepe
 Exomiser no comparte con nosotros ni el ranking, ni la métrica semántica, ni la base de
 conocimiento.
 
-> ### Qué tipo de evidencia es esto — congelado antes de que se infle
+> ### Qué tipo de evidencia es esto, congelado antes de que se infle
 >
 > **`Convergencia metodológica sobre el MISMO VCF del paciente.`**
 >
@@ -25,10 +25,10 @@ conocimiento.
 > es el **método**: la lógica de priorización, el emparejamiento fenotípico y la base de
 > conocimiento.
 >
-> Un artefacto compartido del VCF los engañaría a los dos a la vez —y de hecho **ocurrió**:
+> Un artefacto compartido del VCF los engañaría a los dos a la vez, y de hecho **ocurrió**:
 > ambos señalan `SERPINA1`. Esa es la demostración de que este límite es real, no retórico.
 
-## Independencia — lo que se le pasó y lo que no
+## Independencia, lo que se le pasó y lo que no
 
 | Se le dio | **No** se le dio |
 |---|---|
@@ -57,7 +57,7 @@ el de mayor puntuación.
 | `BASELINE-FH` | **2 / 398** | 0,9494 | AR | **Convergencia independiente (top 10)** |
 
 Nuestro `B0_FULL_PROBAND` lo pone #1. Dos motores sin código común coinciden en el mismo gen
-y —esto no estaba preregistrado pero es la parte más informativa— **en el mismo modelo de
+y (esto no estaba preregistrado, pero es la parte más informativa) **en el mismo modelo de
 herencia**, que es el que nuestro análisis había etiquetado `CANDIDATE_COMPATIBLE` para
 OMIM:257300.
 
@@ -68,7 +68,7 @@ fila por gen **y modo de herencia**, y son 398 genes únicos. Con el conteo por 
 `BUB1B` y `ADAMTS1` aparecían dos veces en el top-10 y el solapamiento contaba genes
 repetidos. Corregido en `compare_baseline.py`.
 
-## El #1 no es lo que parece — y el #2 sí
+## El #1 no es lo que parece, y el #2 sí
 
 `HLA-DRB1` queda por encima. Antes de aceptarlo o descartarlo, se miró **qué evidencia
 sostiene a cada gen del top-10**:
@@ -95,10 +95,10 @@ poblacional y hay aserciones patogénicas en ClinVar.** Los que lo rodean son ac
 > poblacional» también puede significar «variante genuinamente nueva».
 >
 > Lo único que se afirma: **el perfil de evidencia de `BUB1B` es de otra clase** que el de los
-> genes que lo rodean —pocas variantes, todas con frecuencia asignable, dos con asersión
-> patogénica—. Llamar «artefactos» a los demás exigiría la auditoría que aún no se ha hecho.
+> genes que lo rodean (pocas variantes, todas con frecuencia asignable, dos con asersión
+> patogénica). Llamar «artefactos» a los demás exigiría la auditoría que aún no se ha hecho.
 
-### `SERPINA1`: los dos motores convergen — sobre la misma peculiaridad de los datos
+### `SERPINA1`: los dos motores convergen, sobre la misma peculiaridad de los datos
 
 `SERPINA1` sale #6 aquí con **52 variantes**, 32 sin frecuencia. Nuestro propio pipeline ya lo
 había marcado: 33 variantes fasadas que colapsan en un único evento haplotípico local.
@@ -113,11 +113,11 @@ segunda evidencia independiente**.
 
 ### `FANCD2` sí entra en el camino crítico
 
-**Puesto 4, modelo recesivo, 4 variantes — pero las cuatro sin frecuencia poblacional.**
+**Puesto 4, modelo recesivo, 4 variantes, pero las cuatro sin frecuencia poblacional.**
 
 No se descarta, por dos razones. Primera, el perfil es sospechoso pero no concluyente.
 Segunda, y más importante: **`FANCD2` es mecanísticamente adyacente al caso**. Es la vía de
-anemia de Fanconi —inestabilidad cromosómica, fallo de crecimiento, predisposición tumoral—,
+anemia de Fanconi (inestabilidad cromosómica, fallo de crecimiento, predisposición tumoral),
 que solapa con MVA tanto en fenotipo como en mecanismo. Descartarlo por incómodo sería
 exactamente el sesgo que el baseline existe para detectar.
 
@@ -131,8 +131,8 @@ exactamente el sesgo que el baseline existe para detectar.
 `LZTR1`.
 
 Un solapamiento del 30 % es **modesto, y hay que decirlo así**. Los dos motores coinciden
-fuertemente en `BUB1B` y poco en el resto. Eso es esperable —los alcances y los filtros
-difieren— pero significa que la convergencia es **sobre el candidato principal**, no sobre el
+fuertemente en `BUB1B` y poco en el resto. Eso es esperable, porque los alcances y los filtros
+difieren, pero significa que la convergencia es **sobre el candidato principal**, no sobre el
 ranking entero.
 
 Genes del top-10 externo fuera de nuestro top-50: `HLA-DRB1`, `FANCD2`, `HLA-DQA1`, `ARL9`,
@@ -147,8 +147,8 @@ Genes del top-10 externo fuera de nuestro top-50: `HLA-DRB1`, `FANCD2`, `HLA-DQA
 | Efecto | HIGH + MODERATE | preset de exoma, sin UTR/intrón/regulador |
 | Tras filtros | 6 321 genes | 398 genes / 835 variantes |
 
-El preset de exoma se eligió porque corresponde al alcance que declaramos en EXP-006 —pasada
-codificante y de splicing—, no al genoma regulador. Usar el preset de genoma habría comparado
+El preset de exoma se eligió porque corresponde al alcance que declaramos en EXP-006 (pasada
+codificante y de splicing), no al genoma regulador. Usar el preset de genoma habría comparado
 alcances distintos.
 
 ## Coste real, para el registro
@@ -166,9 +166,9 @@ del límite declarado.
 
 | | |
 |---|---|
-| **Estado** | **SURVIVES** — convergencia independiente confirmada |
+| **Estado** | **SURVIVES**: convergencia independiente confirmada |
 | Qué sostiene | **Convergencia metodológica**: un motor sin código común, partiendo del mismo VCF y de los mismos 7 términos, sitúa `BUB1B` en el puesto 2 de 398 bajo modelo recesivo, y es el único del top 6 con perfil de evidencia limpio. |
-| Qué NO sostiene | **Que sea evidencia biológica independiente** — ambos motores leen el mismo VCF. Que la variante sea patogénica; que la fase esté resuelta; que el ranking entero converja (solapamiento 30 %). |
+| Qué NO sostiene | **Que sea evidencia biológica independiente**: ambos motores leen el mismo VCF. Que la variante sea patogénica; que la fase esté resuelta; que el ranking entero converja (solapamiento 30 %). |
 | Efecto en ACMG | **Ninguno.** |
 | Nuevas ramas abiertas | `FANCD2` como hipótesis competidora mecanísticamente plausible. |
 | Pendiente para cerrar el bloque | `notebooks/03_TRACK1_GENOME_WIDE.ipynb` que reproduzca EXP-006 desde las entradas, y regenerar la Figura 6 desde ahí. |
@@ -177,6 +177,6 @@ del límite declarado.
 
 ## Nivel de evidencia
 
-`L2` — apoyo ortogonal. Comprobación independiente que concuerda con nuestro resultado,
+`L2`: apoyo ortogonal. Comprobación independiente que concuerda con nuestro resultado,
 producida por un motor que no comparte lógica de priorización. No es `L3`: no hay ensayo
 funcional.

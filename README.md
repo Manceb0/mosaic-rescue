@@ -43,13 +43,13 @@ child (EXP-027).
 
 ## Results and deliverables by track
 
-### Track 1 — the leading causal hypothesis is BUB1B
+### Track 1: the leading causal hypothesis is BUB1B
 
 **Result:** among 6 321 genes, with no panel, `BUB1B` ranks **#1 in 14 of 15** sensitivity analyses of the same genome. The frozen A0 rank is **#4** and the frequency-corrected sensitivity **#1**, always reported together; Exomiser, an external method on the same VCF, ranks it **#2 of 398 genes**. The truncating allele is research Likely Pathogenic; the missense remains **VUS**, with **phase unresolved**. The scoped structural search found no overlapping RD+BAF CNV or mobile-element call in BUB1B; a complex insertion remains possible. **This is a prioritized hypothesis, not a confirmed diagnosis.**
 
 **Deliverables:** [causal report](reports/TRACK1_REPORT.md), [ranking](notebooks/01_TRACK1_GENOME_WIDE.ipynb), [allele curation](notebooks/02_BUB1B_ALLELE_CURATION.ipynb), and a two-row prediction CSV in ignored local storage. The [CSV generator](src/submission/track1_csv.py) preserves the method without publishing patient coordinates. Its older rationale and the packaged report need a final consistency review. Local ranks are not official leaderboard scores.
 
-### Track 2 — a falsifiable preclinical portfolio
+### Track 2: a falsifiable preclinical portfolio
 
 | Proposed arm | Role | What would reject the proposed route |
 |---|---|---|
@@ -112,7 +112,7 @@ It describes aggregate RD/BAF. A cell-by-chromosome mosaic heatmap would require
 cell-resolved observations that are not available here; it cannot be reconstructed
 by relabelling these averages as cells. [Simulation and its falsification](docs/SCIENTIFIC_ATLAS.md#5--mosaicism-what-was-observed-and-what-was-simulated).
 
-### Where does the rescue argument have evidence—and where does it break?
+### Where does the rescue argument have evidence, and where does it break?
 
 [![Eight biological bridges by ten evidence dimensions, with sourced categorical evidence and explicit empty cells.](figures/pub/fig07_track2_evidence_matrix.svg)](figures/pub/fig07_track2_evidence_matrix.svg)
 
@@ -275,9 +275,9 @@ roles; the order below is not a ranking or an administration recommendation.
 
 | Arm | Question | Crucial gap / rejection condition |
 |---|---|---|
-| **Azithromycin — allele-directed hypothesis** | Could readthrough restore useful full-length protein? | **Computationally weakened by EXP-029, not eliminated:** the stop context scores in the lower tercile under a G418-trained model and the three preregistered UGA products supported by external experimental systems (R/W/C) do not restore the wild-type residue. No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
-| **Arimoclomol — falsification sentinel** | Does pharmacological co-induction actually engage the intended stress-response mechanism? | External counter-evidence; no engagement despite an informative positive control would reject the proposed pharmacological bridge in that system |
-| **Sirolimus — adversarial comparator** | Could apparent benefit reflect tolerance of instability? | Improved clonogenic survival of unstable cells is a veto; this arm is not a therapeutic nominee |
+| **Azithromycin, allele-directed hypothesis** | Could readthrough restore useful full-length protein? | **Computationally weakened by EXP-029, not eliminated:** the stop context scores in the lower tercile under a G418-trained model and the three preregistered UGA products supported by external experimental systems (R/W/C) do not restore the wild-type residue. No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
+| **Arimoclomol, falsification sentinel** | Does pharmacological co-induction actually engage the intended stress-response mechanism? | External counter-evidence; no engagement despite an informative positive control would reject the proposed pharmacological bridge in that system |
+| **Sirolimus, adversarial comparator** | Could apparent benefit reflect tolerance of instability? | Improved clonogenic survival of unstable cells is a veto; this arm is not a therapeutic nominee |
 
 The [evidence matrix](figures/pub/fig07_track2_evidence_matrix.svg) retains **8 bridges ×
 10 evidence dimensions**. **61 of 80 cells are empty in the bounded search**. An empty
@@ -393,7 +393,7 @@ This map separates work already performed from the measurements still needed.
 | **Falsification and delivery** | Explicit rejection conditions, source hashes, executable checks, two reports | Completion of proposed assays or submission | [Decision record](docs/DECISIONS.md), [judge path](docs/JUDGE_PATH.md) |
 
 <details>
-<summary><strong>One-page scientific overview</strong> — the same route with explicit evidence limits</summary>
+<summary><strong>One-page scientific overview</strong>: the same route with explicit evidence limits</summary>
 
 ![Scientific synthesis of the research route, separating the observed genome from proposed functional and safety experiments.](figures/pub/story00_overview.svg)
 

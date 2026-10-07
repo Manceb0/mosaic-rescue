@@ -14,7 +14,7 @@
 ## La trampa que este experimento existe para evitar
 
 El modo B midió que varios rasgos del paciente **aportan poco soporte semántico** al modelo
-MVA anotado. La lectura tentadora —y equivocada— sería: *MVA no explica esos rasgos, luego hay
+MVA anotado. La lectura tentadora, y equivocada, sería: *MVA no explica esos rasgos, luego hay
 un segundo diagnóstico*.
 
 **El brief advierte exactamente de esto:** el retraso de crecimiento aparece en el **93,5 %**
@@ -31,17 +31,17 @@ De los 7 términos del probando:
 
 | HPO | Rasgo | ¿Anotado en el modelo MVA1? | ¿Respaldado por la literatura de MVA1? |
 |---|---|---|---|
-| HP:0002859 | Rabdomiosarcoma | **SÍ** | Sí — malignidad 38,7 %, RMS entre los típicos |
-| HP:0004322 | Talla baja | **SÍ** | Sí — retraso de crecimiento 93,5 % |
-| HP:0001518 | Pequeño para edad gestacional | **SÍ** | Sí — retraso pre/postnatal 93,5 % |
-| HP:0001508 | Fallo de medro | **NO** | **Sí** — es un fenotipo de crecimiento, 93,5 % |
+| HP:0002859 | Rabdomiosarcoma | **SÍ** | Sí, malignidad 38,7 %, RMS entre los típicos |
+| HP:0004322 | Talla baja | **SÍ** | Sí, retraso de crecimiento 93,5 % |
+| HP:0001518 | Pequeño para edad gestacional | **SÍ** | Sí, retraso pre/postnatal 93,5 % |
+| HP:0001508 | Fallo de medro | **NO** | **Sí**: es un fenotipo de crecimiento, 93,5 % |
 | HP:0001622 | Parto prematuro | **NO** | Plausible por el eje perinatal; **no cuantificado** en la serie |
 | HP:0003202 | Atrofia muscular esquelética | **NO** | **No cuantificado** en la serie de 31 casos |
-| HP:0000121 | Nefrocalcinosis | **NO** | **NO** — la serie reporta «disfunción renal» genérica al 12,9 %, **no nefrocalcinosis** |
+| HP:0000121 | Nefrocalcinosis | **NO** | **NO**: la serie reporta «disfunción renal» genérica al 12,9 %, **no nefrocalcinosis** |
 
 ## Las tres categorías, que no son la misma cosa
 
-### 1 · Hueco de anotación, no residual — `HP:0001508`
+### 1. Hueco de anotación, no residual: `HP:0001508`
 
 **Fallo de medro no está anotado en el modelo, pero el retraso de crecimiento está descrito en
 el 93,5 % de los casos de MVA1.** Su bajo soporte semántico es un artefacto del corpus HPO, no
@@ -51,7 +51,7 @@ una señal de que MVA no lo explique.
 > **no es evidencia de diagnóstico mixto**. Presentarlo como tal habría sido convertir
 > incompletitud de una base de datos en biología.
 
-### 2 · Sin cuantificar — `HP:0003202`, `HP:0001622`
+### 2. Sin cuantificar: `HP:0003202`, `HP:0001622`
 
 Atrofia muscular esquelética y parto prematuro **no están anotados y tampoco están
 cuantificados** en la serie de 31 casos. No se puede afirmar ni que MVA los explique ni que no.
@@ -59,7 +59,7 @@ cuantificados** en la serie de 31 casos. No se puede afirmar ni que MVA los expl
 **Quedan `PARKED`, no `NEGATIVE`.** La ausencia de un número en una serie de 31 casos no es
 evidencia de ausencia del rasgo.
 
-### 3 · Residual de verdad — `HP:0000121`
+### 3. Residual de verdad: `HP:0000121`
 
 **Nefrocalcinosis no está anotada en el modelo Y tampoco está respaldada por la literatura de
 MVA1.** La serie reporta disfunción renal genérica al 12,9 %; nefrocalcinosis es otra cosa.
@@ -95,5 +95,5 @@ Y la pregunta que lo decide sigue siendo la misma, y sigue sin contestar:
 
 ## Nivel de evidencia
 
-`L2` — pertenencia al corpus HPO (medición directa) contrastada con frecuencias publicadas en
+`L2`: pertenencia al corpus HPO (medición directa) contrastada con frecuencias publicadas en
 una serie de casos (`L2`, series pequeñas con sesgo de publicación).

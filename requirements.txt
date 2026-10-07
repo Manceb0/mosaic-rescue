@@ -58,3 +58,9 @@ pillow==12.1.0          # comparacion pixel a pixel de figuras en tests
 #     isolated so that no ordinary run of this repository can reach it. See
 #     docs/03_ALPHAGENOME_ASSESSMENT.md. Its outputs are cached under work/ and
 #     the notebooks read the cache; the call is not repeated on a normal build.
+
+# Submission packaging: src/submission/export_reports.py (Markdown, PDF and the methods form)
+#     markdown is installed in .venv. The 2026-10-07 export also used openpyxl 3.1.5 and
+#     playwright 1.63.0 (PDF rendered by the system Microsoft Edge), taken from the system
+#     Python because they are not yet in .venv. Install both here before the next export.
+markdown==3.11

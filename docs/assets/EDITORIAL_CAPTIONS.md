@@ -3,7 +3,7 @@
 Conceptual illustrations were generated with AI and reviewed for scientific meaning. Mini-plots and assay glyphs are schematic; quantitative evidence remains in the original scientific figures. Production prompts are maintained locally.
 
 
-## Figure 02 — phase and function
+## Figure 02: phase and function
 
 Two independent uncertainties in the BUB1B hypothesis. A and B denote the prioritized truncating and missense variant records, respectively. The trans alternative places A and B on different homologous copies; the cis alternative places both on one copy. Neither configuration is established. Segment lengths, marker positions and h1/h2 labels are schematic and do not specify patient coordinates or parental origin. Parental phasing is proposed. Independently, the missense allele remains a VUS and its functional effect is unresolved. Protein-abundance, checkpoint-function and assay symbols denote proposed readouts, not measured bands, patient microscopy or experimental results. Phase alone does not resolve the VUS.
 
@@ -15,7 +15,7 @@ Two independent uncertainties in the BUB1B hypothesis. A and B denote the priori
 - Protein-abundance symbol is an illustrative glyph, not a blot or quantitative comparison.
 - Existing first overview remains unchanged.
 
-## Figure 03 — ranking audit
+## Figure 03: ranking audit
 
 Asset: `mosaic-03-ranking-audit.png`. Placement: README chapter 2, research-story candidate section immediately before the actual genome-wide plot.
 
@@ -24,7 +24,7 @@ Asset: `mosaic-03-ranking-audit.png`. Placement: README chapter 2, research-stor
 Sources: [Track 1 report, sections 1–3](../../reports/TRACK1_REPORT.md), [quantitative genome-wide plot](../../figures/pub/fig01_prioritization_genomewide.svg), [notebook 01](../../notebooks/01_TRACK1_GENOME_WIDE.ipynb).
 Review: #4/#1/#2 of 398 and 33 annotations match report; Exomiser has independent method branch from same source; original A0 not overwritten.
 
-## Figure 04 — bounded hidden-allele search
+## Figure 04: bounded hidden-allele search
 
 Asset: `mosaic-04-hidden-allele.png`. Placement: README chapter 3, research-story section between predictions and mosaicism methods.
 
@@ -33,7 +33,7 @@ Asset: `mosaic-04-hidden-allele.png`. Placement: README chapter 3, research-stor
 Sources: [Track 1 report, sections 7 and 7b](../../reports/TRACK1_REPORT.md), [read-level metrics](../../figures/pub/fig10_bub1b_readlevel_assay.svg), [frozen artifact manifest](../go2b_final_artifacts.sha256.json).
 Review: corrected unsupported tumor/normal wording to one blood sample; removed sequence-to-CNV branch; corrected read-level scope to body plus matched flanks. This overview does not enumerate every structural caller or raw genome-wide record.
 
-## Figure 05 — proposed rescue experiment
+## Figure 05: proposed rescue experiment
 
 Asset: `mosaic-05-rescue-test.png`. Placement: README chapter 5 and research-story rescue section beside evidence/portfolio material.
 
@@ -42,7 +42,7 @@ Asset: `mosaic-05-rescue-test.png`. Placement: README chapter 5 and research-sto
 Sources: [Track 2 report](../../reports/TRACK2_REPORT.md), [portfolio and controls](../../figures/pub/fig08_track2_portfolio.svg), [evidence matrix](../../figures/pub/fig07_track2_evidence_matrix.svg).
 Review: three roles, three controls and four readouts present; contextual-control qualification retained; rejection and veto terminate separately from conditional advancement.
 
-## Figure 06 — next experiments
+## Figure 06: next experiments
 
 Asset: `mosaic-06-next-experiments.png`.
 
@@ -51,13 +51,13 @@ Five separate unresolved questions require distinct proposed observations. Paren
 Sources: [Track 1 report](../../reports/TRACK1_REPORT.md), [Track 2 report](../../reports/TRACK2_REPORT.md), [existing next-experiment synthesis generator](../../src/figures/story.py).
 Review: corrected generated “Long-read transcript” to targeted genomic long read; removed outcome-like green coloring from survival cells. Proposed status and phase/function distinction retained.
 
-## Figure 07 — compact research route
+## Figure 07: compact research route
 
 Asset: `mosaic-07-research-route.png`.
 
 **Caption:** One case supports parallel variant, read and phenotype analyses. Variant-based models add hypotheses, while variant evidence also contributes directly to causal interpretation. Independent simulations evaluate method limits, not additional patient observations. Causal interpretation and external evidence inform conditional rescue hypotheses, safety criteria and proposed experiments. The endpoint is not a confirmed diagnosis or established safe therapy. Symbols, ranked bars and curves are schematic and encode no scores or effect sizes. The associated README branch table documents QC, annotation, frequency audit, Exomiser, allele recovery, CNV/SV/MEI, DMPK, MitoRead, residual phenotype, conservation, AlphaGenome, simulation and evidence curation without crowding the image. This is a conceptual architecture, not an executable dependency graph.
 
-## Figure 08 — function or tolerance?
+## Figure 08: function or tolerance?
 
 Asset: `mosaic-08-mechanism.png`.
 

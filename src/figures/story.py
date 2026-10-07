@@ -36,7 +36,7 @@ SPECS = [
     ("story02_variant_card", "SYNTHESIS", "Two alleles are not yet a proven biallelic cause."),
     ("story03_second_allele", "SYNTHESIS", "The second-allele question stays open."),
     ("story04_evidence_context", "SYNTHESIS", "Three evidence layers. Three different meanings."),
-    ("story10_mechanism", "SYNTHESIS", "Correct the defect — or merely help cells tolerate it?"),
+    ("story10_mechanism", "SYNTHESIS", "Correct the defect, or merely help cells tolerate it?"),
     ("story12_safety_gates", "SYNTHESIS", "A surviving cell is not a rescued cell."),
     ("story13_next_experiment", "SYNTHESIS", "The next experiment should change the decision."),
 ]

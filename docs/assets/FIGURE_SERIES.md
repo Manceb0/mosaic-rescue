@@ -1,18 +1,18 @@
-# Mosaic Rescue — approved visual series
+# Mosaic Rescue: approved visual series
 
 All artwork uses built-in imagegen. Conceptual illustrations complement, rather than replace, deterministic scientific plots. Text inside illustrations is English.
 
 | Figure | Asset | Placement | Status |
 |---|---|---|---|
-| 00 — whole-project map | `mosaic-00-project-map.png` | README opening; research story opening | Generated and integrated |
-| 01 — causal workflow | `mosaic-01-causal-workflow.png` | README chapter 1; research story Track 1 opening | User accepted v9 and requested next figure |
-| 02 — phase and function | `mosaic-02-phase-function.png` | README chapter 2, beside interpretation of the candidate pair; research story candidate section | Integrated at user's request |
-| 03 — ranking audit | `mosaic-03-ranking-audit.png` | README chapter 2; research-story candidate section | Generated, reviewed and integrated |
-| 04 — bounded hidden-allele search | `mosaic-04-hidden-allele.png` | README chapter 3; research-story hidden-allele section | Generated, corrected, reviewed and integrated |
-| 05 — proposed rescue experiment | `mosaic-05-rescue-test.png` | README chapter 5; research-story rescue section | Generated, reviewed and integrated |
-| 06 — next experiments | `mosaic-06-next-experiments.png` | README chapter 6; research-story next section; pitch | Generated, corrected and integrated |
-| 07 — complete research route | `mosaic-07-research-route.png` | README Behind the story; research-story architecture section | Generated, corrected and integrated |
-| 08 — function or tolerance | `mosaic-08-mechanism.png` | README chapter 4; research-story mechanism section; pitch | Generated and integrated |
+| 00: whole-project map | `mosaic-00-project-map.png` | README opening; research story opening | Generated and integrated |
+| 01: causal workflow | `mosaic-01-causal-workflow.png` | README chapter 1; research story Track 1 opening | User accepted v9 and requested next figure |
+| 02: phase and function | `mosaic-02-phase-function.png` | README chapter 2, beside interpretation of the candidate pair; research story candidate section | Integrated at user's request |
+| 03: ranking audit | `mosaic-03-ranking-audit.png` | README chapter 2; research-story candidate section | Generated, reviewed and integrated |
+| 04: bounded hidden-allele search | `mosaic-04-hidden-allele.png` | README chapter 3; research-story hidden-allele section | Generated, corrected, reviewed and integrated |
+| 05: proposed rescue experiment | `mosaic-05-rescue-test.png` | README chapter 5; research-story rescue section | Generated, reviewed and integrated |
+| 06: next experiments | `mosaic-06-next-experiments.png` | README chapter 6; research-story next section; pitch | Generated, corrected and integrated |
+| 07: complete research route | `mosaic-07-research-route.png` | README Behind the story; research-story architecture section | Generated, corrected and integrated |
+| 08: function or tolerance | `mosaic-08-mechanism.png` | README chapter 4; research-story mechanism section; pitch | Generated and integrated |
 
 ## Figure 1 caption
 
