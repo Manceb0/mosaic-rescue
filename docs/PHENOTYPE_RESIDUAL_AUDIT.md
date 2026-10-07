@@ -1,6 +1,6 @@
 # EXP-018 / EXP-019 · ¿Fenotipo residual, o hueco de anotación?
 
-> **`DERIVED`** sobre corpus HPO local + **`EXTERNAL`** (serie de 31 casos de MVA1,
+> **`DERIVED`** sobre corpus HPO local + **`EXTERNAL`** (compilación publicada de 31 casos etiquetados como MVA1,
 > `Neurol Sci` 2022, DOI 10.1007/s10072-022-06247-w, ya verificada en el brief §11).
 >
 > **Nota de auditoría sobre el denominador (verificada en PubMed, texto completo, 2026-10-07; Pavone et al.
@@ -84,7 +84,7 @@ pertenencia al conjunto anotado.** Es la medida que responde la pregunta.
 |---|---|---|
 | **EXP-018 · atrofia muscular** | **PARKED** | Ni hueco de anotación demostrable ni residual demostrable: falta el dato en la literatura |
 | **EXP-019 · crecimiento y perinatales** | **CERRADO · NEGATIVE como residual** | El bajo soporte de fallo de medro es **hueco de anotación**; la literatura lo cubre al 93,5 % |
-| **Nefrocalcinosis** | **RESIDUAL CONFIRMADO** | Único rasgo sin anotación **y** sin respaldo en la literatura de MVA1 |
+| **Nefrocalcinosis** | **RESIDUAL EN ESTE AUDIT · AMBAS COMPROBACIONES NEGATIVAS** | Único rasgo sin anotación **y** sin respaldo en la compilación de MVA1. No demuestra que la nefrocalcinosis sea incompatible con MVA1: la compilación reporta disfunción renal genérica (12,9 %) |
 
 **Consecuencia para el proyecto:** el argumento de diagnóstico mixto **se estrecha a un solo
 rasgo**, en vez de apoyarse en cuatro. Es más débil en número y **mucho más fuerte en calidad**,

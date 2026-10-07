@@ -3,7 +3,7 @@
 """Figure 6. Seven traits, two checks: only nephrocalcinosis fails both.
 
 A · matriz término HPO × modelo, en bits (dato medido). B · registro alineado fila a fila: comprobación 1
-(anotado en el modelo MVA1, medido), comprobación 2 (serie publicada, del audit) y el veredicto que
+(anotado en el modelo MVA1, medido), comprobación 2 (compilación publicada de 31 casos, del audit) y el veredicto que
 DERIVA de ambas. Sustituye a las barras de BMA, que ahora van en la etiqueta de cada columna.
 
 What the cells hold
@@ -20,7 +20,7 @@ Why not a simple annotated / not annotated flag
 
 Two kinds of support, kept separate
     Colour = HPO database support, in bits.
-    Ring   = literature support for MVA1 specifically, from the published series.
+    Ring   = literature support for MVA1 specifically, from the 31-case literature compilation.
     Literature is never converted into a Resnik score. Mixing the two is exactly
     how a phenotype gap gets talked away.
 
@@ -79,7 +79,7 @@ def verdicts(m: dict) -> list:
     """Veredicto por rasgo, DERIVADO de las dos comprobaciones; nada colocado a mano.
 
     Comprobación 1 (medida): ¿el término está anotado en el modelo MVA1 del corpus HPO?
-    Comprobación 2 (literatura): ¿la serie publicada de MVA1 lo respalda? (LIT_MVA1_DETAIL,
+    Comprobación 2 (literatura): ¿la compilación publicada de 31 casos MVA1 lo respalda? (LIT_MVA1_DETAIL,
     tal como está en docs/PHENOTYPE_RESIDUAL_AUDIT.md). Las categorías son las del audit.
     """
     PT, COV = m["terms"], m["covered"]
@@ -108,7 +108,7 @@ VSTYLE = {  # relleno, borde, tinta, trama; la identidad va además escrita en l
 VNOTE = {
     "EXPLAINED": "annotated in the MVA1 model",
     "ANNOTATION GAP": "corpus gap; broader support only",
-    "CANNOT JUDGE": "PARKED: no number in the series",
+    "CANNOT JUDGE": "PARKED: no number in the compilation",
     "RESIDUAL": "fails both checks",
 }
 
@@ -185,7 +185,7 @@ def build(m: dict):
     X1, X2, XV = .9, 3.05, 7.3
     al.text(X1, -0.78, "1 · annotated\nin MVA1 model?", ha="center", va="bottom",
             fontsize=S.BASE - 1.1, color=S.INK, fontweight="bold", linespacing=1.15)
-    al.text(X2 - .55, -0.78, "2 · supported by the published\nMVA1 series (31 cases)?",
+    al.text(X2 - .55, -0.78, "2 · supported by the 31-case\nMVA1 literature compilation?",
             ha="left", va="bottom", fontsize=S.BASE - 1.1, color=S.INK, fontweight="bold",
             linespacing=1.15)
     al.text(XV, -0.78, "verdict", ha="center", va="bottom", fontsize=S.BASE - 1.1,
@@ -230,16 +230,16 @@ def build(m: dict):
     fig.text(.03, .955, "Among seven recorded traits, nephrocalcinosis is the only one unsupported by both checks",
              fontsize=21, fontweight="bold", color=S.INK)
     fig.text(.03, .845,
-             f"{cnt['EXPLAINED']} traits are annotated in the MVA1 model; {cnt['ANNOTATION GAP']} more is supported by the series only "
+             f"{cnt['EXPLAINED']} traits are annotated in the MVA1 model; {cnt['ANNOTATION GAP']} more is supported by the 31-case compilation only "
              f"through a broader growth phenotype; {cnt['CANNOT JUDGE']} cannot be judged (PARKED, not negative)." + NL2 +
              f"Nephrocalcinosis is annotated in none of the three MVA models (best match "
-             f"{BM[i_nef, mv[0]]:.1f} of {ic_t[PT[i_nef]]:.1f} bits) and not reported in the reviewed MVA1 series, while "
+             f"{BM[i_nef, mv[0]]:.1f} of {ic_t[PT[i_nef]]:.1f} bits) and not reported in the compilation, while "
              f"{len(nef_other)} of {len(ot)} neighbour models cover it ({n_bartter} Bartter)." + NL2 +
              "A residual trait raises, but does not establish, a second diagnosis.",
              fontsize=11.5, color=S.MUTED, linespacing=1.4)
     S.note(fig,
            "Sources: work/hpo/prepared.pkl (9 155 disease models) + work/hpo/phenotype.hpoa (names); "
-           "check 2 and its percentages from docs/PHENOTYPE_RESIDUAL_AUDIT.md (EXP-018/019).\n"
+           "check 2 and its percentages from Pavone et al. 2022 (PMID 35804254), a 31-case literature compilation, via docs/PHENOTYPE_RESIDUAL_AUDIT.md (EXP-018/019).\n"
            "Annotation bias is not corrected: a poorly annotated disease scores low even where the "
            "trait occurs. Columns are the nearest models to the FULL profile, not a search for renal "
            "models. Level L2.",
@@ -313,13 +313,13 @@ PROBAND = [
     ("HP:0003202", "Skeletal muscle atrophy"),
     ("HP:0000121", "Nephrocalcinosis"),
 ]
-# Literature support in the published MVA1 series, as already recorded in the
+# Literature support in the 31-case MVA1 literature compilation, as already recorded in the
 # project. Kept as a BOOLEAN: it is never turned into bits.
 LIT_MVA1 = {"HP:0002859": True, "HP:0004322": True, "HP:0001518": True,
             "HP:0001508": True, "HP:0001622": False, "HP:0003202": False,
             "HP:0000121": False}
 # Comprobación 2 con su categoría y su cifra, copiadas de docs/PHENOTYPE_RESIDUAL_AUDIT.md
-# (serie publicada de 31 casos de MVA1). "nq" = no cuantificado: PARKED, no NEGATIVE.
+# (compilación publicada de 31 casos etiquetados como MVA1, Pavone et al. 2022). "nq" = no cuantificado: PARKED, no NEGATIVE.
 LIT_MVA1_DETAIL = {
     "HP:0002859": ("yes", "direct: RMS among reported" + NL2 + "malignancies (all, 38.7 %)"),
     "HP:0004322": ("yes", "broader: pre/postnatal" + NL2 + "growth retardation 93.5 %"),

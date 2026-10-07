@@ -161,9 +161,10 @@ convergence on the same data, not a second patient's validation. Exomiser's own 
 `HLA-DRB1`, stays an unresolved audit flag. [Convergence figure](figures/pub/fig14_track1_convergence.svg).
 
 **The recorded phenotype mostly fits or stays open.** Of seven recorded traits, three are
-annotated in the MVA1 disease model, one more is supported by the published MVA1 series only
-through a broader growth phenotype, and two cannot be judged. Nephrocalcinosis is the one trait
-supported by neither check: it was not reported in the reviewed MVA1 series. That keeps a mixed
+annotated in the MVA1 disease model, one more is supported by a published 31-case MVA1
+literature compilation only through a broader growth phenotype, and two cannot be judged.
+Nephrocalcinosis is the one trait supported by neither check: it was not reported in that
+compilation. That keeps a mixed
 diagnosis open without establishing one. [Phenotype figure](figures/pub/fig05_hpo_disease_matrix.svg) ·
 [audit](docs/PHENOTYPE_RESIDUAL_AUDIT.md).
 

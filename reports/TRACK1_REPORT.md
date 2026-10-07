@@ -26,11 +26,13 @@ Likely Pathogenic, plus one rare missense VUS, both on the MANE transcript, a co
 reported in biallelic `BUB1B`-associated MVA ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)).
 
 **The recorded phenotype mostly fits or stays open.** Of seven recorded traits, three are
-annotated in the MVA1 disease model, one more is supported by the published MVA1 series only
-through a broader growth phenotype, two cannot be judged because the series does not quantify
-them, and **nephrocalcinosis is the one trait supported by neither check**: it is not annotated
-in any MVA model and was not reported in the reviewed MVA1 series, which records only generic
-renal dysfunction (12.9 %). A residual trait keeps a mixed diagnosis open; it does not establish
+annotated in the MVA1 disease model, one more is supported by a published 31-case MVA1
+literature compilation (Pavone et al. 2022, PMID 35804254) only through a broader growth
+phenotype, two cannot be judged because the compilation does not quantify them, and
+**nephrocalcinosis is the one trait supported by neither check**: it is not annotated in any MVA
+model and was not reported in that compilation, which records only generic renal dysfunction
+(12.9 %). The compilation is a literature review, not a homogeneous cohort: its own index case
+carries a single heterozygous `BUB1B` VUS. A residual trait keeps a mixed diagnosis open; it does not establish
 one ([audit](../docs/PHENOTYPE_RESIDUAL_AUDIT.md); [Figure: fig05](../figures/pub/fig05_hpo_disease_matrix.svg)).
 
 **Phase remains unresolved; therefore this is a strong causal hypothesis, not a diagnosis.** No

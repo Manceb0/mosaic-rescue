@@ -2964,3 +2964,17 @@ abrir cada sección.
   «evaluado y ausente»).
 
 Sin cambios de números ni de niveles de evidencia.
+
+### Cierre de la narrativa científica · «serie» → «compilación» (2026-10-07)
+
+Última corrección epistemológica del líder, sin cambio de números. Pavone et al. 2022 (PMID 35804254, PMC9616775,
+verificado en texto completo) es una **compilación publicada de 31 casos etiquetados como MVA1** (revisión de
+literatura: 30 casos publicados más el caso índice, que porta una sola VUS heterocigota de `BUB1B` compartida con su
+padre no afectado), no una cohorte homogénea bialélica confirmada. Se deja de llamarla «published MVA1 series» en
+fig05, Track 1, README, el atlas y el audit. En el audit, «RESIDUAL CONFIRMADO» pasa a **«RESIDUAL EN ESTE AUDIT ·
+AMBAS COMPROBACIONES NEGATIVAS»**: nuestras dos comprobaciones no respaldan la nefrocalcinosis, pero no hemos
+demostrado que sea incompatible con MVA1 (la compilación reporta disfunción renal genérica al 12,9 %).
+
+Estado del líder: Track 1 APROBADO · Track 2 APROBADO · EXP-027 sellado y cerrado · `research_story.html`
+alineado. **La narrativa científica queda congelada**: solo se reabre ante una contradicción nueva. El trabajo
+siguiente es presentación, claridad visual y preparación de preguntas del jurado.

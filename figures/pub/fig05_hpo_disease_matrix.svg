@@ -750,8 +750,8 @@ L 1131.336348 480.044571
     <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(795.867082 156.800856)">in MVA1 model?</text>
    </g>
    <g id="text_151">
-    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 149.282605)">2 · supported by the published</text>
-    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 156.800856)">MVA1 series (31 cases)?</text>
+    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 149.282605)">2 · supported by the 31-case</text>
+    <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(880.946087 156.800856)">MVA1 literature compilation?</text>
    </g>
    <g id="text_152">
     <text style="fill: #1a1a1a; font: 700 6.9px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="156.800856" transform="rotate(-0 1043.361391 156.800856)">verdict</text>
@@ -950,13 +950,13 @@ z
     <text style="fill: #5b6670; font: 700 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="399.903867" transform="rotate(-0 1043.361391 399.903867)">CANNOT JUDGE</text>
    </g>
    <g id="text_185">
-    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="418.587998" transform="rotate(-0 1043.361391 418.587998)">PARKED: no number in the series</text>
+    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="418.587998" transform="rotate(-0 1043.361391 418.587998)">PARKED: no number in the compilation</text>
    </g>
    <g id="text_186">
     <text style="fill: #5b6670; font: 700 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="451.147296" transform="rotate(-0 1043.361391 451.147296)">CANNOT JUDGE</text>
    </g>
    <g id="text_187">
-    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="469.831427" transform="rotate(-0 1043.361391 469.831427)">PARKED: no number in the series</text>
+    <text style="fill: #5b6670; font: 5.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="469.831427" transform="rotate(-0 1043.361391 469.831427)">PARKED: no number in the compilation</text>
    </g>
    <g id="text_188">
     <text style="fill: #ffffff; font: 700 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="1043.361391" y="502.390724" transform="rotate(-0 1043.361391 502.390724)">RESIDUAL</text>
@@ -1073,12 +1073,12 @@ z
    <text style="fill: #1a1a1a; font: 700 21px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="34.56" y="30.456" transform="rotate(-0 34.56 30.456)">Among seven recorded traits, nephrocalcinosis is the only one unsupported by both checks</text>
   </g>
   <g id="text_198">
-   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 75.65375)">3 traits are annotated in the MVA1 model; 1 more is supported by the series only through a broader growth phenotype; 2 cannot be judged (PARKED, not negative).</text>
-   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 90.278875)">Nephrocalcinosis is annotated in none of the three MVA models (best match 1.5 of 3.9 bits) and not reported in the reviewed MVA1 series, while 5 of 9 neighbour models cover it (3 Bartter).</text>
+   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 75.65375)">3 traits are annotated in the MVA1 model; 1 more is supported by the 31-case compilation only through a broader growth phenotype; 2 cannot be judged (PARKED, not negative).</text>
+   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 90.278875)">Nephrocalcinosis is annotated in none of the three MVA models (best match 1.5 of 3.9 bits) and not reported in the compilation, while 5 of 9 neighbour models cover it (3 Bartter).</text>
    <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 104.904)">A residual trait raises, but does not establish, a second diagnosis.</text>
   </g>
   <g id="text_199">
-   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 665.010531)">Sources: work/hpo/prepared.pkl (9 155 disease models) + work/hpo/phenotype.hpoa (names); check 2 and its percentages from docs/PHENOTYPE_RESIDUAL_AUDIT.md (EXP-018/019).</text>
+   <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 665.010531)">Sources: work/hpo/prepared.pkl (9 155 disease models) + work/hpo/phenotype.hpoa (names); check 2 and its percentages from Pavone et al. 2022 (PMID 35804254), a 31-case literature compilation, via docs/PHENOTYPE_RESIDUAL_AUDIT.md (EXP-018/019).</text>
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(6.912 672.699409)">Annotation bias is not corrected: a poorly annotated disease scores low even where the trait occurs. Columns are the nearest models to the FULL profile, not a search for renal models. Level L2.</text>
   </g>
   <g id="text_200">
