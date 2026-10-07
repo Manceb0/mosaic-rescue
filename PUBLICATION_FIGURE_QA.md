@@ -111,6 +111,7 @@ declare both, and stamps both on the image so they survive a crop into a slide.
 | `fig09_cnvpytor_chromosome_rd_baf` | `DATA` | `MEASURED+DERIVED` |
 | `fig10_bub1b_readlevel_assay` | `DATA` | `MEASURED+DERIVED` |
 | `fig11_mei_sv_adjudication_map` | `DATA` | `MEASURED+EXTERNAL+DERIVED` |
+| `fig13_exp027_phase1_result` | `DATA` | `EXTERNAL+DERIVED` |
 
 ---
 
@@ -492,3 +493,31 @@ files before that fix, 181 immediately after.
 Manual check of the SVG text on top of the scanner: no residue number, no HGVS, no genomic
 coordinate. The only long numeric tokens are public cell-line ontology identifiers in the
 AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
+
+## Fig 13 · EXP-027 Phase 1 result: `fig13_exp027_phase1_result`
+
+| | |
+|---|---|
+| **Figure ID** | `fig13_exp027_phase1_result` |
+| **notebook** | none: sealed run artifacts of EXP-027 Phase 1 r2 |
+| **Classification** | `DATA` |
+| **Evidence mode** | `EXTERNAL+DERIVED` (public 1000 Genomes high-coverage trio data; every number is a statistic we computed under the frozen contract) |
+| **Source artifact(s)** | `work/exp027/phase1_r2/phase1_report.json` (adjudicated report, tag `exp027-phase1-execution-freeze-r2`, commit `7e20047`); `work/exp027/posthoc/phase1_posthoc.json` (exact reproduction of that report; per-δ curves); `work/exp027/posthoc/apr_map.csv` (per-pair intact calls rebuilt with the same seeds, 249/995 as the report); `work/exp027/plan_execution/plan_windows.json` (window order, BUB1B first) |
+| **Source SHA256** | `37e676ad5137dc4ceee283de7251b403323c3d9dda589907e8eff43a441e1e3e` · `923cfb32854c76867bc7fd06a28bef83c624f0e49bb17d6a987d3de4146ae136` · `316f0cf7be522f0ca62e1b4e55bcb1c01f1efe65e3591b27babdc23c7897da3d` · `e3731d525b1980026a5700f2fe8772a02eee6d363fa69e376cdd4b8bfa7c1c80` |
+| **Renderer** | `src/figures/fig13_exp027_phase1.py` |
+| **Output** | `figures/pub/fig13_exp027_phase1_result.svg` (+ PNG 300 dpi, thumbnail) |
+| **Output SHA256** | `d7fd1bf3f830082f4c0d02807775716804161440fa37b410cbd61bddab2edf31` (SVG) · `4453385899bdd3ecdc0f829fe133ec92217f2c4079b89d705ff8f4c555080aad` (PNG) |
+| **Frozen commit** | run `7e20047` (tag `exp027-phase1-execution-freeze-r2`); result sealed under tag `exp027-phase1-result-r2-fail` |
+| **hash verification** | FAIL CLOSED: the renderer checks all four source SHA256 before drawing, refuses to draw if the post-hoc reproduction is not identical to the sealed report, and refuses if the per-pair map does not give the report's K/N. |
+| **n** | 20 children × 50 evaluation windows = 1000 pairs, 995 evaluable (5 below Hmin = 50 after filters); 20 × 20 calibration tiles for ρ (not part of APR); B = 10 000; δ ∈ {0, .02, .05, .10, .15, .20} |
+| **axes / units** | A: unit matrix, 20 children (rows, by superpopulation) × 50 evaluation windows (columns, BUB1B first), each cell one intact pair, lit = called positive; no coordinates printed. B: QQ plot, expected vs observed −log10 p of the 995 intact pairs. C: detection fraction vs spiked δ, inferred vs Mendelian phase. D: decision diagram of the nine preregistered gates feeding the patient gate. |
+| **statistic represented** | per-pair intact call (p < 0.05 under the phase-randomized null), QQ inflation λ (median χ² / 0.4549, descriptive), sensitivity per child then children equal-weighted (Amendment 6), retention = inferred / Mendelian, gate values from the sealed report |
+| **uncertainty represented?** | B: 95 % band of a calibrated test (2 000 uniform draws, seed 42); permutation floor 1/(B+1) marked |
+| **uncertainty quantified?** | B only |
+| **Claim ceiling** | *Under the frozen contract, the method detects spiked haplotype-coherent imbalance (0.943 at δ = 0.10, retention 0.943, switch error 0.41 %) but fails its calibration sentinel on real benchmark data (APR 249/995 = 25.0 % vs 5 % nominal) and BUB1B-locus retention (0.879 < 0.90). Phase 1: METHOD VALIDATION FAIL; the patient-level A1 test was not performed.* |
+| **Forbidden inference** | patient negative, patient positive, any mosaic call or mosaic fraction in the patient, "25 % false-positive rate" as a biological rate, rounding 0.879 to 0.90, any mechanism for the APR excess |
+| **possible misleading interpretation** | that the method "works" because panels B–C pass; the decisive panel is A. And that the 25 % is a biological false-positive rate: it is an operational calibration sentinel on LCL-derived benchmark data. |
+| **correction applied** | first version (bars) rejected as not conveying the idea; redesigned as a unit matrix + QQ plot + power curve + gate diagram. No dual axis. Legend uses the real fill colours (identity not by colour alone: lit / unlit / ⊠ not evaluable). λ is descriptive only and is not a gate. |
+| **full-size render checked?** | yes (five renders: label collisions, text overflow, legend overlap corrected) |
+
+---

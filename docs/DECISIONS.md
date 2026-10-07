@@ -2886,3 +2886,25 @@ sus familiares de primer grado.
 - Entradas GO-B: `MANIFEST_goB.json` sha256 `c967c572853dc54dcf12784a80c374d343ca8bf909c3f42e3cc0240f22a02468` (110 piezas brutas) y `MANIFEST_goB_derived.json` sha256 `483867c29987a7898dc1f3af59a3997ae26ba8ae32a645e0fa5a119238405717` (90 derivados); GO-A: `MANIFEST.json` sha256 `3bc2b403f3fc47e374cd4bf8604c1266504533266f779029d6ec8f1db7471f4e` (59 recursos).
 - `RUN_MANIFEST.json` (r2) sha256 `29f70878257130af25ce98a506b42f095f14e6344af7515658a42671d3bb9557`; registra además la supersesión del intento `exp027-phase1-execution-freeze` (ABORTED_TECHNICAL) y `rare_phasing_in_phase1: false`.
 - Seguimiento sin fallos silenciosos: `progress.log`, `status.json` y `job.log` por trabajo en `work/exp027/phase1_r2/`.
+
+### EXP-027 · Phase 1 r2 · RESULTADO (2026-10-07) · METHOD VALIDATION FAIL
+
+Run r2 completo (1 400 / 1 400 trabajos, 0 fallos, 34,4 h) bajo `exp027-phase1-execution-freeze-r2`.
+**Phase 1: EXECUTED · METHOD VALIDATION FAIL** (`global:apr_calibration`, `bub1b:retention`). **A1 en el
+paciente: NOT EXECUTED · BLOCKED BY PHASE 1 FAIL.** A2 UNSCORABLE / UNRESOLVED; A3 RESERVED. No es un
+resultado del paciente: el paciente no se analizó.
+
+Puertas: sensibilidad a δ = 0,10 **0,943** (≥ 0,80), retención **0,943** (≥ 0,90), SER **0,41 %** (≤ 2 %),
+sin veto por superpoblación; **centinela APR 249/995 = 25,0 %** frente a 5 % nominal (P ≈ 10⁻⁹⁸·⁹; el JSON
+guarda 0.0 por precisión numérica); BUB1B 19/20 hijos y 5/5 estratos evaluables, sensibilidad 0,879,
+**retención 0,879 < 0,90** (no se redondea), centinela técnico 2 < 4. Los 1 000 pares dan 995 evaluables:
+5 por debajo de Hmin tras los filtros, no fallos técnicos. Los 400 trabajos de calibración estiman `ρ` y no
+entran en el APR.
+
+Reproducción post-hoc desde los `result.json` congelados (`src/exp027/posthoc_phase1.py`): **idéntica** al
+informe sellado. El diagnóstico post-hoc del APR (L1, solo descriptivo, `NOT USED FOR ADJUDICATION`) muestra
+un exceso repartido entre hijos y poblaciones, efectos pequeños y asociación con la composición REF/ALT de los
+haplotipos; la explicación por sesgo hacia la referencia es una hipótesis (L0), no un resultado. Documento
+forense con cadena de custodia, afirmaciones prohibidas y SHA256: `docs/EXP027_PHASE1_RESULT.md`; figura
+`fig13_exp027_phase1_result`. **No se rediseña:** cualquier diagnóstico del APR será un experimento nuevo con
+preregistro propio y nunca podrá reabrir A1.

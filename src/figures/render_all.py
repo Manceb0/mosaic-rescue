@@ -89,6 +89,12 @@ FIGURES = [
      "DATA", "MEASURED+DERIVED",
      "Short-read breakpoint metrics for the BUB1B body and two equal-length flanks, side by side. No "
      "inferential excess/no-excess threshold was defined, and a complex insertion is not excluded."),
+    # EXP-027 Phase 1 (r2), resultado sellado: lee phase1_report.json y la reproducción post-hoc,
+    # ambos comprobados por SHA256. Enseña el FAIL; el paciente nunca se analizó.
+    ("fig13_exp027_phase1", "fig13_exp027_phase1_result", "EXP027_PHASE1",
+     "DATA", "EXTERNAL+DERIVED",
+     "High sensitivity (0.943 at δ = 0.10), failed calibration (APR 249/995 = 25.0 % vs 5 % nominal): "
+     "method validation FAIL, so the patient-level A1 test was not performed."),
     ("fig11_mei_sv_adjudication", "fig11_mei_sv_adjudication_map", "GO2B_STRUCTURAL_FALSIFICATION",
      "DATA", "MEASURED+EXTERNAL+DERIVED",
      "The four alternative structural signals near BUB1B, their breakpoint partners and the gene context "

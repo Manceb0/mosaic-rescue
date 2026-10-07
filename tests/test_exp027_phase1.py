@@ -156,3 +156,18 @@ def test_existing_failed_job_is_never_overwritten(monkeypatch, tmp_path):
     with pytest.raises(phase1.JobFailed, match="ya existe"):
         phase1.run(ds, workers=1, b=10)
     assert (tmp_path / "run" / "FAILED_JOB.json").read_text(encoding="utf-8") == '{"previo": true}'
+
+
+def test_posthoc_compare_flags_any_adjudicated_difference():
+    from src.exp027 import posthoc_phase1 as ph
+    base = {"phase1_global": "FAIL", "a1_applicable": False, "apr_k": 249, "apr_n": 995, "apr": 0.25,
+            "sensitivity_inferred": 0.94, "sensitivity_mendelian": 1.0, "retention": 0.94, "ser": 0.004,
+            "ser_scaffold_descriptive": 0.0045, "fail_reasons": ["global:apr_calibration"],
+            "strata": {"AFR": {"ser": 0.003, "sensitivity": 0.97, "veto": False}},
+            "locus_bub1b": {"retention": 0.879}}
+    import copy
+    same = copy.deepcopy(base)
+    assert ph.compare(base, same) == {}
+    other = copy.deepcopy(base); other["apr_k"] = 248; other["locus_bub1b"]["retention"] = 0.9
+    d = ph.compare(base, other)
+    assert set(d) == {"apr_k", "locus_bub1b.retention"}
