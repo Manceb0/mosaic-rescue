@@ -551,27 +551,27 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 
 ---
 
-## Fig 15 · Decision map: `fig15_decision_map`
+## Fig 15: Decision map, `fig15_decision_map`
 
 | | |
 |---|---|
 | **Figure ID** | `fig15_decision_map` |
-| **notebook** | none: a synthesis of what the reports already state |
+| **notebook** | none. It is a synthesis of what the reports already state |
 | **Classification** | `SYNTHESIS` |
-| **Evidence mode** | `DERIVED+EXTERNAL` (our reports and the published rescue precedent; no new result) |
-| **Source artifact(s)** | `README.md` (open-question table), `reports/TRACK1_REPORT.md` §7a, `reports/TRACK2_REPORT.md` §1, §5, §6, `docs/RENAL_RESIDUAL.md`, `docs/EXTERNAL_BASELINE.md` |
-| **Renderer** | `src/figures/fig15_decision_map.py`: writes a self-contained HTML page (no external fonts, scripts or services; the JS draws the decision arrows and links each question to its node) and photographs it with Playwright (Edge or Chromium) at 2x |
-| **Output** | `figures/pub/fig15_decision_map.html` (interactive) + `figures/pub/fig15_decision_map.png` (3200 px wide) + thumbnail |
-| **Output SHA256** | `44cdcaa9fe63e5483bded63ed25b36096df452a4cbba6aa20a61c3dcbb70c618` (PNG) · `621cdb6a4d6fd7f3cbcab8c5e2503ca9119cbda9e5b5bd984c34cc815896d81c` (HTML) |
-| **source verification** | FAIL CLOSED: 24 fragments (outcomes, decisive observations and every Track 2 discard rule) must appear verbatim, after removing Markdown marks, in their source document, or the figure is not drawn. A presentation page cannot drift from the frozen narrative |
-| **n** | 6 Track 1 questions · 3 intervention arms plus the Safe Rescue Corridor |
-| **axes / units** | A: the order of decisions, drawn with real arrows (phase first; cis and trans branches; the arms; the corridor). B: question, decisive observation, both outcomes, what is needed. C: route, intervention hypothesis, what the experiment must measure, discard rule as written in Track 2, what is needed |
-| **statistic represented** | none; it is a plan |
-| **uncertainty represented?** | as content: every row has two outcomes or a discard rule |
-| **Claim ceiling** | *Each open question has a decisive experiment and a failure condition written before any experiment. Track 2 arms are preclinical hypotheses, for no patient.* |
-| **Forbidden inference** | that any experiment has been performed; that any arm is recommended for a patient; that the decision order is a clinical pathway |
-| **possible misleading interpretation** | that the Track 2 arms depend on phase to start: they can start now in engineered cells; phase decides whether they are relevant to this child, which is what the arrow label says |
-| **correction applied** | built at the leader's request with four changes to the draft: discard rules copied verbatim instead of paraphrased, both outcomes per question instead of a kill criterion alone, a "Needs" column separating what requires the family from what does not, and the decision order drawn as arrows rather than written with arrow characters |
-| **full-size render checked?** | yes. First built in matplotlib (two renders); rebuilt the same day as an HTML page at the user's request because the matplotlib table was hard to read: same content, same guards plus three more, Track 2 as a full-width row of four cards, outcomes split into their own label and text without changing a word |
+| **Evidence mode** | `DERIVED+EXTERNAL` (our reports and the published rescue precedent, no new result) |
+| **Source artifact(s)** | `README.md` and `reports/TRACK1_REPORT.md` (open-question table, §7a, §7b), `reports/TRACK2_REPORT.md` (§1, §5, §6), `docs/RENAL_RESIDUAL.md`, `docs/EXTERNAL_BASELINE.md` |
+| **Renderer** | `src/figures/fig15_decision_map.py`. It writes a self-contained HTML page (no external fonts, scripts or services) where the JS draws the decision arrows and links each question to its node, and it photographs the page with Playwright (Edge or Chromium) at 2x |
+| **Output** | `figures/pub/fig15_decision_map.html` (interactive), `figures/pub/fig15_decision_map.png` (3200 px wide) and a thumbnail |
+| **Output SHA256** | `38c08aac08ebb27ad959f37f8125f20f551d9a04217ae75bcf94305b1a33582a` (PNG) and `fae5f1081216a24c57f1003ffa359fd3ef5c3151d303cd3dc0adb4883bb7dacb` (HTML) |
+| **source verification** | FAIL CLOSED. 28 fragments (outcomes, next observations, the corridor endpoint and every Track 2 discard rule) must appear verbatim, after removing Markdown marks, in their source document, or nothing is generated. The figure text is also rejected if it contains an arrow character, a semicolon or a middle dot used as a separator |
+| **n** | 6 Track 1 questions, 3 experimental arms (two candidate hypotheses and one adversarial comparator) and the Safe Rescue Corridor |
+| **axes / units** | A: two lanes. The child's genotype (phase first, then cis or trans, then a patient-relevance gate reached only by trans, or by cis plus a second allele found) and the experiments that can start now in engineered cells (the arms, then the corridor). The gate decides whether arm results matter for this child. B: question, next observation that changes a decision, both outcomes, what is needed. C: route, arm, what the experiment must measure, the discard rule as written in Track 2, what is needed |
+| **statistic represented** | none. It is a plan |
+| **uncertainty represented?** | as content. Every row has two outcomes or a discard rule, and the subtitle says that some observations settle a question and others only narrow it |
+| **Claim ceiling** | *Every open question has a decision-changing next observation, and every Track 2 arm a written condition for failure. The arms are preclinical hypotheses, for no patient.* |
+| **Forbidden inference** | that any experiment has been performed, that any arm is recommended for a patient, that the decision order is a clinical pathway, that every observation would settle its question |
+| **possible misleading interpretation** | that the arms must wait for phase. They can start now in engineered cells. Phase, through the relevance gate, decides whether their results matter for this child |
+| **correction applied** | Built at the leader's request with four changes to the draft: discard rules copied verbatim instead of paraphrased, both outcomes per question, a "Needs" column separating what requires the family from what does not, and the order drawn with real arrows. Rebuilt as an HTML page at the user's request for legibility. Second leader review (2026-10-07): title no longer promises a decisive experiment for every question, the phase row needs parents or the child's DNA for long reads, the trans outcome says the two alleles sit on opposite copies, matching the canonical configuration, without claiming causal biallelism, cis and trans no longer converge on the arms (separate lanes and a relevance gate), the corridor states the exact endpoint (new segregation errors per completed mitosis at matched proliferation, clonogenic survival of unstable cells not rising), generality is an external validation study to preregister, the HLA-DRB1 row is a next audit step, step 1 is the first branching observation instead of the cheapest, "no drug has been tested" became the result of a bounded literature search, the arms are "experimental arms" and a note says every surviving arm must still pass the corridor. The README and Track 1 open-question table were corrected the same way so the figure still matches its source verbatim |
+| **full-size render checked?** | yes. Matplotlib version (two renders), HTML version (three renders), corrected HTML version (two renders: stretched nodes and a misplaced label fixed) |
 
 ---

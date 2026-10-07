@@ -3011,3 +3011,17 @@ página HTML autocontenida (sin fuentes, scripts ni servicios externos) que gene
 flechas del orden de decisiones y enlaza cada pregunta con su nodo; Playwright la fotografía a 2x para el PNG. Mismo
 contenido y mismas guardias, más tres (24 en total). `verify.py` exige ficha QA también a las figuras HTML. El SVG
 antiguo se apartó a `Downloads\_PARA_BORRAR`.
+
+**fig15, segunda revisión del líder (2026-10-07).** Sin cambio de evidencia, solo de lo que la figura promete. El
+titular pasa a «Every open question has a decision-changing next observation, and every Track 2 arm a written
+condition for failure», porque algunas observaciones solo estrechan su pregunta. La fila de fase necesita a los
+padres o el ADN del niño para lecturas largas. El desenlace trans dice que los dos alelos están en copias opuestas,
+como en la configuración canónica de MVA1, sin afirmar bialelismo causal. Cis y trans ya no convergen en los brazos:
+el árbol tiene dos carriles y una puerta de relevancia para el paciente a la que solo se llega con trans, o con cis
+más un segundo alelo. El corredor lleva su criterio exacto (errores nuevos por mitosis completada a proliferación
+comparable, sin aumento de la supervivencia clonogénica de células inestables). La generalidad pasa a ser un estudio
+de validación externa por preregistrar, HLA-DRB1 un siguiente paso de auditoría, la fase la primera observación que
+ramifica (no «la más barata»), y «no drug has been tested» pasa a ser el resultado de una búsqueda bibliográfica
+acotada. La tabla de preguntas abiertas del README y de Track 1 se corrige igual para que la figura siga coincidiendo
+literalmente con su fuente. El texto de la figura se rechaza si lleva flechas como carácter, punto y coma o punto
+medio como separador.

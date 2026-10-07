@@ -34,7 +34,8 @@ portfolio for a first preclinical experiment:
 | **Arimoclomol** | abundance / proteostasis (falsification sentinel) | Amplify the heat-shock response to raise chaperone capacity and with it BUBR1 abundance | FDA-approved for Niemann-Pick type C, ≥2 years. **Verified counterexample**: in NPC1 I1061T fibroblasts it did not rescue up to 500 µM and did not induce HSP70, while HSP70 overexpression did (PMID 34481829) |
 | **Sirolimus** | adversarial safety comparator | Reduce the damage of aneuploidy through mTOR/autophagy **without correcting BUBR1** | Approved, paediatric exposure well characterised |
 
-**No drug has been tested in a `BUB1B` patient cell**, for any of the three (§5 lists the
+**Our bounded literature search found no pharmacologic rescue tested in `BUB1B` patient cells**, for any of
+the three arms (§5 lists the
 distance from each source system to this patient).
 
 Plus three controls: **vehicle** (the only true negative control), **ca-HSF1** (contextual
@@ -418,11 +419,11 @@ honest form of the idea is a question: *can the patient become the screen?*
 
 ## 10 · Scalability
 
-Measured, not asserted: **59 of 116 modules in `src/`, 9 428 of 23 258 lines (41 %), contain no
+Measured, not asserted: **59 of 116 modules in `src/`, 9 428 of 23 315 lines (40 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
-**Read that number for what it is.** It says *41 % of the current codebase is case-agnostic
-under a conservative lexical census*. It does **not** say the project is 41 % scalable. Real
+**Read that number for what it is.** It says *40 % of the current codebase is case-agnostic
+under a conservative lexical census*. It does **not** say the project is 40 % scalable. Real
 scalability also asks which inputs can be substituted, how many modules depend on `BUB1B` or on
 the MVA phenotype specifically, and which parts reuse generic HPO and VCF machinery — none of
 which a text search can answer. Treat it as a **technical proxy**, not a measure of scalability.
@@ -605,6 +606,6 @@ Three approved compounds are nominated for preclinical discrimination in three r
 
 The proposed experiment uses an isogenic aneuploid/euploid pair, measures whether each drug engages its target, and reads chromosome segregation errors and clonogenic survival together; four outcomes are pre-declared and two of them kill the hypothesis. A five-condition drug gate separates experimental arms from therapeutic candidates; none passes today.
 
-Strengths: explicit mechanism-to-drug chain; counter-evidence stated first; roles instead of ranking; every claim tied to a verified identifier or a declared gap; machine-checked matrices; our own errors corrected on the record. Limitations: all evidence comes from systems other than this patient; the phase of the two alleles is unresolved; the missense effect is unmeasured; readthrough efficiency cannot be predicted without an assay; no drug has been tested in a BUB1B patient cell; the literature search was bounded, so empty cells mean 'not found in our search', not 'never studied'; nothing has been tested on a second patient. No compound is recommended for administration to any patient.
+Strengths: explicit mechanism-to-drug chain; counter-evidence stated first; roles instead of ranking; every claim tied to a verified identifier or a declared gap; machine-checked matrices; our own errors corrected on the record. Limitations: all evidence comes from systems other than this patient; the phase of the two alleles is unresolved; the missense effect is unmeasured; readthrough efficiency cannot be predicted without an assay; our bounded literature search found no pharmacologic rescue tested in BUB1B patient cells; the literature search was bounded, so empty cells mean 'not found in our search', not 'never studied'; nothing has been tested on a second patient. No compound is recommended for administration to any patient.
 
 <!-- methods-form:end -->

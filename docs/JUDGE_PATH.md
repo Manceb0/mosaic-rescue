@@ -54,7 +54,7 @@ but not eliminated; a proteostasis sentinel, arimoclomol; and a safety comparato
 They are not a therapeutic ranking."
 
 The published rescue was genetic, its endpoint was the checkpoint, and its alleles were not this
-child's. No drug has been tested in a BUB1B patient cell.
+child's. Our bounded literature search found no pharmacologic rescue tested in BUB1B patient cells.
 
 External evidence does not demonstrate efficacy in this case. The assay must measure molecular
 activity, chromosome segregation and clonogenic survival, as well as viability.

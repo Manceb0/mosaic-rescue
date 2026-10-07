@@ -31,7 +31,8 @@ missense VUS); phase unresolved, so a strong causal hypothesis, not a diagnosis.
 level (genetic re-expression; other alleles; no drug). Three experimentally distinct arms, not a
 winner: azithromycin (allele-directed; computationally weakened by EXP-029, not eliminated),
 arimoclomol (proteostasis sentinel, with a verified counterexample) and sirolimus (adversarial safety
-comparator), judged by the Safe Rescue Corridor. No drug has been tested in a `BUB1B` patient cell.
+comparator), judged by the Safe Rescue Corridor. Our bounded literature search found no pharmacologic rescue tested in
+`BUB1B` patient cells.
 [Report](../reports/TRACK2_REPORT.md).
 
 ## Official requirements
