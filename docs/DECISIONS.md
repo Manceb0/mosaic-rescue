@@ -3025,3 +3025,13 @@ ramifica (no «la más barata»), y «no drug has been tested» pasa a ser el re
 acotada. La tabla de preguntas abiertas del README y de Track 1 se corrige igual para que la figura siga coincidiendo
 literalmente con su fuente. El texto de la figura se rechaza si lleva flechas como carácter, punto y coma o punto
 medio como separador.
+
+**fig15, tercera revisión del líder: lógica (2026-10-07).** La fase en copias opuestas conserva el par actual pero no
+valida la missense, así que trans ya no llega directamente a la relevancia para el paciente: pasa por el ensayo de la
+missense. Cis exige un segundo alelo de BUB1B que cumpla los criterios y con la fase resuelta, y en ese caso los brazos
+se vuelven a evaluar para ese genotipo. La relevancia (puerta 1, la genética) y el Safe Rescue Corridor (puerta 2) se
+dibujan como dos puertas independientes que solo se juntan en la caja final. Los desenlaces de la missense cubren todos
+sus endpoints preregistrados y el negativo ya no suena a normalidad universal. «Canonical MVA1 configuration» pasa a
+«a reported biallelic MVA1 pattern» en la figura y en todos los textos del jurado (README, Track 1, guion). El
+subtítulo dice que Track 1 necesita datos nuevos o una auditoría ortogonal, lo que incluye la de HLA-DRB1 sobre el
+alineamiento existente.

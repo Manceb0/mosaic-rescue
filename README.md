@@ -198,7 +198,7 @@ Other genome-wide caller records are raw inventory, not adjudicated alternative 
 AE2 population lookup remains **NOT EXECUTED (data policy)**, not a negative population result.
 
 **The missing second allele has a history in this disease.** Our candidate pair, one
-truncating allele plus one missense, is the canonical MVA1 configuration ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)). Yet in the
+truncating allele plus one missense, matches a reported biallelic MVA1 pattern ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)). Yet in the
 early PCS families only one mutation per family was found in coding sequence ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)), and the
 hidden alleles later turned up outside the exons ([Kato et al. 2017](https://doi.org/10.1038/hgv.2017.21); [Kawakami et al. 2024](https://doi.org/10.1038/s10038-023-01211-8)). Our case sits at that frontier.
 
@@ -321,7 +321,7 @@ remain. [Detailed status and decision-changing results](docs/STORYBOARD.md#what-
    method (Exomiser) run on the same VCF. Every in-house competitor that outranked it in the
    frozen A0 was falsified by frequency or genotype configuration; Exomiser's #1, HLA-DRB1,
    remains an unresolved audit flag, not a demonstrated alternative diagnosis.
-3. The candidate genotype, truncating plus missense, is the canonical MVA1 configuration.
+3. The candidate genotype, truncating plus missense, matches a reported biallelic MVA1 pattern.
 4. The structural search found no copy-number or mobile-element call in the gene. A complex
    intronic insertion, the kind that has hidden second alleles before, is not excluded.
 5. Our first explanation of the BAF signal was wrong, and we show how we found out.
@@ -331,8 +331,8 @@ cell fraction, a working rescue, or that the method generalises beyond this chil
 
 | Open question | Why no further computation on this genome can answer it | Next observation that changes a decision | If the result goes one way | If it goes the other way |
 |---|---|---|---|---|
-| **1. Phase** | One sample and no parents. The two alleles lie 13.8× the fragment length apart, beyond read-backed phasing | Parental genotyping at both sites, or targeted long-read phasing of the child | **Trans:** the truncating and missense alleles sit on opposite copies, matching the canonical MVA1 configuration. The missense still needs functional evidence | **Cis:** this pair cannot be the recessive explanation, and the hidden-allele search becomes the primary question |
-| **2. Missense function** | The missense is a VUS. 95.3 % of ClinVar missense in the gene are VUS and there is no hotspot. Conservation and structure are predictions | Variant expressed in isogenic cells: BUBR1 abundance and turnover, kinetochore localisation, checkpoint arrest, segregation errors, with wild-type and known MVA-allele controls | Reduced abundance or checkpoint failure: functional support for pathogenicity. Published work links a >50 % loss of BUBR1 expression or activity to PCS ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)) | Normal on every readout: the pair is weakened, and a hidden allele or another gene becomes more likely |
+| **1. Phase** | One sample and no parents. The two alleles lie 13.8× the fragment length apart, beyond read-backed phasing | Parental genotyping at both sites, or targeted long-read phasing of the child | **Trans:** the truncating and missense alleles sit on opposite copies, matching a reported biallelic MVA1 pattern. The missense still needs functional evidence | **Cis:** this pair cannot be the recessive explanation, and the hidden-allele search becomes the primary question |
+| **2. Missense function** | The missense is a VUS. 95.3 % of ClinVar missense in the gene are VUS and there is no hotspot. Conservation and structure are predictions | Variant expressed in isogenic cells: BUBR1 abundance and turnover, kinetochore localisation, checkpoint arrest, segregation errors, with wild-type and known MVA-allele controls | Disease-relevant defect detected: a reproducible abnormality in a preregistered BUBR1 readout provides functional support for pathogenicity. Published work links a >50 % loss of BUBR1 expression or activity to PCS ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)) | No defect across the preregistered readouts: the current pair is weakened, and a hidden allele or another gene becomes more likely. This does not exclude functions or cellular contexts the assay does not represent |
 | **3. Safe rescue** | Our bounded search found no compound tested in a system relevant to this allele. All rescue evidence is external | Isogenic assay measuring target engagement, chromosome segregation errors and clonogenic survival **together**, with a genetic positive control | Fewer new segregation errors per completed mitosis at matched proliferation, without extra clonogenic survival of unstable cells: the arm advances to further preclinical work | More survival of unstable cells: **veto**, even if another readout improves |
 | **4. Generality of the method** | Only one patient was analysed, and the rules were built on this case | An external validation study, to be preregistered: the frozen pipeline run unchanged on previously solved cases with known causal genes, blinded to the answer | The known genes rank within a top-k threshold set before the run: evidence that the procedure transfers | They do not: the contribution is the audit trail, not the ranking |
 

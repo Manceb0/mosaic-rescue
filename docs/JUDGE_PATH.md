@@ -22,7 +22,7 @@ Show [the convergence figure](../figures/pub/fig14_track1_convergence.svg), then
 "We searched 6,321 genes without choosing one in advance, and the genome converged on BUB1B:
 first in 14 of 15 sensitivity analyses, second of 398 in an external tool on the same data. The
 frozen ranking put it fourth, because three common variants had lost their frequencies; we
-always report both numbers. The genotype is the classic one for this disease. What we do not
+always report both numbers. The genotype matches a reported pattern for this disease. What we do not
 know yet is whether the two alleles sit on opposite copies, and the missense is still uncertain.
 A strong hypothesis, not a diagnosis."
 

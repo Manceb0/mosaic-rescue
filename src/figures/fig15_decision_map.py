@@ -45,16 +45,18 @@ SOURCES = {"README": "README.md", "T1": "reports/TRACK1_REPORT.md", "T2": "repor
 TRACK1 = [
     ("Phase of the two alleles is unresolved",
      "Parental genotyping at both sites, or targeted long-read phasing of the child",
-     "Trans: the truncating and missense alleles sit on opposite copies, matching the canonical MVA1 configuration. "
+     "Trans: the truncating and missense alleles sit on opposite copies, matching a reported biallelic MVA1 pattern. "
      "The missense still needs functional evidence",
      "Cis: this pair cannot be the recessive explanation, and the hidden-allele search becomes the primary question",
      "Parents, or the child's DNA for long reads", "phase", True),
     ("The missense is a VUS",
      "Variant expressed in isogenic cells: BUBR1 abundance and turnover, kinetochore localisation, checkpoint "
      "arrest, segregation errors, with wild-type and known MVA-allele controls",
-     "Reduced abundance or checkpoint failure: functional support for pathogenicity",
-     "Normal on every readout: the pair is weakened, and a hidden allele or another gene becomes more likely",
-     "Engineered cells only", "trans", False),
+     "Disease-relevant defect detected: a reproducible abnormality in a preregistered BUBR1 readout provides "
+     "functional support for pathogenicity",
+     "No defect across the preregistered readouts: the current pair is weakened, and a hidden allele or another gene "
+     "becomes more likely. This does not exclude functions or cellular contexts the assay does not represent",
+     "Engineered cells only", "assay", False),
     ("A hidden second allele is not excluded",
      "RNA-seq and targeted long reads of the child",
      "A splice or intronic lesion is found: a candidate second allele is located",
@@ -126,15 +128,17 @@ ARMS_NOTE = ("Each discard rule above is specific to its route. An arm that surv
 
 # Fragmentos que deben aparecer LITERALES (sin marcas de Markdown) en su documento de origen.
 GUARDS = [
-    ("README", "the truncating and missense alleles sit on opposite copies, matching the canonical MVA1 configuration. "
-               "The missense still needs functional evidence"),
+    ("README", "the truncating and missense alleles sit on opposite copies, matching a reported biallelic MVA1 "
+               "pattern. The missense still needs functional evidence"),
     ("README", "this pair cannot be the recessive explanation, and the hidden-allele search becomes the primary "
                "question"),
     ("README", "Variant expressed in isogenic cells: BUBR1 abundance and turnover, kinetochore localisation, "
                "checkpoint arrest, segregation errors, with wild-type and known MVA-allele controls"),
-    ("README", "Reduced abundance or checkpoint failure: functional support for pathogenicity"),
-    ("README", "Normal on every readout: the pair is weakened, and a hidden allele or another gene becomes more "
-               "likely"),
+    ("README", "Disease-relevant defect detected: a reproducible abnormality in a preregistered BUBR1 readout "
+               "provides functional support for pathogenicity"),
+    ("README", "No defect across the preregistered readouts: the current pair is weakened, and a hidden allele or "
+               "another gene becomes more likely. This does not exclude functions or cellular contexts the assay "
+               "does not represent"),
     ("README", "An external validation study, to be preregistered: the frozen pipeline run unchanged on previously "
                "solved cases with known causal genes, blinded to the answer"),
     ("README", "The known genes rank within a top-k threshold set before the run: evidence that the procedure "
@@ -144,7 +148,7 @@ GUARDS = [
                "clonogenic survival of unstable cells"),
     ("README", "More survival of unstable cells: veto, even if another readout improves"),
     ("README", "it is the first branching observation"),
-    ("T1", "the truncating and missense alleles sit on opposite copies, matching the canonical MVA1 configuration"),
+    ("T1", "the truncating and missense alleles sit on opposite copies, matching a reported biallelic MVA1 pattern"),
     ("T1", "RNA-seq and targeted long reads remain routes for a hidden allele"),
     ("RENAL", "¿hubo polihidramnios u oligohidramnios?"),
     ("RENAL", "electrolitos/renina/aldosterona"),
@@ -275,14 +279,17 @@ body.export .controls{display:none}
 .n-cis{grid-column:1;grid-row:3;align-self:start;margin-top:54px;border-color:var(--verm);background:var(--verm-tint)}
 .n-trans{grid-column:2;grid-row:3;align-self:start;margin-top:54px;border-color:var(--green);background:var(--green-tint)}
 .n-corr{grid-column:3;grid-row:3;margin-top:54px;border:2px solid var(--ink)}
-.n-gate{grid-column:1/3;grid-row:4;margin-top:56px;border-color:var(--violet);background:var(--violet-tint)}
-.n-indep{grid-column:1/4;grid-row:5;margin-top:18px;border-style:dashed;background:transparent}
+.n-assay{grid-column:2;grid-row:4;align-self:start;margin-top:44px;border-color:var(--green)}
+.n-gate{grid-column:1/3;grid-row:5;margin-top:56px;border-color:var(--violet);background:var(--violet-tint)}
+.n-final{grid-column:1/4;grid-row:6;margin-top:56px;border:2px solid var(--ink);background:var(--page)}
+.n-indep{grid-column:1/4;grid-row:7;margin-top:18px;border-style:dashed;background:transparent}
 .n-indep ul{margin:6px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:5px 18px}
 .n-indep li{font-size:12.2px;color:var(--muted);padding-left:14px;position:relative}
 .n-indep li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;
   background:var(--faint)}
 .pill{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-weight:700;padding:3px 9px;
   border-radius:999px;background:var(--card);border:1px solid currentColor;white-space:nowrap;z-index:2}
+.pill.wrap{white-space:normal;width:168px;text-align:center;border-radius:10px;line-height:1.3}
 .node.lit,.row.lit,.arm.lit{box-shadow:0 0 0 3px rgba(11,111,164,.28)}
 .node.lit{transform:translateY(-1px)}
 
@@ -340,8 +347,8 @@ footer{display:flex;justify-content:space-between;gap:24px;margin-top:22px;paddi
   <div class="stamp" id="stamp"></div>
   <div class="eyebrow">MOSAIC RESCUE decision map</div>
   <h1>Every open question has a decision-changing next observation, and every Track 2 arm a written condition for failure</h1>
-  <p class="deck">Track 1 questions need new observations, not more computation on this genome. Some observations would
-    settle a question and others would only narrow it. Track 2 arms are preclinical hypotheses, for no patient, and each
+  <p class="deck">Track 1 questions need new data or an orthogonal audit. None is settled by reranking the same evidence,
+    and some observations would settle a question while others would only narrow it. Track 2 arms are preclinical hypotheses, for no patient, and each
     discard rule is the one written in the report before any experiment.</p>
   <div class="controls">
     <button id="now" aria-pressed="false">Show what can start without the family</button>
@@ -362,13 +369,19 @@ footer{display:flex;justify-content:space-between;gap:24px;margin-top:22px;paddi
           <div class="node n-cis" data-node="cis"><h3>Cis</h3>
             <p>The current pair cannot explain recessive MVA1. Search for a hidden second allele.</p></div>
           <div class="node n-trans" data-node="trans"><h3>Trans</h3>
-            <p>The current pair stays relevant. Test the missense at matched expression.</p></div>
-          <div class="node n-corr" data-node="corr"><h3><span class="k">3</span>Safe Rescue Corridor</h3>
+            <p>The current pair stays plausible. Phase alone does not validate the missense.</p></div>
+          <div class="node n-corr" data-node="corr"><h3><span class="k">3</span>Gate 2: Safe Rescue Corridor</h3>
             <p>An arm advances only if new segregation errors per completed mitosis fall at matched proliferation and
               clonogenic survival of unstable cells does not rise.</p></div>
-          <div class="node n-gate" data-node="gate"><h3>Patient relevance</h3>
-            <p>Arm results matter for this child only once the causal genotype is resolved: trans, or cis plus a second
-              allele found.</p></div>
+          <div class="node n-assay" data-node="assay"><h3>Missense assay</h3>
+            <p>Abundance, turnover, kinetochore localisation, checkpoint and segregation at matched expression.</p></div>
+          <div class="node n-gate" data-node="gate"><h3>Gate 1: patient-specific relevance</h3>
+            <p>Requires a supported causal BUB1B genotype. Opposite-copy phase preserves the current pair but does not
+              validate the missense. If the pair is cis, a qualifying second BUB1B allele must be found and phased, and
+              the arms reassessed for that genotype.</p></div>
+          <div class="node n-final" data-node="final"><h3>Patient-specific experimental candidate</h3>
+            <p>Only if both gates pass. Genetics decides whether a result concerns this child. The Safe Rescue Corridor
+              (gate 2) decides whether a preclinical result may advance. Neither gate stands in for the other.</p></div>
           <div class="node n-indep" data-node="indep"><h3>Independent of phase</h3>
             <ul><li>Nephrocalcinosis: clinical records</li>
               <li>HLA-DRB1 flag: the existing alignment</li>
@@ -471,15 +484,18 @@ function wire() {
     if (opts.label) pill((x1 + x2) / 2 + (opts.lx || 0), my + (opts.ly || 0), opts.label, color);
   };
   const ph = r(".n-phase"), ci = r(".n-cis"), tr = r(".n-trans"), ar = r(".n-arms"), co = r(".n-corr"),
-        ga = r(".n-gate");
+        as = r(".n-assay"), ga = r(".n-gate"), fi = r(".n-final");
   link(ph.x + ph.w * .25, ph.y + ph.h, ci.x + ci.w / 2, ci.y, "verm", {label: "if cis"});
   link(ph.x + ph.w * .75, ph.y + ph.h, tr.x + tr.w / 2, tr.y, "green", {label: "if trans"});
+  link(tr.x + tr.w / 2, tr.y + tr.h, as.x + as.w / 2, as.y, "green");
+  link(as.x + as.w / 2, as.y + as.h, ga.x + ga.w * .75, ga.y, "green", {label: "if a disease-relevant defect"});
+  link(ci.x + ci.w / 2, ci.y + ci.h, ga.x + ga.w * .25, ga.y, "verm", {dashed: true});
+  const wp = el("span", "pill wrap", "only with a qualifying second allele and resolved phase");
+  wp.style.left = (ci.x + ci.w / 2) + "px"; wp.style.top = ((ci.y + ci.h + ga.y) / 2) + "px";
+  wp.style.color = col("--verm"); $("#flow").append(wp);
   link(ar.x + ar.w / 2, ar.y + ar.h, co.x + co.w / 2, co.y, "ink");
-  link(tr.x + tr.w / 2, tr.y + tr.h, ga.x + ga.w * .72, ga.y, "green");
-  link(ci.x + ci.w / 2, ci.y + ci.h, ga.x + ga.w * .28, ga.y, "verm",
-       {dashed: true, label: "only with a second allele", ly: -2});
-  link(ga.x + ga.w, ga.y + ga.h / 2, co.x + co.w / 2, co.y + co.h, "violet",
-       {label: "decides relevance to this child", lx: 18, ly: 14});
+  link(ga.x + ga.w / 2, ga.y + ga.h, ga.x + ga.w / 2, fi.y, "violet", {label: "gate 1"});
+  link(co.x + co.w / 2, co.y + co.h, co.x + co.w / 2, fi.y, "ink", {label: "gate 2", ly: 60});
 }
 
 // Enlaces: pasar por una pregunta ilumina su nodo, y al revés.
