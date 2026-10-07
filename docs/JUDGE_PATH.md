@@ -14,20 +14,20 @@ rescue without favouring genomically unstable cells."
 If asked: four sequencing lanes are still one sample. There is no RNA, no protein data and no
 parental genotyping. GRCh38 is the reference.
 
-## 0:30–1:10 · The hypothesis and its weak point
+## 0:30–1:10 · What we found, and its exact ceiling
 
-Show [the causal card](assets/mosaic-02-phase-function.png).
-Optional detail: [the original ranking](../figures/pub/fig01_prioritization_genomewide.svg).
+Show [the convergence figure](../figures/pub/fig14_track1_convergence.svg), then
+[the causal card](assets/mosaic-02-phase-function.png).
 
-"We searched without choosing a gene in advance. BUB1B came fourth in the frozen ranking. An
-audit found that three competitors were common variants whose frequencies were missing; once
-repaired, BUB1B ranked first. We report both numbers. The child carries a truncating allele and
-a missense, which is exactly the classic genotype of this disease. What we do not yet know is
-whether they sit on opposite copies of the gene. The missense is still a variant of uncertain
-significance."
+"We searched 6,321 genes without choosing one in advance, and the genome converged on BUB1B:
+first in 14 of 15 sensitivity analyses, second of 398 in an external tool on the same data. The
+frozen ranking put it fourth, because three common variants had lost their frequencies; we
+always report both numbers. The genotype is the classic one for this disease. What we do not
+know yet is whether the two alleles sit on opposite copies, and the missense is still uncertain.
+A strong hypothesis, not a diagnosis."
 
-Do not call this a diagnosis. Exomiser uses the same VCF: another tool, not evidence from
-another patient.
+The 15 analyses and Exomiser use the same genome: robustness, not independent replications.
+Exomiser's own #1, HLA-DRB1, is an open audit flag.
 
 ## 1:10–1:40 · Trying to refute it
 
@@ -46,10 +46,15 @@ belonged to this patient. GO 2B details are for questions.
 Show [the mechanism](assets/mosaic-08-mechanism.png).
 If asked about compounds, open [the portfolio](../figures/pub/fig08_track2_portfolio.svg).
 
-"Better survival is not enough: we might be helping the wrong cells survive. We separate an
-allele-directed hypothesis, a sentinel that tests whether the pharmacology works at all, and a
-comparator that challenges safety. Azithromycin, arimoclomol and sirolimus fill those three
-roles. They are not a therapeutic ranking."
+"In cells from other MVA patients, putting BUBR1 back restored the mitotic checkpoint. That
+gives us a target we can measure: fewer new segregation errors. But better survival is not
+enough: we might be helping the wrong cells survive. So we test three distinct routes: an
+allele-directed readthrough arm, azithromycin, which our own computation has already weakened
+but not eliminated; a proteostasis sentinel, arimoclomol; and a safety comparator, sirolimus.
+They are not a therapeutic ranking."
+
+The published rescue was genetic, its endpoint was the checkpoint, and its alleles were not this
+child's. No drug has been tested in a BUB1B patient cell.
 
 External evidence does not demonstrate efficacy in this case. The assay must measure molecular
 activity, chromosome segregation and clonogenic survival, as well as viability.
@@ -62,8 +67,9 @@ Show [the next experiment](assets/mosaic-06-next-experiments.png).
 "The most informative next step is phase: if both alleles are on the same copy, this pair no
 longer explains a recessive mechanism. Then we need variant-specific function, and RNA and long
 reads if the search for a second allele continues. For any rescue, more clonogenic survival of
-unstable cells is a reason to reject it, not a win. We deliver a traceable hypothesis and the
-tests that can change it. And one open question for the future: MVA keeps generating different
+unstable cells is a reason to reject it, not a win. And the system vetoes its own attractive
+ideas: our mosaicism detector failed its validation on public trios, so we never ran it on the
+child. We deliver a traceable hypothesis and the tests that can change it. And one open question for the future: MVA keeps generating different
 chromosome states in the same child. Can the patient become the screen?"
 
 Say it as a question. Nothing in this project measured cell-level heterogeneity.
@@ -77,6 +83,8 @@ Say it as a question. Nothing in this project measured cell-level heterogeneity.
 | Is the BAM missing? | It exists; GO 2B is closed within its protocol |
 | Does the RD/BAF plot show mosaicism? | It is descriptive; it does not count cells or establish a karyotype |
 | Which drug won? | None: we propose experimental roles with rejection criteria |
+| Is azithromycin the answer? | No: EXP-029 weakened it computationally (lower-tercile stop context; non-wild-type products), it was not eliminated, and it has never been tested in BUB1B |
+| Did the mosaicism detector work? | No: EXP-027 failed method validation (249/995 intact benchmark pairs called vs 5 % nominal), so the patient test was not performed; that is not a negative patient result |
 | What does this project change? | It makes explicit what supports each inference, what contradicts it and which experiment decides it |
 | What about the rest of the phenotype? | The nephrocalcinosis remains a residual question; prioritising BUB1B does not erase it |
 | What generalises? | The decision procedure; it has not yet been validated on another patient |

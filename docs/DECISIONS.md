@@ -2931,3 +2931,36 @@ se toca: el documento forense conserva los SHA de la figura sellada y anota el r
 | fig05 comprobación 2 | «growth delay 93.5 %» | **direct** (RMS entre las malignidades) vs **broader** (retraso de crecimiento pre/postnatal 93,5 %) | la serie no reporta literalmente «failure to thrive» ni «SGA» |
 
 Nivel: sin cambio (Track 1 sigue en L2; EXP-027 Phase 1 sigue FAIL).
+
+### Reorientación narrativa · Track 1, Track 2, README y guion (2026-10-07)
+
+Pedida por el líder tras aprobar la revisión anterior (`ee22d55`). **Cambia el orden de inferencia, no la
+evidencia.** Regla dura de la reescritura: ninguna limitación desaparece (`phase unresolved`, `VUS`,
+`same VCF`, `EXP-029 weakened`, «ningún fármaco probado en una célula de paciente `BUB1B`»); solo dejan de
+abrir cada sección.
+
+- **Track 1 §1:** hallazgo (convergencia genome-wide; #4 A0 congelado / #1 A0-FREQFIX / #1 en 14 de 15 /
+  Exomiser #2 de 398, «robustness checks on the same genome, not independent biological replications»;
+  HLA-DRB1 audit flag) → coherencia genética → coherencia fenotípica (nueva en el informe: la
+  nefrocalcinosis es el único rasgo sin ninguno de los dos apoyos) → techo (fase sin resolver, `PM3`
+  bloqueado, VUS sin ensayo).
+- **Track 2 §1:** abre con el precedente funcional humano, verificado hoy en PubMed sobre texto completo
+  (Suijkerbuijk et al. 2010, PMID 20516114, PMC2887387, DOI 10.1158/0008-5472.CAN-09-4319): líneas de
+  pacientes MVA bialélicos con checkpoint deficiente, desalineamiento 2–3× y BUBR1 2–6× más baja; la
+  re-expresión de BUBR1 duplicó la respuesta a nocodazol y en la línea 731X/Y155C restauró el checkpoint
+  casi hasta el nivel del control parental. **Techo escrito junto a la frase:** rescate genético, endpoint =
+  checkpoint (no segregación medida), alelos ajenos al caso; en el sistema de reemplazo, 483X restaura el
+  checkpoint pero no el alineamiento y 386X ninguno. No se escribe «restores chromosome segregation in MVA
+  patient cells». Después: el objetivo medible (menos errores nuevos por mitosis completada sin favorecer
+  células inestables) y tres rutas experimentalmente distintas; la fila de azitromicina lleva pegado
+  «Computationally weakened by EXP-029, not eliminated»; arimoclomol lleva su contraejemplo verificado.
+- **README:** «Current answer» y resultados de Track 1 en el mismo orden; párrafo de fenotipo; párrafo del
+  precedente de rescate con su techo; EXP-029 en las dos tablas de brazos; EXP-027 al final como prueba
+  de que el sistema veta sus propias conclusiones atractivas (FAIL de validación, paciente no analizado,
+  no es un negativo del paciente).
+- **Guion de 3 minutos (`docs/JUDGE_PATH.md`):** mismo orden; preguntas nuevas sobre azitromicina y el
+  detector de mosaicismo.
+- **fig05:** «absent from the series» → «not reported in the reviewed MVA1 series» («no reportado» ≠
+  «evaluado y ausente»).
+
+Sin cambios de números ni de niveles de evidencia.

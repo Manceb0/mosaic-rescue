@@ -906,8 +906,8 @@ z
     <text style="fill: #d55e00; font: 700 13px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: middle" x="880.946087" y="509.253473" transform="rotate(-0 880.946087 509.253473)">✗</text>
    </g>
    <g id="text_175">
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 503.970561)">no: only generic renal</text>
-    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 510.894011)">dysfunction, 12.9 %</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 503.970561)">not reported; generic renal</text>
+    <text style="fill: #1a1a1a; font: 6.4px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(896.172522 510.894011)">dysfunction 12.9 %</text>
    </g>
    <g id="patch_19">
     <path d="M 1005.126122 490.293257
@@ -1074,7 +1074,7 @@ z
   </g>
   <g id="text_198">
    <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 75.65375)">3 traits are annotated in the MVA1 model; 1 more is supported by the series only through a broader growth phenotype; 2 cannot be judged (PARKED, not negative).</text>
-   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 90.278875)">Nephrocalcinosis is annotated in none of the three MVA models (best match 1.5 of 3.9 bits) and absent from the series, while 5 of 9 neighbour models cover it (3 Bartter).</text>
+   <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 90.278875)">Nephrocalcinosis is annotated in none of the three MVA models (best match 1.5 of 3.9 bits) and not reported in the reviewed MVA1 series, while 5 of 9 neighbour models cover it (3 Bartter).</text>
    <text style="fill: #5b6670; font: 11.5px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(34.56 104.904)">A residual trait raises, but does not establish, a second diagnosis.</text>
   </g>
   <g id="text_199">

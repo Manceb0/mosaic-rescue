@@ -3,7 +3,7 @@
   "sources": [
     {
       "path": "docs/DECISIONS.md",
-      "sha256": "ec5803a1d61925693ea7a271213564170849543edf7057a5ff07133a1a9c9e4a"
+      "sha256": "21902f8ffac9cfb0b0b555bc430cebd9adda0bd013a6ff810e255e37e62545c8"
     },
     {
       "path": "docs/ACMG_CURATION.md",
@@ -15,7 +15,7 @@
     },
     {
       "path": "reports/TRACK1_REPORT.md",
-      "sha256": "f826668e37758fcf08c6c540e96154f1e50b07c4603829cbda63629d0a863e7c"
+      "sha256": "d36d81a1d2e8b06a82771577ff44140e5d7118a1df014a4db0d161d7edbd0550"
     },
     {
       "path": "research/track2_evidence.tsv",

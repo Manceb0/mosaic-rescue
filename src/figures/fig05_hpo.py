@@ -233,7 +233,7 @@ def build(m: dict):
              f"{cnt['EXPLAINED']} traits are annotated in the MVA1 model; {cnt['ANNOTATION GAP']} more is supported by the series only "
              f"through a broader growth phenotype; {cnt['CANNOT JUDGE']} cannot be judged (PARKED, not negative)." + NL2 +
              f"Nephrocalcinosis is annotated in none of the three MVA models (best match "
-             f"{BM[i_nef, mv[0]]:.1f} of {ic_t[PT[i_nef]]:.1f} bits) and absent from the series, while "
+             f"{BM[i_nef, mv[0]]:.1f} of {ic_t[PT[i_nef]]:.1f} bits) and not reported in the reviewed MVA1 series, while "
              f"{len(nef_other)} of {len(ot)} neighbour models cover it ({n_bartter} Bartter)." + NL2 +
              "A residual trait raises, but does not establish, a second diagnosis.",
              fontsize=11.5, color=S.MUTED, linespacing=1.4)
@@ -327,7 +327,7 @@ LIT_MVA1_DETAIL = {
     "HP:0001508": ("yes", "broader: pre/postnatal" + NL2 + "growth phenotype 93.5 %"),
     "HP:0001622": ("nq", "plausible (perinatal)," + NL2 + "not quantified"),
     "HP:0003202": ("nq", "not quantified"),
-    "HP:0000121": ("no", "no: only generic renal" + NL2 + "dysfunction, 12.9 %"),
+    "HP:0000121": ("no", "not reported; generic renal" + NL2 + "dysfunction 12.9 %"),
 }
 
 

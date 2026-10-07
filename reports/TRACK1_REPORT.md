@@ -9,23 +9,36 @@ Repository: <https://github.com/Manceb0/mosaic-rescue>
 
 ## 1 · Summary
 
-A panel-free, genome-wide search over the proband's WGS nominates **candidate compound-heterozygous
-`BUB1B`** (MVA1, OMIM 257300) as the leading causal hypothesis: a truncating allele plus a
-missense allele, both rare, both on the MANE transcript.
+**Panel-free genome-wide analysis converged on `BUB1B` as the leading causal hypothesis.**
+Among 6 321 genes carrying HIGH/MODERATE-impact alleles, with no gene panel and no gene-level
+prior, `BUB1B` (MVA1, OMIM 257300) ranked first in 14 of 15 sensitivity analyses. The frozen,
+preregistered genetics-only ranking `A0` placed it **#4**, because three common polymorphisms
+with rsIDs lacked attached frequency annotations; the documented sensitivity analysis
+`A0-FREQFIX` repairs those 33 alleles and restores `BUB1B` to **#1**. Both numbers are reported
+together, always, and `A0` is never rewritten. An externally written method, Exomiser, run on
+the same VCF, ranks `BUB1B` **#2 of 398** genes. These are robustness checks on the same
+genome, not independent biological replications. Exomiser's #1, `HLA-DRB1`, is kept as an
+unresolved audit flag, not a demonstrated alternative (§5).
+([Figure: fig14](../figures/pub/fig14_track1_convergence.svg))
 
-Two things are reported that a submission optimised for appearances would omit.
+**The genotype is mechanistically coherent with MVA1:** one truncating allele, research-curated
+Likely Pathogenic, plus one rare missense VUS, both on the MANE transcript, a configuration
+reported in biallelic `BUB1B`-associated MVA ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)).
 
-**First, the frozen ranking does not put `BUB1B` first.** The preregistered genetics-only
-ranking `A0` places it **#4**. Three genes scored above it. Auditing them showed all three
-were common polymorphisms with rsIDs whose frequency the annotation had failed to attach. A
-later sensitivity analysis, `A0-FREQFIX`, repairs those 33 alleles and returns `BUB1B` to
-**#1**. Both numbers are reported together, always. `A0` is never rewritten.
+**The recorded phenotype mostly fits or stays open.** Of seven recorded traits, three are
+annotated in the MVA1 disease model, one more is supported by the published MVA1 series only
+through a broader growth phenotype, two cannot be judged because the series does not quantify
+them, and **nephrocalcinosis is the one trait supported by neither check**: it is not annotated
+in any MVA model and was not reported in the reviewed MVA1 series, which records only generic
+renal dysfunction (12.9 %). A residual trait keeps a mixed diagnosis open; it does not establish
+one ([audit](../docs/PHENOTYPE_RESIDUAL_AUDIT.md); [Figure: fig05](../figures/pub/fig05_hpo_disease_matrix.svg)).
 
-**Second, the phase is unresolved.** No parental samples were provided, and the two alleles
-are separated by a gap 13.8× the sequencing fragment length, so read-backed phasing cannot
-reach. `PM3` is therefore blocked and the biallelic configuration is a **candidate**, not a
-demonstrated finding. The correct description is *candidate compound heterozygosity with
-phase unresolved*, and nothing stronger.
+**Phase remains unresolved; therefore this is a strong causal hypothesis, not a diagnosis.** No
+parental samples were provided, and the two alleles are separated by a gap 13.8× the
+sequencing fragment length, so read-backed phasing cannot reach. `PM3` is therefore blocked and
+the biallelic configuration is a **candidate**, not a demonstrated finding. The correct
+description is *candidate compound heterozygosity with phase unresolved*, and nothing stronger.
+The missense remains a VUS: no functional assay of this allele exists.
 
 A **research secondary/incidental candidate** is also reported: a heterozygous nonsense
 variant in `LZTR1`, ClinVar pathogenic/likely pathogenic. It is not proposed as the cause of
@@ -33,9 +46,9 @@ this phenotype, and it is **not** presented as a returnable clinical finding: it
 independent clinical confirmation and appropriate return-of-results handling before it meant
 anything to anyone.
 
-**Bottom line.** `BUB1B` is the best-supported explanation this genome can offer, and its
-candidate genotype, one truncating allele plus one missense, is the canonical configuration of
-MVA type 1 ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)). It is a strong hypothesis, not a diagnosis. Four things remain unproven,
+**Bottom line.** `BUB1B` is the best-supported explanation this genome can offer, found
+without a gene panel, and its candidate genotype is the canonical configuration of MVA type
+1. It is a strong hypothesis, not a diagnosis. Four things remain unproven,
 and each needs a new observation rather than more computation: the phase of the two alleles,
 the function of the missense, the safety of any rescue, and whether the method works on other
 patients. §7b states the conclusions and the experiment that decides each question.

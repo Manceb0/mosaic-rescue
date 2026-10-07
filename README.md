@@ -27,11 +27,14 @@ The story below connects the evidence to the decisions; the notebooks expose the
 
 *The conceptual illustrations below explain the research questions; the scientific plots retain their original data and model-output provenance.*
 
-**Current answer:** `BUB1B` is the leading causal hypothesis. Its two candidate alleles
-are not yet a proven recessive pair. Short-read structural analysis is complete within
-the frozen GO 2B scope; a complex insertion remains possible. Track 2 proposes three
-experimental roles with explicit failure rules. **No treatment or therapeutic winner
-has been established.**
+**Current answer:** a panel-free genome-wide search converged on `BUB1B` as the leading
+causal hypothesis, with a genotype coherent with MVA1 (a truncating Likely Pathogenic allele
+plus a rare missense VUS). Its two alleles are not yet a proven recessive pair: phase is
+unresolved. Published work in human MVA patient cells shows that restoring BUBR1 can restore
+checkpoint function, so Track 2 turns that target into three experimentally distinct arms with
+explicit failure rules. **No treatment or therapeutic winner has been established.** When a
+secondary mosaicism method failed its validation on public data, we did not run it on the
+child (EXP-027).
 
 [Track 1: causal evidence](reports/TRACK1_REPORT.md) ·
 [Track 2: experimental portfolio](reports/TRACK2_REPORT.md) ·
@@ -42,7 +45,7 @@ has been established.**
 
 ### Track 1 — the leading causal hypothesis is BUB1B
 
-**Result:** frozen A0 rank **#4**, frequency-corrected sensitivity **#1**, and Exomiser **#2 of 398 genes** on the same VCF. The truncating allele is research Likely Pathogenic; the missense remains **VUS**, with **phase unresolved**. The scoped structural search found no overlapping RD+BAF CNV or mobile-element call in BUB1B; a complex insertion remains possible. **This is a prioritized hypothesis, not a confirmed diagnosis.**
+**Result:** among 6 321 genes, with no panel, `BUB1B` ranks **#1 in 14 of 15** sensitivity analyses of the same genome. The frozen A0 rank is **#4** and the frequency-corrected sensitivity **#1**, always reported together; Exomiser, an external method on the same VCF, ranks it **#2 of 398 genes**. The truncating allele is research Likely Pathogenic; the missense remains **VUS**, with **phase unresolved**. The scoped structural search found no overlapping RD+BAF CNV or mobile-element call in BUB1B; a complex insertion remains possible. **This is a prioritized hypothesis, not a confirmed diagnosis.**
 
 **Deliverables:** [causal report](reports/TRACK1_REPORT.md), [ranking](notebooks/01_TRACK1_GENOME_WIDE.ipynb), [allele curation](notebooks/02_BUB1B_ALLELE_CURATION.ipynb), and a two-row prediction CSV in ignored local storage. The [CSV generator](src/submission/track1_csv.py) preserves the method without publishing patient coordinates. Its older rationale and the packaged report need a final consistency review. Local ranks are not official leaderboard scores.
 
@@ -50,8 +53,8 @@ has been established.**
 
 | Proposed arm | Role | What would reject the proposed route |
 |---|---|---|
-| Azithromycin | Allele-directed readthrough hypothesis | No useful functional product under tested conditions |
-| Arimoclomol | Falsification sentinel | No target engagement despite an informative positive control |
+| Azithromycin | Allele-directed readthrough hypothesis · **computationally weakened by EXP-029, not eliminated** | No useful functional product under tested conditions |
+| Arimoclomol | Abundance / proteostasis route · falsification sentinel | No target engagement despite an informative positive control |
 | Sirolimus | Adversarial safety comparator | Increased survival of genomically unstable cells |
 
 **Result:** three experimental roles with controls and rejection rules, supported by a bounded **8 × 10 evidence matrix with 61 empty cells**. These gaps remain explicit. There is **no therapeutic winner or demonstrated rescue**; the arms are research proposals, not administration recommendations.
@@ -154,7 +157,15 @@ The frozen **A0 #4** and later **A0-FREQFIX #1** are always reported together. T
 genes above `BUB1B` in A0 carried common alleles whose frequency annotation was missing.
 Repairing that annotation was a later sensitivity analysis, not a rewrite of A0.
 `BUB1B` ranks first in 14 of 15 analyses. Exomiser's agreement is methodological
-convergence on the same data, not a second patient's validation.
+convergence on the same data, not a second patient's validation. Exomiser's own #1,
+`HLA-DRB1`, stays an unresolved audit flag. [Convergence figure](figures/pub/fig14_track1_convergence.svg).
+
+**The recorded phenotype mostly fits or stays open.** Of seven recorded traits, three are
+annotated in the MVA1 disease model, one more is supported by the published MVA1 series only
+through a broader growth phenotype, and two cannot be judged. Nephrocalcinosis is the one trait
+supported by neither check: it was not reported in the reviewed MVA1 series. That keeps a mixed
+diagnosis open without establishing one. [Phenotype figure](figures/pub/fig05_hpo_disease_matrix.svg) ·
+[audit](docs/PHENOTYPE_RESIDUAL_AUDIT.md).
 
 ![Two BUB1B variants: cis and trans remain possible; phase and missense function are independent unresolved questions.](docs/assets/mosaic-02-phase-function.png)
 
@@ -232,9 +243,14 @@ abundance, turnover and checkpoint function remain unmeasured.
 
 *Figure 8 · Two hypotheses, not observed outcomes. Candidate alleles may alter residual BUBR1 function. Restoring function and increasing tolerance of instability are different mechanisms; new errors per completed mitosis at matched proliferation and clonogenic survival must be interpreted together. Symbols are conceptual. Engagement, viability and controls are detailed in the following assay section. [Caption and sources](docs/assets/EDITORIAL_CAPTIONS.md).*
 
-External MVA-cell experiments support distinct abundance and functional defects in other
-alleles. A normal abundance assay would weaken the instability hypothesis, not exclude
-every functional mechanism. [PubMed](https://pubmed.ncbi.nlm.nih.gov/20516114/) ·
+**The mechanism is experimentally rescuable in human MVA cells.** Cell lines from MVA
+patients with biallelic `BUB1B` mutations fail to hold a mitotic-checkpoint arrest, misalign
+chromosomes and carry little BUBR1; re-expressing BUBR1 restored checkpoint activity almost
+fully to parental-control level in one patient line. That rescue was genetic, its endpoint was
+the checkpoint (not measured segregation), and the alleles were not this patient's. The same
+work shows abundance and functional defects that differ by allele, so a normal abundance assay
+would weaken the instability hypothesis without excluding every functional mechanism.
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/20516114/) ·
 [DOI](https://doi.org/10.1158/0008-5472.CAN-09-4319).
 
 The literature also gives a reason to challenge drug translation: genetic HSP70
@@ -258,7 +274,7 @@ roles; the order below is not a ranking or an administration recommendation.
 
 | Arm | Question | Crucial gap / rejection condition |
 |---|---|---|
-| **Azithromycin — allele-directed hypothesis** | Could readthrough restore useful full-length protein? | No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
+| **Azithromycin — allele-directed hypothesis** | Could readthrough restore useful full-length protein? | **Computationally weakened by EXP-029, not eliminated:** the stop context scores in the lower tercile under a G418-trained model and the plausible readthrough products do not restore the wild-type residue. No direct BUB1B evidence in the curated dossier; no functional product would reject this route under the tested conditions |
 | **Arimoclomol — falsification sentinel** | Does pharmacological co-induction actually engage the intended stress-response mechanism? | External counter-evidence; no engagement despite an informative positive control would reject the proposed pharmacological bridge in that system |
 | **Sirolimus — adversarial comparator** | Could apparent benefit reflect tolerance of instability? | Improved clonogenic survival of unstable cells is a veto; this arm is not a therapeutic nominee |
 
@@ -286,9 +302,10 @@ replace that datum. RNA/long-read work addresses a hidden allele; the functional
 addresses the missense; the safety experiment addresses an intervention. They are not
 interchangeable confirmations.
 
-Remaining analytical questions include the residual nephrocalcinosis, MitoRead's blood
-composition and matched-control confounders, and validation of a mosaicism detector
-against a phased baseline. A complete BAM now exists; those biological uncertainties
+Remaining analytical questions include the residual nephrocalcinosis and MitoRead's blood
+composition and matched-control confounders. The haplotype-phased mosaicism detector was
+validated against a public phased baseline and failed (EXP-027, below), so it was not run on
+the patient. A complete BAM now exists; those biological uncertainties
 remain. [Detailed status and decision-changing results](docs/STORYBOARD.md#what-is-genuinely-missing).
 
 ## 7. What we conclude, and what only new data can prove
@@ -320,6 +337,15 @@ cell fraction, a working rescue, or that the method generalises beyond this chil
 
 Phase comes first: it is the cheapest observation and it decides whether this pair can be the
 explanation at all. The full argument is in [Track 1 §7b](reports/TRACK1_REPORT.md).
+
+**And when a secondary method failed validation, we did not use it on the child.** EXP-027
+asked whether haplotype-specific allelic imbalance could read a mosaic signal from blood. Before
+touching the patient, it was validated on 20 public 1000 Genomes trios under a frozen contract.
+It detected injected imbalance well (sensitivity 0.943) but fired on 249 of 995 intact,
+unspiked benchmark pairs against a nominal 5 %, and BUB1B-locus retention was 0.879, below
+0.90. Method validation failed, so the patient test was **not performed**: this is not a
+patient-negative result. [Result figure](figures/pub/fig13_exp027_phase1_result.svg) ·
+[forensic record](docs/EXP027_PHASE1_RESULT.md).
 
 ## What makes this useful beyond a single ranking
 
