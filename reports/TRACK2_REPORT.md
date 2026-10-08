@@ -54,6 +54,10 @@ method for doing so, and no such method exists here. The three arms are not comp
 first place. Each one **teaches something different by failing**, and each carries a discard
 rule written in advance.
 
+![Find the cause, challenge the mechanism, test rescue safely](../docs/assets/mosaic-00-project-map.png)
+
+*Figure 1. Project map. Track 1 investigates the cause, Track 2 turns the conditional mechanism into three experimental arms judged by safety criteria. No confirmed diagnosis and no demonstrated rescue. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+
 ## 2. The variant mechanism this is built on
 
 Track 1 nominates **candidate compound-heterozygous `BUB1B`** (MVA1, OMIM 257300): a
@@ -72,6 +76,10 @@ protein abundance and stability is a leading therapeutic hypothesis, but direct 
 impairment of the pseudokinase domain remains an alternative that must be tested at matched
 protein abundance. Biallelic loss produces mosaic variegated aneuploidy, in which different
 cells carry different chromosome complements.
+
+![Function or tolerance](../docs/assets/mosaic-08-mechanism.png)
+
+*Figure 2. Function or tolerance. An intervention could restore residual BUBR1 function or only help unstable cells survive, so segregation and clonogenic survival have to be measured together. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 Two loss mechanisms, and they may need different interventions:
 
@@ -328,6 +336,10 @@ from this hackathon defines a true MVA rescue in the same terms: fewer segregati
 completed mitosis, with cell-cycle transit, clonogenic recovery and transformation risk checked
 alongside (§9, prior art). We adopt it as good practice and do not claim it as new.
 
+![What would count as rescue, and what would reject it](../docs/assets/mosaic-05-rescue-test.png)
+
+*Figure 3. What would count as rescue, and what would reject it. The three arms and the controls are read together for engagement, errors per completed mitosis, clonogenic survival and viability. Survival alone is insufficient. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+
 ## 7. The experiment
 
 Isogenic aneuploid/euploid pair, ± candidate compound, with:
@@ -342,6 +354,12 @@ Isogenic aneuploid/euploid pair, ± candidate compound, with:
 
 Four outcomes are prescribed in advance. **Two of them kill the hypothesis.** That is what
 makes it falsifiable rather than merely plausible.
+
+![Decision map, the order of decisions: the order of decisions, the patient-specific relevance gate and the Safe Rescue Corridor.](../figures/pub/fig15_decision_map_track2_a.png)
+
+![Decision map, Track 2: the three experimental arms, each with its discard rule, and the Safe Rescue Corridor.](../figures/pub/fig15_decision_map_track2_c.png)
+
+*Figure 4. Decision map for Track 2. The three experimental arms, their route-specific failure conditions, the causal-relevance gate and the Safe Rescue Corridor. This is a synthesis of the report, not a new result. The full figure has a third slide, the Track 1 questions, not reproduced here.*
 
 ## 8. What is nominated, and what is not
 
@@ -419,7 +437,7 @@ honest form of the idea is a question: *can the patient become the screen?*
 
 ## 10. Scalability
 
-Measured, not asserted: **59 of 116 modules in `src/`, 9 446 of 23 349 lines (40 %), contain no
+Measured, not asserted: **59 of 116 modules in `src/`, 9 446 of 23 760 lines (40 %), contain no
 reference to this case at all** (`python src/scalability_census.py`).
 
 **Read that number for what it is.** It says *40 % of the current codebase is case-agnostic

@@ -3056,3 +3056,44 @@ generado. Se quita del README, de `docs/EXTERNAL_BASELINE.md`, de `docs/PHENOTYP
 de EXP-027 y del título de la figura story10 («Correct the defect, or merely help cells tolerate it?»), con coma, dos
 puntos o paréntesis según el caso, y los incisos en español se reescriben a mano. story10 deja de ser idéntica byte a
 byte a su versión anterior por ese único cambio de título. El resto de figuras story se re-renderiza idéntico.
+
+**Figuras en los PDF de entrega (2026-10-07).** Con el visto bueno del líder: `openpyxl` 3.1.5 y `playwright` 1.63.0
+pasan a `.venv` y se fijan en `requirements.txt` con sus dependencias, y Edge del sistema queda declarado como
+dependencia externa del render. fig15 entra una sola vez en el PDF de Track 2, al final de §7, como variante de
+impresión (paneles A y C, estilo de figura de artículo), con el pie propuesto por el líder. A petición del usuario se
+incrustan también sus ilustraciones del README: en Track 1 la auditoría del ranking (§3), fase y función (§4) y la
+búsqueda del alelo oculto (§7), y en Track 2 «función o tolerancia» (§2). Cada pie dice que es un esquema conceptual
+hecho con generación de imágenes, revisado contra el informe y sin datos medidos. La ilustración 05 queda fuera porque
+su titular, dentro de la imagen, lleva un guion largo. El recuento de páginas de la lista de entrega se lee ahora del
+export final para no tener dos cifras distintas.
+
+**Estilo de los diagramas y las nueve ilustraciones del equipo en los PDF (2026-10-07).** El usuario fija el estilo de
+todo diagrama del proyecto: el de sus ilustraciones del README (fondo negro con cuadrícula, cajas de cristal, rutas de
+neón por color). fig15 se rehace en ese estilo, también en su variante para el PDF, y deja la versión blanca de
+artículo. Sus nueve ilustraciones entran en los PDF: en Track 1 la 01, 07, 03, 02, 04 y 06, y en Track 2 la 00, 08 y
+05, esta última también, aunque su titular dibujado lleve un guion largo, porque son del equipo y no se quitan.
+Track 1 queda en 15 páginas y Track 2 en 17.
+
+**fig15 rehecha como tres láminas en el formato de las ilustraciones del equipo (2026-10-07).** El primer intento de
+estilo oscuro seguía siendo una página web densa con letra pequeña. Ahora son tres láminas con el formato exacto de
+las ilustraciones: encabezado MOSAIC RESCUE con barra verde, cuadrícula sobre negro, cajas de cristal gris, embudos
+para las dos puertas, rutas ortogonales con esquinas redondeadas, amarillo discontinuo para lo propuesto y blanco para
+la lógica de las puertas, icono de placa de pocillos por brazo y pocas palabras grandes. Mismo texto y mismas 28
+guardias. El renderizador rechaza además cualquier texto visible con guion largo, punto y coma, flecha o punto medio.
+Tercera pasada de fig15 a petición del usuario: vidrio esmerilado con luces de color difuminadas detrás, grano fino,
+borde blanco brillante con halo, rutas de neón con halo propio, etiquetas en dos tonos, embudos iluminados por dentro e
+iconos del mismo lenguaje que las ilustraciones (homólogos h1 y h2, huso mitótico, placa de pocillos). Mismo texto y
+mismas guardias.
+Auditoría de la gramática de flechas de fig15 contra las referencias: ninguna flecha termina en texto suelto, la
+salida de la puerta 2 es una línea blanca que se bifurca en sus dos desenlaces, ningún texto reutiliza un color de la
+leyenda con otro significado y las etiquetas van junto a la línea, nunca encima.
+Las flechas de las puertas pasan de blanco a amarillo discontinuo, como las salidas del embudo de decisión en la ilustración 05 del equipo. El blanco no se usa en flechas.
+Colores de flujo en fig15 (2026-10-08): cada línea lleva el color de lo que transporta según la leyenda del proyecto (azul genotipo y registros del niño, amarillo experimento en células editadas, verde estudio computacional), las luces de cada caja están en el punto exacto por donde entra o sale su flujo, y las etiquetas de línea son neutras.
+fig15 (2026-10-08): glifos de las ilustraciones del equipo con su pie, leyenda en cápsula de vidrio y nota de techo arriba a la derecha. Las líneas van por encima de las cajas y el renderizador no genera la figura si una línea cruza una caja ajena o si una etiqueta o la leyenda pisan una caja.
+fig15 (2026-10-08): los iconos planos se sustituyen por glifos renderizados como los de las ilustraciones del equipo (volumen, degradados, reflejo y halo), más grandes.
+fig15 (2026-10-08): las flechas entran a los embudos en vertical por su borde superior plano (comprobado por el renderizador) y las luces de las cajas pasan a ser difusas y apagadas, pegadas al borde del puerto, como en las referencias.
+fig15 (2026-10-08): cajas clave tintadas como la caja AlphaGenome de la ilustración 04, con el color que cambia de un lado a otro cuando la caja recibe un flujo y entrega otro.
+fig15 (2026-10-08): brillos reducidos y tinte solo en tres cajas clave (fase, ensayo de la missense y caja final). Las ilustraciones del equipo en docs/assets no se han modificado.
+fig15 (2026-10-08): el borde de las cajas tintadas pasa a ser un degradado del color de su evidencia a blanco, como la caja AlphaGenome de la ilustración 04, y la caja final vuelve a ser neutra.
+fig15 (2026-10-08): solo la caja de la fase queda tintada (todos sus flujos son azules, tinte en el lado de sus puertos); el ensayo de la missense vuelve a borde blanco porque mezcla azul y amarillo. El renderizador rechaza una caja tintada con luces de otro color.
+fig15 (2026-10-08): los halos de los glifos ya no se recortan (SVG con overflow visible) y la nube de BUBR1 se redibuja como en las ilustraciones del equipo, con la luz en degradado y sin óvalo de brillo.

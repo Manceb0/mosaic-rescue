@@ -55,6 +55,10 @@ and each needs a new observation rather than more computation: the phase of the 
 the function of the missense, the safety of any rescue, and whether the method works on other
 patients. §7b states the conclusions and the experiment that decides each question.
 
+![From sequence to a testable mechanism](../docs/assets/mosaic-01-causal-workflow.png)
+
+*Figure 1. From sequence to a testable mechanism. Variant evidence and the recorded phenotype point to BUB1B, model predictions are compared, and a proposed functional assay would support or refute the mechanism. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+
 ## 2. Data and its limits, established before analysis
 
 One biological sample of blood WGS: four sequencing lanes, eight paired-end FASTQ files,
@@ -83,6 +87,10 @@ claim. The current per-question inventory is in [the visual guide](../docs/STORY
 
 ## 3. Method
 
+![The research route](../docs/assets/mosaic-07-research-route.png)
+
+*Figure 2. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+
 **No panel was used for the primary search.** Choosing a panel first and finding `BUB1B` in it
 would have been confirmation bias, and the project's own rules forbid it. The pipeline
 extracted **13 191 positions carrying 13 216 alleles** of HIGH and MODERATE consequence across
@@ -98,6 +106,10 @@ Fifteen ranking analyses were run, differing in whether phenotype and ClinVar we
 | `A1_GENETICS_CLINVAR` | + ClinVar | #1 |
 | `B0_FULL_PROBAND` | + HPO phenotype (Resnik / Best Match Average) | #1 |
 | 11 further leave-one-out and ablation analyses | varies | #1 in 14 of 15 overall |
+
+![Why BUB1B rose to the top](../docs/assets/mosaic-03-ranking-audit.png)
+
+*Figure 3. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 **An external baseline was run on the same VCF.** Exomiser, a method this project did not
 write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both runs.
@@ -140,6 +152,10 @@ monoallelic combined with variants that lower wild-type BUBR1 ([Wijshake et al. 
 therefore matches the expected pattern. That raises the prior plausibility of the hypothesis,
 but it does not replace phase or functional evidence for these particular alleles.
 
+![Two variants, two unresolved questions](../docs/assets/mosaic-02-phase-function.png)
+
+*Figure 4. Two variants and two unresolved questions. Phase decides whether the pair can be recessive, and the missense still needs functional testing. Phase alone does not resolve the VUS. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+
 ## 5. Competing hypotheses, all audited
 
 The value of a panel-free search is that it surfaces competitors. Every gene that outranked or
@@ -177,6 +193,10 @@ also deliberately kept out of the main MVA narrative: it would distract from `BU
 separate and much larger clinical conversation.
 
 ## 7. The second-allele problem and the completed short-read analysis
+
+![A bounded search for a hidden allele](../docs/assets/mosaic-04-hidden-allele.png)
+
+*Figure 5. A bounded search for a hidden second allele. Each negative holds within its scope, and a complex insertion is not excluded. RNA-seq and targeted long reads are proposed. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 The full-depth BAM made read-based structural analysis possible. This is a technical
 extension of the same biological sample, not an independent biological replication.
@@ -235,6 +255,10 @@ splicing. It does not show that this case has the same lesion.
   the phenotype more economically. The raw caller inventory has not established one.
 - A second `LZTR1` allele found by a method this pipeline cannot run, which would reopen
   recessive Noonan syndrome.
+
+![Choose the experiment that changes the decision](../docs/assets/mosaic-06-next-experiments.png)
+
+*Figure 6. Choose the experiment that changes the decision. Each open question with its measurement and the decision it informs. Proposed measurements, not completed results. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 Priority is phase for the causal pair, followed by variant-specific functional evidence.
 RNA-seq and targeted long reads remain routes for a hidden allele if that question persists.

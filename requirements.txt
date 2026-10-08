@@ -60,7 +60,14 @@ pillow==12.1.0          # comparacion pixel a pixel de figuras en tests
 #     the notebooks read the cache; the call is not repeated on a normal build.
 
 # Submission packaging: src/submission/export_reports.py (Markdown, PDF and the methods form)
-#     markdown is installed in .venv. The 2026-10-07 export also used openpyxl 3.1.5 and
-#     playwright 1.63.0 (PDF rendered by the system Microsoft Edge), taken from the system
-#     Python because they are not yet in .venv. Install both here before the next export.
+#     All installed in .venv since 2026-10-07. Transitive dependencies pinned for reproducibility.
+#     External dependency, not installed by pip: the PDF and the fig15 PNG are rendered by the
+#     system Microsoft Edge through Playwright (channel "msedge"). Without Edge, Playwright falls
+#     back to its own Chromium, which needs `python -m playwright install chromium`.
 markdown==3.11
+openpyxl==3.1.5
+et_xmlfile==2.0.0
+playwright==1.63.0
+greenlet==3.5.6
+pyee==13.0.1
+typing_extensions==4.16.0

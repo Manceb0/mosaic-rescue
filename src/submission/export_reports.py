@@ -49,7 +49,7 @@ blockquote{margin:6pt 18pt;padding:0;color:#333;font-style:italic}
 img{max-width:100%;display:block;margin:8pt auto}a{color:#1d3f6e;text-decoration:none}hr{display:none}
 h1,h2,h3{break-after:avoid}
 img,tr,blockquote,pre{break-inside:avoid}
-p:has(+ table),p:has(+ p > img){break-after:avoid}
+p:has(+ table){break-after:avoid}
 thead:not(:has(th:not(:empty))){display:none}"""
 # Formato de artículo, no de interfaz (2026-10-07, a petición del usuario): texto con serifa, títulos sin subrayar,
 # tablas de tres rayas sin rejilla ni fondos, nombres y rutas sin «fichas» grises, sin reglas horizontales. Las
