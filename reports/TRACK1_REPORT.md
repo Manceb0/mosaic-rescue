@@ -19,7 +19,11 @@ together, always, and `A0` is never rewritten. An externally written method, Exo
 the same VCF, ranks `BUB1B` **#2 of 398** genes. These are robustness checks on the same
 genome, not independent biological replications. Exomiser's #1, `HLA-DRB1`, is kept as an
 unresolved audit flag, not a demonstrated alternative (§5).
-([Figure: fig14](../figures/pub/fig14_track1_convergence.svg))
+
+![Track 1 convergence on BUB1B](../figures/pub/fig14_track1_convergence.svg)
+
+*Figure 1. Data figure. Without a gene panel, BUB1B is top-ranked in 14 of 15 sensitivity analyses of the same genome and Exomiser places it #2 of 398 (same VCF). It is #4 in the frozen A0 and #1 in A0-FREQFIX. Both are reported. Strong candidate, not a diagnosis. Drawn by `src/figures/fig14_track1_convergence.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
 
 **The genotype is mechanistically coherent with MVA1:** one truncating allele, research-curated
 Likely Pathogenic, plus one rare missense VUS, both on the MANE transcript, a configuration
@@ -33,7 +37,7 @@ phenotype, two cannot be judged because the compilation does not quantify them, 
 model and was not reported in that compilation, which records only generic renal dysfunction
 (12.9 %). The compilation is a literature review, not a homogeneous cohort: its own index case
 carries a single heterozygous `BUB1B` VUS. A residual trait keeps a mixed diagnosis open. It does not establish
-one ([audit](../docs/PHENOTYPE_RESIDUAL_AUDIT.md), [Figure: fig05](../figures/pub/fig05_hpo_disease_matrix.svg)).
+one ([audit](../docs/PHENOTYPE_RESIDUAL_AUDIT.md)).
 
 **Phase remains unresolved. Therefore this is a strong causal hypothesis, not a diagnosis.** No
 parental samples were provided, and the two alleles are separated by a gap 13.8× the
@@ -57,7 +61,7 @@ patients. §7b states the conclusions and the experiment that decides each quest
 
 ![From sequence to a testable mechanism](../docs/assets/mosaic-01-causal-workflow.png)
 
-*Figure 1. From sequence to a testable mechanism. Variant evidence and the recorded phenotype point to BUB1B, model predictions are compared, and a proposed functional assay would support or refute the mechanism. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 2. From sequence to a testable mechanism. Variant evidence and the recorded phenotype point to BUB1B, model predictions are compared, and a proposed functional assay would support or refute the mechanism. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 ## 2. Data and its limits, established before analysis
 
@@ -72,7 +76,7 @@ The data are fit for the question.
 
 ![FASTQ quality control](../figures/pub/fig00_fastq_qc.svg)
 
-*Figure 2. Data figure. Reads are fit for use: 149 bp invariant, GC 41.3 % against the genome's 41 %, 92.9 % of bases at Q30+, and quality degrades from 4.52 % to 13.29 % non-Q37. Drawn by `src/figures/fig00_qc.py` from the project's analysis outputs, with source hashes checked before drawing.*
+*Figure 3. Data figure. Reads are fit for use: 149 bp invariant, GC 41.3 % against the genome's 41 %, 92.9 % of bases at Q30+, and quality degrades from 4.52 % to 13.29 % non-Q37. Drawn by `src/figures/fig00_qc.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 
 What does **not** exist, and what each absence blocks:
@@ -94,7 +98,7 @@ claim. The current per-question inventory is in [the visual guide](../docs/STORY
 
 ![The research route](../docs/assets/mosaic-07-research-route.png)
 
-*Figure 3. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 4. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 **No panel was used for the primary search.** Choosing a panel first and finding `BUB1B` in it
 would have been confirmation bias, and the project's own rules forbid it. The pipeline
@@ -114,7 +118,7 @@ Fifteen ranking analyses were run, differing in whether phenotype and ClinVar we
 
 ![Why BUB1B rose to the top](../docs/assets/mosaic-03-ranking-audit.png)
 
-*Figure 4. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 5. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 **An external baseline was run on the same VCF.** Exomiser, a method this project did not
 write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both runs.
@@ -122,10 +126,6 @@ Agreement between an in-house score and an independently written tool is worth m
 either alone, but it is methodological agreement on the same genotypes, not independent
 biological evidence. Its #1, `HLA-DRB1`, is kept as an open audit flag (see the competitor
 table).
-
-![Track 1 convergence on BUB1B](../figures/pub/fig14_track1_convergence.svg)
-
-*Figure 5. Data figure. Without a gene panel, BUB1B is top-ranked in 14 of 15 sensitivity analyses of the same genome and Exomiser places it #2 of 398 (same VCF). It is #4 in the frozen A0 and #1 in A0-FREQFIX. Both are reported. Strong candidate, not a diagnosis. Drawn by `src/figures/fig14_track1_convergence.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 ![Genome-wide prioritization of 6,321 genes](../figures/pub/fig01_prioritization_genomewide.svg)
 
