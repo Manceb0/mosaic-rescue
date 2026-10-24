@@ -540,11 +540,17 @@ not repeated on a normal build. See `docs/03_ALPHAGENOME_ASSESSMENT.md`.
 Carried out for the Rare Disease, Real Kid: MVA Hackathon 2026, organised by Sage
 Bionetworks, the MVA Society, Hugging Face, BEACON, AWS and Anthropic.
 
-> **Dataset citation: to be completed before submission**, using the reference provided on the
-> hackathon Synapse page. It was not retrieved in this session and is therefore not
-> transcribed here, per the project's rule against unverified identifiers.
+**Required acknowledgement**, reproduced verbatim from the Official Rules of the Hackathon:
 
-**Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The formal citation is not reproduced here: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
+> "This work was made possible through the Hackathon, organized by Sage Bionetworks in partnership with the MVA
+> Society, Hugging Face, and BEACON (The Benchmarking, Evaluation, and Assessment Consortium for Science), with prize
+> sponsorship from AWS and Anthropic. We are deeply grateful to the child and their family who generously contributed
+> their data and their story to advance research into this rare disease. We acknowledge their trust in making this
+> Hackathon possible."
+
+**Dataset citation.** Rare Disease, Real Kid. The 2026 MVA Hackathon. Sage Bionetworks, Synapse project
+syn76251147. <https://www.synapse.org/Synapse:syn76251147>. The Synapse page, checked on 24 October 2026, gives
+no separately formatted reference, so the project is cited by the exact name and identifier it publishes there.
 
 **Privacy.** This report omits variant coordinates, HGVS strings, genotypes and sample
 identifiers. Internal technical figures elsewhere need review before any public release.
