@@ -70,6 +70,11 @@ Read quality was assessed before any variant was examined: invariant 149 bp read
 41.3 % against the genome's 41 %, **92.9 % of bases at Q30 or better**, and no poly-G drift.
 The data are fit for the question.
 
+![FASTQ quality control](../figures/pub/fig00_fastq_qc.svg)
+
+*Figure 2. Data figure. Reads are fit for use: 149 bp invariant, GC 41.3 % against the genome's 41 %, 92.9 % of bases at Q30+, and quality degrades from 4.52 % to 13.29 % non-Q37. Drawn by `src/figures/fig00_qc.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+
 What does **not** exist, and what each absence blocks:
 
 | Missing | Consequence |
@@ -89,7 +94,7 @@ claim. The current per-question inventory is in [the visual guide](../docs/STORY
 
 ![The research route](../docs/assets/mosaic-07-research-route.png)
 
-*Figure 2. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 3. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 **No panel was used for the primary search.** Choosing a panel first and finding `BUB1B` in it
 would have been confirmation bias, and the project's own rules forbid it. The pipeline
@@ -109,7 +114,7 @@ Fifteen ranking analyses were run, differing in whether phenotype and ClinVar we
 
 ![Why BUB1B rose to the top](../docs/assets/mosaic-03-ranking-audit.png)
 
-*Figure 3. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 4. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 **An external baseline was run on the same VCF.** Exomiser, a method this project did not
 write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both runs.
@@ -118,11 +123,23 @@ either alone, but it is methodological agreement on the same genotypes, not inde
 biological evidence. Its #1, `HLA-DRB1`, is kept as an open audit flag (see the competitor
 table).
 
+![Track 1 convergence on BUB1B](../figures/pub/fig14_track1_convergence.svg)
+
+*Figure 5. Data figure. Without a gene panel, BUB1B is top-ranked in 14 of 15 sensitivity analyses of the same genome and Exomiser places it #2 of 398 (same VCF). It is #4 in the frozen A0 and #1 in A0-FREQFIX. Both are reported. Strong candidate, not a diagnosis. Drawn by `src/figures/fig14_track1_convergence.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+![Genome-wide prioritization of 6,321 genes](../figures/pub/fig01_prioritization_genomewide.svg)
+
+*Figure 6. Data figure. BUB1B competes against a 6,321-gene universe and ranks #4 in the frozen A0. The y axis is a prioritization score, not a p-value. Drawn by `src/figures/fig01_manhattan.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
 **Phenotype handling.** Seven HPO terms from the clinical document, plus one family-history
 term kept on a separate channel so it cannot contaminate the primary result. A frozen polarity
 rule applies: **only documented terms count as positive. Anything unmentioned is UNKNOWN,
 never negative.** Semantic similarity uses Resnik information content in bits with Best Match
 Average aggregation.
+
+![HPO term by disease model matrix](../figures/pub/fig05_hpo_disease_matrix.svg)
+
+*Figure 7. Data figure. Among seven recorded traits, nephrocalcinosis is the one with neither HPO annotation nor MVA1 literature support, while Bartter-type models do cover it. Two traits cannot be judged (PARKED, not negative). Drawn by `src/figures/fig05_hpo.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 ## 4. Curation of the two alleles
 
@@ -145,6 +162,10 @@ own protein, the chemical property is conserved in 99.2 % of 120 orthologs, and 
 substitution introduced appears in none of them. **This does not change the ACMG call**, and
 it is reported as mechanism, not as evidence of pathogenicity.
 
+![Pocket geometry and orthologous conservation at the candidate residue](../figures/pub/fig03_pocket_and_conservation.svg)
+
+*Figure 8. Model output, predicted, not measured. The candidate side chain anchors a pocket of 9 residues with 3 candidate H-bonds, at pLDDT 91 and in a column carrying 4.04 of 4.32 possible bits. Drawn by `src/figures/fig03_pocket.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
 **What the literature says about this configuration.** According to PubMed, the first
 families with BUB1B-associated MVA carried truncating and missense mutations ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)), and
 human MVA1 cases are either biallelic, typically one missense plus one nonsense allele, or
@@ -154,7 +175,7 @@ but it does not replace phase or functional evidence for these particular allele
 
 ![Two variants, two unresolved questions](../docs/assets/mosaic-02-phase-function.png)
 
-*Figure 4. Two variants and two unresolved questions. Phase decides whether the pair can be recessive, and the missense still needs functional testing. Phase alone does not resolve the VUS. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 9. Two variants and two unresolved questions. Phase decides whether the pair can be recessive, and the missense still needs functional testing. Phase alone does not resolve the VUS. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 ## 5. Competing hypotheses, all audited
 
@@ -196,7 +217,7 @@ separate and much larger clinical conversation.
 
 ![A bounded search for a hidden allele](../docs/assets/mosaic-04-hidden-allele.png)
 
-*Figure 5. A bounded search for a hidden second allele. Each negative holds within its scope, and a complex insertion is not excluded. RNA-seq and targeted long reads are proposed. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 10. A bounded search for a hidden second allele. Each negative holds within its scope, and a complex insertion is not excluded. RNA-seq and targeted long reads are proposed. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 The full-depth BAM made read-based structural analysis possible. This is a technical
 extension of the same biological sample, not an independent biological replication.
@@ -230,6 +251,18 @@ The regulatory SNV/indel branch remains negative within the evaluated scope. Exi
 AlphaGenome ISM/contact figures are EXP-023 model outputs. EXP-024, the separate null and
 positive-control calibration, remains preregistered and not executed.
 
+![Chromosome-level read depth and BAF](../figures/pub/fig09_cnvpytor_chromosome_rd_baf.svg)
+
+*Figure 11. Data figure. Chromosome-level RD and BAF of the patient's blood WGS, descriptive only: autosomal medians in a narrow band, uniform aggregated BAF. No mosaic fraction is estimated and no aneuploidy is asserted or excluded. Drawn by `src/figures/fig09_cnv_chromosomes.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+![Read-level breakpoint metrics for BUB1B and flanks](../figures/pub/fig10_bub1b_readlevel_assay.svg)
+
+*Figure 12. Data figure. Short-read breakpoint metrics for the BUB1B body and two equal-length flanks, side by side. No inferential excess/no-excess threshold was defined, and a complex insertion is not excluded. Drawn by `src/figures/fig10_bub1b_readlevel.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+![AlphaGenome RNA and splicing predictions, REF against ALT](../figures/pub/fig04_alphagenome_rna_splicing.svg)
+
+*Figure 13. Model output, predicted, not measured. ALT tracks REF across every frozen prediction. Splicing, the modality that decided the hypothesis, shows neither gain nor loss of a site. Drawn by `src/figures/fig04_tracks.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
 **The missing second allele has a history in this disease.** In seven families with PCS
 syndrome, only one BUB1B mutation per family was found in coding sequence, while transcript and
 protein levels were reduced ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)). Later cases located the hidden allele outside the exons:
@@ -258,7 +291,7 @@ splicing. It does not show that this case has the same lesion.
 
 ![Choose the experiment that changes the decision](../docs/assets/mosaic-06-next-experiments.png)
 
-*Figure 6. Choose the experiment that changes the decision. Each open question with its measurement and the decision it informs. Proposed measurements, not completed results. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 14. Choose the experiment that changes the decision. Each open question with its measurement and the decision it informs. Proposed measurements, not completed results. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 Priority is phase for the causal pair, followed by variant-specific functional evidence.
 RNA-seq and targeted long reads remain routes for a hidden allele if that question persists.
@@ -289,6 +322,18 @@ None of these assays is represented as already performed in this case.
 
 **What it does not establish.** A diagnosis, a biallelic configuration, the effect of the
 missense, a mosaic cell fraction, a working rescue, or that the method generalises.
+
+**And when a secondary method failed validation, we did not use it on the child.** EXP-027
+asked whether haplotype-specific allelic imbalance could read a mosaic signal from blood. Before
+touching the patient, it was validated on 20 public 1000 Genomes trios under a frozen contract.
+It detected injected imbalance well (sensitivity 0.943) but fired on 249 of 995 intact,
+unspiked benchmark pairs against a nominal 5 %, and BUB1B-locus retention was 0.879, below
+0.90. Method validation failed, so the patient test was **not performed**: this is not a
+patient-negative result ([forensic record](../docs/EXP027_PHASE1_RESULT.md)).
+
+![EXP-027 Phase 1 result on public trios](../figures/pub/fig13_exp027_phase1_result.svg)
+
+*Figure 15. Data figure. High sensitivity (0.943 at δ = 0.10), failed calibration (APR 249/995 = 25.0 % vs 5 % nominal): method validation FAIL, so the patient-level A1 test was not performed. Drawn by `src/figures/fig13_exp027_phase1.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 **Blood is one view of the mosaic, not the mosaic.** The chromosome picture in any sample
 reflects three things at once: which errors cell division produces, which of the resulting

@@ -114,7 +114,7 @@ def build(meta, ref, alt, delta, rob, fig_tag: str = "Figure 5C"):
     S.grid(axR, "x")
 
     ratio = meta["interpretation"]["ratio"]
-    fig.suptitle(f"{fig_tag}. AlphaGenome predicted chromatin contacts around the frozen "
+    fig.suptitle(f"AlphaGenome predicted chromatin contacts around the frozen "
                  f"candidate: {meta['biosample_name']}", x=0.006, y=0.985, ha="left",
                  fontsize=S.BASE + 2.0, fontweight="bold", color=S.INK)
     S.note(fig, "PREDICTED, not measured. Not Hi-C, not patient chromatin, not any tissue: a sequence model's output for one biosample chosen before the prediction." + NL2 +

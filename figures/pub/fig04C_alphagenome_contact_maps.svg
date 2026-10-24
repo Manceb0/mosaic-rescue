@@ -864,7 +864,7 @@ z
    </g>
   </g>
   <g id="text_58">
-   <text style="fill: #1a1a1a; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="5.5296" y="13.538437" transform="rotate(-0 5.5296 13.538437)">Figure 5C. AlphaGenome predicted chromatin contacts around the frozen candidate: skin fibroblast</text>
+   <text style="fill: #1a1a1a; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="5.5296" y="13.538437" transform="rotate(-0 5.5296 13.538437)">AlphaGenome predicted chromatin contacts around the frozen candidate: skin fibroblast</text>
   </g>
   <g id="text_59">
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 377.796022)">PREDICTED, not measured. Not Hi-C, not patient chromatin, not any tissue: a sequence model's output for one biosample chosen before the prediction.</text>

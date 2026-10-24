@@ -155,7 +155,7 @@ def build(tracks, exons_rel, flank, transcript, release, which: str, fig_tag: st
     axG.set_xlim(*XL)
     mx = max(float(np.abs(np.asarray(t["alt"], dtype=float)
                           - np.asarray(t["ref"], dtype=float)).max()) for t in sel)
-    fig.suptitle(f"{fig_tag}. AlphaGenome predicted tracks: {GROUPS[which]['title']}",
+    fig.suptitle(f"AlphaGenome predicted tracks: {GROUPS[which]['title']}",
                  x=0.006, y=0.998, ha="left", fontsize=S.BASE + 2.0,
                  fontweight="bold", color=S.INK)
     fig.tight_layout(rect=(0.02, 0.056, 1, 0.972))

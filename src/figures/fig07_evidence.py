@@ -185,7 +185,7 @@ def build(ev):
     b1_non_absent = [d for d in DIMS if cell[(1, d)]["clase"] != "ABSENT"]
     b7_contra = [d for d in DIMS if cell[(7, d)]["clase"] == "CONTRADICTORY"]
 
-    fig.suptitle("Figure 8. Track 2 curated evidence matrix "
+    fig.suptitle("Track 2 curated evidence matrix "
                  "(external literature + project evidence, not patient observations)",
                  x=0.006, y=0.988, ha="left", fontsize=S.BASE + 1.6,
                  fontweight="bold", color=S.INK)

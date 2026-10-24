@@ -133,6 +133,12 @@ enforced at build time: **no non-absent cell may exist without a source.**
 
 Result: **80 cells, of which 61 are empty.**
 
+
+![Track 2 evidence matrix](../figures/pub/fig07_track2_evidence_matrix.svg)
+
+*Figure 3. Curated evidence figure. Bridge 7 is the translational gap and bridge 8 the safety gap: 61 of 80 evidence cells are empty and no overall score is computed. Drawn by `src/figures/fig07_evidence.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+
 Two things that matrix is not, and both matter. **The 80 cells are not 80 independent pieces of
 evidence**: a single paper fills several of them, and **4 distinct publications plus 2 internal
 project artefacts** are the honest
@@ -338,7 +344,7 @@ alongside (§9, prior art). We adopt it as good practice and do not claim it as 
 
 ![What would count as rescue, and what would reject it](../docs/assets/mosaic-05-rescue-test.png)
 
-*Figure 3. What would count as rescue, and what would reject it. The three arms and the controls are read together for engagement, errors per completed mitosis, clonogenic survival and viability. Survival alone is insufficient. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
+*Figure 4. What would count as rescue, and what would reject it. The three arms and the controls are read together for engagement, errors per completed mitosis, clonogenic survival and viability. Survival alone is insufficient. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
 ## 7. The experiment
 
@@ -359,7 +365,7 @@ makes it falsifiable rather than merely plausible.
 
 ![Decision map, Track 2: the three experimental arms, each with its discard rule, and the Safe Rescue Corridor.](../figures/pub/fig15_decision_map_track2_c.png)
 
-*Figure 4. Decision map for Track 2. The three experimental arms, their route-specific failure conditions, the causal-relevance gate and the Safe Rescue Corridor. This is a synthesis of the report, not a new result. The full figure has a third slide, the Track 1 questions, not reproduced here.*
+*Figure 5. Decision map for Track 2. The three experimental arms, their route-specific failure conditions, the causal-relevance gate and the Safe Rescue Corridor. This is a synthesis of the report, not a new result. The full figure has a third slide, the Track 1 questions, not reproduced here.*
 
 ## 8. What is nominated, and what is not
 
@@ -407,6 +413,14 @@ long-range phasing. **No superiority over a phased method is demonstrated**. Tha
 is **not** a validated detector. The depth-normalised statistic removes the depth sensitivity
 observed for the absolute-deviation statistic *in this simulation*. What supports the revised
 reading is the ablation's combined pattern, not that statistic on its own.
+
+![Simulated BAF cancellation](../figures/pub/fig06_baf_cancellation.svg)
+
+*Figure 6. Simulation, not patient data. A variegated genome re-centres on BAF 0.5 with the same aneuploidy present, and the unphased BAF statistic loses power as the event grows. Drawn by `src/figures/fig06_baf.py` from the project's analysis outputs, with source hashes checked before drawing.*
+
+![Factorial ablation of the BAF simulation](../figures/pub/fig12_baf_factorial_ablation.svg)
+
+*Figure 7. Simulation, not patient data. Post-hoc factorial ablation separates homolog direction and depth effects. No new simulation. Drawn by `src/figures/fig12_ablation.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 ### Prior art, and what we do not claim
 

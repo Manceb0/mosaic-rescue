@@ -910,7 +910,7 @@ L 677.664 573.48
    </g>
   </g>
   <g id="text_61">
-   <text style="fill: #1a1a1a; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="4.4928" y="12.134438" transform="rotate(-0 4.4928 12.134438)">Figure 5I. AlphaGenome in silico mutagenesis: local sequence sensitivity around the frozen candidate</text>
+   <text style="fill: #1a1a1a; font: 700 10px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="4.4928" y="12.134438" transform="rotate(-0 4.4928 12.134438)">AlphaGenome in silico mutagenesis: local sequence sensitivity around the frozen candidate</text>
   </g>
   <g id="text_62">
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(4.4928 621.320663)">PREDICTED, not measured. Model attribution only: 768 synthetic substitutions scored by a sequence model; no patient tissue, no assay.</text>

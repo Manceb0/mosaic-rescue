@@ -180,7 +180,7 @@ def build(meta, mats, fig_tag: str = "Figure 5I"):
 
     ip = meta["interpretation"]
     r = ip.get("context_pearson_r", {})
-    fig.suptitle(f"{fig_tag}. AlphaGenome in silico mutagenesis: local sequence sensitivity "
+    fig.suptitle(f"AlphaGenome in silico mutagenesis: local sequence sensitivity "
                  "around the frozen candidate", x=0.006, y=0.993, ha="left",
                  fontsize=S.BASE + 2.0, fontweight="bold", color=S.INK)
     S.note(fig, "PREDICTED, not measured. Model attribution only: 768 synthetic substitutions scored by a sequence model; no patient tissue, no assay." + NL2 +

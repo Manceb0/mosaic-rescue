@@ -186,7 +186,7 @@ def build(rows):
                  linespacing=1.42)
         y -= 0.335
 
-    fig.suptitle("Figure 9. Track 2 experimental portfolio: three roles, not a ranking",
+    fig.suptitle("Track 2 experimental portfolio: three roles, not a ranking",
                  x=0.006, y=0.988, ha="left", fontsize=S.BASE + 1.6,
                  fontweight="bold", color=S.INK)
     fig.text(0.006, 0.930,

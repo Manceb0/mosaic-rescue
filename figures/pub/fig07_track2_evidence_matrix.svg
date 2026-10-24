@@ -962,7 +962,7 @@ z
    </g>
   </g>
   <g id="text_53">
-   <text style="fill: #1a1a1a; font: 700 9.6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="5.5296" y="11.7873" transform="rotate(-0 5.5296 11.7873)">Figure 8. Track 2 curated evidence matrix (external literature + project evidence, not patient observations)</text>
+   <text style="fill: #1a1a1a; font: 700 9.6px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif; text-anchor: start" x="5.5296" y="11.7873" transform="rotate(-0 5.5296 11.7873)">Track 2 curated evidence matrix (external literature + project evidence, not patient observations)</text>
   </g>
   <g id="text_54">
    <text style="fill: #5b6670; font: 6.7px 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif" transform="translate(5.5296 341.312528)">Every cell is a versioned row in research/track2_evidence.tsv: 80 cells drawn from 4 distinct publications and 2 internal project artefacts; no cell other than an absent one may lack a source (checked at build time).</text>
