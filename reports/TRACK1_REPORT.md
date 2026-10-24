@@ -25,11 +25,11 @@ unresolved audit flag, not a demonstrated alternative (§5).
 *Figure 1. Data figure. Without a gene panel, BUB1B is top-ranked in 14 of 15 sensitivity analyses of the same genome and Exomiser places it #2 of 398 (same VCF). It is #4 in the frozen A0 and #1 in A0-FREQFIX. Both are reported. Strong candidate, not a diagnosis. Drawn by `src/figures/fig14_track1_convergence.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 
-**The genotype is mechanistically coherent with MVA1:** one truncating allele, research-curated
+The genotype is mechanistically coherent with MVA1: one truncating allele, research-curated
 Likely Pathogenic, plus one rare missense VUS, both on the MANE transcript, a configuration
 reported in biallelic `BUB1B`-associated MVA ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)).
 
-**The recorded phenotype mostly fits or stays open.** Of seven recorded traits, three are
+The recorded phenotype mostly fits or stays open. Of seven recorded traits, three are
 annotated in the MVA1 disease model, one more is supported by a published 31-case MVA1
 literature compilation (Pavone et al. 2022, PMID 35804254) only through a broader growth
 phenotype, two cannot be judged because the compilation does not quantify them, and
@@ -42,17 +42,17 @@ one ([audit](../docs/PHENOTYPE_RESIDUAL_AUDIT.md)).
 **Phase remains unresolved. Therefore this is a strong causal hypothesis, not a diagnosis.** No
 parental samples were provided, and the two alleles are separated by a gap 13.8× the
 sequencing fragment length, so read-backed phasing cannot reach. `PM3` is therefore blocked and
-the biallelic configuration is a **candidate**, not a demonstrated finding. The correct
+the biallelic configuration is a candidate, not a demonstrated finding. The correct
 description is *candidate compound heterozygosity with phase unresolved*, and nothing stronger.
 The missense remains a VUS: no functional assay of this allele exists.
 
-A **research secondary/incidental candidate** is also reported: a heterozygous nonsense
+A research secondary/incidental candidate is also reported: a heterozygous nonsense
 variant in `LZTR1`, ClinVar pathogenic/likely pathogenic. It is not proposed as the cause of
-this phenotype, and it is **not** presented as a returnable clinical finding: it would require
+this phenotype, and it is not presented as a returnable clinical finding: it would require
 independent clinical confirmation and appropriate return-of-results handling before it meant
 anything to anyone.
 
-**Bottom line.** `BUB1B` is the best-supported explanation this genome can offer, found
+Taken together, `BUB1B` is the best-supported explanation this genome can offer, found
 without a gene panel, and its candidate genotype matches a reported biallelic pattern of MVA
 type 1. It is a strong hypothesis, not a diagnosis. Four things remain unproven,
 and each needs a new observation rather than more computation: the phase of the two alleles,
@@ -71,7 +71,7 @@ the same sample. GRCh38 is the reference assembly, not a second participant.
 The initial QC notebook sampled lane 1. The later GO 2A/GO 2B work uses the full alignment.
 
 Read quality was assessed before any variant was examined: invariant 149 bp read length, GC
-41.3 % against the genome's 41 %, **92.9 % of bases at Q30 or better**, and no poly-G drift.
+41.3 % against the genome's 41 %, 92.9 % of bases at Q30 or better, and no poly-G drift.
 The data are fit for the question.
 
 ![FASTQ quality control](../figures/pub/fig00_fastq_qc.svg)
@@ -79,7 +79,7 @@ The data are fit for the question.
 *Figure 3. Data figure. Reads are fit for use: 149 bp invariant, GC 41.3 % against the genome's 41 %, 92.9 % of bases at Q30+, and quality degrades from 4.52 % to 13.29 % non-Q37. Drawn by `src/figures/fig00_qc.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
 
-What does **not** exist, and what each absence blocks:
+What does not exist, and what each absence blocks:
 
 | Missing | Consequence |
 |---|---|
@@ -100,10 +100,10 @@ claim. The current per-question inventory is in [the visual guide](../docs/STORY
 
 *Figure 4. The research route. One case feeds variant, read and phenotype evidence into a causal hypothesis, while simulation sets method limits and external evidence feeds the rescue hypotheses and their safety criteria. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
-**No panel was used for the primary search.** Choosing a panel first and finding `BUB1B` in it
+No panel was used for the primary search. Choosing a panel first and finding `BUB1B` in it
 would have been confirmation bias, and the project's own rules forbid it. The pipeline
-extracted **13 191 positions carrying 13 216 alleles** of HIGH and MODERATE consequence across
-**6 321 genes**, and scored them on genotype configuration, rarity, consequence severity,
+extracted 13 191 positions carrying 13 216 alleles of HIGH and MODERATE consequence across
+6 321 genes, and scored them on genotype configuration, rarity, consequence severity,
 transcript status and quality, with no gene-level prior.
 
 Fifteen ranking analyses were run, differing in whether phenotype and ClinVar were used:
@@ -120,8 +120,8 @@ Fifteen ranking analyses were run, differing in whether phenotype and ClinVar we
 
 *Figure 5. Why BUB1B rose to the top. The frozen A0 placed it fourth, the frequency audit repaired 33 annotations, A0-FREQFIX placed it first, and Exomiser on the same VCF placed it second of 398. Method agreement on the same data is not biological replication. Conceptual schematic drawn with AI image generation and checked against this report. It shows no measured data.*
 
-**An external baseline was run on the same VCF.** Exomiser, a method this project did not
-write, places `BUB1B` **#2 of 398 distinct genes**, autosomal-recessive model, in both runs.
+An external baseline was run on the same VCF. Exomiser, a method this project did not
+write, places `BUB1B` #2 of 398 distinct genes, autosomal-recessive model, in both runs.
 Agreement between an in-house score and an independently written tool is worth more than
 either alone, but it is methodological agreement on the same genotypes, not independent
 biological evidence. Its #1, `HLA-DRB1`, is kept as an open audit flag (see the competitor
@@ -131,10 +131,10 @@ table).
 
 *Figure 6. Data figure. BUB1B competes against a 6,321-gene universe and ranks #4 in the frozen A0. The y axis is a prioritization score, not a p-value. Drawn by `src/figures/fig01_manhattan.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
-**Phenotype handling.** Seven HPO terms from the clinical document, plus one family-history
+Phenotype handling used seven HPO terms from the clinical document, plus one family-history
 term kept on a separate channel so it cannot contaminate the primary result. A frozen polarity
-rule applies: **only documented terms count as positive. Anything unmentioned is UNKNOWN,
-never negative.** Semantic similarity uses Resnik information content in bits with Best Match
+rule applies: only documented terms count as positive. Anything unmentioned is UNKNOWN,
+never negative. Semantic similarity uses Resnik information content in bits with Best Match
 Average aggregation.
 
 ![HPO term by disease model matrix](../figures/pub/fig05_hpo_disease_matrix.svg)
@@ -146,27 +146,27 @@ Average aggregation.
 Research-grade ACMG/AMP curation, Bayesian points.
 
 **Truncating allele**: `PVS1` (nonsense on the MANE transcript, NMD-predicted),
-`PM2_Supporting` (rare). **9 points, which is Likely Pathogenic.**
+`PM2_Supporting` (rare). 9 points, which is Likely Pathogenic.
 
-**Missense allele**: remains **VUS**. Three criteria were considered and rejected with the
+**Missense allele**: remains VUS. Three criteria were considered and rejected with the
 data in front of us:
 
 - **`PM1` does not apply.** The intuition that the residue sits in a hot domain does not
-  survive the data: **1 497 ClinVar missense records across `BUB1B`, 95.3 % of them VUS, and a
-  single P/LP.** There is no demonstrable hotspot anywhere in the gene.
+  survive the data: 1 497 ClinVar missense records across `BUB1B`, 95.3 % of them VUS, and a
+  single P/LP. There is no demonstrable hotspot anywhere in the gene.
 - **`PM3` is blocked** by unresolved phase.
 - **`PS3` needs a functional assay** that does not exist for this variant.
 
 Orthologous conservation does support concern: the position sits in the 90th percentile of its
 own protein, the chemical property is conserved in 99.2 % of 120 orthologs, and the class of
-substitution introduced appears in none of them. **This does not change the ACMG call**, and
+substitution introduced appears in none of them. This does not change the ACMG call, and
 it is reported as mechanism, not as evidence of pathogenicity.
 
 ![Pocket geometry and orthologous conservation at the candidate residue](../figures/pub/fig03_pocket_and_conservation.svg)
 
 *Figure 8. Model output, predicted, not measured. The candidate side chain anchors a pocket of 9 residues with 3 candidate H-bonds, at pLDDT 91 and in a column carrying 4.04 of 4.32 possible bits. Drawn by `src/figures/fig03_pocket.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
-**What the literature says about this configuration.** According to PubMed, the first
+According to PubMed, the first
 families with BUB1B-associated MVA carried truncating and missense mutations ([Hanks et al. 2004](https://doi.org/10.1038/ng1449)), and
 human MVA1 cases are either biallelic, typically one missense plus one nonsense allele, or
 monoallelic combined with variants that lower wild-type BUBR1 ([Wijshake et al. 2012](https://doi.org/10.1371/journal.pgen.1003138)). The candidate pair
@@ -180,8 +180,8 @@ but it does not replace phase or functional evidence for these particular allele
 ## 5. Competing hypotheses, all audited
 
 The value of a panel-free search is that it surfaces competitors. Every gene that outranked or
-closely approached `BUB1B` was audited, cheapest falsifier first: **frequency first, then
-zygosity, mechanism and replication.**
+closely approached `BUB1B` was audited, cheapest falsifier first: frequency first, then
+zygosity, mechanism and replication.
 
 | Competitor | Where it appeared | Verdict |
 |---|---|---|
@@ -191,26 +191,26 @@ zygosity, mechanism and replication.**
 | `IGBP1` | `B0` #6 | **NEGATIVE**: the only reported disease mechanism is 5'UTR disruption of translation initiation, not coding missense. The association rests on a single family. And `MAX_AF` 1 × 10⁻⁴ is strongly inconsistent with an ultra-rare, penetrant, causal model. The verdict rests on all three together, not on the frequency argument alone |
 | `HLA-DRB1` | Exomiser #1 (external baseline) | **UNRESOLVED, audit flag, not eliminated**: 35 variants, 28 without population frequency, 0 ClinVar P/LP (`docs/EXTERNAL_BASELINE.md`). That pattern *suggests* mapping or representation complexity in a polymorphic region. Nothing here tests it. Not a demonstrated alternative diagnosis, and not rejected |
 
-`FANCD2` deserves a note: it is the Fanconi anaemia pathway, which overlaps MVA in **both**
+`FANCD2` deserves a note: it is the Fanconi anaemia pathway, which overlaps MVA in both
 phenotype and mechanism. It was the most uncomfortable competitor and was audited rather than
 avoided.
 
 ## 6. Research secondary / incidental candidate
 
-The proband carries a **heterozygous nonsense variant in `LZTR1`** on the MANE transcript:
+The proband carries a heterozygous nonsense variant in `LZTR1` on the MANE transcript:
 high quality (DP 48, GQ 99, allele balance 0.50, PASS), rare (`MAX_AF` 3 × 10⁻⁵), and
-classified **pathogenic/likely pathogenic in ClinVar**. It is not an artefact.
+classified pathogenic/likely pathogenic in ClinVar. It is not an artefact.
 
 It does not explain the reported phenotype, for the reasons in §5. It is submitted with
 `finding_type = secondary` and a low `epcr` because it is real and the submission format has a
-field for exactly this. The hackathon rules state that secondary and incidental findings are
+field for this. The hackathon rules state that secondary and incidental findings are
 welcome and do not penalise the automated Track 1 score.
 
 **It is a research candidate, not a returnable clinical result.** Calling it a "secondary
 finding" without that qualifier would imply a clinical status it has not earned. Independent
 confirmation by an orthogonal method, clinical interpretation and any return-of-results
 decision belong to the clinical team, and this project makes no clinical recommendation. It is
-also deliberately kept out of the main MVA narrative: it would distract from `BUB1B` and open a
+also kept out of the main MVA narrative: it would distract from `BUB1B` and open a
 separate and much larger clinical conversation.
 
 ## 7. The second-allele problem and the completed short-read analysis
@@ -263,7 +263,7 @@ positive-control calibration, remains preregistered and not executed.
 
 *Figure 13. Model output, predicted, not measured. ALT tracks REF across every frozen prediction. Splicing, the modality that decided the hypothesis, shows neither gain nor loss of a site. Drawn by `src/figures/fig04_tracks.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
-**The missing second allele has a history in this disease.** In seven families with PCS
+The missing second allele has a history in this disease. In seven families with PCS
 syndrome, only one BUB1B mutation per family was found in coding sequence, while transcript and
 protein levels were reduced ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)). Later cases located the hidden allele outside the exons:
 an intronic Alu insertion together with a promoter-region variant ([Kato et al. 2017](https://doi.org/10.1038/hgv.2017.21)), and a 3 kb Alu/SVA
@@ -279,9 +279,9 @@ splicing. It does not show that this case has the same lesion.
 
 ## 7a. What would falsify this, and the next experiment
 
-- **Parental genotypes or long-molecule phasing showing both alleles in *cis*.** This
+- Parental genotypes or long-molecule phasing showing both alleles in *cis*. This
   would overturn this two-allele recessive explanation, not exclude every BUB1B mechanism.
-- A variant-specific **BUBR1 abundance/turnover assay** showing no reduction would weaken
+- A variant-specific BUBR1 abundance/turnover assay showing no reduction would weaken
   the instability route. A checkpoint/segregation assay is also needed to assess other
   functional defects. Normal abundance alone does not establish benignity.
 - An independently supported structural or copy-number variant at another locus explaining
@@ -299,7 +299,7 @@ None of these assays is represented as already performed in this case.
 
 ## 7b. Conclusions
 
-**What this work establishes, from most to least certain.**
+What this work establishes, from most to least certain:
 
 1. **The data answer the question they can answer.** One blood genome, high-quality reads,
    a reconstructed full-depth alignment and technical recovery of both prioritised alleles.
@@ -320,22 +320,22 @@ None of these assays is represented as already performed in this case.
 5. **Our own method was challenged and corrected.** The initial explanation of the BAF signal
    was falsified by a post-hoc ablation and is reported as such.
 
-**What it does not establish.** A diagnosis, a biallelic configuration, the effect of the
+What it does not establish: a diagnosis, a biallelic configuration, the effect of the
 missense, a mosaic cell fraction, a working rescue, or that the method generalises.
 
-**And when a secondary method failed validation, we did not use it on the child.** EXP-027
+When a secondary method failed validation, it was not used on the child. EXP-027
 asked whether haplotype-specific allelic imbalance could read a mosaic signal from blood. Before
 touching the patient, it was validated on 20 public 1000 Genomes trios under a frozen contract.
 It detected injected imbalance well (sensitivity 0.943) but fired on 249 of 995 intact,
 unspiked benchmark pairs against a nominal 5 %, and BUB1B-locus retention was 0.879, below
-0.90. Method validation failed, so the patient test was **not performed**: this is not a
+0.90. Method validation failed, so the patient test was not performed: this is not a
 patient-negative result ([forensic record](../docs/EXP027_PHASE1_RESULT.md)).
 
 ![EXP-027 Phase 1 result on public trios](../figures/pub/fig13_exp027_phase1_result.svg)
 
 *Figure 15. Data figure. High sensitivity (0.943 at δ = 0.10), failed calibration (APR 249/995 = 25.0 % vs 5 % nominal): method validation FAIL, so the patient-level A1 test was not performed. Drawn by `src/figures/fig13_exp027_phase1.py` from the project's analysis outputs, with source hashes checked before drawing.*
 
-**Blood is one view of the mosaic, not the mosaic.** The chromosome picture in any sample
+Blood is one view of the mosaic, not the mosaic. The chromosome picture in any sample
 reflects three things at once: which errors cell division produces, which of the resulting
 cells persist, and which tissue and method were used to look. Bulk blood sequencing cannot
 separate them. In a *Bub1b* hypomorphic mouse, regenerating tissues such as the haematopoietic
@@ -348,21 +348,21 @@ detected *BUB1B* mutation). And our own simulation (EXP-015a) shows that variega
 either homolog can leave the bulk allelic balance near 0.5. A quiet blood genome is therefore
 not evidence that the child's other tissues are chromosomally quiet.
 
-**The four questions only new observations can answer.**
+Four questions remain that only new observations can answer:
 
 | Open question | Why no further computation on this genome can answer it | Next observation that changes a decision | If the result goes one way | If it goes the other way |
 |---|---|---|---|---|
 | **1. Phase** | One sample and no parents. The two alleles lie 13.8× the fragment length apart, beyond read-backed phasing | Parental genotyping at both sites, or targeted long-read phasing of the child | **Trans:** the truncating and missense alleles sit on opposite copies, matching a reported biallelic MVA1 pattern. The missense still needs functional evidence | **Cis:** this pair cannot be the recessive explanation, and the hidden-allele search becomes the primary question |
 | **2. Missense function** | The missense is a VUS. 95.3 % of ClinVar missense in the gene are VUS and there is no hotspot. Conservation and structure are predictions | Variant expressed in isogenic cells: BUBR1 abundance and turnover, kinetochore localisation, checkpoint arrest, segregation errors, with wild-type and known MVA-allele controls | Disease-relevant defect detected: a reproducible abnormality in a preregistered BUBR1 readout provides functional support for pathogenicity. Published work links a >50 % loss of BUBR1 expression or activity to PCS ([Matsuura et al. 2006](https://doi.org/10.1002/ajmg.a.31069)) | No defect across the preregistered readouts: the current pair is weakened, and a hidden allele or another gene becomes more likely. This does not exclude functions or cellular contexts the assay does not represent |
-| **3. Safe rescue** | Our bounded search found no compound tested in a system relevant to this allele. All rescue evidence is external | Isogenic assay measuring target engagement, chromosome segregation errors and clonogenic survival **together**, with a genetic positive control | Fewer new segregation errors per completed mitosis at matched proliferation, without extra clonogenic survival of unstable cells: the arm advances to further preclinical work | More survival of unstable cells: **veto**, even if another readout improves |
+| **3. Safe rescue** | Our bounded search found no compound tested in a system relevant to this allele. All rescue evidence is external | Isogenic assay measuring target engagement, chromosome segregation errors and clonogenic survival together, with a genetic positive control | Fewer new segregation errors per completed mitosis at matched proliferation, without extra clonogenic survival of unstable cells: the arm advances to further preclinical work | More survival of unstable cells: **veto**, even if another readout improves |
 | **4. Generality of the method** | Only one patient was analysed, and the rules were built on this case | An external validation study, to be preregistered: the frozen pipeline run unchanged on previously solved cases with known causal genes, blinded to the answer | The known genes rank within a top-k threshold set before the run: evidence that the procedure transfers | They do not: the contribution is the audit trail, not the ranking |
 
-**Priority.** Phase first, because it is the first branching observation and decides whether this pair
+Phase comes first, because it is the first branching observation and decides whether this pair
 can be the explanation at all. Then the missense assay, whose controls follow published MVA-cell work
 ([Suijkerbuijk et al. 2010](https://doi.org/10.1158/0008-5472.CAN-09-4319)). RNA-seq and targeted long reads are needed only if phase is *cis* or function is normal.
 The rescue assay is designed now, but it is only worth running on a confirmed mechanism.
 
-**What we would tell a clinical team.** This is a research hypothesis with a clear next test,
+For a clinical team, this is a research hypothesis with a clear next test,
 not a result to act on. The report makes explicit which inference rests on which evidence and
 which observation would overturn it.
 
@@ -373,23 +373,23 @@ which observation would overturn it.
 coordinates, every REF allele matched against the local GRCh38 FASTA, `epcr` in (0, 1],
 `finding_type`) before any of the six submissions is used.
 
-**The CSV is not in the repository, deliberately.** The required format carries chromosome,
-position, reference and alternate alleles and the proband identifier for a living minor. That
-is precisely what the project's first hard rule forbids committing, even temporarily. The
+The CSV is not in the repository. The required format carries chromosome,
+position, reference and alternate alleles and the proband identifier for a living minor. The
+project's first hard rule forbids committing that, even temporarily. The
 generator lives in the repository. The file it writes lands in a gitignored directory and is
 uploaded by hand. The method is auditable without anyone seeing a coordinate.
 
 Two rows are submitted. Up to ten are allowed, and padding the file with the already-audited
 competitors would have been hedging against our own analysis.
 
-`epcr` values are **declared subjective probabilities, not model output**. Their full
+`epcr` values are declared subjective probabilities, not model output. Their full
 justification is in `EPCR_RATIONALE` inside the generator. `BUB1B` is set at 0.75 rather than
 higher because the phase is unresolved, the missense is still a VUS, and the short-read
 structural search, while negative for CNV and MEI calls over the gene body, cannot exclude a
 complex intronic insertion. They are not calibrated probabilities. Only their order and the
 primary/secondary split carry meaning.
 
-**Deliverable status.** Track 1 closes as *ranked predictions CSV + evidence report*. The
+Track 1 closes as *ranked predictions CSV + evidence report*. The
 pending items in §7b are biological validations (phase, missense function), not missing parts
 of the submission.
 
@@ -404,15 +404,15 @@ python src/verify.py
 hand-listed), published figure counts recomputed from the executed notebooks, both Track 2
 matrices, the privacy scanner and the superseded-claim auditor.
 
-Figures regenerate from `src/figures/` and are **deterministic**: fixed `svg.hashsalt` and no
+Figures regenerate from `src/figures/` and are deterministic: fixed `svg.hashsalt` and no
 embedded date, so a re-render produces byte-identical SVGs. The environment moved from
 matplotlib 3.7.2, which has no CPython 3.12 wheel on any platform and so could not be
-installed by anyone else, to **matplotlib 3.8.4**. The nine publication figures that
+installed by anyone else, to matplotlib 3.8.4. The nine publication figures that
 existed at that point were then
-re-rendered and compared pixel by pixel against the originals: **0 differing pixels, maximum
-channel deviation 0.**
+re-rendered and compared pixel by pixel against the originals: 0 differing pixels, maximum
+channel deviation 0.
 
-One honest caveat: the privacy scanner reads its list of case-specific forbidden values from a
+One caveat: the privacy scanner reads its list of case-specific forbidden values from a
 gitignored file. Elsewhere it still checks structural patterns (coordinates, HGVS, genotypes,
 local paths) but not the case values, and it says which of the two it did on every run.
 
@@ -455,7 +455,7 @@ not a claim of zero disclosure to an AI provider: derived results were visible t
 assistant during the work. Raw WGS files are processed by local code and kept out of
 version control. The earlier project record also documents an
 external service that received patient-derived values:
-**AlphaGenome**, which was given a variant shortlist, never the VCF. It runs in an isolated
+AlphaGenome, which was given a variant shortlist, never the VCF. It runs in an isolated
 virtual environment so that no ordinary run of this repository can reach it, its outputs are
 cached, and the call is not repeated on a normal build. This is documented in
 `docs/03_ALPHAGENOME_ASSESSMENT.md`.
@@ -463,15 +463,15 @@ cached, and the call is not repeated on a normal build. This is documented in
 ## 11. Acknowledgements and data citation
 
 This work was carried out for the Rare Disease, Real Kid: MVA Hackathon 2026, organised by
-**Sage Bionetworks**, the **MVA Society**, **Hugging Face**, **BEACON**, **AWS** and
-**Anthropic**.
+Sage Bionetworks, the MVA Society, Hugging Face, BEACON, AWS and
+Anthropic.
 
 > **Dataset citation: to be completed before submission.** The rules require the hackathon
 > dataset to be cited using the reference provided on the hackathon Synapse page. That
 > reference was not retrieved in this session and is therefore not transcribed here, per the
 > project's rule against writing unverified identifiers.
 
-**Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The **formal citation is not reproduced here**: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
+**Dataset provenance.** The hackathon dataset is distributed through the Synapse project [`syn76251147`](https://www.synapse.org/Synapse:syn76251147/wiki/642892). The formal citation is not reproduced here: it is not visible on the public page without an authenticated session, and this project does not write a reference it has not read. It must be copied verbatim from the authorised session before submission.
 
 **Privacy.** This report omits variant coordinates, HGVS strings, genotypes and sample
 identifiers. Some internal technical figures elsewhere in the private repository contain
@@ -480,7 +480,7 @@ No attempt was made to locate the family.
 
 ## 12. Licence
 
-Documentation, notebooks and figures: CC BY 4.0. Code: dual-licensed **MIT OR CC BY 4.0**, so
+Documentation, notebooks and figures: CC BY 4.0. Code: dual-licensed MIT OR CC BY 4.0, so
 that the whole submission is available under CC BY as the rules require, while code reuse gets
 a licence built for software. See `LICENSE` and `LICENSE-DOCS`.
 
