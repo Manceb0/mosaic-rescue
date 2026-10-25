@@ -1,7 +1,7 @@
 # Visual guide and state of the story
 
-Updated 24 September 2026. Integrates the GO 2B closure in `dd7ce71` and the three
-technical figures in `8d2383a`. It does not reopen any frozen analysis.
+Updated 24 September 2026. Integrates the GO 2B closure in `cb08521` and the three
+technical figures in `0a960ec`. It does not reopen any frozen analysis.
 
 ## The story in one sentence
 

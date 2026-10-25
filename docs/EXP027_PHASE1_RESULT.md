@@ -74,13 +74,13 @@ calibration on the public benchmark*.
 
 | Fecha | Hecho | Ancla |
 |---|---|---|
-| 2026-10-01 | Contrato + Amendments 1–7 congelados | tag `exp027-prebenchmark-freeze` → `4ca13e4` |
-| 2026-10-04 | GO-A: la exclusión por solape ≥ 1 pb dejaba 0 ventanas → Amendment 8 (máscaras de sitio) y regla A de SV | tag `exp027-prephase1-freeze-a8` → `641c857`; regla A `6144573` |
-| 2026-10-04/05 | GO-B: 133,0 GB, 110 / 110 piezas válidas; 70 BCF + 20 CRAM derivados 90 / 90 | `1013dd9`, `bba7e1e` |
-| 2026-10-05 | Ejecución r1 | tag `exp027-phase1-execution-freeze` → `bba7e1e` |
+| 2026-10-01 | Contrato + Amendments 1–7 congelados | tag `exp027-prebenchmark-freeze` → `5f9b969` |
+| 2026-10-04 | GO-A: la exclusión por solape ≥ 1 pb dejaba 0 ventanas → Amendment 8 (máscaras de sitio) y regla A de SV | tag `exp027-prephase1-freeze-a8` → `b89fbb3`; regla A `4069916` |
+| 2026-10-04/05 | GO-B: 133,0 GB, 110 / 110 piezas válidas; 70 BCF + 20 CRAM derivados 90 / 90 | `4e91fcd`, `07382c7` |
+| 2026-10-05 | Ejecución r1 | tag `exp027-phase1-execution-freeze` → `07382c7` |
 | 2026-10-05 | r1 **ABORTED_TECHNICAL**: `SHAPEIT5_phase_rare` abortaba con genotipos ausentes en raras (97 fallos confirmados), sin resultado global | EXEC-DEF-PH1-001 en `docs/DECISIONS.md` |
-| 2026-10-05 | A′: Phase 1 sin `phase_rare` (etapa no puntuable); validación PASS (5 ventanas antes fallidas completan; 4 antes completadas idénticas en `WindowSites`, SER y auditoría; GT del scaffold idénticos por `CHROM:POS:REF:ALT`) | tag `exp027-phase1-execution-freeze-r2` → `7e20047` |
-| 2026-10-06 → 07 | Run r2 completo desde cero, sin reutilizar r1; 1 400 / 1 400 | `RUN_MANIFEST.json` r2; procedencia en `ed1b614` |
+| 2026-10-05 | A′: Phase 1 sin `phase_rare` (etapa no puntuable); validación PASS (5 ventanas antes fallidas completan; 4 antes completadas idénticas en `WindowSites`, SER y auditoría; GT del scaffold idénticos por `CHROM:POS:REF:ALT`) | tag `exp027-phase1-execution-freeze-r2` → `5a6d985` |
+| 2026-10-06 → 07 | Run r2 completo desde cero, sin reutilizar r1; 1 400 / 1 400 | `RUN_MANIFEST.json` r2; procedencia en `c0440d4` |
 | 2026-10-07 | Informe: **FAIL**; reproducción post-hoc **idéntica** al informe | tag de resultado `exp027-phase1-result-r2-fail` |
 
 El cambio entre r1 y r2 fue **técnico, anterior a cualquier resultado científico y sin reciclar

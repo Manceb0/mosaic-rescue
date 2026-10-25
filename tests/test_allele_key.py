@@ -195,8 +195,8 @@ def test_17_sin_PID_la_fase_sigue_sin_resolver():
     """BUB1B: dos variantes a 11 kb, sin bloque de fase. NO se colapsan,
     pero tampoco se declara trans."""
     from src.prioritization.genome_wide import haplotypic_events
-    vs = [H("15:[REDACTED]", "G1", "stop_gained", "HIGH"),
-          H("15:[REDACTED]", "G1", "missense_variant", "MODERATE")]
+    vs = [H("15:1000000", "G1", "stop_gained", "HIGH"),
+          H("15:1010911", "G1", "missense_variant", "MODERATE")]
     events, info = haplotypic_events(vs)
     assert len(events) == 2 and info["collapsed"] == 0
     assert info["local_trans_proven"] is False

@@ -37,7 +37,7 @@
    "scope": "operational environment only",
    "observed_failure": {
     "utc": "2026-09-10T22:26:27Z",
-    "controlflow_commit": "ffb3c09",
+    "controlflow_commit": "9d135d1",
     "stage": "4 (cnvpytor -rd)",
     "mechanism": "Docker OOM (cgroup OOM kill of the container; docker events: oom + die exitCode=137)",
     "container_exit_code": 137,

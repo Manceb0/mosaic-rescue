@@ -2,7 +2,7 @@
 
 Agent: agent-b (Ghost Karyotypes / Fitness Landscape stream, GitHub Issue #3)
 Date: 2026-08-28
-Repo HEAD at time of writing: 27299a0. Scope: external literature and public datasets only — `data/` is empty, the gated dataset has not been downloaded, so **no patient-specific analysis was performed or is claimed here.**
+Repo HEAD at time of writing: 554c82b. Scope: external literature and public datasets only — `data/` is empty, the gated dataset has not been downloaded, so **no patient-specific analysis was performed or is claimed here.**
 Out of scope by assignment: drug search.
 
 ---

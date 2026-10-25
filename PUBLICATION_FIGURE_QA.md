@@ -360,7 +360,7 @@ outputs*) checks that every artefact cites that manifest.
 | **Renderer** | `src/figures/fig09_cnv_chromosomes.py` |
 | **Output** | `figures/pub/fig09_cnvpytor_chromosome_rd_baf.svg` (+ PNG 300 dpi, thumbnail) |
 | **Output SHA256** | `d285e2d58c13b89c093e21db7157f31892a5d12f2ea073441fc687501d8ebef3` |
-| **Frozen commit** | data produced under `5b66f58` (stage 4 rerun after `EXEC-OOM-001`); GO 2B SCIENCE FINAL recorded in `docs/DECISIONS.md` |
+| **Frozen commit** | data produced under `1b315b3` (stage 4 rerun after `EXEC-OOM-001`); GO 2B SCIENCE FINAL recorded in `docs/DECISIONS.md` |
 | **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
 | **n** | 24 primary chromosomes · 100 kb bins (27 579 autosomal bins with RD > 0 define `RD_ref`) · 1 636 719 heterozygous SNPs over the 24 chromosomes (1 634 791 autosomal) |
 | **axes / units** | A: chromosome × median RD / autosomal median, ± MAD · B: chromosome × median per-bin minor-allele fraction, ± MAD · C: chromosome × CNVpytor `i1` and `i2` medians · D: chromosome × heterozygous SNPs (thousands) and fraction of bins with RD > 0 |
@@ -388,7 +388,7 @@ outputs*) checks that every artefact cites that manifest.
 | **Renderer** | `src/figures/fig10_bub1b_readlevel.py` |
 | **Output** | `figures/pub/fig10_bub1b_readlevel_assay.svg` (+ PNG 300 dpi, thumbnail) |
 | **Output SHA256** | `540f9af27f40f53ab117b8ba72e6ffeb6a6dce5a0100cc84a0dc2dca7df121de` |
-| **Frozen commit** | assay preregistered in `AE_PREREG_LOOKUPS.md` § AE3 and adjudicated FINAL · PASS; data under `5b66f58`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
+| **Frozen commit** | assay preregistered in `AE_PREREG_LOOKUPS.md` § AE3 and adjudicated FINAL · PASS; data under `1b315b3`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
 | **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
 | **n** | 181 bins of 1 kb on 15:40101001-40282000 · 60 upstream / 60 body / 60 downstream by midpoint inside exact 60 055 bp intervals · 1 CONTEXT_ONLY bin excluded · reads: upstream 18 906, body 19 850, downstream 19 332 · intron 2: 5 bins, 1 828 reads · intron 8: 11 bins, 3 747 reads |
 | **axes / units** | A–D: fraction of bin reads; E: clusters per bin (Σ per region annotated); F: reads per bin (bins per region annotated); x = region groups |
@@ -411,12 +411,12 @@ outputs*) checks that every artefact cites that manifest.
 | **notebook** | none: GO 2B frozen artifacts and post-final lookup AE1 |
 | **Classification** | `DATA` |
 | **Evidence mode** | `MEASURED+EXTERNAL+DERIVED` (caller records are measured; GENCODE v33 gene context is external; the only derived numbers are distances between frozen coordinates, used as labels) |
-| **Source artifact(s)** | `work/callers/final/tier1_sv_manta_delly.json` (Manta and DELLY records in the Tier 1 window, STOP of 2026-09-09, stages 2/3 under `47d24da`); `work/callers/final/go2b_mei_read.json` (xTea and SCRAMble records in the window, `ffb3c09`); `work/callers/final/ae1_gene_context.json` (AE1 gene context, frozen GENCODE v33, `5b66f58`) |
+| **Source artifact(s)** | `work/callers/final/tier1_sv_manta_delly.json` (Manta and DELLY records in the Tier 1 window, STOP of 2026-09-09, stages 2/3 under `772d046`); `work/callers/final/go2b_mei_read.json` (xTea and SCRAMble records in the window, `9d135d1`); `work/callers/final/ae1_gene_context.json` (AE1 gene context, frozen GENCODE v33, `1b315b3`) |
 | **Source SHA256** | `26e0013c51d8d6108731fa08eda001fec9aae0e108d215eb24b6aef7caa74f00` · `410e706efb9ab83198cb39389fcf510467712a5452625570df5c1d8c8244faf0` · `7db6d9324e1339dc50281d86b873d3c63839af92af3596482d089819c1bf4334` |
 | **Renderer** | `src/figures/fig11_mei_sv_adjudication.py` |
 | **Output** | `figures/pub/fig11_mei_sv_adjudication_map.svg` (+ PNG 300 dpi, thumbnail) |
 | **Output SHA256** | `ac081e282a2182e8c758e8c2e3745fd6f6bde2ad19e468c90c8b44ebd598b049` |
-| **Frozen commit** | Tier 1 SV `47d24da`; MEI `ffb3c09`; AE1 `5b66f58`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
+| **Frozen commit** | Tier 1 SV `772d046`; MEI `9d135d1`; AE1 `1b315b3`; GO 2B SCIENCE FINAL in `docs/DECISIONS.md` |
 | **hash verification** | FAIL CLOSED: the renderer loads every source through `src/figures/frozen.py`, which checks its sha256 against `work/callers/final/MANIFEST.json` before drawing. A changed, missing or undeclared artifact raises `FrozenArtifactError` and no figure is produced. |
 | **n** | Tier 1 window 15:39161069-41221123 · Manta 10 records (9 PASS) · DELLY 28 records (16 PASS) · xTea 2 records · SCRAMble 1 record · 12 frozen loci annotated by AE1 |
 | **axes / units** | A: chr15 position (Mb, GRCh38) × caller rows; B: schematic, no axes |
@@ -504,12 +504,12 @@ AlphaGenome track metadata (`CL:0000236`, `EFO:0002067`, `EFO:0002784`).
 | **notebook** | none: sealed run artifacts of EXP-027 Phase 1 r2 |
 | **Classification** | `DATA` |
 | **Evidence mode** | `EXTERNAL+DERIVED` (public 1000 Genomes high-coverage trio data; every number is a statistic we computed under the frozen contract) |
-| **Source artifact(s)** | `work/exp027/phase1_r2/phase1_report.json` (adjudicated report, tag `exp027-phase1-execution-freeze-r2`, commit `7e20047`); `work/exp027/posthoc/phase1_posthoc.json` (exact reproduction of that report; per-δ curves); `work/exp027/posthoc/apr_map.csv` (per-pair intact calls rebuilt with the same seeds, 249/995 as the report); `work/exp027/plan_execution/plan_windows.json` (window order, BUB1B first) |
+| **Source artifact(s)** | `work/exp027/phase1_r2/phase1_report.json` (adjudicated report, tag `exp027-phase1-execution-freeze-r2`, commit `5a6d985`); `work/exp027/posthoc/phase1_posthoc.json` (exact reproduction of that report; per-δ curves); `work/exp027/posthoc/apr_map.csv` (per-pair intact calls rebuilt with the same seeds, 249/995 as the report); `work/exp027/plan_execution/plan_windows.json` (window order, BUB1B first) |
 | **Source SHA256** | `37e676ad5137dc4ceee283de7251b403323c3d9dda589907e8eff43a441e1e3e` · `923cfb32854c76867bc7fd06a28bef83c624f0e49bb17d6a987d3de4146ae136` · `316f0cf7be522f0ca62e1b4e55bcb1c01f1efe65e3591b27babdc23c7897da3d` · `e3731d525b1980026a5700f2fe8772a02eee6d363fa69e376cdd4b8bfa7c1c80` |
 | **Renderer** | `src/figures/fig13_exp027_phase1.py` |
 | **Output** | `figures/pub/fig13_exp027_phase1_result.svg` (+ PNG 300 dpi, thumbnail) |
 | **Output SHA256** | `5c138b0226769ae99d5d3e449f33c44b155799f9ccbddd4fd346b8f88965e8bd` (SVG) · `3f0a21ee0044a612f775c0358d365e75937720d087409b3c02538fc7b775e716` (PNG); sealed version under tag `exp027-phase1-result-r2-fail`: `d7fd1bf3…` / `44533858…` |
-| **Frozen commit** | run `7e20047` (tag `exp027-phase1-execution-freeze-r2`); result sealed under tag `exp027-phase1-result-r2-fail` |
+| **Frozen commit** | run `5a6d985` (tag `exp027-phase1-execution-freeze-r2`); result sealed under tag `exp027-phase1-result-r2-fail` |
 | **hash verification** | FAIL CLOSED: the renderer checks all four source SHA256 before drawing, refuses to draw if the post-hoc reproduction is not identical to the sealed report, and refuses if the per-pair map does not give the report's K/N. |
 | **n** | 20 children × 50 evaluation windows = 1000 pairs, 995 evaluable (5 below Hmin = 50 after filters); 20 × 20 calibration tiles for ρ (not part of APR); B = 10 000; δ ∈ {0, .02, .05, .10, .15, .20} |
 | **axes / units** | A: unit matrix, 20 children (rows, by superpopulation) × 50 evaluation windows (columns, BUB1B first), each cell one intact pair, lit = called positive; no coordinates printed. B: QQ plot, expected vs observed −log10 p of the 995 intact pairs. C: detection fraction vs spiked δ, inferred vs Mendelian phase. D: decision diagram of the nine preregistered gates feeding the patient gate. |

@@ -80,7 +80,7 @@ HTML_A = f"""
 """
 
 # ---------- Panel B: los 10,9 kb genomicos a escala ----------
-GA, GH, GB = [REDACTED], [REDACTED], [REDACTED]
+GA, GH, GB = 0, 6769, 10911  # offsets in bp from the first allele: the public repository carries no absolute coordinate
 BX0, BY0, BW = 96, 470, 1240
 def gx(p): return BX0 + (p - GA) / (GB - GA) * BW
 FRAG = 300

@@ -354,7 +354,7 @@ Alternative if micronucleus isolation is not feasible: short-term patient fibrob
 
 ## Repository and data state (verified 2026-08-28)
 
-Confirming and extending the brief's verified-absent list, at HEAD `27299a0`:
+Confirming and extending the brief's verified-absent list, at HEAD `554c82b`:
 
 - `research/evidence_registry.md` and `research/contradictions.md` contain only empty template rows (E001, C001). **No evidence has been recorded by any agent yet.** This report's claims table is written to be paste-compatible with both schemas.
 - `hypotheses/` contains only `README.md` and `hypothesis_template.md` — no instantiated hypothesis file exists for Patient-as-Screen, so there is currently nothing to promote *into*.

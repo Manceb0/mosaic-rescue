@@ -1363,7 +1363,7 @@ en la siguiente ejecución.
 
 **`EXEC-DEF-004`, `EXEC-DEF-005`, `EXEC-DEF-006` y `PROV-GAP-9` · remediación única del GO 2B, adjudicada tras el STOP.**
 Fechada 2026-09-10. Integra sólo lo adjudicado por el mantenedor tras tres scratches técnicos sin datos del
-paciente. Los `FAILED` históricos de la corrida bajo `47d24da` **no se reescriben**: el rerun es una ejecución
+paciente. Los `FAILED` históricos de la corrida bajo `772d046` **no se reescriben**: el rerun es una ejecución
 nueva bajo un SHA nuevo, y cualquier estado terminal o subestado anterior se archiva en `<etapa>.history` y
 `<etapa>.sub.history` antes de sobrescribirse.
 
@@ -1422,8 +1422,8 @@ llamadores se escriben siempre como `caller-GT`.
 Evidencia de los scratches y de la corrida del STOP: `work/callers/stop_2026-09-09/` (fuera del repositorio);
 especificación y adjudicaciones en la bitácora del mantenedor.
 
-**`EXEC-OOM-001` · agotamiento de memoria del entorno en la etapa 4 del rerun bajo `ffb3c09`; amendment operacional.**
-Fechada 2026-09-11. En el rerun dirigido bajo `ffb3c09`, `cnvpytor -rd` pasó ambos gates técnicos (recursos 7/7 por sha256 e
+**`EXEC-OOM-001` · agotamiento de memoria del entorno en la etapa 4 del rerun bajo `9d135d1`; amendment operacional.**
+Fechada 2026-09-11. En el rerun dirigido bajo `9d135d1`, `cnvpytor -rd` pasó ambos gates técnicos (recursos 7/7 por sha256 e
 imagen por digest; arranque positivo con `-rg_info`), abrió el BAM, detectó hg38 y leyó los 2 580 contigs, y fue matado por el
 kernel de la VM de Docker al empezar a guardar: eventos `oom` y `die exitCode=137` a las 22:26:27Z, sin traceback ni línea de error
 de CNVpytor. La VM tenía 30,17 GiB (configuración por defecto de WSL2 sin `.wslconfig`; host de 61,62 GiB). Adjudicación del líder:
@@ -1454,8 +1454,8 @@ se readjudica. El rerun científico es solo la etapa 4, desde cero (`sample.pyto
 llamador ni reabre la rama MEI, que queda `FINAL FOR GO2B`.
 
 **`GO 2B · SCIENCE FINAL` · cierre de la interrogación estructural del WGS de lecturas cortas.** Fechada 2026-09-11, emitida por el
-revisor científico tras adjudicar cada rama. Código de ejecución final `5b66f58` (etapa 4 rehecha tras `EXEC-OOM-001`); rama MEI
-producida bajo `ffb3c09`; etapas 1, 2, 3, 6, 7 y 8 bajo `47d24da`. Todas las etapas del GO 2B en `SUCCESS`.
+revisor científico tras adjudicar cada rama. Código de ejecución final `1b315b3` (etapa 4 rehecha tras `EXEC-OOM-001`); rama MEI
+producida bajo `9d135d1`; etapas 1, 2, 3, 6, 7 y 8 bajo `772d046`. Todas las etapas del GO 2B en `SUCCESS`.
 
 ```text
 GO2B execution                    FINAL · PASS
@@ -2051,7 +2051,7 @@ proporciones de otros sistemas), sin retocar nada después de ver el score.
 
 ### Resultado EXP-029 (EXECUTED · 2026-09-30)
 
-Ejecutado una sola vez tras pushear el commit de procedencia `b572c71` (reglas congeladas,
+Ejecutado una sola vez tras pushear el commit de procedencia `e1fd749` (reglas congeladas,
 anteriores al scoring). El preregistro original y sus techos se conservan sin reescribir.
 
 - **A4a:** SCORABLE · **LOWER** · percentile **19.09%** using the preregistered percentile formula
@@ -2199,7 +2199,7 @@ germinales heterocigotos son **marcadores de homólogos, no de linajes celulares
 
 **Estado: PREREGISTERED, NOT EXECUTED.** Escrita **antes** de descargar ningún dato y antes de correr
 ningún benchmark de Phase 1 (cero resultados de Phase 1 vistos). Corrige tres defectos del contrato
-`88edd7d` detectados al contrastarlo con PubMed. **No cambia** el propósito, el endpoint, la
+`e5d2a31` detectados al contrastarlo con PubMed. **No cambia** el propósito, el endpoint, la
 separación pre-paciente/paciente, los techos ni el bloqueo de A1/A2.
 
 **(C1) Imposibilidad física `30× → 44×` — corregida.** El recurso 1000G high-coverage está
@@ -2627,7 +2627,7 @@ como sorpresa a posteriori.
   originales + 698 emparentados = 602 trios, 30X); Hofmeister 2023 (PMID 37386248; scaffold MAF ≥ 0.1 %,
   buffers de 250 kb, singletons SER 35.1–36.6 % y confianza 0.5). Umbrales del centinela binomial
   recalculados de forma independiente: coinciden.
-- **Corrección de procedencia (2026-10-01).** La primera versión de esta nota (commit `5763448`) citaba
+- **Corrección de procedencia (2026-10-01).** La primera versión de esta nota (commit `1902126`) citaba
   solo «0.79 %» y extrapolaba «al menos un switch, probablemente varios, por ventana de 2 Mb». Se
   corrige: el paper da 0.79 % y ~0.89 % en secciones distintas, y la extrapolación por ventana no está
   respaldada y se retira. No cambia ninguna regla.
@@ -2680,7 +2680,7 @@ Tras esta enmienda no hay más decisiones científicas: el siguiente artefacto e
 ni se borra) y anterior a cualquier medida de Phase 1. **GO-B no ha empezado.**
 
 **Por qué existe (bloqueo del contrato, no resultado negativo).** Al materializar solo los recursos
-auxiliares de GO-A (pistas, callset SV, índices, mapa, referencia; commit `e50d0df`), sin descargar
+auxiliares de GO-A (pistas, callset SV, índices, mapa, referencia; commit `e040fd0`), sin descargar
 genotipos ni CRAM y sin calcular BAF, SER, `T`, p ni A1, la regla congelada «excluir la ventana entera
 por cualquier solape ≥ 1 pb» resultó operacionalmente degenerada:
 
@@ -2766,7 +2766,7 @@ motivo para reducir 20 × 50.
 ### EXEC-DEF-PH1-001 (2026-10-05) · fallo determinista en una etapa no puntuable · intento ABORTED_TECHNICAL
 
 **No es Amendment 9 y no se maquilla.** El primer intento de Phase 1 bajo el tag
-`exp027-phase1-execution-freeze` (commit `bba7e1e`, `RUN_MANIFEST.json` y 163 trabajos terminados
+`exp027-phase1-execution-freeze` (commit `07382c7`, `RUN_MANIFEST.json` y 163 trabajos terminados
 conservados en `work/exp027/phase1`) queda **`ABORTED_TECHNICAL`**. No había resultado global: se paró
 antes de evaluar nada.
 
@@ -2879,7 +2879,7 @@ sus familiares de primer grado.
 
 **Ejecución Phase 1 r2 iniciada (anclaje de procedencia; el resultado se añadirá al terminar).**
 
-- Código: tag `exp027-phase1-execution-freeze-r2` → commit `7e20047f3dec4b62f6496ed264d928eae3b0f549`; worktree limpio en ese commit.
+- Código: tag `exp027-phase1-execution-freeze-r2` → commit `5a6d985232309c9fe626fbb44de43e9877cdc279`; worktree limpio en ese commit.
 - Inicio: 2026-10-06T02:06:10+00:00; 16 workers; etiqueta Docker `exp027-r2-636bdeef1da8`; B = 10000; δ = [0.0, 0.02, 0.05, 0.1, 0.15, 0.2].
 - Diseño: 20 hijos × (50 ventanas de evaluación + 20 tiles de calibración) = 1400 trabajos; BUB1B es la ventana de evaluación #1.
 - Plan: `work/exp027/plan_execution/plan_windows.json` sha256 `e3731d525b1980026a5700f2fe8772a02eee6d363fa69e376cdd4b8bfa7c1c80` (50 + 20 ventanas, re-derivables con `plan.py`; las coordenadas no se copian aquí porque el escáner de privacidad trata los intervalos genómicos como patrón sensible).
@@ -2913,7 +2913,7 @@ preregistro propio y nunca podrá reabrir A1.
 
 ### Revisión de redacción del líder · figuras 13, 14, 05 y TRACK1 (2026-10-07)
 
-Revisión adversarial sobre `main` (`c7abdb9`) con el tag `exp027-phase1-result-r2-fail` intacto en `f8c8e93`.
+Revisión adversarial sobre `main` (`78fe623`) con el tag `exp027-phase1-result-r2-fail` intacto en `24046a1`.
 **Solo redacción y presentación; ningún número, fuente ni resultado cambia.** El resultado sellado de EXP-027 no
 se toca: el documento forense conserva los SHA de la figura sellada y anota el re-render.
 
@@ -2934,7 +2934,7 @@ Nivel: sin cambio (Track 1 sigue en L2; EXP-027 Phase 1 sigue FAIL).
 
 ### Reorientación narrativa · Track 1, Track 2, README y guion (2026-10-07)
 
-Pedida por el líder tras aprobar la revisión anterior (`ee22d55`). **Cambia el orden de inferencia, no la
+Pedida por el líder tras aprobar la revisión anterior (`a852a8f`). **Cambia el orden de inferencia, no la
 evidencia.** Regla dura de la reescritura: ninguna limitación desaparece (`phase unresolved`, `VUS`,
 `same VCF`, `EXP-029 weakened`, «ningún fármaco probado en una célula de paciente `BUB1B`»); solo dejan de
 abrir cada sección.

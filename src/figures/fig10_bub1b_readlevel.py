@@ -94,7 +94,7 @@ def build(d: dict, src_hash: str):
              ha="center", va="center", fontsize=S.BASE - 0.9, color=S.MUTED)
     S.note(fig,
            f"Patient blood WGS BAM (sha256 6388cd66…), pysam 0.23.0 inside the pinned CNVpytor image. Source work/callers/final/ae3_bub1b_readlevel.json "
-           f"(sha256 {src_hash[:10]}…) · run 5b66f58.\n"
+           f"(sha256 {src_hash[:10]}…) · run 1b315b3.\n"
            f"Assay preregistered in AE_PREREG_LOOKUPS.md § AE3: grid 15:40101001-40282000 in 1 kb bins; bin midpoint inside exact 60 055 bp intervals → "
            f"{d['assignment']['upstream']} / {d['assignment']['body']} / {d['assignment']['downstream']} bins; {d['assignment']['CONTEXT_ONLY']} CONTEXT_ONLY bin excluded.\n"
            f"Reads: primary, not secondary, not supplementary, not duplicate, not QC-fail; n_reads = reads whose alignment starts in the bin; "

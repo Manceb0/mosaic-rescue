@@ -30,7 +30,7 @@
       "sha256": "8068b290c41cc09f8563c7f92f8950b18721aa5544aa56aa31b5387b65727fdd"
     }
   ],
-  "base_commit": "8d2383abcc8a0dfc78512bb301feceabe89bb123",
+  "base_commit": "0a960ec26987606a597f9077fef63da89f2ca57f",
   "source_state": "Reviewed working-tree sources, identified by content hashes; no new scientific run",
   "renderer": "src/figures/story.py",
   "renderer_sha256": "c31e46d08738d01a73bdf54e73f6ba035a730f78c17d6fa646e30ee5b1bafa38",

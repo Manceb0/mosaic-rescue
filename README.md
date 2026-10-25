@@ -18,6 +18,15 @@ and ask how a proposed intervention could fail. The crucial twist comes at the e
 **helping a cell survive is not necessarily the same as correcting its defect.**
 
 Built for the **Rare Disease, Real Kid: MVA Hackathon 2026**.
+
+> **About this public repository.** It is a privacy-reviewed copy of the private development
+> repository, published when the hackathon closed on 24 October 2026. Every commit keeps its
+> original date, message and order, so the record of what was frozen before which result is
+> intact. Case-specific values (genomic positions, variant notations and sample identifiers)
+> were replaced by `[REDACTED]` throughout the history, one internal working figure with
+> case-specific positions (`fig11`) was removed, and all commits use one author identity.
+> Commit identifiers differ from the private copy, and the ones cited in the documents were
+> translated to this history. No sequencing file, VCF or genotype table was ever committed.
 The story below connects the evidence to the decisions. The notebooks expose the work.
 
 | 01, Discover | 02, Challenge | 03, Test responsibly |
@@ -215,9 +224,9 @@ lesion here. [PubMed](https://pubmed.ncbi.nlm.nih.gov/38102195/),
   WGS, descriptive only. No cellular mosaic fraction or cytogenetic conclusion.
 - [BUB1B read-level assay](figures/pub/fig10_bub1b_readlevel_assay.svg): body and matched
   flanks, frozen metrics and denominators, no significance threshold added after inspection.
-- [MEI/SV adjudication map](figures/pub/fig11_mei_sv_adjudication_map.svg): local calls and
-  partner context. This detailed internal figure contains case-specific positions and is
-  not a public presentation asset.
+- MEI/SV adjudication map (`fig11`): local calls and partner context. It contains
+  case-specific positions, so it is kept only in the private development copy and is not
+  part of this public repository.
 - [Evidence context diagram](figures/pub/story04_evidence_context.svg): keeps patient
   data, simulation and published evidence separate.
 - [AlphaGenome ISM](figures/pub/fig04I_alphagenome_ism.svg) and

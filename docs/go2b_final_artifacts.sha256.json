@@ -1,9 +1,9 @@
 {
  "title": "GO 2B · SCIENCE FINAL · frozen artifact hashes",
  "frozen_utc": "2026-09-11T19:47:10Z",
- "final_execution_commit": "5b66f58",
- "mei_branch_commit": "ffb3c09",
- "carry_forward_commit_stages_1_2_3_6_7_8": "47d24da",
+ "final_execution_commit": "1b315b3",
+ "mei_branch_commit": "9d135d1",
+ "carry_forward_commit_stages_1_2_3_6_7_8": "772d046",
  "adjudication": "GO2B SCIENCE FINAL by the scientific reviewer, 2026-09-11; AE2 NOT EXECUTED (data policy)",
  "note": "Reports and JSON derived from patient data are kept outside the repository by data policy (maintainer's local evidence folders and the gitignored work/ tree). Only their identities are recorded here.",
  "documents_outside_repo": [
@@ -98,12 +98,12 @@
    "sha256": "3e845787eb27217ede5e97f86aba2691dcccf668dc47a5292e732c234b321231"
   },
   {
-   "file": "STAGE4_OPERATIONAL_FAILURE_ffb3c09.md",
+   "file": "STAGE4_OPERATIONAL_FAILURE_9d135d1.md",
    "bytes": 9462,
    "sha256": "5ccc16ab9fc3f5406828f05d2daf7b99e6cc7f49b85340766513c66d9c2a3de3"
   },
   {
-   "file": "STAGE4_ADJUDICATION_ffb3c09.md",
+   "file": "STAGE4_ADJUDICATION_9d135d1.md",
    "bytes": 3416,
    "sha256": "077f448246486c3e10dfedb4549bb48b7c6f4d3df3857c4dddd503e0c09dbb61"
   },
@@ -113,7 +113,7 @@
    "sha256": "d89f132e593731d291f3b767f2d1aebdb3981ac8cbee427fb0c5f78762033012"
   },
   {
-   "file": "PRE_RUN_STAGE4_5b66f58.md",
+   "file": "PRE_RUN_STAGE4_1b315b3.md",
    "bytes": 866,
    "sha256": "f70618c31b395a9faaab89319779d94049a888caed3f8d1e33fff7cf3530797a"
   }

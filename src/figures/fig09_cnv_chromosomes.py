@@ -120,7 +120,7 @@ def build(m: dict, calls: dict, src_hash: str, calls_hash: str):
     rd_calls = calls["1_accounting"]["RD"]["total"]; cb_calls = calls["1_accounting"]["RD_BAF"]["total"]
     S.note(fig,
            f"Patient blood WGS, aggregated. Source work/callers/final/go2b_cnv_hdf5_metrics.json (sha256 {src_hash[:10]}…) · CNVpytor 1.3.2 by digest · "
-           f"bin {m['bin_size']:,} bp · run 5b66f58.\n"
+           f"bin {m['bin_size']:,} bp · run 1b315b3.\n"
            f"RD_ref = {m['RD_ref_autosomal_median_bins_gt0']:,.1f} reads per bin (autosomal median of bins > 0). Metrics fixed in CNV_METRICS_PREREG.md "
            f"before any value was inspected; MAD without scale factor.\n"
            f"The caller's {rd_calls} RD and {cb_calls} RD+BAF records (go2b_cnv_read.json, sha256 {calls_hash[:10]}…) are raw inventory, "

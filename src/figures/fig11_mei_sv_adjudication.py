@@ -6,9 +6,9 @@ gene context of every breakpoint, with the adjudicated ceiling for each.
 
 Sources, all frozen
     work/callers/final/tier1_sv_manta_delly.json   Manta and DELLY records in the Tier 1 window (STOP of
-                                                    2026-09-09, stages 2/3 under 47d24da), gene body, alleles
-    work/callers/final/go2b_mei_read.json          xTea / SCRAMble records in the same window (ffb3c09)
-    work/callers/final/ae1_gene_context.json       AE1 gene context from the frozen GENCODE v33 (5b66f58)
+                                                    2026-09-09, stages 2/3 under 772d046), gene body, alleles
+    work/callers/final/go2b_mei_read.json          xTea / SCRAMble records in the same window (9d135d1)
+    work/callers/final/ae1_gene_context.json       AE1 gene context from the frozen GENCODE v33 (1b315b3)
     The renderer places records at their emitted coordinates and prints the AE1 annotations verbatim.
     The only derived numbers are distances between frozen coordinates, used for labels.
 
@@ -115,9 +115,9 @@ def build(t1: dict, mei: dict, ae1: dict, hashes: dict):
     for r in scr:
         axA.scatter([r["pos"] / Mb], [rows["SCRAMble"]], marker="o", s=40, color=S.SKY, edgecolor=S.INK, linewidth=0.5, zorder=4)
     # locus labels with AE1 context
-    loci = [("MEI concordant ALU", [REDACTED], "Alu · xTea caller-GT 0/1 + SCRAMble\nAC109630.1 lncRNA intron"),
+    loci = [("MEI concordant ALU", None, "Alu · xTea caller-GT 0/1 + SCRAMble\nAC109630.1 lncRNA intron"),
             ("BND group 39.70 Mb site (Tier 1 SV) / xTea L1 record", 39702428, "BND ×2 Manta+DELLY · xTea L1 caller-GT 0/1\nFSIP1 intron 10"),
-            ("DELLY INS 40.11 Mb", [REDACTED], "INS DELLY-only caller-GT 1/1\nintergenic, BMF at 4.2 kb"),
+            ("DELLY INS 40.11 Mb", None, "INS DELLY-only caller-GT 1/1\nintergenic, BMF at 4.2 kb"),
             ("BND+INS group 40.56 Mb site (Tier 1 SV)", 40561984, "BND ×3 + INS Manta, BND DELLY\nCCDC32 intron 2")]
     for i, (key, pos, label) in enumerate(loci):
         d = (gb_lo - pos) if pos < gb_lo else (pos - gb_hi)
@@ -175,9 +175,9 @@ def build(t1: dict, mei: dict, ae1: dict, hashes: dict):
         + ". 677 kb upstream of BUB1B. Population status: AE2 NOT EXECUTED (data policy); absence in gnomAD would not have meant rarity.", fs=F, width=100)
 
     S.note(fig,
-           f"Sources under work/callers/final/: tier1_sv_manta_delly.json (sha256 {hashes['t1'][:10]}…, Manta and DELLY, 47d24da) · "
-           f"go2b_mei_read.json (sha256 {hashes['mei'][:10]}…, xTea and SCRAMble, ffb3c09)\n"
-           f"· ae1_gene_context.json (sha256 {hashes['ae1'][:10]}…, GENCODE v33 frozen, 5b66f58). Records drawn at their emitted coordinates; "
+           f"Sources under work/callers/final/: tier1_sv_manta_delly.json (sha256 {hashes['t1'][:10]}…, Manta and DELLY, 772d046) · "
+           f"go2b_mei_read.json (sha256 {hashes['mei'][:10]}…, xTea and SCRAMble, 9d135d1)\n"
+           f"· ae1_gene_context.json (sha256 {hashes['ae1'][:10]}…, GENCODE v33 frozen, 1b315b3). Records drawn at their emitted coordinates; "
            f"gene context printed verbatim from AE1;\n"
            f"distances are differences of frozen coordinates; genotypes are caller-GT, never biological zygosity.\n"
            f"CLAIM CEILING. None of these loci overlaps the BUB1B gene body (15:{gb_lo}-{gb_hi}) or the two prioritised positions. "
@@ -187,6 +187,8 @@ def build(t1: dict, mei: dict, ae1: dict, hashes: dict):
 
 
 def load_and_build():
+    raise SystemExit("fig11 is an internal working figure. Its case-specific positions were removed from the "
+                     "public repository, so it can only be drawn from the private development copy.")
     t1, h1 = load_frozen(SRC_T1, FINAL)              # FAIL CLOSED: hash verificado antes de dibujar
     mei, h2 = load_frozen(SRC_MEI, FINAL)
     ae1, h3 = load_frozen(SRC_AE1, FINAL)
